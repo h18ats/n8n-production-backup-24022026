@@ -123,7 +123,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// --- Function node code ---\n// Get the first item (same pattern you used)\nconst inputDate = new Date($input.first().json.currentDate);   // \"2025-05-26T10:22:34.868+01:00\"\n\n// Helper to zero-pad to two digits\nconst pad = n => n.toString().padStart(2, '0');\n\n// Date  →  MM/DD/YYYY\nconst formattedDate = `${pad(inputDate.getMonth() + 1)}/${pad(inputDate.getDate())}/${inputDate.getFullYear()}`;\n\n// Time  →  HH:mm:ss   (24-hour clock)\nconst formattedTime = `${pad(inputDate.getHours())}:${pad(inputDate.getMinutes())}:${pad(inputDate.getSeconds())}`;\n\nreturn [\n  {\n    json: {\n      formattedDate,   // e.g. \"05/26/2025\"\n      formattedTime    // e.g. \"09:22:34\"\n    }\n  }\n];\n"
+        "jsCode": "// --- Function node code ---\n// Get the first item (same pattern you used)\nconst inputDate = new Date($input.first().json.currentDate);   // \"2025-05-26T10:22:34.868+01:00\"\n\n// Helper to zero-pad to two digits\nconst pad = n => n.toString().padStart(2, '0');\n\n// Date  \u2192  MM/DD/YYYY\nconst formattedDate = `${pad(inputDate.getMonth() + 1)}/${pad(inputDate.getDate())}/${inputDate.getFullYear()}`;\n\n// Time  \u2192  HH:mm:ss   (24-hour clock)\nconst formattedTime = `${pad(inputDate.getHours())}:${pad(inputDate.getMinutes())}:${pad(inputDate.getSeconds())}`;\n\nreturn [\n  {\n    json: {\n      formattedDate,   // e.g. \"05/26/2025\"\n      formattedTime    // e.g. \"09:22:34\"\n    }\n  }\n];\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -138,7 +138,7 @@
       "parameters": {
         "toRecipients": "={{ $json[\"Fee earner email\"] }}",
         "subject": "=Reminder: Please speak to Leonard about your directory submission",
-        "bodyContent": "=Hi {{ $json[\"Fee earner first name\"] }},\n\nThis is a reminder that you’ve been invited to speak with me, Leonard, your new AI assistant for directory submissions.\n\nPlease follow this link (https://fladgate.legalengine.co.uk/) to speak with me as soon as possible. I’m available 24/7 and it will take less than 8 minutes to discuss each matter.\n\nIf you’ve already spoken to me, it’s likely I’m waiting for a further matter summary from you. I will continue to remind you to speak to me until all matter summaries that you have been allocated are completed.\n\nLet me know if you need anything more.\n\nKind regards,\n\nLeonard\n\nAI Assistant\nLegal Engine\nE: leonard@legalengine.co.uk\nW: www.legalengine.co.uk",
+        "bodyContent": "=Hi {{ $json[\"Fee earner first name\"] }},\n\nThis is a reminder that you\u2019ve been invited to speak with me, Leonard, your new AI assistant for directory submissions.\n\nPlease follow this link (https://fladgate.legalengine.co.uk/) to speak with me as soon as possible. I\u2019m available 24/7 and it will take less than 8 minutes to discuss each matter.\n\nIf you\u2019ve already spoken to me, it\u2019s likely I\u2019m waiting for a further matter summary from you. I will continue to remind you to speak to me until all matter summaries that you have been allocated are completed.\n\nLet me know if you need anything more.\n\nKind regards,\n\nLeonard\n\nAI Assistant\nLegal Engine\nE: leonard@legalengine.co.uk\nW: www.legalengine.co.uk",
         "additionalFields": {
           "bodyContentType": "Text"
         }
@@ -627,23 +627,6 @@
     },
     {
       "parameters": {
-        "path": "email-click",
-        "responseMode": "responseNode",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.webhook",
-      "typeVersion": 2.1,
-      "position": [
-        -704,
-        512
-      ],
-      "id": "2a2561cb-5d7d-4dba-bbf5-a6302eaeb853",
-      "name": "Webhook",
-      "webhookId": "8f32ba0f-964e-416e-b5f3-49ff384ebd2e",
-      "disabled": true
-    },
-    {
-      "parameters": {
         "conditions": {
           "options": {
             "caseSensitive": true,
@@ -712,7 +695,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Initialiser le message\nmsg = {};\n\n// Ajouter un délai aléatoire entre 0 et 5 minutes\nconst randomDelay = Math.floor(Math.random() * 5) ;\n\n// Calculer le délai total\nconst totalDelay = randomDelay;\n\n// Ajouter le délai au message\nmsg.delay = totalDelay;\n\n// Retourner le message\nreturn msg;"
+        "jsCode": "// Initialiser le message\nmsg = {};\n\n// Ajouter un d\u00e9lai al\u00e9atoire entre 0 et 5 minutes\nconst randomDelay = Math.floor(Math.random() * 5) ;\n\n// Calculer le d\u00e9lai total\nconst totalDelay = randomDelay;\n\n// Ajouter le d\u00e9lai au message\nmsg.delay = totalDelay;\n\n// Retourner le message\nreturn msg;"
       },
       "id": "8b741cd9-98e0-4ab3-a36c-5be7cf366f39",
       "name": "Randomise to 5min delays",
@@ -722,27 +705,6 @@
         1392,
         -48
       ]
-    },
-    {
-      "parameters": {
-        "rule": {
-          "interval": [
-            {
-              "triggerAtHour": 8,
-              "triggerAtMinute": 35
-            }
-          ]
-        }
-      },
-      "type": "n8n-nodes-base.scheduleTrigger",
-      "typeVersion": 1.3,
-      "position": [
-        -1904,
-        -80
-      ],
-      "id": "9c604986-1c42-4ca7-8273-2c03706e7cbc",
-      "name": "8.35am Trigger",
-      "disabled": true
     },
     {
       "parameters": {
@@ -934,17 +896,6 @@
         [
           {
             "node": "Wait",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "8.35am Trigger": {
-      "main": [
-        [
-          {
-            "node": "Date & Time",
             "type": "main",
             "index": 0
           }

@@ -77,7 +77,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// --- Function node code ---\n// Get the first item (same pattern you used)\nconst inputDate = new Date($input.first().json.currentDate);   // \"2025-05-26T10:22:34.868+01:00\"\n\n// Helper to zero-pad to two digits\nconst pad = n => n.toString().padStart(2, '0');\n\n// Date  →  MM/DD/YYYY\nconst formattedDate = `${pad(inputDate.getMonth() + 1)}/${pad(inputDate.getDate())}/${inputDate.getFullYear()}`;\n\n// Time  →  HH:mm:ss   (24-hour clock)\nconst formattedTime = `${pad(inputDate.getHours())}:${pad(inputDate.getMinutes())}:${pad(inputDate.getSeconds())}`;\n\nreturn [\n  {\n    json: {\n      formattedDate,   // e.g. \"05/26/2025\"\n      formattedTime    // e.g. \"09:22:34\"\n    }\n  }\n];\n"
+        "jsCode": "// --- Function node code ---\n// Get the first item (same pattern you used)\nconst inputDate = new Date($input.first().json.currentDate);   // \"2025-05-26T10:22:34.868+01:00\"\n\n// Helper to zero-pad to two digits\nconst pad = n => n.toString().padStart(2, '0');\n\n// Date  \u2192  MM/DD/YYYY\nconst formattedDate = `${pad(inputDate.getMonth() + 1)}/${pad(inputDate.getDate())}/${inputDate.getFullYear()}`;\n\n// Time  \u2192  HH:mm:ss   (24-hour clock)\nconst formattedTime = `${pad(inputDate.getHours())}:${pad(inputDate.getMinutes())}:${pad(inputDate.getSeconds())}`;\n\nreturn [\n  {\n    json: {\n      formattedDate,   // e.g. \"05/26/2025\"\n      formattedTime    // e.g. \"09:22:34\"\n    }\n  }\n];\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -87,46 +87,6 @@
       ],
       "id": "fc2eacc9-360a-4ecc-b641-79380d4faf30",
       "name": "Date Format21"
-    },
-    {
-      "parameters": {
-        "options": {}
-      },
-      "id": "39f1ef40-3fb6-4309-86a5-e44ef342352b",
-      "name": "OpenAI Model31",
-      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
-      "typeVersion": 1,
-      "position": [
-        1056,
-        -32
-      ],
-      "credentials": {
-        "openAiApi": {
-          "id": "LldOhLNBReShSMkE",
-          "name": "OpenAi account"
-        }
-      },
-      "disabled": true
-    },
-    {
-      "parameters": {
-        "options": {}
-      },
-      "id": "749c95a0-2f3c-4f52-b0b4-ce8b95992d55",
-      "name": "OpenAI Model32",
-      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
-      "typeVersion": 1,
-      "position": [
-        1360,
-        -16
-      ],
-      "credentials": {
-        "openAiApi": {
-          "id": "LldOhLNBReShSMkE",
-          "name": "OpenAi account"
-        }
-      },
-      "disabled": true
     },
     {
       "parameters": {
@@ -150,7 +110,7 @@
         "promptType": "define",
         "text": "=INPUTS:\n{{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.first_name }}\n{{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.last_name }}",
         "options": {
-          "systemMessage": "=LinkedIn Post\nPrompt: Writing as an expert in UK viral marketing and the latest social media trends within professional services, draft a viral LinkedIn Post of no more than 100 words, to be shared by {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.first_name }} {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.last_name }} with the world on their personal LinkedIn account to say that they have tested this revolutionary new AI Agent called \"Leonard\" from \"Legal Engine\", who can help to take the pain out of creating matter descriptions for pitches and directory submissions, by harnessing the power of voice and AI. The aim is to highlight to fellow lawyers that this legal marketing tech saves massive amounts of time and hassle and that they should try it asap. People should visit https://demo.legalengine.co.uk to try it out. Feel free to be creative as this is all about making Leonard viral however limit to a maximum of 2 emojis per post. DO NOT use the Rocket emoji 🚀 . Hashtags welcome, expecially #LegalEngine. On completion, check your post to make sure there are NO Rocket 🚀  emojis in your post, if there are, delete them before concluding the post."
+          "systemMessage": "=LinkedIn Post\nPrompt: Writing as an expert in UK viral marketing and the latest social media trends within professional services, draft a viral LinkedIn Post of no more than 100 words, to be shared by {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.first_name }} {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.last_name }} with the world on their personal LinkedIn account to say that they have tested this revolutionary new AI Agent called \"Leonard\" from \"Legal Engine\", who can help to take the pain out of creating matter descriptions for pitches and directory submissions, by harnessing the power of voice and AI. The aim is to highlight to fellow lawyers that this legal marketing tech saves massive amounts of time and hassle and that they should try it asap. People should visit https://demo.legalengine.co.uk to try it out. Feel free to be creative as this is all about making Leonard viral however limit to a maximum of 2 emojis per post. DO NOT use the Rocket emoji \ud83d\ude80 . Hashtags welcome, expecially #LegalEngine. On completion, check your post to make sure there are NO Rocket \ud83d\ude80  emojis in your post, if there are, delete them before concluding the post."
         }
       },
       "id": "4f5bd513-f0c1-4c67-86a7-ce81010d5f4a",
@@ -161,66 +121,6 @@
         3248,
         -224
       ]
-    },
-    {
-      "parameters": {
-        "options": {}
-      },
-      "id": "54fe1e9e-e90c-46c9-867e-930fafcb50e6",
-      "name": "OpenAI Model33",
-      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
-      "typeVersion": 1,
-      "position": [
-        4384,
-        224
-      ],
-      "credentials": {
-        "openAiApi": {
-          "id": "LldOhLNBReShSMkE",
-          "name": "OpenAi account"
-        }
-      },
-      "disabled": true
-    },
-    {
-      "parameters": {
-        "options": {}
-      },
-      "id": "12a398bb-b9b7-41aa-8108-a78028ee127c",
-      "name": "OpenAI Model34",
-      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
-      "typeVersion": 1,
-      "position": [
-        2976,
-        192
-      ],
-      "credentials": {
-        "openAiApi": {
-          "id": "LldOhLNBReShSMkE",
-          "name": "OpenAi account"
-        }
-      },
-      "disabled": true
-    },
-    {
-      "parameters": {
-        "options": {}
-      },
-      "id": "89950af4-0638-40f0-9dad-69b0c3ece2e8",
-      "name": "OpenAI Model35",
-      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
-      "typeVersion": 1,
-      "position": [
-        3328,
-        176
-      ],
-      "credentials": {
-        "openAiApi": {
-          "id": "LldOhLNBReShSMkE",
-          "name": "OpenAi account"
-        }
-      },
-      "disabled": true
     },
     {
       "parameters": {
@@ -255,32 +155,6 @@
         3952,
         -224
       ]
-    },
-    {
-      "parameters": {
-        "toRecipients": "={{ $('Webhook4').item.json.body.user_email }}, lee@legalengine.co.uk",
-        "subject": "=Legal Engine assets update for {{ $('Webhook4').item.json.body.first_name }}",
-        "bodyContent": "=<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Legal Engine • Your Matter Summary</title>\n\n  <!-- Brand Typeface -->\n  <link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap\" rel=\"stylesheet\">\n\n  <style>\n    :root{\n      --le-navy:#062047; --le-blue:#00b3ff; --le-indigo:#0066ff;\n      --le-grey:#f2f6fa; --le-silver:#e5ecf3; --le-text:#263238;\n    }\n    *{box-sizing:border-box;margin:0;padding:0;}\n    body{\n      width:100%!important;background:var(--le-grey);\n      font-family:'Inter',Helvetica,Arial,sans-serif;\n      color:var(--le-text);-webkit-font-smoothing:antialiased;\n    }\n    .wrapper{\n      max-width:700px;margin:0 auto;background:#fff;\n      border:1px solid var(--le-silver);border-radius:10px;\n      padding:48px 40px;\n    }\n    .section{margin-bottom:20px;line-height:1.55;}\n    .section h1{color:var(--le-navy);font-size:24px;font-weight:700;margin-bottom:18px;}\n    .section h2{\n      color:var(--le-navy);font-size:22px;font-weight:700;\n      padding-bottom:10px;border-bottom:2px solid var(--le-silver);\n      margin-bottom:14px;\n    }\n    .section p{margin-bottom:16px;white-space:pre-line;}\n\n    .button{\n      display:inline-block;padding:14px 28px;font-weight:600;\n      color:#fff!important;text-decoration:none;border-radius:6px;\n      background:linear-gradient(90deg,var(--le-blue)0%,var(--le-indigo)100%);\n      transition:opacity .25s ease-in-out;\n    }\n    .button:hover{opacity:.8;}\n\n\n    .signature p{margin-bottom:6px;}\n.signature{\n  color:var(--le-text);                /* same dark text as body */\n  font-family:'Inter',Helvetica,Arial,sans-serif;\n}\n.signature a{\n  color:var(--le-text);                /* links also black */\n  text-decoration:none;\n}\n\n\n    .footer{\n      font-size:13px;color:#6c7a84;text-align:center;\n      padding-top:24px;border-top:1px solid var(--le-silver);\n    }\n    .tracking-pixel{display:none;width:1px;height:1px;}\n\n    @media(max-width:520px){\n      .wrapper{padding:32px 22px;}\n      .section h1{font-size:22px;}\n      .section h2{font-size:20px;}\n    }\n  </style>\n</head>\n<body>\n  <div class=\"wrapper\">\n\n    <!-- HEADER -->\n    <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-collapse:collapse;margin-bottom:40px;\">\n      <tr>\n        <td align=\"center\">\n          <img\n            src=\"https://49390627.fs1.hubspotusercontent-eu1.net/hub/49390627/hubfs/e8ad0e08-aa6c-4d44-9053-cdcf7bbaec5b.png?width=852&amp;height=339&amp;name=e8ad0e08-aa6c-4d44-9053-cdcf7bbaec5b.png\"\n            alt=\"Legal Engine\"\n            width=\"180\" height=\"72\"\n            style=\"width:180px;max-width:100%;height:auto;display:block;border:0;outline:none;text-decoration:none;\">\n        </td>\n      </tr>\n    </table>\n    <!--[if mso]><style>.mso-logo img{width:180px!important;height:auto!important;}</style><![endif]-->\n\n    <!-- INTRO -->\n    <div class=\"section\">\n      <p>Hi {{ $('Webhook4').item.json.body.first_name }},</p>\n      <p>Thanks for taking the time to test me out. How did I do?</p>\n      <p>As promised, here’s a summary of our conversation:</p>\n    </div>\n\n    <!-- MATTER SUMMARY -->\n    <div class=\"section\">\n      <h2>Matter Summary</h2>\n      <p>{{ $('AI Agent - Re-write Summary').item.json.output }}</p>\n    </div>\n\n    <!-- EXTRA ASSETS INTRO -->\n    <div class=\"section\">\n      <p>To give you a flavour of what else I can do, I’ve converted our chat into <b>a few additional marketing assets below.</b></p>\n      <p>This is just a snapshot of my capabilities. At&nbsp;<a href=\"https://legalengine.co.uk/\"><b>Legal Engine</b></a>, we’re building a suite of assistants like me, ready to transform Marketing &amp; BD across the legal industry.</p>\n    </div>\n\n<!-- SIGN-OFF -->\n<div class=\"signature\">\n  <p>Cheers,</p>\n\n  <p><b>Leonard</b></p>\n\n  <p><b>AI Assistant<br>Legal Engine</b></p>\n\n  <p>\n    E:&nbsp;<a href=\"mailto:leonard@legalengine.co.uk\">leonard@legalengine.co.uk</a><br>\n    W:&nbsp;<a href=\"https://legalengine.co.uk/\">www.legalengine.co.uk</a>\n  </p>\n</div>\n\n\n   <!-- WEBSITE BIO -->\n    <div class=\"section\">\n<br><br><h1>Additional marketing assets</h1>\n     <h2>Website Profile</h2>\n    <p>{{ $('AI Agent - Website Profile5').item.json.output }}</p>\n    </div>   \n\n<!-- WEBSITE UPDATE -->\n    <div class=\"section\">\n      <h2>Website case study</h2>\n    <p>{{ $('AI Agent - Website case study5').item.json.output }}</p>\n    </div>\n\n<!-- SHORT PITCH -->\n    <div class=\"section\">\n      <h2>Short pitch credential</h2>\n    <p>{{ $('AI Agent - Short Pitch6').item.json.output }}</p>\n    </div>\n\n    <!-- LINKEDIN POST INTRO -->\n    <div class=\"section\">\n      <p><b>Bonus:</b> if you enjoyed our conversation, I'd really appreciate your help in spreading the word amongst your network and have drafted something below you can post. Tag <b>@LegalEngine</b> when you share and I’ll top up your free Leonard credits.</p>\n    </div>\n\n    <!-- LINKEDIN POST -->\n    <div class=\"section\">\n      <h2>LinkedIn Post&nbsp;&nbsp;•&nbsp;&nbsp;#LeonardAI</h2>\n      <p>{{ $('AI Agent - L/E LinkedIn5').item.json.output }}</p>\n    </div>\n\n    <!-- FOOTER + UNSUBSCRIBE -->\n    <div class=\"footer\">\n      &copy; 2025 Legal Engine Ltd. All rights reserved.<br><br>\n      <a href=\"https://unsubscribe.legalengine.co.uk\" style=\"color:var(--le-blue);text-decoration:none;\">Unsubscribe</a>\n    </div>\n\n    <!-- OPEN-TRACKING -->\n    <img class=\"tracking-pixel\"\n         src=\"https://legalengine.co.uk/track/open?email={{ $('Webhook4').item.json.body.user_email }}\"\n         alt=\"\">\n  </div>\n</body>\n</html>",
-        "additionalFields": {
-          "bodyContentType": "html"
-        }
-      },
-      "type": "n8n-nodes-base.microsoftOutlook",
-      "typeVersion": 2,
-      "position": [
-        5328,
-        -128
-      ],
-      "id": "b1d658a2-ceb6-4bdf-9e5f-848b540c874a",
-      "name": "HTML Email from Leonard with MS, WP, WCS, SP & LI5",
-      "webhookId": "7e361c94-6b55-4188-9b79-6160666bbdca",
-      "credentials": {
-        "microsoftOutlookOAuth2Api": {
-          "id": "APa28clvTTmmzH55",
-          "name": "Microsoft Outlook - Leonard @ Legal Engine"
-        }
-      },
-      "disabled": true
     },
     {
       "parameters": {
@@ -2858,7 +2732,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// --- Function node code ---\n// Get the first item (same pattern you used)\nconst inputDate = new Date($input.first().json.currentDate);   // \"2025-05-26T10:22:34.868+01:00\"\n\n// Helper to zero-pad to two digits\nconst pad = n => n.toString().padStart(2, '0');\n\n// Date  →  MM/DD/YYYY\nconst formattedDate = `${pad(inputDate.getMonth() + 1)}/${pad(inputDate.getDate())}/${inputDate.getFullYear()}`;\n\n// Time  →  HH:mm:ss   (24-hour clock)\nconst formattedTime = `${pad(inputDate.getHours())}:${pad(inputDate.getMinutes())}:${pad(inputDate.getSeconds())}`;\n\nreturn [\n  {\n    json: {\n      formattedDate,   // e.g. \"05/26/2025\"\n      formattedTime    // e.g. \"09:22:34\"\n    }\n  }\n];\n"
+        "jsCode": "// --- Function node code ---\n// Get the first item (same pattern you used)\nconst inputDate = new Date($input.first().json.currentDate);   // \"2025-05-26T10:22:34.868+01:00\"\n\n// Helper to zero-pad to two digits\nconst pad = n => n.toString().padStart(2, '0');\n\n// Date  \u2192  MM/DD/YYYY\nconst formattedDate = `${pad(inputDate.getMonth() + 1)}/${pad(inputDate.getDate())}/${inputDate.getFullYear()}`;\n\n// Time  \u2192  HH:mm:ss   (24-hour clock)\nconst formattedTime = `${pad(inputDate.getHours())}:${pad(inputDate.getMinutes())}:${pad(inputDate.getSeconds())}`;\n\nreturn [\n  {\n    json: {\n      formattedDate,   // e.g. \"05/26/2025\"\n      formattedTime    // e.g. \"09:22:34\"\n    }\n  }\n];\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -3668,7 +3542,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// --- Function node code ---\n// Get the first item (same pattern you used)\nconst inputDate = new Date($input.first().json.currentDate);   // \"2025-05-26T10:22:34.868+01:00\"\n\n// Helper to zero-pad to two digits\nconst pad = n => n.toString().padStart(2, '0');\n\n// Date  →  MM/DD/YYYY\nconst formattedDate = `${pad(inputDate.getMonth() + 1)}/${pad(inputDate.getDate())}/${inputDate.getFullYear()}`;\n\n// Time  →  HH:mm:ss   (24-hour clock)\nconst formattedTime = `${pad(inputDate.getHours())}:${pad(inputDate.getMinutes())}:${pad(inputDate.getSeconds())}`;\n\nreturn [\n  {\n    json: {\n      formattedDate,   // e.g. \"05/26/2025\"\n      formattedTime    // e.g. \"09:22:34\"\n    }\n  }\n];\n"
+        "jsCode": "// --- Function node code ---\n// Get the first item (same pattern you used)\nconst inputDate = new Date($input.first().json.currentDate);   // \"2025-05-26T10:22:34.868+01:00\"\n\n// Helper to zero-pad to two digits\nconst pad = n => n.toString().padStart(2, '0');\n\n// Date  \u2192  MM/DD/YYYY\nconst formattedDate = `${pad(inputDate.getMonth() + 1)}/${pad(inputDate.getDate())}/${inputDate.getFullYear()}`;\n\n// Time  \u2192  HH:mm:ss   (24-hour clock)\nconst formattedTime = `${pad(inputDate.getHours())}:${pad(inputDate.getMinutes())}:${pad(inputDate.getSeconds())}`;\n\nreturn [\n  {\n    json: {\n      formattedDate,   // e.g. \"05/26/2025\"\n      formattedTime    // e.g. \"09:22:34\"\n    }\n  }\n];\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -3681,7 +3555,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// --- Function node code ---\n// Get the first item (same pattern you used)\nconst inputDate = new Date($input.first().json.currentDate);   // \"2025-05-26T10:22:34.868+01:00\"\n\n// Helper to zero-pad to two digits\nconst pad = n => n.toString().padStart(2, '0');\n\n// Date  →  MM/DD/YYYY\nconst formattedDate = `${pad(inputDate.getMonth() + 1)}/${pad(inputDate.getDate())}/${inputDate.getFullYear()}`;\n\n// Time  →  HH:mm:ss   (24-hour clock)\nconst formattedTime = `${pad(inputDate.getHours())}:${pad(inputDate.getMinutes())}:${pad(inputDate.getSeconds())}`;\n\nreturn [\n  {\n    json: {\n      formattedDate,   // e.g. \"05/26/2025\"\n      formattedTime    // e.g. \"09:22:34\"\n    }\n  }\n];\n"
+        "jsCode": "// --- Function node code ---\n// Get the first item (same pattern you used)\nconst inputDate = new Date($input.first().json.currentDate);   // \"2025-05-26T10:22:34.868+01:00\"\n\n// Helper to zero-pad to two digits\nconst pad = n => n.toString().padStart(2, '0');\n\n// Date  \u2192  MM/DD/YYYY\nconst formattedDate = `${pad(inputDate.getMonth() + 1)}/${pad(inputDate.getDate())}/${inputDate.getFullYear()}`;\n\n// Time  \u2192  HH:mm:ss   (24-hour clock)\nconst formattedTime = `${pad(inputDate.getHours())}:${pad(inputDate.getMinutes())}:${pad(inputDate.getSeconds())}`;\n\nreturn [\n  {\n    json: {\n      formattedDate,   // e.g. \"05/26/2025\"\n      formattedTime    // e.g. \"09:22:34\"\n    }\n  }\n];\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -3735,7 +3609,7 @@
       "parameters": {
         "toRecipients": "={{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.user_email }}",
         "subject": "=Legal Engine Matter Summary for {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.first_name }}",
-        "bodyContent": "=<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Legal Engine • Your Matter Summary</title>\n\n  <!-- Brand Typeface -->\n  <link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap\" rel=\"stylesheet\">\n\n  <style>\n    :root{\n      --le-navy:#062047; --le-blue:#00b3ff; --le-indigo:#0066ff;\n      --le-grey:#f2f6fa; --le-silver:#e5ecf3; --le-text:#263238;\n    }\n    *{box-sizing:border-box;margin:0;padding:0;}\n    body{\n      width:100%!important;background:var(--le-grey);\n      font-family:'Inter',Helvetica,Arial,sans-serif;\n      color:var(--le-text);-webkit-font-smoothing:antialiased;\n    }\n    .wrapper{\n      max-width:700px;margin:0 auto;background:#fff;\n      border:1px solid var(--le-silver);border-radius:10px;\n      padding:48px 40px;\n    }\n    .section{margin-bottom:20px;line-height:1.55;}\n    .section h1{color:var(--le-navy);font-size:24px;font-weight:700;margin-bottom:18px;}\n    .section h2{\n      color:var(--le-navy);font-size:22px;font-weight:700;\n      padding-bottom:10px;border-bottom:2px solid var(--le-silver);\n      margin-bottom:14px;\n    }\n    .section p{margin-bottom:16px;white-space:pre-line;}\n\n    .button{\n      display:inline-block;padding:14px 28px;font-weight:600;\n      color:#fff!important;text-decoration:none;border-radius:6px;\n      background:linear-gradient(90deg,var(--le-blue)0%,var(--le-indigo)100%);\n      transition:opacity .25s ease-in-out;\n    }\n    .button:hover{opacity:.8;}\n\n\n    .signature p{margin-bottom:6px;}\n.signature{\n  color:var(--le-text);                /* same dark text as body */\n  font-family:'Inter',Helvetica,Arial,sans-serif;\n}\n.signature a{\n  color:var(--le-text);                /* links also black */\n  text-decoration:none;\n}\n\n\n    .footer{\n      font-size:13px;color:#6c7a84;text-align:center;\n      padding-top:24px;border-top:1px solid var(--le-silver);\n    }\n    .tracking-pixel{display:none;width:1px;height:1px;}\n\n    @media(max-width:520px){\n      .wrapper{padding:32px 22px;}\n      .section h1{font-size:22px;}\n      .section h2{font-size:20px;}\n    }\n  </style>\n</head>\n<body>\n  <div class=\"wrapper\">\n\n    <!-- HEADER -->\n    <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-collapse:collapse;margin-bottom:40px;\">\n      <tr>\n        <td align=\"center\">\n          <img\n            src=\"https://49390627.fs1.hubspotusercontent-eu1.net/hub/49390627/hubfs/e8ad0e08-aa6c-4d44-9053-cdcf7bbaec5b.png?width=852&amp;height=339&amp;name=e8ad0e08-aa6c-4d44-9053-cdcf7bbaec5b.png\"\n            alt=\"Legal Engine\"\n            width=\"180\" height=\"72\"\n            style=\"width:180px;max-width:100%;height:auto;display:block;border:0;outline:none;text-decoration:none;\">\n        </td>\n      </tr>\n    </table>\n    <!--[if mso]><style>.mso-logo img{width:180px!important;height:auto!important;}</style><![endif]-->\n\n  <!-- INTRO -->\n    <div class=\"section\">\n      <p>Hi {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.first_name }},</p>\n      <p>Thanks for taking the time to test me out. How did I do? <br>\nAs promised, here’s a summary of our conversation:</p>\n    \n    </div>\n\n    <!-- MATTER SUMMARY -->\n    <div class=\"section\">\n      <h2>Matter Summary</h2>\n      <p>{{ $('AI Agent - Re-write Summary').item.json.output }}</p>\n    </div>\n\n    <!-- EXTRA ASSETS INTRO -->\n    <div class=\"section\">\n      <p>To give you a flavour of what else I can do, I’ll shortly be sending you <b>a few additional marketing assets </b> so look out for a follow up email in your inbox. </p>\n      <p>This is just a snapshot of my capabilities. At&nbsp;<a href=\"https://legalengine.co.uk/\"><b>Legal Engine</b></a>, we’re building a suite of assistants like me, ready to transform Marketing &amp; BD across the legal industry.</p>\n    </div>\n\n<!-- SIGN-OFF -->\n<div class=\"signature\">\n  <p>Cheers,</p>\n\n  <p><b>Leonard</b></p>\n\n  <p><b>AI Assistant<br>Legal Engine</b></p>\n\n  <p>\n    E:&nbsp;<a href=\"mailto:leonard@legalengine.co.uk\">leonard@legalengine.co.uk</a><br>\n    W:&nbsp;<a href=\"https://legalengine.co.uk/\">www.legalengine.co.uk</a>\n  </p>\n</div>\n    <!-- FOOTER + UNSUBSCRIBE -->\n    <div class=\"footer\">\n      &copy; 2025 Legal Engine Ltd. All rights reserved.<br><br>\n      <a href=\"https://unsubscribe.legalengine.co.uk\" style=\"color:var(--le-blue);text-decoration:none;\">Unsubscribe</a>\n    </div>\n\n    <!-- OPEN-TRACKING -->\n    <img class=\"tracking-pixel\"\n         src=\"https://legalengine.co.uk/track/open?email=\"\n         alt=\"\">\n  </div>\n</body>\n</html>",
+        "bodyContent": "=<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Legal Engine \u2022 Your Matter Summary</title>\n\n  <!-- Brand Typeface -->\n  <link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap\" rel=\"stylesheet\">\n\n  <style>\n    :root{\n      --le-navy:#062047; --le-blue:#00b3ff; --le-indigo:#0066ff;\n      --le-grey:#f2f6fa; --le-silver:#e5ecf3; --le-text:#263238;\n    }\n    *{box-sizing:border-box;margin:0;padding:0;}\n    body{\n      width:100%!important;background:var(--le-grey);\n      font-family:'Inter',Helvetica,Arial,sans-serif;\n      color:var(--le-text);-webkit-font-smoothing:antialiased;\n    }\n    .wrapper{\n      max-width:700px;margin:0 auto;background:#fff;\n      border:1px solid var(--le-silver);border-radius:10px;\n      padding:48px 40px;\n    }\n    .section{margin-bottom:20px;line-height:1.55;}\n    .section h1{color:var(--le-navy);font-size:24px;font-weight:700;margin-bottom:18px;}\n    .section h2{\n      color:var(--le-navy);font-size:22px;font-weight:700;\n      padding-bottom:10px;border-bottom:2px solid var(--le-silver);\n      margin-bottom:14px;\n    }\n    .section p{margin-bottom:16px;white-space:pre-line;}\n\n    .button{\n      display:inline-block;padding:14px 28px;font-weight:600;\n      color:#fff!important;text-decoration:none;border-radius:6px;\n      background:linear-gradient(90deg,var(--le-blue)0%,var(--le-indigo)100%);\n      transition:opacity .25s ease-in-out;\n    }\n    .button:hover{opacity:.8;}\n\n\n    .signature p{margin-bottom:6px;}\n.signature{\n  color:var(--le-text);                /* same dark text as body */\n  font-family:'Inter',Helvetica,Arial,sans-serif;\n}\n.signature a{\n  color:var(--le-text);                /* links also black */\n  text-decoration:none;\n}\n\n\n    .footer{\n      font-size:13px;color:#6c7a84;text-align:center;\n      padding-top:24px;border-top:1px solid var(--le-silver);\n    }\n    .tracking-pixel{display:none;width:1px;height:1px;}\n\n    @media(max-width:520px){\n      .wrapper{padding:32px 22px;}\n      .section h1{font-size:22px;}\n      .section h2{font-size:20px;}\n    }\n  </style>\n</head>\n<body>\n  <div class=\"wrapper\">\n\n    <!-- HEADER -->\n    <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-collapse:collapse;margin-bottom:40px;\">\n      <tr>\n        <td align=\"center\">\n          <img\n            src=\"https://49390627.fs1.hubspotusercontent-eu1.net/hub/49390627/hubfs/e8ad0e08-aa6c-4d44-9053-cdcf7bbaec5b.png?width=852&amp;height=339&amp;name=e8ad0e08-aa6c-4d44-9053-cdcf7bbaec5b.png\"\n            alt=\"Legal Engine\"\n            width=\"180\" height=\"72\"\n            style=\"width:180px;max-width:100%;height:auto;display:block;border:0;outline:none;text-decoration:none;\">\n        </td>\n      </tr>\n    </table>\n    <!--[if mso]><style>.mso-logo img{width:180px!important;height:auto!important;}</style><![endif]-->\n\n  <!-- INTRO -->\n    <div class=\"section\">\n      <p>Hi {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.first_name }},</p>\n      <p>Thanks for taking the time to test me out. How did I do? <br>\nAs promised, here\u2019s a summary of our conversation:</p>\n    \n    </div>\n\n    <!-- MATTER SUMMARY -->\n    <div class=\"section\">\n      <h2>Matter Summary</h2>\n      <p>{{ $('AI Agent - Re-write Summary').item.json.output }}</p>\n    </div>\n\n    <!-- EXTRA ASSETS INTRO -->\n    <div class=\"section\">\n      <p>To give you a flavour of what else I can do, I\u2019ll shortly be sending you <b>a few additional marketing assets </b> so look out for a follow up email in your inbox. </p>\n      <p>This is just a snapshot of my capabilities. At&nbsp;<a href=\"https://legalengine.co.uk/\"><b>Legal Engine</b></a>, we\u2019re building a suite of assistants like me, ready to transform Marketing &amp; BD across the legal industry.</p>\n    </div>\n\n<!-- SIGN-OFF -->\n<div class=\"signature\">\n  <p>Cheers,</p>\n\n  <p><b>Leonard</b></p>\n\n  <p><b>AI Assistant<br>Legal Engine</b></p>\n\n  <p>\n    E:&nbsp;<a href=\"mailto:leonard@legalengine.co.uk\">leonard@legalengine.co.uk</a><br>\n    W:&nbsp;<a href=\"https://legalengine.co.uk/\">www.legalengine.co.uk</a>\n  </p>\n</div>\n    <!-- FOOTER + UNSUBSCRIBE -->\n    <div class=\"footer\">\n      &copy; 2025 Legal Engine Ltd. All rights reserved.<br><br>\n      <a href=\"https://unsubscribe.legalengine.co.uk\" style=\"color:var(--le-blue);text-decoration:none;\">Unsubscribe</a>\n    </div>\n\n    <!-- OPEN-TRACKING -->\n    <img class=\"tracking-pixel\"\n         src=\"https://legalengine.co.uk/track/open?email=\"\n         alt=\"\">\n  </div>\n</body>\n</html>",
         "additionalFields": {
           "bodyContentType": "html"
         }
@@ -3775,7 +3649,7 @@
       "parameters": {
         "toRecipients": "={{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.user_email }}",
         "subject": "=Hey {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.first_name }}, following up with some additional marketing and BD assets",
-        "bodyContent": "=<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Legal Engine • Your Additional BD Assets</title>\n\n  <!-- Brand Typeface -->\n  <link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap\" rel=\"stylesheet\">\n\n  <style>\n    :root{\n      --le-navy:#062047; --le-blue:#00b3ff; --le-indigo:#0066ff;\n      --le-grey:#f2f6fa; --le-silver:#e5ecf3; --le-text:#263238;\n    }\n    *{box-sizing:border-box;margin:0;padding:0;}\n    body{\n      width:100%!important;background:var(--le-grey);\n      font-family:'Inter',Helvetica,Arial,sans-serif;\n      color:var(--le-text);-webkit-font-smoothing:antialiased;\n    }\n    .wrapper{\n      max-width:700px;margin:0 auto;background:#fff;\n      border:1px solid var(--le-silver);border-radius:10px;\n      padding:48px 40px;\n    }\n    .section{margin-bottom:20px;line-height:1.55;}\n    .section h1{color:var(--le-navy);font-size:24px;font-weight:700;margin-bottom:18px;}\n    .section h2{\n      color:var(--le-navy);font-size:22px;font-weight:700;\n      padding-bottom:10px;border-bottom:2px solid var(--le-silver);\n      margin-bottom:14px;\n    }\n    .section p{margin-bottom:16px;white-space:pre-line;}\n\n    .button{\n      display:inline-block;padding:14px 28px;font-weight:600;\n      color:#fff!important;text-decoration:none;border-radius:6px;\n      background:linear-gradient(90deg,var(--le-blue)0%,var(--le-indigo)100%);\n      transition:opacity .25s ease-in-out;\n    }\n    .button:hover{opacity:.8;}\n\n\n    .signature p{margin-bottom:6px;}\n.signature{\n  color:var(--le-text);                /* same dark text as body */\n  font-family:'Inter',Helvetica,Arial,sans-serif;\n}\n.signature a{\n  color:var(--le-text);                /* links also black */\n  text-decoration:none;\n}\n\n\n    .footer{\n      font-size:13px;color:#6c7a84;text-align:center;\n      padding-top:24px;border-top:1px solid var(--le-silver);\n    }\n    .tracking-pixel{display:none;width:1px;height:1px;}\n\n    @media(max-width:520px){\n      .wrapper{padding:32px 22px;}\n      .section h1{font-size:22px;}\n      .section h2{font-size:20px;}\n    }\n  </style>\n</head>\n<body>\n  <div class=\"wrapper\">\n\n    <!-- HEADER -->\n    <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-collapse:collapse;margin-bottom:40px;\">\n      <tr>\n        <td align=\"center\">\n          <img\n            src=\"https://49390627.fs1.hubspotusercontent-eu1.net/hub/49390627/hubfs/e8ad0e08-aa6c-4d44-9053-cdcf7bbaec5b.png?width=852&amp;height=339&amp;name=e8ad0e08-aa6c-4d44-9053-cdcf7bbaec5b.png\"\n            alt=\"Legal Engine\"\n            width=\"180\" height=\"72\"\n            style=\"width:180px;max-width:100%;height:auto;display:block;border:0;outline:none;text-decoration:none;\">\n        </td>\n      </tr>\n    </table>\n    <!--[if mso]><style>.mso-logo img{width:180px!important;height:auto!important;}</style><![endif]-->\n\n    <!-- INTRO -->\n    <div class=\"section\">\n      <p>Hi {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.first_name }},</p>\n      <p>I've been busy in the background since we spoke and, as promised in the matter summary email, below are a series of marketing and BD assets based on our conversation.<br></p>\n\n    </div>\n\n    <!-- EXTRA ASSETS INTRO -->\n    <div class=\"section\">\n      <p>Hopefully these bespoke assets give you a flavour of what else I can do on the back of a single conversation!</p>\n      <p>This is just a snapshot of my capabilities. At&nbsp;<a href=\"https://legalengine.co.uk/\"><b>Legal Engine</b></a>, we’re building a suite of assistants like me, ready to transform Marketing &amp; BD across the legal industry.</p>\n    </div>\n\n<!-- SIGN-OFF -->\n<div class=\"signature\">\n  <p>Cheers,</p>\n\n  <p><b>Leonard</b></p>\n\n  <p><b>AI Assistant<br>Legal Engine</b></p>\n\n  <p>\n    E:&nbsp;<a href=\"mailto:leonard@legalengine.co.uk\">leonard@legalengine.co.uk</a><br>\n    W:&nbsp;<a href=\"https://legalengine.co.uk/\">www.legalengine.co.uk</a><br><br>\n  </p>\n</div>\n\n<!-- TESTIMONIAL -->\n    <div class=\"section\">\n      <h2>Client Testimonial Example</h2>\n    <p>{{ $('AI Agent Testimonial HTML4').item.json.output }}</p>\n    </div>\n\n   <!-- WEBSITE BIO -->\n    <div class=\"section\">\n     <h2>Website Profile</h2>\n    <p>{{ $('AI Agent - Website Profile5').item.json.output }}</p>\n    </div>   \n\n<!-- WEBSITE UPDATE -->\n    <div class=\"section\">\n      <h2>Website case study</h2>\n    <p>{{ $('AI Agent - Website case study5').item.json.output }}</p>\n    </div>\n\n<!-- SHORT PITCH -->\n    <div class=\"section\">\n      <h2>Short pitch credential</h2>\n    <p>{{ $('AI Agent - Short Pitch6').item.json.output }}</p>\n    </div>\n\n    <!-- LINKEDIN POST INTRO -->\n    <div class=\"section\">\n       <h2>Bonus</h2>\n      <p>If you enjoyed our conversation, I'd really appreciate your help in spreading the word amongst your network and have drafted something below you can post. Tag <b>@LegalEngine</b> when you share and I’ll top up your free Leonard credits.</p>\n    </div>\n\n    <!-- LINKEDIN POST -->\n    <div class=\"section\">\n      <h2>LinkedIn Post&nbsp;&nbsp;•&nbsp;&nbsp;#LeonardAI</h2>\n      <p>{{ $('AI Agent - L/E LinkedIn5').item.json.output }}</p>\n    </div>\n\n\n    <!-- FOOTER + UNSUBSCRIBE -->\n    <div class=\"footer\">\n      &copy; 2025 Legal Engine Ltd. All rights reserved.<br><br>\n      <a href=\"https://unsubscribe.legalengine.co.uk\" style=\"color:var(--le-blue);text-decoration:none;\">Unsubscribe</a>\n    </div>\n\n    <!-- OPEN-TRACKING -->\n    <img class=\"tracking-pixel\"\n         src=\"https://legalengine.co.uk/track/open?email=\"\n         alt=\"\">\n  </div>\n</body>\n</html>",
+        "bodyContent": "=<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Legal Engine \u2022 Your Additional BD Assets</title>\n\n  <!-- Brand Typeface -->\n  <link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap\" rel=\"stylesheet\">\n\n  <style>\n    :root{\n      --le-navy:#062047; --le-blue:#00b3ff; --le-indigo:#0066ff;\n      --le-grey:#f2f6fa; --le-silver:#e5ecf3; --le-text:#263238;\n    }\n    *{box-sizing:border-box;margin:0;padding:0;}\n    body{\n      width:100%!important;background:var(--le-grey);\n      font-family:'Inter',Helvetica,Arial,sans-serif;\n      color:var(--le-text);-webkit-font-smoothing:antialiased;\n    }\n    .wrapper{\n      max-width:700px;margin:0 auto;background:#fff;\n      border:1px solid var(--le-silver);border-radius:10px;\n      padding:48px 40px;\n    }\n    .section{margin-bottom:20px;line-height:1.55;}\n    .section h1{color:var(--le-navy);font-size:24px;font-weight:700;margin-bottom:18px;}\n    .section h2{\n      color:var(--le-navy);font-size:22px;font-weight:700;\n      padding-bottom:10px;border-bottom:2px solid var(--le-silver);\n      margin-bottom:14px;\n    }\n    .section p{margin-bottom:16px;white-space:pre-line;}\n\n    .button{\n      display:inline-block;padding:14px 28px;font-weight:600;\n      color:#fff!important;text-decoration:none;border-radius:6px;\n      background:linear-gradient(90deg,var(--le-blue)0%,var(--le-indigo)100%);\n      transition:opacity .25s ease-in-out;\n    }\n    .button:hover{opacity:.8;}\n\n\n    .signature p{margin-bottom:6px;}\n.signature{\n  color:var(--le-text);                /* same dark text as body */\n  font-family:'Inter',Helvetica,Arial,sans-serif;\n}\n.signature a{\n  color:var(--le-text);                /* links also black */\n  text-decoration:none;\n}\n\n\n    .footer{\n      font-size:13px;color:#6c7a84;text-align:center;\n      padding-top:24px;border-top:1px solid var(--le-silver);\n    }\n    .tracking-pixel{display:none;width:1px;height:1px;}\n\n    @media(max-width:520px){\n      .wrapper{padding:32px 22px;}\n      .section h1{font-size:22px;}\n      .section h2{font-size:20px;}\n    }\n  </style>\n</head>\n<body>\n  <div class=\"wrapper\">\n\n    <!-- HEADER -->\n    <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-collapse:collapse;margin-bottom:40px;\">\n      <tr>\n        <td align=\"center\">\n          <img\n            src=\"https://49390627.fs1.hubspotusercontent-eu1.net/hub/49390627/hubfs/e8ad0e08-aa6c-4d44-9053-cdcf7bbaec5b.png?width=852&amp;height=339&amp;name=e8ad0e08-aa6c-4d44-9053-cdcf7bbaec5b.png\"\n            alt=\"Legal Engine\"\n            width=\"180\" height=\"72\"\n            style=\"width:180px;max-width:100%;height:auto;display:block;border:0;outline:none;text-decoration:none;\">\n        </td>\n      </tr>\n    </table>\n    <!--[if mso]><style>.mso-logo img{width:180px!important;height:auto!important;}</style><![endif]-->\n\n    <!-- INTRO -->\n    <div class=\"section\">\n      <p>Hi {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.first_name }},</p>\n      <p>I've been busy in the background since we spoke and, as promised in the matter summary email, below are a series of marketing and BD assets based on our conversation.<br></p>\n\n    </div>\n\n    <!-- EXTRA ASSETS INTRO -->\n    <div class=\"section\">\n      <p>Hopefully these bespoke assets give you a flavour of what else I can do on the back of a single conversation!</p>\n      <p>This is just a snapshot of my capabilities. At&nbsp;<a href=\"https://legalengine.co.uk/\"><b>Legal Engine</b></a>, we\u2019re building a suite of assistants like me, ready to transform Marketing &amp; BD across the legal industry.</p>\n    </div>\n\n<!-- SIGN-OFF -->\n<div class=\"signature\">\n  <p>Cheers,</p>\n\n  <p><b>Leonard</b></p>\n\n  <p><b>AI Assistant<br>Legal Engine</b></p>\n\n  <p>\n    E:&nbsp;<a href=\"mailto:leonard@legalengine.co.uk\">leonard@legalengine.co.uk</a><br>\n    W:&nbsp;<a href=\"https://legalengine.co.uk/\">www.legalengine.co.uk</a><br><br>\n  </p>\n</div>\n\n<!-- TESTIMONIAL -->\n    <div class=\"section\">\n      <h2>Client Testimonial Example</h2>\n    <p>{{ $('AI Agent Testimonial HTML4').item.json.output }}</p>\n    </div>\n\n   <!-- WEBSITE BIO -->\n    <div class=\"section\">\n     <h2>Website Profile</h2>\n    <p>{{ $('AI Agent - Website Profile5').item.json.output }}</p>\n    </div>   \n\n<!-- WEBSITE UPDATE -->\n    <div class=\"section\">\n      <h2>Website case study</h2>\n    <p>{{ $('AI Agent - Website case study5').item.json.output }}</p>\n    </div>\n\n<!-- SHORT PITCH -->\n    <div class=\"section\">\n      <h2>Short pitch credential</h2>\n    <p>{{ $('AI Agent - Short Pitch6').item.json.output }}</p>\n    </div>\n\n    <!-- LINKEDIN POST INTRO -->\n    <div class=\"section\">\n       <h2>Bonus</h2>\n      <p>If you enjoyed our conversation, I'd really appreciate your help in spreading the word amongst your network and have drafted something below you can post. Tag <b>@LegalEngine</b> when you share and I\u2019ll top up your free Leonard credits.</p>\n    </div>\n\n    <!-- LINKEDIN POST -->\n    <div class=\"section\">\n      <h2>LinkedIn Post&nbsp;&nbsp;\u2022&nbsp;&nbsp;#LeonardAI</h2>\n      <p>{{ $('AI Agent - L/E LinkedIn5').item.json.output }}</p>\n    </div>\n\n\n    <!-- FOOTER + UNSUBSCRIBE -->\n    <div class=\"footer\">\n      &copy; 2025 Legal Engine Ltd. All rights reserved.<br><br>\n      <a href=\"https://unsubscribe.legalengine.co.uk\" style=\"color:var(--le-blue);text-decoration:none;\">Unsubscribe</a>\n    </div>\n\n    <!-- OPEN-TRACKING -->\n    <img class=\"tracking-pixel\"\n         src=\"https://legalengine.co.uk/track/open?email=\"\n         alt=\"\">\n  </div>\n</body>\n</html>",
         "additionalFields": {
           "bodyContentType": "html"
         }
@@ -3798,30 +3672,10 @@
     },
     {
       "parameters": {
-        "options": {}
-      },
-      "id": "b8fea2b2-b250-4a02-86ca-f25448abf5e8",
-      "name": "OpenAI Model36",
-      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
-      "typeVersion": 1,
-      "position": [
-        3680,
-        208
-      ],
-      "credentials": {
-        "openAiApi": {
-          "id": "LldOhLNBReShSMkE",
-          "name": "OpenAi account"
-        }
-      },
-      "disabled": true
-    },
-    {
-      "parameters": {
         "promptType": "define",
-        "text": "=INPUTS:\\n- Summary of the matter: {{ $('AI Agent - Re-write Summary').item.json.output }}\\n- User's full name: {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.first_name }} {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.last_name }}\\n- User's email: {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.user_email }}\\n- User's company or law firm: {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.user_email.split('@')[1] }}\\n- Date and time: {{ $now }}\\n- Call transcript: {{ JSON.stringify($('post_call_transcription1').item.json.body.data.transcript) }}\\n\\nOUTPUT:\\nProvide the output as raw HTML that can be directly embedded into an HTML email.\\nDo not include any Markdown formatting, code fences, or triple backticks.\\nReturn only the HTML — no explanations, no notes, and no additional text.\" \n\n}\n\n",
+        "text": "=INPUTS:\\n- Summary of the matter: {{ $('AI Agent - Re-write Summary').item.json.output }}\\n- User's full name: {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.first_name }} {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.last_name }}\\n- User's email: {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.user_email }}\\n- User's company or law firm: {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.user_email.split('@')[1] }}\\n- Date and time: {{ $now }}\\n- Call transcript: {{ JSON.stringify($('post_call_transcription1').item.json.body.data.transcript) }}\\n\\nOUTPUT:\\nProvide the output as raw HTML that can be directly embedded into an HTML email.\\nDo not include any Markdown formatting, code fences, or triple backticks.\\nReturn only the HTML \u2014 no explanations, no notes, and no additional text.\" \n\n}\n\n",
         "options": {
-          "systemMessage": "={\n\n  \"prompt\": \"Writing as an expert in business development, sales, and pitching for UK law firms and professional services in a B2B environment, draft a short email to the client from the stated [user name], using the matter summary. Ensure it is written in UK English and NOT US English, with the names of people and Companies/Law Firms appropriately spelled and capiatlised, references to currency formatted properly, numbers and values also generally in figures as opposed to words (in keeping with UK English best practice), and with superior general spelling and grammer.\\n\\n1. Thank them for the opportunity to work on such a great matter.\\n2. Ask for feedback on the service and outcome.\\n3. Ask whether they would be willing to provide a client testimonial on the work performed, explaining that the testimonial may be used on the corporate website and in future marketing materials.\\n4. Provide two different example client testimonials that could be used, based on the matter summary.\\n\\nINPUTS:\\n- Summary of the matter: {{ $('AI Agent - Re-write Summary').item.json.output }}\\n- User's full name: {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.first_name }} {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.last_name }}\\n- User's email: {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.user_email }}\\n- User's company or law firm: {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.user_email.split('@')[1] }}\\n- Date and time: {{ $now }}\\n- Call transcript: {{ JSON.stringify($('post_call_transcription1').item.json.body.data.transcript) }}\\n\\nOUTPUT:\\nProvide the output as raw HTML that can be directly embedded into an HTML email.\\nDo not include any Markdown formatting, code fences, or triple backticks.\\nReturn only the HTML — no explanations, no notes, and no additional text.\" \n\n}\n\n"
+          "systemMessage": "={\n\n  \"prompt\": \"Writing as an expert in business development, sales, and pitching for UK law firms and professional services in a B2B environment, draft a short email to the client from the stated [user name], using the matter summary. Ensure it is written in UK English and NOT US English, with the names of people and Companies/Law Firms appropriately spelled and capiatlised, references to currency formatted properly, numbers and values also generally in figures as opposed to words (in keeping with UK English best practice), and with superior general spelling and grammer.\\n\\n1. Thank them for the opportunity to work on such a great matter.\\n2. Ask for feedback on the service and outcome.\\n3. Ask whether they would be willing to provide a client testimonial on the work performed, explaining that the testimonial may be used on the corporate website and in future marketing materials.\\n4. Provide two different example client testimonials that could be used, based on the matter summary.\\n\\nINPUTS:\\n- Summary of the matter: {{ $('AI Agent - Re-write Summary').item.json.output }}\\n- User's full name: {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.first_name }} {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.last_name }}\\n- User's email: {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.user_email }}\\n- User's company or law firm: {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.user_email.split('@')[1] }}\\n- Date and time: {{ $now }}\\n- Call transcript: {{ JSON.stringify($('post_call_transcription1').item.json.body.data.transcript) }}\\n\\nOUTPUT:\\nProvide the output as raw HTML that can be directly embedded into an HTML email.\\nDo not include any Markdown formatting, code fences, or triple backticks.\\nReturn only the HTML \u2014 no explanations, no notes, and no additional text.\" \n\n}\n\n"
         }
       },
       "id": "ba68de2c-3548-46e4-b277-d3048d1fd92b",
@@ -3835,29 +3689,9 @@
     },
     {
       "parameters": {
-        "options": {}
-      },
-      "id": "4ac5965e-871e-47e5-b09e-2cf212c67c95",
-      "name": "OpenAI Model37",
-      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
-      "typeVersion": 1,
-      "position": [
-        4032,
-        208
-      ],
-      "credentials": {
-        "openAiApi": {
-          "id": "LldOhLNBReShSMkE",
-          "name": "OpenAi account"
-        }
-      },
-      "disabled": true
-    },
-    {
-      "parameters": {
         "toRecipients": "andy@legalengine.co.uk",
         "subject": "=Hey {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.first_name }}, following up with some additional marketing and BD assets - INTERNAL",
-        "bodyContent": "=<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Legal Engine • Your Additional BD Assets</title>\n\n  <!-- Brand Typeface -->\n  <link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap\" rel=\"stylesheet\">\n\n  <style>\n    :root{\n      --le-navy:#062047; --le-blue:#00b3ff; --le-indigo:#0066ff;\n      --le-grey:#f2f6fa; --le-silver:#e5ecf3; --le-text:#263238;\n    }\n    *{box-sizing:border-box;margin:0;padding:0;}\n    body{\n      width:100%!important;background:var(--le-grey);\n      font-family:'Inter',Helvetica,Arial,sans-serif;\n      color:var(--le-text);-webkit-font-smoothing:antialiased;\n    }\n    .wrapper{\n      max-width:700px;margin:0 auto;background:#fff;\n      border:1px solid var(--le-silver);border-radius:10px;\n      padding:48px 40px;\n    }\n    .section{margin-bottom:20px;line-height:1.55;}\n    .section h1{color:var(--le-navy);font-size:24px;font-weight:700;margin-bottom:18px;}\n    .section h2{\n      color:var(--le-navy);font-size:22px;font-weight:700;\n      padding-bottom:10px;border-bottom:2px solid var(--le-silver);\n      margin-bottom:14px;\n    }\n    .section p{margin-bottom:16px;white-space:pre-line;}\n\n    .button{\n      display:inline-block;padding:14px 28px;font-weight:600;\n      color:#fff!important;text-decoration:none;border-radius:6px;\n      background:linear-gradient(90deg,var(--le-blue)0%,var(--le-indigo)100%);\n      transition:opacity .25s ease-in-out;\n    }\n    .button:hover{opacity:.8;}\n\n\n    .signature p{margin-bottom:6px;}\n.signature{\n  color:var(--le-text);                /* same dark text as body */\n  font-family:'Inter',Helvetica,Arial,sans-serif;\n}\n.signature a{\n  color:var(--le-text);                /* links also black */\n  text-decoration:none;\n}\n\n\n    .footer{\n      font-size:13px;color:#6c7a84;text-align:center;\n      padding-top:24px;border-top:1px solid var(--le-silver);\n    }\n    .tracking-pixel{display:none;width:1px;height:1px;}\n\n    @media(max-width:520px){\n      .wrapper{padding:32px 22px;}\n      .section h1{font-size:22px;}\n      .section h2{font-size:20px;}\n    }\n  </style>\n</head>\n<body>\n  <div class=\"wrapper\">\n\n    <!-- HEADER -->\n    <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-collapse:collapse;margin-bottom:40px;\">\n      <tr>\n        <td align=\"center\">\n          <img\n            src=\"https://49390627.fs1.hubspotusercontent-eu1.net/hub/49390627/hubfs/e8ad0e08-aa6c-4d44-9053-cdcf7bbaec5b.png?width=852&amp;height=339&amp;name=e8ad0e08-aa6c-4d44-9053-cdcf7bbaec5b.png\"\n            alt=\"Legal Engine\"\n            width=\"180\" height=\"72\"\n            style=\"width:180px;max-width:100%;height:auto;display:block;border:0;outline:none;text-decoration:none;\">\n        </td>\n      </tr>\n    </table>\n    <!--[if mso]><style>.mso-logo img{width:180px!important;height:auto!important;}</style><![endif]-->\n\n    <!-- INTRO -->\n    <div class=\"section\">\n      <p>Hi {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.first_name }},</p>\n      <p>I've been busy in the background since we spoke and, as promised in the matter summary email, below are a series of marketing and BD assets based on our conversation.<br>\n\n</p>\n    </div>\n\n    <!-- EXTRA ASSETS INTRO -->\n    <div class=\"section\">\n      <p>Hopefully these bespoke assets give you a flavour of what else I can do on the back of a single conversation!</p>\n      <p>This is just a snapshot of my capabilities. At&nbsp;<a href=\"https://legalengine.co.uk/\"><b>Legal Engine</b></a>, we’re building a suite of assistants like me, ready to transform Marketing &amp; BD across the legal industry.</p>\n    </div>\n\n<!-- SIGN-OFF -->\n<div class=\"signature\">\n  <p>Cheers,</p>\n\n  <p><b>Leonard</b></p>\n\n  <p><b>AI Assistant<br>Legal Engine</b></p>\n\n  <p>\n    E:&nbsp;<a href=\"mailto:leonard@legalengine.co.uk\">leonard@legalengine.co.uk</a><br>\n    W:&nbsp;<a href=\"https://legalengine.co.uk/\">www.legalengine.co.uk</a><br><br>\n  </p>\n</div>\n\n<!-- TESTIMONIAL -->\n    <div class=\"section\">\n      <h2>Client Testimonial Example</h2>\n    <p>{{ $('AI Agent Testimonial HTML4').item.json.output }}</p>\n    </div>\n\n   <!-- WEBSITE BIO -->\n    <div class=\"section\">\n     <h2>Website Profile</h2>\n    <p>{{ $('AI Agent - Website Profile5').item.json.output }}</p>\n    </div>   \n\n<!-- WEBSITE UPDATE -->\n    <div class=\"section\">\n      <h2>Website case study</h2>\n    <p>{{ $('AI Agent - Website case study5').item.json.output }}</p>\n    </div>\n\n<!-- SHORT PITCH -->\n    <div class=\"section\">\n      <h2>Short pitch credential</h2>\n    <p>{{ $('AI Agent - Short Pitch6').item.json.output }}</p>\n    </div>\n\n    <!-- LINKEDIN POST INTRO -->\n    <div class=\"section\">\n       <h2>Bonus</h2>\n      <p>If you enjoyed our conversation, I'd really appreciate your help in spreading the word amongst your network and have drafted something below you can post. Tag <b>@LegalEngine</b> when you share and I’ll top up your free Leonard credits.</p>\n    </div>\n\n    <!-- LINKEDIN POST -->\n    <div class=\"section\">\n      <h2>LinkedIn Post&nbsp;&nbsp;•&nbsp;&nbsp;#LeonardAI</h2>\n      <p>{{ $('AI Agent - L/E LinkedIn5').item.json.output }}</p>\n    </div>\n\n\n    <!-- FOOTER + UNSUBSCRIBE -->\n    <div class=\"footer\">\n      &copy; 2025 Legal Engine Ltd. All rights reserved.<br><br>\n      <a href=\"https://unsubscribe.legalengine.co.uk\" style=\"color:var(--le-blue);text-decoration:none;\">Unsubscribe</a>\n    </div>\n\n    <!-- OPEN-TRACKING -->\n    <img class=\"tracking-pixel\"\n         src=\"https://legalengine.co.uk/track/open?email=\"\n         alt=\"\">\n  </div>\n</body>\n</html>",
+        "bodyContent": "=<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Legal Engine \u2022 Your Additional BD Assets</title>\n\n  <!-- Brand Typeface -->\n  <link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap\" rel=\"stylesheet\">\n\n  <style>\n    :root{\n      --le-navy:#062047; --le-blue:#00b3ff; --le-indigo:#0066ff;\n      --le-grey:#f2f6fa; --le-silver:#e5ecf3; --le-text:#263238;\n    }\n    *{box-sizing:border-box;margin:0;padding:0;}\n    body{\n      width:100%!important;background:var(--le-grey);\n      font-family:'Inter',Helvetica,Arial,sans-serif;\n      color:var(--le-text);-webkit-font-smoothing:antialiased;\n    }\n    .wrapper{\n      max-width:700px;margin:0 auto;background:#fff;\n      border:1px solid var(--le-silver);border-radius:10px;\n      padding:48px 40px;\n    }\n    .section{margin-bottom:20px;line-height:1.55;}\n    .section h1{color:var(--le-navy);font-size:24px;font-weight:700;margin-bottom:18px;}\n    .section h2{\n      color:var(--le-navy);font-size:22px;font-weight:700;\n      padding-bottom:10px;border-bottom:2px solid var(--le-silver);\n      margin-bottom:14px;\n    }\n    .section p{margin-bottom:16px;white-space:pre-line;}\n\n    .button{\n      display:inline-block;padding:14px 28px;font-weight:600;\n      color:#fff!important;text-decoration:none;border-radius:6px;\n      background:linear-gradient(90deg,var(--le-blue)0%,var(--le-indigo)100%);\n      transition:opacity .25s ease-in-out;\n    }\n    .button:hover{opacity:.8;}\n\n\n    .signature p{margin-bottom:6px;}\n.signature{\n  color:var(--le-text);                /* same dark text as body */\n  font-family:'Inter',Helvetica,Arial,sans-serif;\n}\n.signature a{\n  color:var(--le-text);                /* links also black */\n  text-decoration:none;\n}\n\n\n    .footer{\n      font-size:13px;color:#6c7a84;text-align:center;\n      padding-top:24px;border-top:1px solid var(--le-silver);\n    }\n    .tracking-pixel{display:none;width:1px;height:1px;}\n\n    @media(max-width:520px){\n      .wrapper{padding:32px 22px;}\n      .section h1{font-size:22px;}\n      .section h2{font-size:20px;}\n    }\n  </style>\n</head>\n<body>\n  <div class=\"wrapper\">\n\n    <!-- HEADER -->\n    <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-collapse:collapse;margin-bottom:40px;\">\n      <tr>\n        <td align=\"center\">\n          <img\n            src=\"https://49390627.fs1.hubspotusercontent-eu1.net/hub/49390627/hubfs/e8ad0e08-aa6c-4d44-9053-cdcf7bbaec5b.png?width=852&amp;height=339&amp;name=e8ad0e08-aa6c-4d44-9053-cdcf7bbaec5b.png\"\n            alt=\"Legal Engine\"\n            width=\"180\" height=\"72\"\n            style=\"width:180px;max-width:100%;height:auto;display:block;border:0;outline:none;text-decoration:none;\">\n        </td>\n      </tr>\n    </table>\n    <!--[if mso]><style>.mso-logo img{width:180px!important;height:auto!important;}</style><![endif]-->\n\n    <!-- INTRO -->\n    <div class=\"section\">\n      <p>Hi {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.first_name }},</p>\n      <p>I've been busy in the background since we spoke and, as promised in the matter summary email, below are a series of marketing and BD assets based on our conversation.<br>\n\n</p>\n    </div>\n\n    <!-- EXTRA ASSETS INTRO -->\n    <div class=\"section\">\n      <p>Hopefully these bespoke assets give you a flavour of what else I can do on the back of a single conversation!</p>\n      <p>This is just a snapshot of my capabilities. At&nbsp;<a href=\"https://legalengine.co.uk/\"><b>Legal Engine</b></a>, we\u2019re building a suite of assistants like me, ready to transform Marketing &amp; BD across the legal industry.</p>\n    </div>\n\n<!-- SIGN-OFF -->\n<div class=\"signature\">\n  <p>Cheers,</p>\n\n  <p><b>Leonard</b></p>\n\n  <p><b>AI Assistant<br>Legal Engine</b></p>\n\n  <p>\n    E:&nbsp;<a href=\"mailto:leonard@legalengine.co.uk\">leonard@legalengine.co.uk</a><br>\n    W:&nbsp;<a href=\"https://legalengine.co.uk/\">www.legalengine.co.uk</a><br><br>\n  </p>\n</div>\n\n<!-- TESTIMONIAL -->\n    <div class=\"section\">\n      <h2>Client Testimonial Example</h2>\n    <p>{{ $('AI Agent Testimonial HTML4').item.json.output }}</p>\n    </div>\n\n   <!-- WEBSITE BIO -->\n    <div class=\"section\">\n     <h2>Website Profile</h2>\n    <p>{{ $('AI Agent - Website Profile5').item.json.output }}</p>\n    </div>   \n\n<!-- WEBSITE UPDATE -->\n    <div class=\"section\">\n      <h2>Website case study</h2>\n    <p>{{ $('AI Agent - Website case study5').item.json.output }}</p>\n    </div>\n\n<!-- SHORT PITCH -->\n    <div class=\"section\">\n      <h2>Short pitch credential</h2>\n    <p>{{ $('AI Agent - Short Pitch6').item.json.output }}</p>\n    </div>\n\n    <!-- LINKEDIN POST INTRO -->\n    <div class=\"section\">\n       <h2>Bonus</h2>\n      <p>If you enjoyed our conversation, I'd really appreciate your help in spreading the word amongst your network and have drafted something below you can post. Tag <b>@LegalEngine</b> when you share and I\u2019ll top up your free Leonard credits.</p>\n    </div>\n\n    <!-- LINKEDIN POST -->\n    <div class=\"section\">\n      <h2>LinkedIn Post&nbsp;&nbsp;\u2022&nbsp;&nbsp;#LeonardAI</h2>\n      <p>{{ $('AI Agent - L/E LinkedIn5').item.json.output }}</p>\n    </div>\n\n\n    <!-- FOOTER + UNSUBSCRIBE -->\n    <div class=\"footer\">\n      &copy; 2025 Legal Engine Ltd. All rights reserved.<br><br>\n      <a href=\"https://unsubscribe.legalengine.co.uk\" style=\"color:var(--le-blue);text-decoration:none;\">Unsubscribe</a>\n    </div>\n\n    <!-- OPEN-TRACKING -->\n    <img class=\"tracking-pixel\"\n         src=\"https://legalengine.co.uk/track/open?email=\"\n         alt=\"\">\n  </div>\n</body>\n</html>",
         "additionalFields": {
           "bodyContentType": "html"
         }
@@ -3882,7 +3716,7 @@
       "parameters": {
         "toRecipients": "andy@legalengine.co.uk",
         "subject": "=Legal Engine Matter Summary for {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.first_name }} - INTERNAL",
-        "bodyContent": "=<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Legal Engine • Your Matter Summary</title>\n\n  <!-- Brand Typeface -->\n  <link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap\" rel=\"stylesheet\">\n\n  <style>\n    :root{\n      --le-navy:#062047; --le-blue:#00b3ff; --le-indigo:#0066ff;\n      --le-grey:#f2f6fa; --le-silver:#e5ecf3; --le-text:#263238;\n    }\n    *{box-sizing:border-box;margin:0;padding:0;}\n    body{\n      width:100%!important;background:var(--le-grey);\n      font-family:'Inter',Helvetica,Arial,sans-serif;\n      color:var(--le-text);-webkit-font-smoothing:antialiased;\n    }\n    .wrapper{\n      max-width:700px;margin:0 auto;background:#fff;\n      border:1px solid var(--le-silver);border-radius:10px;\n      padding:48px 40px;\n    }\n    .section{margin-bottom:20px;line-height:1.55;}\n    .section h1{color:var(--le-navy);font-size:24px;font-weight:700;margin-bottom:18px;}\n    .section h2{\n      color:var(--le-navy);font-size:22px;font-weight:700;\n      padding-bottom:10px;border-bottom:2px solid var(--le-silver);\n      margin-bottom:14px;\n    }\n    .section p{margin-bottom:16px;white-space:pre-line;}\n\n    .button{\n      display:inline-block;padding:14px 28px;font-weight:600;\n      color:#fff!important;text-decoration:none;border-radius:6px;\n      background:linear-gradient(90deg,var(--le-blue)0%,var(--le-indigo)100%);\n      transition:opacity .25s ease-in-out;\n    }\n    .button:hover{opacity:.8;}\n\n\n    .signature p{margin-bottom:6px;}\n.signature{\n  color:var(--le-text);                /* same dark text as body */\n  font-family:'Inter',Helvetica,Arial,sans-serif;\n}\n.signature a{\n  color:var(--le-text);                /* links also black */\n  text-decoration:none;\n}\n\n\n    .footer{\n      font-size:13px;color:#6c7a84;text-align:center;\n      padding-top:24px;border-top:1px solid var(--le-silver);\n    }\n    .tracking-pixel{display:none;width:1px;height:1px;}\n\n    @media(max-width:520px){\n      .wrapper{padding:32px 22px;}\n      .section h1{font-size:22px;}\n      .section h2{font-size:20px;}\n    }\n  </style>\n</head>\n<body>\n  <div class=\"wrapper\">\n\n    <!-- HEADER -->\n    <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-collapse:collapse;margin-bottom:40px;\">\n      <tr>\n        <td align=\"center\">\n          <img\n            src=\"https://49390627.fs1.hubspotusercontent-eu1.net/hub/49390627/hubfs/e8ad0e08-aa6c-4d44-9053-cdcf7bbaec5b.png?width=852&amp;height=339&amp;name=e8ad0e08-aa6c-4d44-9053-cdcf7bbaec5b.png\"\n            alt=\"Legal Engine\"\n            width=\"180\" height=\"72\"\n            style=\"width:180px;max-width:100%;height:auto;display:block;border:0;outline:none;text-decoration:none;\">\n        </td>\n      </tr>\n    </table>\n    <!--[if mso]><style>.mso-logo img{width:180px!important;height:auto!important;}</style><![endif]-->\n\n  <!-- INTRO -->\n    <div class=\"section\">\n      <p>Hi {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.first_name }},</p>\n      <p>Thanks for taking the time to test me out. How did I do? <br>\nAs promised, here’s a summary of our conversation:</p>\n    \n    </div>\n\n    <!-- MATTER SUMMARY -->\n    <div class=\"section\">\n      <h2>Matter Summary</h2>\n      <p>{{ $('AI Agent - Re-write Summary').item.json.output }}</p>\n    </div>\n\n    <!-- EXTRA ASSETS INTRO -->\n    <div class=\"section\">\n      <p>To give you a flavour of what else I can do, I’ll shortly be sending you <b>a few additional marketing assets </b> so look out for a follow up email in your inbox. </p>\n      <p>This is just a snapshot of my capabilities. At&nbsp;<a href=\"https://legalengine.co.uk/\"><b>Legal Engine</b></a>, we’re building a suite of assistants like me, ready to transform Marketing &amp; BD across the legal industry.</p>\n    </div>\n\n<!-- SIGN-OFF -->\n<div class=\"signature\">\n  <p>Cheers,</p>\n\n  <p><b>Leonard</b></p>\n\n  <p><b>AI Assistant<br>Legal Engine</b></p>\n\n  <p>\n    E:&nbsp;<a href=\"mailto:leonard@legalengine.co.uk\">leonard@legalengine.co.uk</a><br>\n    W:&nbsp;<a href=\"https://legalengine.co.uk/\">www.legalengine.co.uk</a>\n  </p>\n</div>\n    <!-- FOOTER + UNSUBSCRIBE -->\n    <div class=\"footer\">\n      &copy; 2025 Legal Engine Ltd. All rights reserved.<br><br>\n      <a href=\"https://unsubscribe.legalengine.co.uk\" style=\"color:var(--le-blue);text-decoration:none;\">Unsubscribe</a>\n    </div>\n\n    <!-- OPEN-TRACKING -->\n    <img class=\"tracking-pixel\"\n         src=\"https://legalengine.co.uk/track/open?email=\"\n         alt=\"\">\n  </div>\n</body>\n</html>",
+        "bodyContent": "=<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Legal Engine \u2022 Your Matter Summary</title>\n\n  <!-- Brand Typeface -->\n  <link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap\" rel=\"stylesheet\">\n\n  <style>\n    :root{\n      --le-navy:#062047; --le-blue:#00b3ff; --le-indigo:#0066ff;\n      --le-grey:#f2f6fa; --le-silver:#e5ecf3; --le-text:#263238;\n    }\n    *{box-sizing:border-box;margin:0;padding:0;}\n    body{\n      width:100%!important;background:var(--le-grey);\n      font-family:'Inter',Helvetica,Arial,sans-serif;\n      color:var(--le-text);-webkit-font-smoothing:antialiased;\n    }\n    .wrapper{\n      max-width:700px;margin:0 auto;background:#fff;\n      border:1px solid var(--le-silver);border-radius:10px;\n      padding:48px 40px;\n    }\n    .section{margin-bottom:20px;line-height:1.55;}\n    .section h1{color:var(--le-navy);font-size:24px;font-weight:700;margin-bottom:18px;}\n    .section h2{\n      color:var(--le-navy);font-size:22px;font-weight:700;\n      padding-bottom:10px;border-bottom:2px solid var(--le-silver);\n      margin-bottom:14px;\n    }\n    .section p{margin-bottom:16px;white-space:pre-line;}\n\n    .button{\n      display:inline-block;padding:14px 28px;font-weight:600;\n      color:#fff!important;text-decoration:none;border-radius:6px;\n      background:linear-gradient(90deg,var(--le-blue)0%,var(--le-indigo)100%);\n      transition:opacity .25s ease-in-out;\n    }\n    .button:hover{opacity:.8;}\n\n\n    .signature p{margin-bottom:6px;}\n.signature{\n  color:var(--le-text);                /* same dark text as body */\n  font-family:'Inter',Helvetica,Arial,sans-serif;\n}\n.signature a{\n  color:var(--le-text);                /* links also black */\n  text-decoration:none;\n}\n\n\n    .footer{\n      font-size:13px;color:#6c7a84;text-align:center;\n      padding-top:24px;border-top:1px solid var(--le-silver);\n    }\n    .tracking-pixel{display:none;width:1px;height:1px;}\n\n    @media(max-width:520px){\n      .wrapper{padding:32px 22px;}\n      .section h1{font-size:22px;}\n      .section h2{font-size:20px;}\n    }\n  </style>\n</head>\n<body>\n  <div class=\"wrapper\">\n\n    <!-- HEADER -->\n    <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-collapse:collapse;margin-bottom:40px;\">\n      <tr>\n        <td align=\"center\">\n          <img\n            src=\"https://49390627.fs1.hubspotusercontent-eu1.net/hub/49390627/hubfs/e8ad0e08-aa6c-4d44-9053-cdcf7bbaec5b.png?width=852&amp;height=339&amp;name=e8ad0e08-aa6c-4d44-9053-cdcf7bbaec5b.png\"\n            alt=\"Legal Engine\"\n            width=\"180\" height=\"72\"\n            style=\"width:180px;max-width:100%;height:auto;display:block;border:0;outline:none;text-decoration:none;\">\n        </td>\n      </tr>\n    </table>\n    <!--[if mso]><style>.mso-logo img{width:180px!important;height:auto!important;}</style><![endif]-->\n\n  <!-- INTRO -->\n    <div class=\"section\">\n      <p>Hi {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.first_name }},</p>\n      <p>Thanks for taking the time to test me out. How did I do? <br>\nAs promised, here\u2019s a summary of our conversation:</p>\n    \n    </div>\n\n    <!-- MATTER SUMMARY -->\n    <div class=\"section\">\n      <h2>Matter Summary</h2>\n      <p>{{ $('AI Agent - Re-write Summary').item.json.output }}</p>\n    </div>\n\n    <!-- EXTRA ASSETS INTRO -->\n    <div class=\"section\">\n      <p>To give you a flavour of what else I can do, I\u2019ll shortly be sending you <b>a few additional marketing assets </b> so look out for a follow up email in your inbox. </p>\n      <p>This is just a snapshot of my capabilities. At&nbsp;<a href=\"https://legalengine.co.uk/\"><b>Legal Engine</b></a>, we\u2019re building a suite of assistants like me, ready to transform Marketing &amp; BD across the legal industry.</p>\n    </div>\n\n<!-- SIGN-OFF -->\n<div class=\"signature\">\n  <p>Cheers,</p>\n\n  <p><b>Leonard</b></p>\n\n  <p><b>AI Assistant<br>Legal Engine</b></p>\n\n  <p>\n    E:&nbsp;<a href=\"mailto:leonard@legalengine.co.uk\">leonard@legalengine.co.uk</a><br>\n    W:&nbsp;<a href=\"https://legalengine.co.uk/\">www.legalengine.co.uk</a>\n  </p>\n</div>\n    <!-- FOOTER + UNSUBSCRIBE -->\n    <div class=\"footer\">\n      &copy; 2025 Legal Engine Ltd. All rights reserved.<br><br>\n      <a href=\"https://unsubscribe.legalengine.co.uk\" style=\"color:var(--le-blue);text-decoration:none;\">Unsubscribe</a>\n    </div>\n\n    <!-- OPEN-TRACKING -->\n    <img class=\"tracking-pixel\"\n         src=\"https://legalengine.co.uk/track/open?email=\"\n         alt=\"\">\n  </div>\n</body>\n</html>",
         "additionalFields": {
           "bodyContentType": "html"
         }
@@ -4128,96 +3962,6 @@
           "name": "Google Service Account - Edu account Oct 8th"
         }
       }
-    },
-    {
-      "parameters": {
-        "promptType": "define",
-        "text": "={\n\n  \"prompt\": \"Writing as an expert in business development, sales, and pitching for UK law firms and professional services in a B2B environment, draft a short email to the client from the stated [user name], using the matter summary. Ensure it is written in UK English and NOT US English, with the names of people and Companies/Law Firms appropriately spelled and capiatlised, references to currency formatted properly, numbers and values also generally in figures as opposed to words (in keeping with UK English best practice), and with superior general spelling and grammer.\\n\\n1. Thank them for the opportunity to work on such a great matter.\\n2. Ask for feedback on the service and outcome.\\n3. Ask whether they would be willing to provide a client testimonial on the work performed, explaining that the testimonial may be used on the corporate website and in future marketing materials.\\n4. Provide two different example client testimonials that could be used, based on the matter summary.\\n\\nINPUTS:\\n- Summary of the matter: {{ $('AI Agent - Re-write Summary').item.json.output }}\\n- User's full name: {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.first_name }} {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.last_name }}\\n- User's email: {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.user_email }}\\n- User's company or law firm: {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.user_email.split('@')[1] }}\\n- Date and time: {{ $now }}\\n- Call transcript: {{ JSON.stringify($('post_call_transcription1').item.json.body.data.transcript) }}\\n\\nOUTPUT:\\nProvide the output as raw HTML that can be directly embedded into an HTML email.\\nDo not include any Markdown formatting, code fences, or triple backticks.\\nReturn only the HTML — no explanations, no notes, and no additional text.\" \n\n}\n\n",
-        "options": {
-          "systemMessage": "={\n\n  \"prompt\": \"Writing as an expert in business development, sales, and pitching for UK law firms and professional services in a B2B environment, draft a short email to the client from the stated [user name], using the matter summary. Ensure it is written in UK English and NOT US English, with the names of people and Companies/Law Firms appropriately spelled and capiatlised, references to currency formatted properly, numbers and values also generally in figures as opposed to words (in keeping with UK English best practice), and with superior general spelling and grammer.\\n\\n1. Thank them for the opportunity to work on such a great matter.\\n2. Ask for feedback on the service and outcome.\\n3. Ask whether they would be willing to provide a client testimonial on the work performed, explaining that the testimonial may be used on the corporate website and in future marketing materials.\\n4. Provide two different example client testimonials that could be used, based on the matter summary.\\n\\nINPUTS:\\n- Summary of the matter: {{ $('AI Agent - Re-write Summary').item.json.output }}\\n- User's full name: {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.first_name }} {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.last_name }}\\n- User's email: {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.user_email }}\\n- User's company or law firm: {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.user_email.split('@')[1] }}\\n- Date and time: {{ $now }}\\n- Call transcript: {{ JSON.stringify($('post_call_transcription1').item.json.body.data.transcript) }}\\n\\nOUTPUT:\\nProvide the output as raw HTML that can be directly embedded into an HTML email.\\nDo not include any Markdown formatting, code fences, or triple backticks.\\nReturn only the HTML — no explanations, no notes, and no additional text.\" \n\n}\n\n"
-        }
-      },
-      "id": "e60893ae-06f8-4fbd-ab65-b1a962bbc2c1",
-      "name": "AI Agent Testimonial HTML",
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 1.7,
-      "position": [
-        4288,
-        -480
-      ],
-      "disabled": true
-    },
-    {
-      "parameters": {
-        "promptType": "define",
-        "text": "=Website case study\nPrompt: Writing as a expert copywriter, and using best practice for UK legal websites, please write me a 150 word posting to appear on my law firm's website as a demonstration of our expertise in this area of law. This should be written in the third person with no header or title. Make sure it acts as a great business development tool to win future work. A recommended format is to identify the problem, highlight the solution we provided and the outcome that was achieved. Do not include any final sentences such as \"Trust us to\" or \"Contact us to\" etc. Ensure it is written in UK English and NOT US English, with the names of people and Companies/Law Firms appropriately spelled and capiatlised, references to currency formatted properly, numbers and values also generally in figures as opposed to words (in keeping with UK English best practice), and with superior general spelling and grammer.\n\nINPUT:\nThe summary of the matter is:{{ $('AI Agent - Summary').item.json.output }}\nThe user is:{{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.first_name }} {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.last_name }}\nThe user's email is:{{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.user_email }}\nThe users company or law firm is: {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.user_email.split('@')[1] }} \nHere is the date and time: {{ $now }}\nHere is the transcript from the call: {{ JSON.stringify($('post_call_transcription1').item.json.body.data.transcript) }}",
-        "options": {
-          "systemMessage": "=Website case study\nPrompt: Writing as a expert copywriter, and using best practice for UK legal websites, please write me a 150 word posting to appear on my law firm's website as a demonstration of our expertise in this area of law. This should be written in the third person with no header or title. Make sure it acts as a great business development tool to win future work. A recommended format is to identify the problem, highlight the solution we provided and the outcome that was achieved. Do not include any final sentences such as \"Trust us to\" or \"Contact us to\" etc. Ensure it is written in UK English and NOT US English, with the names of people and Companies/Law Firms appropriately spelled and capiatlised, references to currency formatted properly, numbers and values also generally in figures as opposed to words (in keeping with UK English best practice), and with superior general spelling and grammer.\n\n\nINPUT:\nThe summary of the matter is:{{ $('AI Agent - Summary').item.json.output }}\nThe user is:{{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.first_name }} {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.last_name }}\nThe user's email is:{{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.user_email }}\nThe users company or law firm is: {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.user_email.split('@')[1] }} \nHere is the date and time: {{ $now }}\nHere is the transcript from the call: {{ JSON.stringify($('post_call_transcription1').item.json.body.data.transcript) }}"
-        }
-      },
-      "id": "4f8dc3a8-aaec-46df-8acf-f5e10a1a46b9",
-      "name": "AI Agent - Website case study",
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 1.7,
-      "position": [
-        3936,
-        -480
-      ],
-      "disabled": true
-    },
-    {
-      "parameters": {
-        "promptType": "define",
-        "text": "=Website profile: \nPrompt: Using the same details, writing as a expert copywriter, and using best practice for UK legal websites, please write me a two sentence summary of the matter for my corporate profile. The format of the entry should read [individual / firm name] advised [client name] on [matter summary]. Highlight in particular the role that the individual played. Make sure it acts as a great business development tool to win future work. Ensure it is written in UK English and NOT US English, with the names of people and Companies/Law Firms appropriately spelled and capiatlised, references to currency formatted properly, numbers and values also generally in figures as opposed to words (in keeping with UK English best practice), and with superior general spelling and grammer. \n\n\nINPUT:\nThe summary of the matter is:{{ $('AI Agent - Summary').item.json.output }}\nThe user is:{{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.first_name }} {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.last_name }}\nThe user's email is:{{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.user_email }}\nThe users company or law firm is: {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.user_email.split('@')[1] }} \nHere is the date and time: {{ $now }}\nHere is the transcript from the call: {{ JSON.stringify($('post_call_transcription1').item.json.body.data.transcript) }}",
-        "options": {
-          "systemMessage": "=Website profile: \nPrompt: Using the same details, writing as a expert copywriter, and using best practice for UK legal websites, please write me a two sentence summary of the matter for my corporate profile. The format of the entry should read [individual / firm name] advised [client name] on [matter summary]. Highlight in particular the role that the individual played. Make sure it acts as a great business development tool to win future work. Ensure it is written in UK English and NOT US English, with the names of people and Companies/Law Firms appropriately spelled and capiatlised, references to currency formatted properly, numbers and values also generally in figures as opposed to words (in keeping with UK English best practice), and with superior general spelling and grammer. \n\n\nINPUT:\nThe summary of the matter is:{{ $('AI Agent - Summary').item.json.output }}\nThe user is:{{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.first_name }} {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.last_name }}\nThe user's email is:{{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.user_email }}\nThe users company or law firm is: {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.user_email.split('@')[1] }} \nHere is the date and time: {{ $now }}\nHere is the transcript from the call: {{ JSON.stringify($('post_call_transcription1').item.json.body.data.transcript) }}"
-        }
-      },
-      "id": "281af17d-187d-4732-8024-751d1a3d1689",
-      "name": "AI Agent - Website Profile",
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 1.7,
-      "position": [
-        3600,
-        -480
-      ],
-      "disabled": true
-    },
-    {
-      "parameters": {
-        "promptType": "define",
-        "text": "=LinkedIn Post\nPrompt: Writing as an expert in UK viral marketing and the latest social media trends within professional services, draft a viral LinkedIn Post of no more than 100 words, to be shared by [user name] with the world on their personal LinkedIn account to say that they have tested this revolutionary new AI Agent called \"Leonard\" from \"Legal Engine\", who can help to take the pain out of creating matter descriptions for pitches and directory submissions, by harnessing the power of voice and AI. The aim is to highlight to fellow lawyers that this legal marketing tech saves massive amounts of time and hassle and that they should try it asap. People should visit https://demo.legalengine.co.uk to try it out. Feel free to be creative as this is all about making Leonard viral however limit to a maximum of 2 emojis per post. DO NOT use the Rocket emoji 🚀 . Hashtags welcome, expecially #LegalEngine. On completion, check your post to make sure there are NO Rocket 🚀  emojis in your post, if there are, delete them before concluding the post.",
-        "options": {
-          "systemMessage": "=LinkedIn Post\nPrompt: Writing as an expert in UK viral marketing and the latest social media trends within professional services, draft a viral LinkedIn Post of no more than 100 words, to be shared by [user name] with the world on their personal LinkedIn account to say that they have tested this revolutionary new AI Agent called \"Leonard\" from \"Legal Engine\", who can help to take the pain out of creating matter descriptions for pitches and directory submissions, by harnessing the power of voice and AI. The aim is to highlight to fellow lawyers that this legal marketing tech saves massive amounts of time and hassle and that they should try it asap. People should visit https://demo.legalengine.co.uk to try it out. Feel free to be creative as this is all about making Leonard viral however limit to a maximum of 2 emojis per post. DO NOT use the Rocket emoji 🚀 . Hashtags welcome, expecially #LegalEngine. On completion, check your post to make sure there are NO Rocket 🚀  emojis in your post, if there are, delete them before concluding the post."
-        }
-      },
-      "id": "01f7ce38-8afb-4911-b474-7b2256da5906",
-      "name": "AI Agent - L/E LinkedIn",
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 1.7,
-      "position": [
-        3248,
-        -496
-      ],
-      "disabled": true
-    },
-    {
-      "parameters": {
-        "promptType": "define",
-        "text": "=Short form pitch credential\nPrompt: Using the same details, and writing as an expert in business development, sales and pitching for UK law firms and professional services in a B2B environment, please write me a version of a credential that can be used in future pitches. This needs to be a two sentence (max 50 words) description of the matter in the form \"[user name] advised client name on [matter summary]\". Ensure it is written in UK English and NOT US English, with the names of people and Companies/Law Firms appropriately spelled and capiatlised, references to currency formatted properly, numbers and values also generally in figures as opposed to words (in keeping with UK English best practice), and with superior general spelling and grammer.\n\nINPUT:\nThe summary of the matter is:{{ $('AI Agent - Summary').item.json.output }}\nThe user is:{{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.first_name }} {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.last_name }}\nThe user's email is:{{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.user_email }}\nThe users company or law firm is: {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.user_email.split('@')[1] }} \nHere is the date and time: {{ $now }}\nHere is the transcript from the call: {{ JSON.stringify($('post_call_transcription1').item.json.body.data.transcript) }}",
-        "options": {
-          "systemMessage": "=Short form pitch credential\nPrompt: Using the same details, and writing as an expert in business development, sales and pitching for UK law firms and professional services in a B2B environment, please write me a version of a credential that can be used in future pitches. This needs to be a two sentence (max 50 words) description of the matter in the form \"[user name] advised client name on [matter summary]\". Ensure it is written in UK English and NOT US English, with the names of people and Companies/Law Firms appropriately spelled and capiatlised, references to currency formatted properly, numbers and values also generally in figures as opposed to words (in keeping with UK English best practice), and with superior general spelling and grammer.\n\nINPUT:\nThe summary of the matter is:{{ $('AI Agent - Summary').item.json.output }}\nThe user is:{{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.first_name }} {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.last_name }}\nThe user's email is:{{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.user_email }}\nThe users company or law firm is: {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.user_email.split('@')[1] }} \nHere is the date and time: {{ $now }}\nHere is the transcript from the call: {{ JSON.stringify($('post_call_transcription1').item.json.body.data.transcript) }}"
-        }
-      },
-      "id": "9a240d62-e9fa-4f07-b756-ba365528dc23",
-      "name": "AI Agent - Short Pitch",
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 1.7,
-      "position": [
-        2912,
-        -496
-      ],
-      "disabled": true
     },
     {
       "parameters": {
@@ -4945,7 +4689,7 @@
         "messages": {
           "message": [
             {
-              "content": "=Lookup  {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.first_name }} {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.last_name }} and use the user's email {{ $json.fields[\"Contact Email\"] }} to infer their company to help with your search. Produce me an output using this as an example - The email Katie.emson@stephensonharwood.com is associated with Katie Emson, who is the Head of Client Development at international law firm Stephenson Harwood LLP, based in the UK.\nWho this contact is\nFull name: Katie Emson.\nRole: Head of Client Development at Stephenson Harwood LLP (law firm headquartered in London with multiple international offices).\nLocation: United Kingdom (firm HQ in London; role is part of the central business services/BD function rather than fee-earning).\nCareer background\nCurrent position: Head of Client Development at Stephenson Harwood since around late 2022, overseeing client development strategy and key client initiatives.\nPrevious roles: Over a decade at Norton Rose Fulbright in various business development positions, including Senior Business Development Manager for ESG & Sustainability across EMEA and Asia, Senior Client Relationship Manager, and Business Development Manager focused on financial institutions and the Asia region.\nEarly career: Projects Assistant in the legal team at Vodafone, giving early exposure to in‑house legal and project environments.\nSkills, focus and profile\nCore focus: Law‑firm business development and client relationship management, including key client programmes, sector and ESG positioning, and cross-border BD initiatives.\nSkills and credentials: Background in marketing and BD with a Professional Certificate in Marketing from BPP Business School London and a BA (Hons) in History from the University of Portsmouth.\nVisibility: Regularly referenced in firm and external posts about brand, client initiatives and BD events, indicating involvement in strategic campaigns and panel-style client engagement."
+              "content": "=Lookup  {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.first_name }} {{ $('post_call_transcription1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.last_name }} and use the user's email {{ $json.fields[\"Contact Email\"] }} to infer their company to help with your search. Produce me an output using this as an example - The email Katie.emson@stephensonharwood.com is associated with Katie Emson, who is the Head of Client Development at international law firm Stephenson Harwood LLP, based in the UK.\nWho this contact is\nFull name: Katie Emson.\nRole: Head of Client Development at Stephenson Harwood LLP (law firm headquartered in London with multiple international offices).\nLocation: United Kingdom (firm HQ in London; role is part of the central business services/BD function rather than fee-earning).\nCareer background\nCurrent position: Head of Client Development at Stephenson Harwood since around late 2022, overseeing client development strategy and key client initiatives.\nPrevious roles: Over a decade at Norton Rose Fulbright in various business development positions, including Senior Business Development Manager for ESG & Sustainability across EMEA and Asia, Senior Client Relationship Manager, and Business Development Manager focused on financial institutions and the Asia region.\nEarly career: Projects Assistant in the legal team at Vodafone, giving early exposure to in\u2011house legal and project environments.\nSkills, focus and profile\nCore focus: Law\u2011firm business development and client relationship management, including key client programmes, sector and ESG positioning, and cross-border BD initiatives.\nSkills and credentials: Background in marketing and BD with a Professional Certificate in Marketing from BPP Business School London and a BA (Hons) in History from the University of Portsmouth.\nVisibility: Regularly referenced in firm and external posts about brand, client initiatives and BD events, indicating involvement in strategic campaigns and panel-style client engagement."
             }
           ]
         },
@@ -5133,11 +4877,6 @@
     "Airtable - Demo post call started20": {
       "main": [
         [
-          {
-            "node": "HTML Email from Leonard with MS, WP, WCS, SP & LI5",
-            "type": "main",
-            "index": 0
-          },
           {
             "node": "Wait4",
             "type": "main",
@@ -5530,7 +5269,7 @@
                     "agent_id": "tG9uM0Gz6OeuPuR8BpBI",
                     "workflow_node_id": null
                   },
-                  "message": "Hi there Andy, I'm Leonard from Legal Engine.\n\nI'm going to show you how, by harnessing the power of voice and AI, I can help to take the pain out of creating matter descriptions that can be used for both directory submissions and other BD activities.\n\nOnce we've completed our conversation I'll send you a matter summary via email.\n\nIf we could start with you sharing who the client was, and in your own words, a brief description of a matter, I can then show you what I'm capable of. \n\nOver to you Andy…",
+                  "message": "Hi there Andy, I'm Leonard from Legal Engine.\n\nI'm going to show you how, by harnessing the power of voice and AI, I can help to take the pain out of creating matter descriptions that can be used for both directory submissions and other BD activities.\n\nOnce we've completed our conversation I'll send you a matter summary via email.\n\nIf we could start with you sharing who the client was, and in your own words, a brief description of a matter, I can then show you what I'm capable of. \n\nOver to you Andy\u2026",
                   "multivoice_message": null,
                   "tool_calls": [],
                   "tool_results": [],
@@ -5686,7 +5425,7 @@
                         },
                         "output_total": {
                           "tokens": 16,
-                          "price": 0.0000064000000000000006
+                          "price": 6.4000000000000006e-06
                         }
                       }
                     }
@@ -5831,7 +5570,7 @@
                         },
                         "output_total": {
                           "tokens": 21,
-                          "price": 0.000008400000000000001
+                          "price": 8.400000000000001e-06
                         }
                       }
                     }
@@ -5976,7 +5715,7 @@
                         },
                         "output_total": {
                           "tokens": 10,
-                          "price": 0.000004
+                          "price": 4e-06
                         }
                       }
                     }
@@ -6121,7 +5860,7 @@
                         },
                         "output_total": {
                           "tokens": 28,
-                          "price": 0.000011200000000000001
+                          "price": 1.1200000000000001e-05
                         }
                       }
                     }
@@ -6133,7 +5872,7 @@
                 {
                   "role": "user",
                   "agent_metadata": null,
-                  "message": "Yes, they saved about £46k a month, and that's in sterling. But they also generated a huge amount of PR. So the PR value was around £750,000.",
+                  "message": "Yes, they saved about \u00a346k a month, and that's in sterling. But they also generated a huge amount of PR. So the PR value was around \u00a3750,000.",
                   "multivoice_message": null,
                   "tool_calls": [],
                   "tool_results": [],
@@ -6266,7 +6005,7 @@
                         },
                         "output_total": {
                           "tokens": 32,
-                          "price": 0.000012800000000000001
+                          "price": 1.2800000000000001e-05
                         }
                       }
                     }
@@ -6480,7 +6219,7 @@
                         },
                         "output_total": {
                           "tokens": 151,
-                          "price": 0.000060400000000000004
+                          "price": 6.0400000000000004e-05
                         }
                       },
                       "gemini-2.5-flash": {
@@ -6498,7 +6237,7 @@
                         },
                         "output_total": {
                           "tokens": 24,
-                          "price": 0.0000144
+                          "price": 1.44e-05
                         }
                       }
                     }
@@ -6643,7 +6382,7 @@
                         },
                         "output_total": {
                           "tokens": 18,
-                          "price": 0.0000072000000000000005
+                          "price": 7.2000000000000005e-06
                         }
                       }
                     }
@@ -6776,7 +6515,7 @@
                       "gemini-2.5-flash-lite": {
                         "input": {
                           "tokens": 534,
-                          "price": 0.000053400000000000004
+                          "price": 5.3400000000000004e-05
                         },
                         "input_cache_read": {
                           "tokens": 11567,
@@ -6788,7 +6527,7 @@
                         },
                         "output_total": {
                           "tokens": 13,
-                          "price": 0.0000052
+                          "price": 5.2e-06
                         }
                       }
                     }
@@ -6933,7 +6672,7 @@
                         },
                         "output_total": {
                           "tokens": 31,
-                          "price": 0.0000124
+                          "price": 1.24e-05
                         }
                       }
                     }
@@ -6971,7 +6710,7 @@
                     "agent_id": "tG9uM0Gz6OeuPuR8BpBI",
                     "workflow_node_id": null
                   },
-                  "message": "Thank you for sharing those details. Here's a summary of the matter as I understand it — please let me know if I've captured it accurately:\n\nSally Gardens Limited, represented by you, William Yardley, Sally Gunnell, Brendan Rogers from the Cape Town office, and Ho Chi Minh from the Chinese team, acquired land for the Wentworth estate. The client approached you for this matter due to your expertise in real estate management and your connections within high society. The outcome was the successful acquisition of significant land for development, which resulted in savings of approximately £46,000 per month and generated around £750,000 in PR value.\n\nThe matter involved jurisdictions in Botswana, the UK, and Rwanda, and was noteworthy for its ESG impact due to the social governance required for cross-border operations, and for acquiring land through offshore subsidiaries in the Cayman Islands and Guernsey on behalf of the royal family. The matter concluded on the eighth of October, two thousand and twenty-five. Press coverage included House and Garden, the Financial Times, Legal Talks, and the Wall Street Journal.\n\nDoes that summary sound accurate, or would you like to correct anything?",
+                  "message": "Thank you for sharing those details. Here's a summary of the matter as I understand it \u2014 please let me know if I've captured it accurately:\n\nSally Gardens Limited, represented by you, William Yardley, Sally Gunnell, Brendan Rogers from the Cape Town office, and Ho Chi Minh from the Chinese team, acquired land for the Wentworth estate. The client approached you for this matter due to your expertise in real estate management and your connections within high society. The outcome was the successful acquisition of significant land for development, which resulted in savings of approximately \u00a346,000 per month and generated around \u00a3750,000 in PR value.\n\nThe matter involved jurisdictions in Botswana, the UK, and Rwanda, and was noteworthy for its ESG impact due to the social governance required for cross-border operations, and for acquiring land through offshore subsidiaries in the Cayman Islands and Guernsey on behalf of the royal family. The matter concluded on the eighth of October, two thousand and twenty-five. Press coverage included House and Garden, the Financial Times, Legal Talks, and the Wall Street Journal.\n\nDoes that summary sound accurate, or would you like to correct anything?",
                   "multivoice_message": null,
                   "tool_calls": [],
                   "tool_results": [],
@@ -7078,7 +6817,7 @@
                         },
                         "output_total": {
                           "tokens": 241,
-                          "price": 0.00009640000000000001
+                          "price": 9.640000000000001e-05
                         }
                       }
                     }
@@ -7298,7 +7037,7 @@
                     }
                   },
                   "interrupted": true,
-                  "original_message": "Thank you for the clarification. Here is the updated summary:\n\nSally Gardens Limited, represented by you, William Yardley, Sally Gunnell, Brendan Rogers from the Cape Town office, Frank Gardner from the Chiang Mai, Thailand office, and Ho Chi Minh from the Chinese team, acquired land for the Wentworth estate. The client approached you for this matter due to your expertise in real estate management and your connections within high society. The outcome was the successful acquisition of significant land for development, which resulted in savings of approximately £46,000 per month and generated around £750,000 in PR value.\n\nThe matter involved jurisdictions in Botswana, the UK, Rwanda, and Thailand. It was noteworthy for its ESG impact due to the social governance required for cross-border operations, and for acquiring land through offshore subsidiaries in the Cayman Islands and Guernsey on behalf of the royal family. The matter concluded on the eighth of October, two thousand and twenty-five. Press coverage included House and Garden (Front Cover), the Financial Times, Legal Talks (Top 10 Deals), and the Wall Street Journal.\n\nDoes that summary sound accurate, or would you like to correct anything?",
+                  "original_message": "Thank you for the clarification. Here is the updated summary:\n\nSally Gardens Limited, represented by you, William Yardley, Sally Gunnell, Brendan Rogers from the Cape Town office, Frank Gardner from the Chiang Mai, Thailand office, and Ho Chi Minh from the Chinese team, acquired land for the Wentworth estate. The client approached you for this matter due to your expertise in real estate management and your connections within high society. The outcome was the successful acquisition of significant land for development, which resulted in savings of approximately \u00a346,000 per month and generated around \u00a3750,000 in PR value.\n\nThe matter involved jurisdictions in Botswana, the UK, Rwanda, and Thailand. It was noteworthy for its ESG impact due to the social governance required for cross-border operations, and for acquiring land through offshore subsidiaries in the Cayman Islands and Guernsey on behalf of the royal family. The matter concluded on the eighth of October, two thousand and twenty-five. Press coverage included House and Garden (Front Cover), the Financial Times, Legal Talks (Top 10 Deals), and the Wall Street Journal.\n\nDoes that summary sound accurate, or would you like to correct anything?",
                   "source_medium": null
                 },
                 {
@@ -7521,7 +7260,7 @@
                         },
                         "output_total": {
                           "tokens": 33,
-                          "price": 0.0000132
+                          "price": 1.32e-05
                         }
                       }
                     }
@@ -7590,7 +7329,7 @@
                           },
                           "output_total": {
                             "tokens": 24,
-                            "price": 0.0000144
+                            "price": 1.44e-05
                           }
                         }
                       }
@@ -7630,7 +7369,7 @@
                           },
                           "output_total": {
                             "tokens": 24,
-                            "price": 0.0000144
+                            "price": 1.44e-05
                           }
                         }
                       }

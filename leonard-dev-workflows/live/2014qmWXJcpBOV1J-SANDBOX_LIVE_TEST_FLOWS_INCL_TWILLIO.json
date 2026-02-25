@@ -3,22 +3,6 @@
   "nodes": [
     {
       "parameters": {
-        "content": "# Sandbox webhooks \nCreated by **Edu** on Tue 20th of May.\n\nAt present this uses my ElevenLabs API key and my Twilio number.\n\nWe have to decide if we setup a new fresh Twilio account and deprecate mine (or only use it for testing) or if we simply upgrade my Twilio account. \nWe will need to link it to the ElevenLabs account that Andy has been using so it might make sense to keep mine Twilio for dev linked to my ElevenLabs and create a new Twilio for production. \n",
-        "height": 780,
-        "width": 500
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "position": [
-        -1720,
-        -260
-      ],
-      "typeVersion": 1,
-      "id": "bc944631-fd58-4b24-bdaa-0d4d738af8ab",
-      "name": "Sticky Note",
-      "disabled": true
-    },
-    {
-      "parameters": {
         "httpMethod": "POST",
         "path": "19c11af1-24fe-4b6d-a66e-ad446c5ca69f",
         "options": {}
@@ -151,58 +135,6 @@
           "name": "Microsoft Teams account"
         }
       }
-    },
-    {
-      "parameters": {
-        "content": "# Sandbox webhooks \nTriggers from front end once user enters their Name and email\n",
-        "height": 660,
-        "width": 800
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "position": [
-        100,
-        -60
-      ],
-      "typeVersion": 1,
-      "id": "83099940-8d31-419e-af8a-6ed11738f8aa",
-      "name": "Sticky Note1",
-      "disabled": true
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "https://api.elevenlabs.io/v1/convai/twilio/outbound-call",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Content-Type",
-              "value": "application/json"
-            }
-          ]
-        },
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={\n\"agent_id\":\"jOEa6neMFEFMkdUWjQ4p\",\n\"agent_phone_number_id\":\"nmj6uq3A4NEgtQ2jZSRz\",\n\"to_number\":\"{{$json.body.phone_number}}\",\n  \"conversation_initiation_client_data\": {\n    \"dynamic_variables\": {\n      \"first_name\": \"{{ $json.body.first_name }}\",\n      \"last_name\": \"{{ $json.body.last_name }}\",\n      \"user_email\": \"{{ $json.body.email }}\"\n    }\n  }\n}",
-        "options": {}
-      },
-      "id": "a1d6ba22-61bd-4b3c-a2fc-e863fbf3846d",
-      "name": "Edu's accounts: Trigger Twilio outbound call via ElevenLabs",
-      "type": "n8n-nodes-base.httpRequest",
-      "position": [
-        -1420,
-        60
-      ],
-      "typeVersion": 4.2,
-      "credentials": {
-        "httpHeaderAuth": {
-          "id": "U2UQRHCcnGc3KFiB",
-          "name": "Edu ElevenLabs"
-        }
-      },
-      "disabled": true
     },
     {
       "parameters": {

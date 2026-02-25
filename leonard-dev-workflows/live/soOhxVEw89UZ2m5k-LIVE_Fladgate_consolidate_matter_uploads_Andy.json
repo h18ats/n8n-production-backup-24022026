@@ -3,205 +3,6 @@
   "nodes": [
     {
       "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 2
-          },
-          "conditions": [
-            {
-              "id": "156090cc-9c17-4309-89eb-1171f9745d19",
-              "leftValue": "={{ $('Search existing matters').item.json.Attachments[0].id }}",
-              "rightValue": "",
-              "operator": {
-                "type": "string",
-                "operation": "exists",
-                "singleValue": true
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.2,
-      "position": [
-        -2880,
-        176
-      ],
-      "id": "1e749876-9182-4fee-8da7-14f6d4167de8",
-      "name": "If",
-      "alwaysOutputData": false,
-      "disabled": true
-    },
-    {
-      "parameters": {
-        "operation": "create",
-        "base": {
-          "__rl": true,
-          "value": "appUvJyzSky12m4HA",
-          "mode": "list",
-          "cachedResultName": "Fladgate - Leonard Live Data",
-          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA"
-        },
-        "table": {
-          "__rl": true,
-          "value": "tbl3ADT2yOV8EJCnZ",
-          "mode": "list",
-          "cachedResultName": "FG - Conversation History by lawyer",
-          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA/tbl3ADT2yOV8EJCnZ"
-        },
-        "columns": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "Email": "={{ $('Search for new matter').item.json.Email }}",
-            "Transcript ID": "={{ $('Search for new matter').item.json.id }}",
-            "First Name": "={{ $('Search for new matter').item.json[\"First Name\"] }}",
-            "Last Name": "={{ $('Search for new matter').item.json[\"Last Name\"] }}",
-            "Number of Calls": 0,
-            "Call Length": "={{ $('Search for new matter').item.json[\"Call Length (s)\"] }}",
-            "Conversation History": "={{ $json.output }}"
-          },
-          "matchingColumns": [],
-          "schema": [
-            {
-              "id": "Email",
-              "displayName": "Email",
-              "required": false,
-              "defaultMatch": false,
-              "canBeUsedToMatch": true,
-              "display": true,
-              "type": "string",
-              "readOnly": false,
-              "removed": false
-            },
-            {
-              "id": "Transcript ID",
-              "displayName": "Transcript ID",
-              "required": false,
-              "defaultMatch": false,
-              "canBeUsedToMatch": true,
-              "display": true,
-              "type": "string",
-              "readOnly": false,
-              "removed": false
-            },
-            {
-              "id": "Full Name",
-              "displayName": "Full Name",
-              "required": false,
-              "defaultMatch": false,
-              "canBeUsedToMatch": true,
-              "display": true,
-              "type": "string",
-              "readOnly": true,
-              "removed": true
-            },
-            {
-              "id": "First Name",
-              "displayName": "First Name",
-              "required": false,
-              "defaultMatch": false,
-              "canBeUsedToMatch": true,
-              "display": true,
-              "type": "string",
-              "readOnly": false,
-              "removed": false
-            },
-            {
-              "id": "Last Name",
-              "displayName": "Last Name",
-              "required": false,
-              "defaultMatch": false,
-              "canBeUsedToMatch": true,
-              "display": true,
-              "type": "string",
-              "readOnly": false,
-              "removed": false
-            },
-            {
-              "id": "Created",
-              "displayName": "Created",
-              "required": false,
-              "defaultMatch": false,
-              "canBeUsedToMatch": true,
-              "display": true,
-              "type": "string",
-              "readOnly": true,
-              "removed": false
-            },
-            {
-              "id": "Last Modified",
-              "displayName": "Last Modified",
-              "required": false,
-              "defaultMatch": false,
-              "canBeUsedToMatch": true,
-              "display": true,
-              "type": "string",
-              "readOnly": true,
-              "removed": true
-            },
-            {
-              "id": "Conversation History",
-              "displayName": "Conversation History",
-              "required": false,
-              "defaultMatch": false,
-              "canBeUsedToMatch": true,
-              "display": true,
-              "type": "string",
-              "readOnly": false,
-              "removed": false
-            },
-            {
-              "id": "Call Length",
-              "displayName": "Call Length",
-              "required": false,
-              "defaultMatch": false,
-              "canBeUsedToMatch": true,
-              "display": true,
-              "type": "number",
-              "readOnly": false,
-              "removed": false
-            },
-            {
-              "id": "Number of Calls",
-              "displayName": "Number of Calls",
-              "required": false,
-              "defaultMatch": false,
-              "canBeUsedToMatch": true,
-              "display": true,
-              "type": "number",
-              "readOnly": false,
-              "removed": false
-            }
-          ],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": false
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.airtable",
-      "typeVersion": 2.1,
-      "position": [
-        -2592,
-        336
-      ],
-      "id": "32aeed84-c146-4b45-abda-bcd2006a705a",
-      "name": "Create new conv summary",
-      "alwaysOutputData": true,
-      "credentials": {
-        "airtableTokenApi": {
-          "id": "LVF892xkQD72QD7v",
-          "name": "Airtable - Leonard @ Legal Engine"
-        }
-      },
-      "disabled": true
-    },
-    {
-      "parameters": {
         "projectId": {
           "__rl": true,
           "value": "vertex-ai-api-setup-via-cli",
@@ -3973,24 +3774,6 @@
     }
   ],
   "connections": {
-    "If": {
-      "main": [
-        [
-          {
-            "node": "Matter history agent",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Create new conv summary",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Google Vertex Chat Model3": {
       "ai_languageModel": [
         [
@@ -4192,13 +3975,7 @@
     },
     "Set pre IF": {
       "main": [
-        [
-          {
-            "node": "If",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        []
       ]
     },
     "Does user exist?": {
@@ -4324,12 +4101,12 @@
           },
           "Extracted Data": {
             "state": "generated",
-            "value": "- Matter reference and title: PAM007; Confidential Matter 17.\n- Client: Wife/Hotelier whose husband transitioned from male to female during the proceedings.\n- Overview and department role/importance: Acting for W in divorce and financial proceedings after a 20-year marriage; novel issue on whether matrimonial funds can be used for H’s transitioning costs during the divorce. Assets span the UK, Italy, USA, Switzerland, Germany, Argentina, and Morocco, including a Moroccan hotel business.\n- Key issues:\n  - Forum: H commenced parallel divorce proceedings in Italy.\n  - Interim maintenance, disclosure, valuations (including impact of the Moroccan earthquake on the hotel), and classification of matrimonial vs non‑matrimonial assets.\n- Key disputed positions:\n  - H disputes W’s entitlement to her “fair share,” asserting he created most family wealth.\n  - H claims entitlement to use matrimonial funds for transitioning; dispute over whether surgery is imperative or elective.\n- Opponent conduct and applications/orders:\n  - Refused to comply with interim maintenance orders; W’s enforcement succeeded and punitive costs were awarded against H.\n  - Refused to contribute to W’s legal expenses.\n  - Issued Italian divorce to run concurrently; Italian court dismissed for lack of jurisdiction and awarded W costs.\n  - Sold company shares and reinvested proceeds without consent; Freezing Order over net proceeds granted after a contested hearing; H is appealing.\n  - Profligate spending increased liabilities; extent and nature of liabilities in issue.\n  - Non‑disclosure of US land interests discovered prior to the PTR.\n- Status and forthcoming steps: Approaching final hearing; parties cannot agree the asset schedule for division. Judicial intervention already required on transitioning costs; further transitioning costs may be argued at trial as a niche point of law.\n- Matter value: £3–4 million.\n- Cross‑border elements: Jurisdictions include Italy, Switzerland, US, Germany, Argentina, Morocco; assets/business footprint also includes the UK and a hotel in Morocco.\n- Team:\n  - Lead lawyer: Hetty Gleave (Partner, Fladgate).\n  - Other team members: Patrick Buck (Associate), Isabelle McGregor (Trainee).\n- Other advisers and roles:\n  - Adverse: Susan Apthorp, Keystone Law.\n  - Counsel: Alexis Campbell KC (Band 2), Simon Calhaem (Band 3), Laura Heaton (Band 2) — 29 Bedford Row.\n  - For our client (Italian law): Michele Menato, B&M Law.\n- Completion status: Ongoing.\n- Other information (press/links): Not provided.",
+            "value": "- Matter reference and title: PAM007; Confidential Matter 17.\n- Client: Wife/Hotelier whose husband transitioned from male to female during the proceedings.\n- Overview and department role/importance: Acting for W in divorce and financial proceedings after a 20-year marriage; novel issue on whether matrimonial funds can be used for H\u2019s transitioning costs during the divorce. Assets span the UK, Italy, USA, Switzerland, Germany, Argentina, and Morocco, including a Moroccan hotel business.\n- Key issues:\n  - Forum: H commenced parallel divorce proceedings in Italy.\n  - Interim maintenance, disclosure, valuations (including impact of the Moroccan earthquake on the hotel), and classification of matrimonial vs non\u2011matrimonial assets.\n- Key disputed positions:\n  - H disputes W\u2019s entitlement to her \u201cfair share,\u201d asserting he created most family wealth.\n  - H claims entitlement to use matrimonial funds for transitioning; dispute over whether surgery is imperative or elective.\n- Opponent conduct and applications/orders:\n  - Refused to comply with interim maintenance orders; W\u2019s enforcement succeeded and punitive costs were awarded against H.\n  - Refused to contribute to W\u2019s legal expenses.\n  - Issued Italian divorce to run concurrently; Italian court dismissed for lack of jurisdiction and awarded W costs.\n  - Sold company shares and reinvested proceeds without consent; Freezing Order over net proceeds granted after a contested hearing; H is appealing.\n  - Profligate spending increased liabilities; extent and nature of liabilities in issue.\n  - Non\u2011disclosure of US land interests discovered prior to the PTR.\n- Status and forthcoming steps: Approaching final hearing; parties cannot agree the asset schedule for division. Judicial intervention already required on transitioning costs; further transitioning costs may be argued at trial as a niche point of law.\n- Matter value: \u00a33\u20134 million.\n- Cross\u2011border elements: Jurisdictions include Italy, Switzerland, US, Germany, Argentina, Morocco; assets/business footprint also includes the UK and a hotel in Morocco.\n- Team:\n  - Lead lawyer: Hetty Gleave (Partner, Fladgate).\n  - Other team members: Patrick Buck (Associate), Isabelle McGregor (Trainee).\n- Other advisers and roles:\n  - Adverse: Susan Apthorp, Keystone Law.\n  - Counsel: Alexis Campbell KC (Band 2), Simon Calhaem (Band 3), Laura Heaton (Band 2) \u2014 29 Bedford Row.\n  - For our client (Italian law): Michele Menato, B&M Law.\n- Completion status: Ongoing.\n- Other information (press/links): Not provided.",
             "isStale": false
           },
           "Matter Summary": {
             "state": "generated",
-            "value": "Cross-border divorce finance case: gender transition funding, asset freezing, forum disputes, enforcement; assets worth £3–4m.",
+            "value": "Cross-border divorce finance case: gender transition funding, asset freezing, forum disputes, enforcement; assets worth \u00a33\u20134m.",
             "isStale": false
           },
           "Client Name": {
@@ -4354,7 +4131,7 @@
           },
           "Extract 1": {
             "state": "generated",
-            "value": "# Confidential Matter 17\nRef: PAM007\n\n## E1 Name of client (for ranking purposes only)\nWife/Hotelier whose husband transitioned from male to female during the proceedings\n\n## E2 Summary of matter and your department's role - Please say why this matter was important. Also, tell us exactly what role your department played\nThis case has raised novel areas of law in relation to the treatment of family assets when acting for a party who requires funds to transition from male to female during the divorce process. We are acting for a wife (W) in divorce and financial proceedings who has been married to her husband (H) for 20 years. The marriage broke down when W was told by H that they wish to transition to a lesbian trans woman. The parties have multiple properties/land which span the globe, including the UK, Italy, USA, Switzerland, Germany, Argentina, Morocco, as well as a hotel business in Morocco.\n\nWhilst the matter is complicated by the number of foreign jurisdictions involved, the matter is further complicated by the fact that H does not believe that our client is entitled to her 'fair share' of the matrimonial pot on the basis he believes he has earned most of the family wealth. H also believes they are entitled to use matrimonial funds for the purpose of transitioning during the divorce process, triggering arguments about whether it was imperative or elective surgery.\n\nThe matter has raised several issues, ranging from the correct forum for the proceedings (the husband immediately commenced parallel proceedings in Italy) interim maintenance, disclosure, valuations, particularly in relation to their hotel in Morocco following the recent earthquake, and the nature of matrimonial and non-matrimonial assets.\n\nH has sought to run our client's finances into the ground by:\n\n1. Refusing to comply with orders for interim maintenance on the basis he had no income, which was demonstrably untrue, requiring the client to issue enforcement proceedings which were successful and resulted in punitive costs orders against H.\n2. Refusing to make any contribution towards our client's legal expenses.\n3. Issuing proceedings for divorce in Italy to run concurrently with the UK proceedings, even though H had submitted to the UK jurisdiction in order to drain our client of cash. The Italian court has recently determined they have no jurisdiction and dismissed the application in Italy and awarded our client costs.\n4. Selling shares in a company and reinvesting some of the proceeds without our client's knowledge or consent, which forced her to apply for a Freezing Order in relation to the net proceeds, which was made following a bitterly fought hearing. H is now appealing the Freezing Order.\n5. H's profligate spending which has significantly increased liabilities and so the nature and extent of those liabilities is in question.\n6. H's non-disclosure of land interests in the US, which have only become apparent prior to the PTR.\n\nThe matter is coming up to a final hearing as the parties have been unable to agree the assets schedule which enables them to agree the accurate division of matrimonial assets. Whether the costs associated with the H's transitioning to female during the proceedings should be paid from the known matrimonial assets was a novel point which required judicial intervention to resolve. It may be that further costs associated with transitioning will form part of the husband's argument at trial and debate about how they are paid for will be a niche point of law.\n\n## E3 Matter value - include currency and amount in figures\n£3-4 million\n\n## E4 Is this a cross-border matter? If yes, please indicate the jurisdictions involved.\nItaly, Switzerland, US, Germany, Argentina, Morocco\n\nRef: PAM007\n\n## E5–E9\n\n| Field | Details |\n|---|---|\n| E5 Lead lawyer | Hetty Gleave (Partner, Fladgate) |\n| E6 Other team members | Patrick Buck (Associate, Fladgate); Isabelle McGregor (Trainee, Fladgate) |\n| E7 Other firms advising on the matter and their role(s) | Susan Apthorp, Keystone Law (adverse); Alexis Campbell KC, (Band 2 Family: Matrimonial Finance), Simon Calhaem (Band 3 Family: Matrimonial Finance), Laura Heaton (Band 2 Family: Matrimonial Finance) - 29 Beford Row; Michele Menato, B&M Law (Italian law advice for our client) |\n| E8 Date of completion or current status | Ongoing |\n| E9 Other information about this matter - e.g. link to press coverage |  |\n\nRef: PAM007",
+            "value": "# Confidential Matter 17\nRef: PAM007\n\n## E1 Name of client (for ranking purposes only)\nWife/Hotelier whose husband transitioned from male to female during the proceedings\n\n## E2 Summary of matter and your department's role - Please say why this matter was important. Also, tell us exactly what role your department played\nThis case has raised novel areas of law in relation to the treatment of family assets when acting for a party who requires funds to transition from male to female during the divorce process. We are acting for a wife (W) in divorce and financial proceedings who has been married to her husband (H) for 20 years. The marriage broke down when W was told by H that they wish to transition to a lesbian trans woman. The parties have multiple properties/land which span the globe, including the UK, Italy, USA, Switzerland, Germany, Argentina, Morocco, as well as a hotel business in Morocco.\n\nWhilst the matter is complicated by the number of foreign jurisdictions involved, the matter is further complicated by the fact that H does not believe that our client is entitled to her 'fair share' of the matrimonial pot on the basis he believes he has earned most of the family wealth. H also believes they are entitled to use matrimonial funds for the purpose of transitioning during the divorce process, triggering arguments about whether it was imperative or elective surgery.\n\nThe matter has raised several issues, ranging from the correct forum for the proceedings (the husband immediately commenced parallel proceedings in Italy) interim maintenance, disclosure, valuations, particularly in relation to their hotel in Morocco following the recent earthquake, and the nature of matrimonial and non-matrimonial assets.\n\nH has sought to run our client's finances into the ground by:\n\n1. Refusing to comply with orders for interim maintenance on the basis he had no income, which was demonstrably untrue, requiring the client to issue enforcement proceedings which were successful and resulted in punitive costs orders against H.\n2. Refusing to make any contribution towards our client's legal expenses.\n3. Issuing proceedings for divorce in Italy to run concurrently with the UK proceedings, even though H had submitted to the UK jurisdiction in order to drain our client of cash. The Italian court has recently determined they have no jurisdiction and dismissed the application in Italy and awarded our client costs.\n4. Selling shares in a company and reinvesting some of the proceeds without our client's knowledge or consent, which forced her to apply for a Freezing Order in relation to the net proceeds, which was made following a bitterly fought hearing. H is now appealing the Freezing Order.\n5. H's profligate spending which has significantly increased liabilities and so the nature and extent of those liabilities is in question.\n6. H's non-disclosure of land interests in the US, which have only become apparent prior to the PTR.\n\nThe matter is coming up to a final hearing as the parties have been unable to agree the assets schedule which enables them to agree the accurate division of matrimonial assets. Whether the costs associated with the H's transitioning to female during the proceedings should be paid from the known matrimonial assets was a novel point which required judicial intervention to resolve. It may be that further costs associated with transitioning will form part of the husband's argument at trial and debate about how they are paid for will be a niche point of law.\n\n## E3 Matter value - include currency and amount in figures\n\u00a33-4 million\n\n## E4 Is this a cross-border matter? If yes, please indicate the jurisdictions involved.\nItaly, Switzerland, US, Germany, Argentina, Morocco\n\nRef: PAM007\n\n## E5\u2013E9\n\n| Field | Details |\n|---|---|\n| E5 Lead lawyer | Hetty Gleave (Partner, Fladgate) |\n| E6 Other team members | Patrick Buck (Associate, Fladgate); Isabelle McGregor (Trainee, Fladgate) |\n| E7 Other firms advising on the matter and their role(s) | Susan Apthorp, Keystone Law (adverse); Alexis Campbell KC, (Band 2 Family: Matrimonial Finance), Simon Calhaem (Band 3 Family: Matrimonial Finance), Laura Heaton (Band 2 Family: Matrimonial Finance) - 29 Beford Row; Michele Menato, B&M Law (Italian law advice for our client) |\n| E8 Date of completion or current status | Ongoing |\n| E9 Other information about this matter - e.g. link to press coverage |  |\n\nRef: PAM007",
             "isStale": false
           },
           "Extract 2": {
@@ -4437,7 +4214,7 @@
             },
             "Extracted Data": {
               "state": "generated",
-              "value": "Confidential Matter 7\nE1 Name of client (for ranking purposes only)\nA global healthcare software technology company\nE2 Summary of matter and your department's role – Please say why this matter was important. Also, tell us exactly what role your department played\nFladgate is advising a global healthcare software technology company on several matters arising from a grievance raised by an employee based in the client’s London office. The original grievance alleged that a colleague had sexually assaulted the employee in her home, and we were instructed following her involvement of the police and appeal of the grievance after the client had tried to resolve it internally. The employee has raised several subsequent grievances, including sexual harassment, sexual discrimination and disability discrimination claims as a result of missing work due to anxiety.\n\nThis is an extremely complex and highly sensitive situation for the private equity-backed client, and it involves significant reputational risk issues.\n\nE3 Matter value – include currency and amount in figures\nN/A\nE4 Is this a cross-border matter? If yes, please indicate the jurisdictions involved.\nNo\nE5 Lead partner\nTaj Rehal\nE6 Other team members\nIngrid Hesselbo, Helena McElroy, Caroline Philipps\nE7 Other firms advising on the matter and their role(s)\nUnite Union representing the individual employee\nE8 Date of completion or current status\nOngoing\nE9 Other information about this matter – e.g. link to press coverage\n ",
+              "value": "Confidential Matter 7\nE1 Name of client (for ranking purposes only)\nA global healthcare software technology company\nE2 Summary of matter and your department's role \u2013 Please say why this matter was important. Also, tell us exactly what role your department played\nFladgate is advising a global healthcare software technology company on several matters arising from a grievance raised by an employee based in the client\u2019s London office. The original grievance alleged that a colleague had sexually assaulted the employee in her home, and we were instructed following her involvement of the police and appeal of the grievance after the client had tried to resolve it internally. The employee has raised several subsequent grievances, including sexual harassment, sexual discrimination and disability discrimination claims as a result of missing work due to anxiety.\n\nThis is an extremely complex and highly sensitive situation for the private equity-backed client, and it involves significant reputational risk issues.\n\nE3 Matter value \u2013 include currency and amount in figures\nN/A\nE4 Is this a cross-border matter? If yes, please indicate the jurisdictions involved.\nNo\nE5 Lead partner\nTaj Rehal\nE6 Other team members\nIngrid Hesselbo, Helena McElroy, Caroline Philipps\nE7 Other firms advising on the matter and their role(s)\nUnite Union representing the individual employee\nE8 Date of completion or current status\nOngoing\nE9 Other information about this matter \u2013 e.g. link to press coverage\n ",
               "isStale": true
             },
             "Matter Summary": {
@@ -4457,7 +4234,7 @@
             },
             "Multiple Matters": {
               "state": "loading",
-              "value": "No. It contains only one matter; there is a single E1 section (“E1 Name of client”) and no duplicated D1 or E1 sections.",
+              "value": "No. It contains only one matter; there is a single E1 section (\u201cE1 Name of client\u201d) and no duplicated D1 or E1 sections.",
               "isStale": false
             },
             "How Many Matters?": {
@@ -4467,7 +4244,7 @@
             },
             "Extract 1": {
               "state": "loading",
-              "value": "# Confidential Matter 7\n- E1 Name of client (for ranking purposes only):\n- A global healthcare software technology company\n- E2 Summary of matter and your department's role - Please say why this matter was important. Also, tell us exactly what role your department played:\n- Fladgate is advising a global healthcare software technology company on several matters arising from a grievance raised by an employee based in the client's London office. The original grievance alleged that a colleague had sexually assaulted the employee in her home, and we were instructed following her involvement of the police and appeal of the grievance after the client had tried to resolve it internally. The employee has raised several subsequent grievances, including sexual harassment, sexual discrimination and disability discrimination claims as a result of missing work due to anxiety.\n- This is an extremely complex and highly sensitive situation for the private equity-backed client, and it involves significant reputational risk issues.\n- E3 Matter value — include currency and amount in figures:\n- N/A\n- E4 Is this a cross-border matter? If yes, please indicate the jurisdictions involved.:\n- No\n- E5 Lead partner:\n- Taj Rehal\n- E6 Other team members:\n- Ingrid Hesselbo, Helena McElroy, Caroline Philipps\n- E7 Other firms advising on the matter and their role(s):\n- Unite Union representing the individual employee\n- E8 Date of completion or current status:\n- Ongoing\n- E9 Other information about this matter - e.g. link to press coverage:\n- [None provided]",
+              "value": "# Confidential Matter 7\n- E1 Name of client (for ranking purposes only):\n- A global healthcare software technology company\n- E2 Summary of matter and your department's role - Please say why this matter was important. Also, tell us exactly what role your department played:\n- Fladgate is advising a global healthcare software technology company on several matters arising from a grievance raised by an employee based in the client's London office. The original grievance alleged that a colleague had sexually assaulted the employee in her home, and we were instructed following her involvement of the police and appeal of the grievance after the client had tried to resolve it internally. The employee has raised several subsequent grievances, including sexual harassment, sexual discrimination and disability discrimination claims as a result of missing work due to anxiety.\n- This is an extremely complex and highly sensitive situation for the private equity-backed client, and it involves significant reputational risk issues.\n- E3 Matter value \u2014 include currency and amount in figures:\n- N/A\n- E4 Is this a cross-border matter? If yes, please indicate the jurisdictions involved.:\n- No\n- E5 Lead partner:\n- Taj Rehal\n- E6 Other team members:\n- Ingrid Hesselbo, Helena McElroy, Caroline Philipps\n- E7 Other firms advising on the matter and their role(s):\n- Unite Union representing the individual employee\n- E8 Date of completion or current status:\n- Ongoing\n- E9 Other information about this matter - e.g. link to press coverage:\n- [None provided]",
               "isStale": false
             },
             "Extract 2": {
@@ -4502,7 +4279,7 @@
             },
             "Extract D2 Matter Summary": {
               "state": "loading",
-              "value": "Advising a global healthcare software technology company on several matters arising from an employee grievance in its London office. The initial grievance alleged sexual assault by a colleague at the employee’s home; we were instructed after police involvement and an appeal following the client’s internal attempt to resolve. The employee has since raised further grievances, including sexual harassment, sex discrimination and disability discrimination linked to anxiety-related absence. This is an extremely complex and highly sensitive matter for the private equity‑backed client, involving significant reputational risk.",
+              "value": "Advising a global healthcare software technology company on several matters arising from an employee grievance in its London office. The initial grievance alleged sexual assault by a colleague at the employee\u2019s home; we were instructed after police involvement and an appeal following the client\u2019s internal attempt to resolve. The employee has since raised further grievances, including sexual harassment, sex discrimination and disability discrimination linked to anxiety-related absence. This is an extremely complex and highly sensitive matter for the private equity\u2011backed client, involving significant reputational risk.",
               "isStale": false
             },
             "Extract D4 Is this a cross-border matter": {
@@ -4512,7 +4289,7 @@
             },
             "Extract D7 Other firms advising on the matter and their role(s)": {
               "state": "loading",
-              "value": "Unite Union – representing the individual employee.",
+              "value": "Unite Union \u2013 representing the individual employee.",
               "isStale": false
             },
             "Extract D6 Other team members": {

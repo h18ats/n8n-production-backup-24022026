@@ -165,7 +165,7 @@
           "mode": "list",
           "cachedResultName": "alerts"
         },
-        "text": "=🚨 *n8n Workflow Error Alert*\n\n*n8n Workflow:* {{ $json.workflow.name }}\n*Last Node Executed:* {{ $json.execution.lastNodeExecuted }}\n*Error:* {{ $json.execution.error.context.descriptionKey }}\n*Error detail:* {{ $json.execution.error.context.causeDetailed }}\n*Time:* {{ $json.errorTimestamp }}\n*Execution ID:* {{ $json.executionId }}\n\n📊 View error log: {{ $json.airtableRecordUrl }}",
+        "text": "=\ud83d\udea8 *n8n Workflow Error Alert*\n\n*n8n Workflow:* {{ $json.workflow.name }}\n*Last Node Executed:* {{ $json.execution.lastNodeExecuted }}\n*Error:* {{ $json.execution.error.context.descriptionKey }}\n*Error detail:* {{ $json.execution.error.context.causeDetailed }}\n*Time:* {{ $json.errorTimestamp }}\n*Execution ID:* {{ $json.executionId }}\n\n\ud83d\udcca View error log: {{ $json.airtableRecordUrl }}",
         "otherOptions": {}
       },
       "id": "d326fbd9-a81a-420e-800d-b42cb1fda878",
@@ -183,66 +183,6 @@
           "name": "LE n8n Alerts"
         }
       }
-    },
-    {
-      "parameters": {
-        "operation": "update",
-        "teamId": {
-          "__rl": true,
-          "value": "cb517b7c-d88b-4a48-a59e-575370aaacdc",
-          "mode": "list",
-          "cachedResultName": "Legal Engine Ltd"
-        },
-        "channelId": {
-          "__rl": true,
-          "value": "19:7924caab3dc84af9a6bc5785b6dada4c@thread.tacv2",
-          "mode": "list",
-          "cachedResultName": "Dev",
-          "cachedResultUrl": "https://teams.cloud.microsoft/l/channel/19%3A7924caab3dc84af9a6bc5785b6dada4c%40thread.tacv2/Dev?groupId=cb517b7c-d88b-4a48-a59e-575370aaacdc&tenantId=fad5c68f-d169-4373-bed7-55243bd99c7b&allowXTenantAccess=True&ngc=True"
-        },
-        "name": "New n8n Workflow alert",
-        "options": {}
-      },
-      "id": "48c88423-f8ac-471c-8973-e0fefa081f07",
-      "name": "Send Teams Alert",
-      "type": "n8n-nodes-base.microsoftTeams",
-      "typeVersion": 2,
-      "position": [
-        144,
-        16
-      ],
-      "webhookId": "d740514f-a06c-44f6-9ecc-a3b22b353441",
-      "credentials": {
-        "microsoftTeamsOAuth2Api": {
-          "id": "qyoIpk534c3Uq1X6",
-          "name": "Microsoft Teams account - Andy"
-        }
-      },
-      "disabled": true
-    },
-    {
-      "parameters": {
-        "sendTo": "={{ $('Workflow Configuration').first().json.emailRecipients }}",
-        "subject": "=🚨 Workflow Error: {{ $json.errorWorkflow }}",
-        "message": "=<h2>n8n Workflow Error Alert</h2>\n<p><strong>n8n Workflow:</strong> {{ $json.workflow.name }}</p>\n<p><strong>Node:</strong> {{ $json.execution.lastNodeExecuted }}</p>\n<p><strong>Error Message:</strong>{{ $json.execution.error.message }} </p>\n<p><strong>Timestamp:</strong> {{ $json.errorTimestamp }}</p>\n<p><strong>Execution ID:</strong> {{ $json.executionId }}</p>\n<p><strong>Execution Mode:</strong> {{ $json.executionMode }}</p>\n<hr>\n<p><strong>Stack Trace:</strong></p>\n<pre>{{ $json.errorStack }}</pre>\n<hr>\n<p><a href='{{ $json.airtableRecordUrl }}'>View Error Log in Airtable</a></p>",
-        "options": {}
-      },
-      "id": "400878c9-31fd-4b85-abfa-8c319dc5bd4f",
-      "name": "Send Email Alert",
-      "type": "n8n-nodes-base.gmail",
-      "typeVersion": 2.1,
-      "position": [
-        144,
-        400
-      ],
-      "webhookId": "1693fda6-c06c-4eb0-8520-8490636b4ca2",
-      "credentials": {
-        "gmailOAuth2": {
-          "id": "bGGFKDTuuG2o02nS",
-          "name": "Gmail - V88ATS- Andy Personal"
-        }
-      },
-      "disabled": true
     },
     {
       "parameters": {
@@ -885,7 +825,7 @@
     {
       "parameters": {
         "toRecipients": "={{ $('Workflow Configuration').first().json.emailRecipients }}",
-        "subject": "=🔍 n8n AI Error Diagnosis: {{ $('Format Error Data').first().json.errorWorkflow }}",
+        "subject": "=\ud83d\udd0d n8n AI Error Diagnosis: {{ $('Format Error Data').first().json.errorWorkflow }}",
         "bodyContent": "=<h2>AI Error Diagnosis Report</h2>\n<h3>Error Details</h3>\n<p><strong>Workflow:</strong> {{ $('Format Error Data').first().json.errorWorkflow }}</p>\n<p><strong>Node:</strong> {{ $('Format Error Data').first().json.errorNode }}</p>\n<p><strong>Error:</strong> {{ $('Format Error Data').first().json.errorMessage }}</p>\n<p><strong>Timestamp:</strong> {{ $('Format Error Data').first().json.errorTimestamp }}</p>\n<hr>\n<h3>AI Diagnosis</h3>\n<pre>{{ $json.output }}</pre>\n<hr>\n<p><a href='{{ $('Format Error Data').first().json.airtableRecordUrl }}'>View Full Error Log in Airtable</a></p>",
         "additionalFields": {
           "ccRecipients": "andy@legalengine.co.uk, edu@legalengine.co.uk",
@@ -910,30 +850,8 @@
     },
     {
       "parameters": {
-        "method": "POST",
-        "url": "https://api.elevenlabs.io/v1/convai/twilio/outbound-call",
-        "sendHeaders": true,
-        "specifyHeaders": "json",
-        "jsonHeaders": "={\n  \"xi-api-key\": \"sk_fb475a342401f1e2495de38b2193518f54778f4427ce83de\",\n  \"Content-Type\": \"application/json\"\n}\n",
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={\n\"agent_id\": \"agent_2601k9dtv7dkfgfa50sszzamrc37\",\n  \"agent_phone_number_id\": \"phnum_01jvx1f76mfg6akt98vk9jqyqh\",\n  \"to_number\": \"+447966543220\",\n  \"conversation_initiation_client_data\": {\n    \"client_name\": \"Acme Ltd\",\n    \"matter_ref\": \"M-2025-001\"\n  }\n}\n",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [
-        144,
-        784
-      ],
-      "id": "2b61881a-9b86-473f-a0f9-a195ed1a3e01",
-      "name": "Outbound Call",
-      "disabled": true
-    },
-    {
-      "parameters": {
         "toRecipients": "={{ $('Workflow Configuration').first().json.emailRecipients }}",
-        "subject": "=🔍 n8n Workflow Error: {{ $('Format Error Data').first().json.errorWorkflow }}",
+        "subject": "=\ud83d\udd0d n8n Workflow Error: {{ $('Format Error Data').first().json.errorWorkflow }}",
         "bodyContent": "=<h2>n8n Workflow Error Alert</h2>\n<p><strong>n8n Workflow:</strong> {{ $json.workflow.name }}</p>\n<p><strong>Node:</strong> {{ $json.execution.lastNodeExecuted }}</p>\n<p><strong>Error Message:</strong>{{ $json.execution.error.message }} </p>\n<p><strong>Timestamp:</strong> {{ $json.errorTimestamp }}</p>\n<p><strong>Execution ID:</strong> {{ $json.executionId }}</p>\n<p><strong>Execution Mode:</strong> {{ $json.executionMode }}</p>\n<hr>\n<p><strong>Stack Trace:</strong></p>\n<pre>{{ $json.errorStack }}</pre>\n<hr>\n<p><a href='{{ $json.airtableRecordUrl }}'>View Error Log in Airtable</a></p>",
         "additionalFields": {
           "ccRecipients": "andy@legalengine.co.uk, edu@legalengine.co.uk",
@@ -989,22 +907,7 @@
             "index": 0
           },
           {
-            "node": "Send Teams Alert",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Send Email Alert",
-            "type": "main",
-            "index": 0
-          },
-          {
             "node": "Log Error to Airtable",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Outbound Call",
             "type": "main",
             "index": 0
           },
