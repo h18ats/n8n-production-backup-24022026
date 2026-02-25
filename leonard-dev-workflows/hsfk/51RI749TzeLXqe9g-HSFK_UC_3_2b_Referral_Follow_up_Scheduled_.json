@@ -326,7 +326,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Build escalation Slack message for stale referrals (30+ days open)\nconst staleReferrals = $input.all();\n\nconst lines = staleReferrals.map(item => {\n  const r = item.json;\n  const capturedDate = r['Captured Date'] ? r['Captured Date'].split('T')[0] : 'Unknown';\n  const referredPerson = r['Referred Person'] || 'Unknown';\n  const referredOrg = r['Referred Person Organisation'] ? ` (${r['Referred Person Organisation']})` : '';\n  const targetTeam = r['Target Team or Person'] || 'Unknown';\n  const context = r['Context'] || 'No context';\n  const assignee = r['Assignee'] || 'Unassigned';\n  const urgency = r['Urgency'] || 'medium';\n\n  return `• *${referredPerson}${referredOrg}* → ${targetTeam} | Since: ${capturedDate} | Urgency: ${urgency} | Assignee: ${assignee} | Re: ${context}`;\n}).join('\\n');\n\nconst slackText = `:rotating_light: *Referral Escalation - ${staleReferrals.length} referral(s) open 30+ days*\\n\\n${lines}\\n\\nThese referrals require immediate attention. Please update status or close.`;\n\nreturn {\n  json: {\n    stale_count: staleReferrals.length,\n    slack_text: slackText,\n    stale_referrals: staleReferrals.map(i => i.json)\n  }\n};"
+        "jsCode": "// Build escalation Slack message for stale referrals (30+ days open)\nconst staleReferrals = $input.all();\n\nconst lines = staleReferrals.map(item => {\n  const r = item.json;\n  const capturedDate = r['Captured Date'] ? r['Captured Date'].split('T')[0] : 'Unknown';\n  const referredPerson = r['Referred Person'] || 'Unknown';\n  const referredOrg = r['Referred Person Organisation'] ? ` (${r['Referred Person Organisation']})` : '';\n  const targetTeam = r['Target Team or Person'] || 'Unknown';\n  const context = r['Context'] || 'No context';\n  const assignee = r['Assignee'] || 'Unassigned';\n  const urgency = r['Urgency'] || 'medium';\n\n  return `\u2022 *${referredPerson}${referredOrg}* \u2192 ${targetTeam} | Since: ${capturedDate} | Urgency: ${urgency} | Assignee: ${assignee} | Re: ${context}`;\n}).join('\\n');\n\nconst slackText = `:rotating_light: *Referral Escalation - ${staleReferrals.length} referral(s) open 30+ days*\\n\\n${lines}\\n\\nThese referrals require immediate attention. Please update status or close.`;\n\nreturn {\n  json: {\n    stale_count: staleReferrals.length,\n    slack_text: slackText,\n    stale_referrals: staleReferrals.map(i => i.json)\n  }\n};"
       },
       "id": "build-escalation-message",
       "name": "Build Escalation Message",
@@ -390,7 +390,7 @@
         "workflowId": {
           "__rl": true,
           "mode": "id",
-          "value": "zjwCkfCuH3GnW2qT"
+          "value": "aEn6aKqNBeAuqLYo"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
