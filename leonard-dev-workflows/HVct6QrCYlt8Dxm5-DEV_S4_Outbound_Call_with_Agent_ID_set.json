@@ -1,0 +1,216 @@
+{
+  "name": "DEV - S4 - Outbound Call with Agent ID set",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -672,
+        -80
+      ],
+      "id": "197945b8-cdc1-4dc4-94bf-6318e2633865",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "amount": 1,
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        -80
+      ],
+      "id": "9d4db33f-0575-4833-b8a5-a12173e8765b",
+      "name": "Wait 1min",
+      "webhookId": "70a9cc76-edbf-4ca5-beea-554e13cdf095"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "LKEUTD0mRW0tfKya",
+          "mode": "list",
+          "cachedResultName": "DEV - S5 - Delete Agent & KB"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        448,
+        -80
+      ],
+      "id": "16917961-42f2-4fb4-92c1-4f355b2e1e43",
+      "name": "Execute Workflow"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.elevenlabs.io/v1/convai/twilio/outbound-call",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "={\n  \"xi-api-key\": \"sk_fb475a342401f1e2495de38b2193518f54778f4427ce83de\",\n  \"Content-Type\": \"application/json\"\n}\n",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n\"agent_id\": \"{{ $json.agent_id }}\",\n  \"agent_phone_number_id\": \"phnum_01jvx1f76mfg6akt98vk9jqyqh\",\n  \"to_number\": \"+447966543220\",\n  \"conversation_initiation_client_data\": {\n    \"client_name\": \"Acme Ltd\",\n    \"matter_ref\": \"M-2025-001\"\n  }\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -224,
+        -80
+      ],
+      "id": "4a4439c4-fd58-446c-a192-583db6295f01",
+      "name": "Outbound Call"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a7518b23-e670-4c5b-b688-be09a1e6a1ec",
+              "name": "agent_id",
+              "value": "={{ $json.agent_id }}",
+              "type": "string"
+            },
+            {
+              "id": "04dd8171-07a9-4301-87af-c04cfde78325",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -448,
+        -80
+      ],
+      "id": "333800ec-6a6b-413d-8a9f-69f024fe47a9",
+      "name": "Set Nodes to pass"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a7518b23-e670-4c5b-b688-be09a1e6a1ec",
+              "name": "agent_id",
+              "value": "={{ $('Set Nodes to pass').item.json.agent_id }}",
+              "type": "string"
+            },
+            {
+              "id": "04dd8171-07a9-4301-87af-c04cfde78325",
+              "name": "id",
+              "value": "={{ $('Set Nodes to pass').item.json.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        224,
+        -80
+      ],
+      "id": "ee3cf08a-b064-419a-970f-c5e12d6eb380",
+      "name": "Set Nodes to pass1"
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Set Nodes to pass",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 1min": {
+      "main": [
+        [
+          {
+            "node": "Set Nodes to pass1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Outbound Call": {
+      "main": [
+        [
+          {
+            "node": "Wait 1min",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Nodes to pass": {
+      "main": [
+        [
+          {
+            "node": "Outbound Call",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Nodes to pass1": {
+      "main": [
+        [
+          {
+            "node": "Execute Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": {
+    "node:Schedule Trigger": {
+      "recurrenceRules": []
+    }
+  },
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "agent_id": "agent_5301k48jatm1f3fbnqt3c5d97bvt",
+          "id": "StTLYACCDShjUk3Zg0U2"
+        }
+      }
+    ]
+  },
+  "triggerCount": 1,
+  "meta": null
+}

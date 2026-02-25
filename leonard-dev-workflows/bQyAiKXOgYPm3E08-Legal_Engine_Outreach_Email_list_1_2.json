@@ -1,0 +1,1325 @@
+{
+  "name": "Legal Engine - Outreach Email list 1.2",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "8c8795d2-3085-4e5f-9319-85e17346662f",
+      "name": "When clicking Test workflow1",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1160,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "amount": "={{ $json.delay }}",
+        "unit": "minutes"
+      },
+      "id": "83ceeba3-b8b6-47b5-a4f8-49657b95eedd",
+      "name": "Wait",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2240,
+        60
+      ],
+      "webhookId": "ab95a849-2f56-407c-8680-a4291580a713"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Initialiser le message\nmsg = {};\n\n// Ajouter un délai aléatoire entre 0 et 7 minutes\nconst randomDelay = Math.floor(Math.random() * 7) ;\n\n// Calculer le délai total\nconst totalDelay = randomDelay;\n\n// Ajouter le délai au message\nmsg.delay = totalDelay;\n\n// Retourner le message\nreturn msg;"
+      },
+      "id": "4b066184-44c3-47ed-953d-6e77cebd7c5e",
+      "name": "Code",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1920,
+        -20
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "69676b6c-2bf4-4312-b916-4316c66421a8",
+              "leftValue": "={{ $json.error.message }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        20,
+        -60
+      ],
+      "id": "cfb114d6-9c5a-4f54-87ef-3ab41fa0fc86",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "sheetId": "1jHbr4pU69R9Dcqc-d62fuNPxhzmWostiTKCXQOQuXfU",
+        "range": "L:P",
+        "options": {}
+      },
+      "id": "c3de7a03-051f-44de-85af-809550daf2ec",
+      "name": "Read List of Leads",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 2,
+      "position": [
+        -960,
+        -80
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ideYdPgaT4pRzHvx",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c6609bda-ba69-4fba-b2e7-98cb627cb30c",
+              "leftValue": "={{ $json['LE Test Email'].isEmail() }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "ce9d1833-0ea2-4e4f-bc4f-fda63c965357",
+      "name": "Is it an Email ?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -780,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "356906a0-9d93-43e3-90f2-4c3b2274e3c7",
+      "name": "Loop Over Emails",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -360,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        640,
+        -40
+      ],
+      "id": "d7d54acb-12b7-467d-b5c0-f7790d7b3a96",
+      "name": "Date & Time1"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "value": "appnbpO20uWlcjTf5",
+          "mode": "list",
+          "cachedResultName": "Legal Document Automation",
+          "cachedResultUrl": "https://airtable.com/appnbpO20uWlcjTf5"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblEBgz0HnGTbDQNn",
+          "mode": "list",
+          "cachedResultName": "LIVE - Leonard Outreach Emails",
+          "cachedResultUrl": "https://airtable.com/appnbpO20uWlcjTf5/tblEBgz0HnGTbDQNn"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Contact Email": "={{ $('Read List of Leads').item.json[\"LE Test Email\"] }}",
+            "Last Updated": "={{ $json.formattedDate }}",
+            "Email 1 Sent At ": "={{ $json.formattedDate }}",
+            "Email 1 Subject Line": "You’ve already made your mark [First Name], now save your time",
+            "Email 1 Wave": "1.2",
+            "Email 1 Copy": "Hi [First Name],  You’ve built your reputation. Leonard helps you protect your time by capturing the value of your work without the admin.  Meet Leonard, our AI directories assistant, who can write all your matter summaries for you:  🧠 Thousands of submissions worth of knowledge   📞 A 6-minute structured conversation   📄 A polished, submission-ready matter summary    Give Leonard a try here: https://demo.legalengine.co.uk/  Kind regards  Lee   Lee Curtis   Co-founder, Legal Engine   M: 07889 758119   E: lee@legalengine.co.uk   W: www.legalengine.co.uk   Making EVERY conversation count.",
+            "Email 1 Format": "Plain Text",
+            "Client Name - Scrape": "={{ $('Read List of Leads').item.json[\"First Name\"] }} {{ $('Read List of Leads').item.json[\"Last Name\"] }}"
+          },
+          "matchingColumns": [
+            "Contact Email"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Client Name - Scrape",
+              "displayName": "Client Name - Scrape",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Contact Email",
+              "displayName": "Contact Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "OPT IN/OUT",
+              "displayName": "OPT IN/OUT",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Leonard Demo Stage",
+              "displayName": "Leonard Demo Stage",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Scrape Company Name",
+              "displayName": "Scrape Company Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Scrape Practice Area",
+              "displayName": "Scrape Practice Area",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Chambers Band - Scrape",
+              "displayName": "Chambers Band - Scrape",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Chambers Link",
+              "displayName": "Chambers Link",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Company Domain",
+              "displayName": "Company Domain",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Phone Number",
+              "displayName": "Phone Number",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Location",
+              "displayName": "Location",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Last Updated",
+              "displayName": "Last Updated",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn Profile",
+              "displayName": "LinkedIn Profile",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Lawyer Bio",
+              "displayName": "Lawyer Bio",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Job Title",
+              "displayName": "Job Title",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Full Name (PP Search)",
+              "displayName": "Full Name (PP Search)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Award 1",
+              "displayName": "Award 1",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Award 2",
+              "displayName": "Award 2",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Matter 1",
+              "displayName": "Matter 1",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Matter 2",
+              "displayName": "Matter 2",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Matter 3",
+              "displayName": "Matter 3",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Matter 4",
+              "displayName": "Matter 4",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Matter 5",
+              "displayName": "Matter 5",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Matter 6",
+              "displayName": "Matter 6",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Practice Area 1",
+              "displayName": "Practice Area 1",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Practice Area 2",
+              "displayName": "Practice Area 2",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Practice Area 3",
+              "displayName": "Practice Area 3",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Practice Area 4",
+              "displayName": "Practice Area 4",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Relevant Experience Clients 1",
+              "displayName": "Relevant Experience Clients 1",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Relevant Experience Clients 2",
+              "displayName": "Relevant Experience Clients 2",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Relevant Experience Clients 3",
+              "displayName": "Relevant Experience Clients 3",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Relevant Experience Clients 4",
+              "displayName": "Relevant Experience Clients 4",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Relevant Experience Clients 5",
+              "displayName": "Relevant Experience Clients 5",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Relevant Experience Indiv 1",
+              "displayName": "Relevant Experience Indiv 1",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Relevant Experience Indiv 2",
+              "displayName": "Relevant Experience Indiv 2",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Relevant Experience Indiv 3",
+              "displayName": "Relevant Experience Indiv 3",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Relevant Experience Indiv 4",
+              "displayName": "Relevant Experience Indiv 4",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Relevant Experience Indiv 5",
+              "displayName": "Relevant Experience Indiv 5",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Publications and Insight 1",
+              "displayName": "Publications and Insight 1",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Publications and Insight 2",
+              "displayName": "Publications and Insight 2",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "News and Client Work 1",
+              "displayName": "News and Client Work 1",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "News and Client Work 2",
+              "displayName": "News and Client Work 2",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Chambers Ranking",
+              "displayName": "Chambers Ranking",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Chambers Ranking UR",
+              "displayName": "Chambers Ranking UR",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Legal 500 Ranking",
+              "displayName": "Legal 500 Ranking",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Legal 500 Ranking URL",
+              "displayName": "Legal 500 Ranking URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Chambers Band",
+              "displayName": "Chambers Band",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Expertise Sectors 1",
+              "displayName": "Expertise Sectors 1",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Expertise Sectors 2",
+              "displayName": "Expertise Sectors 2",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Expertise Sectors 3",
+              "displayName": "Expertise Sectors 3",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Expertise Sectors 4",
+              "displayName": "Expertise Sectors 4",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Expertise Sectors 5",
+              "displayName": "Expertise Sectors 5",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Expertise Services 1",
+              "displayName": "Expertise Services 1",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Expertise Services 2",
+              "displayName": "Expertise Services 2",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Expertise Services 3",
+              "displayName": "Expertise Services 3",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Expertise Services 4",
+              "displayName": "Expertise Services 4",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Expertise Services 5",
+              "displayName": "Expertise Services 5",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Leonard - Web/Twillio",
+              "displayName": "Leonard - Web/Twillio",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Details Submitted in frontend",
+              "displayName": "Details Submitted in frontend",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Launch Twillio",
+              "displayName": "Launch Twillio",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "n8n Webhook initiated",
+              "displayName": "n8n Webhook initiated",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Air table write initiated",
+              "displayName": "Air table write initiated",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Email flow started",
+              "displayName": "Email flow started",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Email flow content finished",
+              "displayName": "Email flow content finished",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Email Sent",
+              "displayName": "Email Sent",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Unsubscribe Web",
+              "displayName": "Unsubscribe Web",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Unsubscribe Email",
+              "displayName": "Unsubscribe Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Call Length (m)",
+              "displayName": "Call Length (m)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "n8n Execution Length s)",
+              "displayName": "n8n Execution Length s)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Email 1 Wave",
+              "displayName": "Email 1 Wave",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email 1 Sent At ",
+              "displayName": "Email 1 Sent At ",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email 1 Subject Line",
+              "displayName": "Email 1 Subject Line",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email 1 Copy",
+              "displayName": "Email 1 Copy",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email 1 Format",
+              "displayName": "Email 1 Format",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email 2 Wave",
+              "displayName": "Email 2 Wave",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Email 2 Sent At",
+              "displayName": "Email 2 Sent At",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Email 2 Subject Line",
+              "displayName": "Email 2 Subject Line",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Email 2 Copy",
+              "displayName": "Email 2 Copy",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Email 2 Format",
+              "displayName": "Email 2 Format",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Email 3 Sent At",
+              "displayName": "Email 3 Sent At",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Email 3 Wave",
+              "displayName": "Email 3 Wave",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Email 3 Subject Line",
+              "displayName": "Email 3 Subject Line",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Email 3 Copy",
+              "displayName": "Email 3 Copy",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Email 3 Format",
+              "displayName": "Email 3 Format",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1160,
+        -40
+      ],
+      "id": "c1c13559-d475-4ed3-9aa6-e19f72f23746",
+      "name": "Airtable - New Demo Details Submitted",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- Function node code ---\n// Get the first item (same pattern you used)\nconst inputDate = new Date($input.first().json.currentDate);   // \"2025-05-26T10:22:34.868+01:00\"\n\n// Helper to zero-pad to two digits\nconst pad = n => n.toString().padStart(2, '0');\n\n// Date  →  MM/DD/YYYY\nconst formattedDate = `${pad(inputDate.getMonth() + 1)}/${pad(inputDate.getDate())}/${inputDate.getFullYear()}`;\n\n// Time  →  HH:mm:ss   (24-hour clock)\nconst formattedTime = `${pad(inputDate.getHours())}:${pad(inputDate.getMinutes())}:${pad(inputDate.getSeconds())}`;\n\nreturn [\n  {\n    json: {\n      formattedDate,   // e.g. \"05/26/2025\"\n      formattedTime    // e.g. \"09:22:34\"\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        940,
+        -40
+      ],
+      "id": "fe99e793-ac30-4ec0-9f7f-ca762491c0ad",
+      "name": "Date Format2"
+    },
+    {
+      "parameters": {
+        "toRecipients": "={{ $json[\"LE Test Email\"] }}",
+        "subject": "=You’ve already made your mark {{ $json[\"First Name\"] }}, now save your time",
+        "bodyContent": "=Hi {{ $json[\"First Name\"] }},\n\nYou’ve built your reputation. Leonard helps you protect your time by capturing the value of your work without the admin.\n\nMeet Leonard, our AI directories assistant, who can write all your matter summaries for you:\n\n🧠 Thousands of submissions worth of knowledge  \n📞 A 6-minute structured conversation  \n📄 A polished, submission-ready matter summary  \n\nGive Leonard a try here: https://demo.legalengine.co.uk/ \n\nKind regards  \n\nLee  \nLee Curtis  \nCo-founder, Legal Engine  \nM: 07889 758119  \nE: lee@legalengine.co.uk  \nW: www.legalengine.co.uk  \nMaking EVERY conversation count.\n\n\n\n\n\n\n\nUnsubscribe - https://unsubscribe.legalengine.co.uk/\n",
+        "additionalFields": {
+          "bodyContentType": "Text"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        300,
+        -40
+      ],
+      "id": "32c4a006-04ff-4635-afa1-eb68e4430a0b",
+      "name": "Email from Lee Wave 1.2",
+      "webhookId": "b9229094-7269-402b-9a54-7f501dbb6d59",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "6M8EKjo0xkpyROgs",
+          "name": "Microsoft Outlook - Lee @ Legal Engine"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When clicking Test workflow1": {
+      "main": [
+        [
+          {
+            "node": "Read List of Leads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Emails",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Emails",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Email from Lee Wave 1.2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read List of Leads": {
+      "main": [
+        [
+          {
+            "node": "Is it an Email ?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is it an Email ?": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Emails",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Emails": {
+      "main": [
+        [],
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Time1": {
+      "main": [
+        [
+          {
+            "node": "Date Format2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date Format2": {
+      "main": [
+        [
+          {
+            "node": "Airtable - New Demo Details Submitted",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Airtable - New Demo Details Submitted": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email from Lee Wave 1.2": {
+      "main": [
+        [
+          {
+            "node": "Date & Time1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 0,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

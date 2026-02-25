@@ -1,0 +1,492 @@
+{
+  "name": "DEV - Search Outlook Emails with Natural Language - Andy",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "a5c3ebce-f05b-4985-96ef-b98b8db66a22",
+      "name": "When chat message received",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "position": [
+        880,
+        560
+      ],
+      "webhookId": "ccaca032-7964-4a83-9417-91a223bc1485",
+      "typeVersion": 1.3
+    },
+    {
+      "parameters": {
+        "content": "\n\n## ⚙️ Setup Instructions\n\n### 1️⃣ Set Up OpenAI Connection\n1. Go to [OpenAI Platform](https://platform.openai.com/api-keys)  \n2. Navigate to [OpenAI Billing](https://platform.openai.com/settings/organization/billing/overview)  \n3. Add funds to your billing account  \n4. Copy your API key into the **OpenAI credentials** in n8n  \n\n### 2️⃣ Set Up Outlook Connection\n1. In n8n → **Credentials → New → Microsoft Outlook OAuth2 API**  \n2. Log in with your Outlook account & approve access  \n3. Attach this credential to the **Search Outlook** node in the workflow  \n4. (Optional) Change the `limit` parameter in the node if you want more/less than 5 results  \n\n---\n\n## 📬 Contact Information\nNeed help customizing this workflow or building similar automations?  \n\n📧 [robert@ynteractive.com](mailto:robert@ynteractive.com)  \n🔗 [Robert Breen](https://www.linkedin.com/in/robert-breen-29429625/)  \n🌐 [ynteractive.com](https://ynteractive.com)  \n",
+        "height": 928,
+        "width": 400
+      },
+      "id": "38e231b6-a4d3-4694-8527-7e6411ece665",
+      "name": "Sticky Note21",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        368,
+        240
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "id": "b7e5a86b-9534-4a1c-8134-f0cdc92a40c5",
+      "name": "Simple Memory1",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "position": [
+        1280,
+        816
+      ],
+      "typeVersion": 1.3
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"search\": \"search term\"\n}"
+      },
+      "id": "b765f576-4cce-4264-8cd0-eb42bcfe0b3b",
+      "name": "Structured Output Parser3",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "position": [
+        1440,
+        848
+      ],
+      "typeVersion": 1.3
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "id": "9dd5c86f-8d6d-4b94-a7b7-08d81aac3749",
+      "name": "Merge",
+      "type": "n8n-nodes-base.merge",
+      "position": [
+        1680,
+        768
+      ],
+      "typeVersion": 3.2
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"score\": \"score\",\n\t\"url\": \"url\"\n}"
+      },
+      "id": "ac3539fb-842d-4922-9ca7-42397cfb7143",
+      "name": "Structured Output Parser5",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "position": [
+        2176,
+        1024
+      ],
+      "typeVersion": 1.3
+    },
+    {
+      "parameters": {
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "Take in a search that someone wants to search their outlook for a specific mail. Once they tell you what they wnat, output a search term. \n\nOutput like this. \n\n{\n\t\"search\": \"search term\"\n}"
+        }
+      },
+      "id": "68610127-4f8e-4c97-819f-7c47c0d4c93f",
+      "name": "Generate Search Term",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        1184,
+        528
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": 5,
+        "output": "raw",
+        "filtersUI": {
+          "values": {
+            "filterBy": "search",
+            "search": "={{ $json.output.search }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "6045e6b4-1f1a-4a94-bdc5-b4cca9dbb167",
+      "name": "Search Outlook",
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "position": [
+        1936,
+        576
+      ],
+      "webhookId": "ae07c8b7-e0be-4a87-93a8-cfcb00303d0c",
+      "typeVersion": 2,
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "J6emPxQ1aamee9nR",
+          "name": "Microsoft Outlook - Andy Personal Hotmail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=User question: {{ $json.chatInput }} Email content: {{ $json.body.content }}  sender: {{ $json.sender.emailAddress.address }}  url: {{ $json.webLink }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "take in the user question and give a number 1-100 on how likely this is the email they are looking for. output like this: "
+        }
+      },
+      "id": "90182205-aef1-465d-a271-16c63b9a4942",
+      "name": "Score if email is relevent to search",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        2016,
+        784
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.data }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "write this data into a table output with two columns. score, then url. "
+        }
+      },
+      "id": "7b73107e-a3e7-4c4d-95c3-7f53c858c5e0",
+      "name": "Output as table for user",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        2576,
+        512
+      ],
+      "typeVersion": 2.2,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "id": "eb49ccbb-5951-4774-b42d-22822317fc3f",
+      "name": "Convert to one Output",
+      "type": "n8n-nodes-base.aggregate",
+      "position": [
+        2256,
+        528
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        1072,
+        816
+      ],
+      "id": "fafd09e8-e0f9-4af9-9ead-3672216917dc",
+      "name": "Google Vertex Chat Model",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        1968,
+        1024
+      ],
+      "id": "8776b024-73fd-453f-a391-8e86fc433c20",
+      "name": "Google Vertex Chat Model1",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        2336,
+        800
+      ],
+      "id": "ee018011-9ee2-4427-bca8-b2283ba384ba",
+      "name": "Google Vertex Chat Model2",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "messageId": {
+          "__rl": true,
+          "value": "={{ $json.messageId }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "id": "b733e149-968b-4bfa-8325-819f38860fd2",
+      "name": "Search Outlook1",
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "position": [
+        2704,
+        304
+      ],
+      "webhookId": "ae07c8b7-e0be-4a87-93a8-cfcb00303d0c",
+      "typeVersion": 2,
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "J6emPxQ1aamee9nR",
+          "name": "Microsoft Outlook - Andy Personal Hotmail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"search\": \"https\"\n}"
+      },
+      "id": "a3a4577f-057e-499d-94c9-7c86ef12377d",
+      "name": "Structured Output Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "position": [
+        2608,
+        768
+      ],
+      "typeVersion": 1.3
+    },
+    {
+      "parameters": {
+        "jsCode": "// items[0].json.data is your array from the previous node\nconst data = items[0].json.data;\n\n// 1. Pick the entry with the highest score\nconst best = data.reduce((bestSoFar, entry) => {\n  const score = Number(entry.output.score || 0);\n  if (!bestSoFar) return entry;\n  const bestScore = Number(bestSoFar.output.score || 0);\n  return score > bestScore ? entry : bestSoFar;\n}, null);\n\n// 2. Extract the URL-encoded ItemID from the URL\nconst url = best.output.url;\n// match ItemID=... up to the next &\nconst match = url.match(/[?&]ItemID=([^&]+)/);\n\nif (!match) {\n  throw new Error('ItemID not found in URL');\n}\n\nconst itemIdEncoded = match[1];  // still has %2F, %3D etc\n\n// 3. Return a single item with a single messageId\nreturn [\n  {\n    json: {\n      messageId: itemIdEncoded\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2464,
+        304
+      ],
+      "id": "e18b7674-d218-4d87-82fb-0d0db55372f9",
+      "name": "Code in JavaScript"
+    }
+  ],
+  "connections": {
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Score if email is relevent to search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Outlook": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "Generate Search Term",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Search Term": {
+      "main": [
+        [
+          {
+            "node": "Search Outlook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to one Output": {
+      "main": [
+        [
+          {
+            "node": "Output as table for user",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser3": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Generate Search Term",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser5": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Score if email is relevent to search",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Generate Search Term",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Score if email is relevent to search": {
+      "main": [
+        [
+          {
+            "node": "Convert to one Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generate Search Term",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Score if email is relevent to search",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Output as table for user",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Output as table for user": {
+      "main": [
+        []
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Output as table for user",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Outlook1": {
+      "main": [
+        []
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Search Outlook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 0,
+  "meta": {
+    "templateId": "7600",
+    "templateCredsSetupCompleted": true
+  }
+}

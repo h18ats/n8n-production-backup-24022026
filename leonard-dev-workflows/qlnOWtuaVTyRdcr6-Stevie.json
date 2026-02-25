@@ -1,0 +1,154 @@
+{
+  "name": "Stevie",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -144
+      ],
+      "id": "1fabf8f6-823d-4a5e-8f59-c64afeb424a7",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "returnAll": true,
+        "filters": {
+          "labelIds": [
+            "Label_441245140810671954"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        224,
+        -144
+      ],
+      "id": "0fee0105-9a04-4176-b31e-344e6793cce8",
+      "name": "Get many messages",
+      "webhookId": "5cd0efc9-2a24-4a65-a092-079694b9cffa",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "N15HJY1qHiINx9PM",
+          "name": "Lee C Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "messageId": "={{ $json.id }}",
+        "simple": false,
+        "options": {
+          "downloadAttachments": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        448,
+        -144
+      ],
+      "id": "81e62560-db9a-4ec9-9388-e2195b742e76",
+      "name": "Get a message",
+      "webhookId": "da0b50b8-c4c3-460f-b54a-b7333cc50d34",
+      "executeOnce": false,
+      "alwaysOutputData": false,
+      "retryOnFail": false,
+      "notesInFlow": false,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "N15HJY1qHiINx9PM",
+          "name": "Lee C Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * n8n Code node (JavaScript)\n * Purpose: Combine all email messages coming into this node into one text file content.\n * Works whether the incoming data is:\n *  - many items (one message per item), or\n *  - one item containing an array of messages\n */\n\n// Helper: pull a header from Gmail's raw payload if needed\nfunction getHeader(payload, name) {\n  const headers = payload?.headers || [];\n  const h = headers.find(x => (x.name || '').toLowerCase() === name.toLowerCase());\n  return h?.value || '';\n}\n\n// Helper: best-effort body extraction (varies by node settings)\nfunction getBody(msg) {\n  // Common “simplified” fields\n  return (\n    msg.textPlain ||\n    msg.text ||\n    msg.body ||\n    msg.snippet ||\n    msg.textHtml ||\n    ''\n  );\n}\n\n// 1) Gather messages from input, supporting both shapes\nconst incomingItems = $input.all();\n\n// If you have many items, each is a message already.\n// If you have one item with an array, try to locate that array.\nlet messages = [];\n\n// Case A: many items (typical)\nif (incomingItems.length > 1) {\n  messages = incomingItems.map(i => i.json);\n} else {\n  // Case B: single item – may contain an array of messages\n  const one = incomingItems[0]?.json ?? {};\n\n  // Try a few likely keys\n  const possibleArrays = [\n    one.messages,\n    one.data,\n    one.items,\n    one.results,\n  ].filter(Array.isArray);\n\n  if (possibleArrays.length) {\n    messages = possibleArrays[0];\n  } else {\n    // Fall back: treat the single item as one message\n    messages = [one];\n  }\n}\n\n// 2) Build the combined export\nconst now = new Date();\nconst filename = `emails_export_${now.toISOString().slice(0, 10)}.txt`;\n\nlet combined = '';\nlet count = 0;\n\nfor (const msg of messages) {\n  // Subject/from/date can be in “simplified” fields or buried in payload headers\n  const subject =\n    msg.subject ||\n    getHeader(msg.payload, 'Subject') ||\n    '(no subject)';\n\n  const from =\n    msg.from ||\n    getHeader(msg.payload, 'From') ||\n    '(no from)';\n\n  const date =\n    msg.date ||\n    getHeader(msg.payload, 'Date') ||\n    '(no date)';\n\n  // Optional: include message ID if helpful for traceability\n  const messageId =\n    msg.id ||\n    msg.messageId ||\n    getHeader(msg.payload, 'Message-ID') ||\n    '';\n\n  const body = getBody(msg);\n\n  count += 1;\n\n  combined +=\n`============================================================\nEmail ${count}\nDate: ${date}\nFrom: ${from}\nSubject: ${subject}${messageId ? `\\nMessage ID: ${messageId}` : ''}\n------------------------------------------------------------\n${body}\n\n`;\n}\n\n// 3) Output ONE item containing the full content\nreturn [\n  {\n    json: {\n      filename,\n      content: combined,\n      messageCount: count,\n    },\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        -144
+      ],
+      "id": "e6286e0e-219e-429a-9d77-8fdc453d6f58",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "content",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        896,
+        -144
+      ],
+      "id": "aac0bb26-dd2b-406b-bcec-6a479af5ab59",
+      "name": "Convert to File"
+    }
+  ],
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get many messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many messages": {
+      "main": [
+        [
+          {
+            "node": "Get a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a message": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 0,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

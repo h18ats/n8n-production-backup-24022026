@@ -1,0 +1,901 @@
+{
+  "name": "HSFK UC 4.1 - Post-Call CRM Update",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## HSFK UC 4.1 - Post-Call CRM Update\n\n**Purpose:** Receive ElevenLabs post-call webhook after a CRM debrief conversation. Extract structured contact/meeting data from the transcript via LLM, then write high-confidence updates to Airtable (mocking the InterAction CRM write until API access is granted).\n\n**Trigger:** ElevenLabs post-call webhook → POST /webhook/hsfk-crm-update-prod\n\n**Flow:**\n1. Webhook receives ElevenLabs payload\n2. HMAC signature validation (reject if invalid)\n3. Duration check (skip < 30s)\n4. LLM extracts: contacts, organisations, meeting topics, action items\n5. Validate extracted data (confidence scoring)\n6. High-confidence (>= 0.8) → write to HSFK - CRM Update Log table\n7. Low-confidence (< 0.8) → write to HSFK - CRM Draft Queue table\n8. Post Slack summary to #customer-hsfk\n9. Audit log via shared-05\n\n**Sub-workflow IDs:**\n- shared-04 (Vertex AI LLM): AI3InmjY6gmJwdXg\n- shared-05 (Airtable Audit): zjwCkfCuH3GnW2qT\n\n**Airtable base:** app0QZAuhY8Zx4I54\n- CRM Update Log: tblTSfZ4RletQ0GIR\n- CRM Draft Queue: tbl3g73bLh5KkqV1F\n\n**n8n instance:** leonard-dev.app.n8n.cloud\n\n**Mock CRM note:** InterAction API not yet available. All updates write to Airtable as interim store. When InterAction access is granted, replace the Airtable write nodes with shared-01 CRM write calls.",
+        "height": 560,
+        "width": 500,
+        "color": 6
+      },
+      "id": "sticky-note-docs",
+      "name": "Documentation",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -600,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "hsfk-crm-update-prod",
+        "responseMode": "responseNode",
+        "options": {
+          "rawBody": true
+        }
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook - ElevenLabs Post-Call",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -80,
+        240
+      ],
+      "webhookId": "hsfk-crm-update-prod-webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "// HMAC-SHA256 signature validation for ElevenLabs webhooks\n// ElevenLabs sends the signature in the header: ElevenLabs-Signature\n// Format: t=<timestamp>,v0=<hmac_hex>\n// We compute HMAC-SHA256(secret, timestamp + '.' + raw_body) and compare\n\nconst crypto = require('crypto');\n\n// Secret is stored in n8n credentials / env. Use a placeholder here.\n// In production: retrieve from n8n credential store.\nconst WEBHOOK_SECRET = process.env.HSFK_ELEVENLABS_WEBHOOK_SECRET || 'PLACEHOLDER_SET_IN_N8N_CREDENTIAL';\n\nconst signatureHeader = $input.first().json.headers?.['elevenlabs-signature'] || '';\nconst rawBody = $input.first().json.rawBody || '';\n\nlet validationResult = { valid: false, reason: 'unknown', timestamp: null };\n\nif (!signatureHeader) {\n  validationResult = { valid: false, reason: 'missing_signature_header', timestamp: null };\n} else {\n  try {\n    // Parse t=<ts>,v0=<sig>\n    const parts = {};\n    signatureHeader.split(',').forEach(part => {\n      const [key, value] = part.split('=');\n      parts[key.trim()] = value.trim();\n    });\n\n    const timestamp = parts['t'];\n    const receivedSig = parts['v0'];\n\n    if (!timestamp || !receivedSig) {\n      validationResult = { valid: false, reason: 'malformed_signature_header', timestamp: null };\n    } else {\n      // Replay protection: reject if timestamp is > 5 minutes old\n      const tsSeconds = parseInt(timestamp, 10);\n      const nowSeconds = Math.floor(Date.now() / 1000);\n      const ageSecs = nowSeconds - tsSeconds;\n\n      if (ageSecs > 300) {\n        validationResult = { valid: false, reason: 'timestamp_too_old', timestamp, age_secs: ageSecs };\n      } else {\n        // Compute expected HMAC\n        const signedPayload = `${timestamp}.${rawBody}`;\n        const expectedSig = crypto\n          .createHmac('sha256', WEBHOOK_SECRET)\n          .update(signedPayload)\n          .digest('hex');\n\n        // Constant-time comparison to prevent timing attacks\n        const expectedBuf = Buffer.from(expectedSig, 'hex');\n        const receivedBuf = Buffer.from(receivedSig, 'hex');\n        const signaturesMatch = expectedBuf.length === receivedBuf.length &&\n          crypto.timingSafeEqual(expectedBuf, receivedBuf);\n\n        validationResult = {\n          valid: signaturesMatch,\n          reason: signaturesMatch ? 'ok' : 'signature_mismatch',\n          timestamp,\n          age_secs: ageSecs\n        };\n      }\n    }\n  } catch (err) {\n    validationResult = { valid: false, reason: 'validation_exception', error: err.message, timestamp: null };\n  }\n}\n\n// Attach validation result alongside the original body for downstream nodes\nconst body = $input.first().json.body || {};\n\nreturn {\n  json: {\n    hmac_valid: validationResult.valid,\n    hmac_reason: validationResult.reason,\n    hmac_timestamp: validationResult.timestamp,\n    body: body,\n    execution_id: `hsfk-crm-${Date.now()}`\n  }\n};"
+      },
+      "id": "hmac-validation",
+      "name": "HMAC Validation",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "hmac-check",
+              "leftValue": "={{ $json.hmac_valid }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equal"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "check-hmac",
+      "name": "HMAC Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        400,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"error\": \"Unauthorized\", \"reason\": \"{{ $('HMAC Validation').first().json.hmac_reason }}\" }",
+        "options": {
+          "responseCode": 401
+        }
+      },
+      "id": "respond-401",
+      "name": "Respond 401 Unauthorized",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        640,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "duration-check",
+              "leftValue": "={{ $json.body.data.conversation_initiation_client_data.dynamic_variables.system__call_duration_secs }}",
+              "rightValue": 30,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "check-duration",
+      "name": "Duration >= 30s?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        640,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"status\": \"skipped\", \"reason\": \"call_too_short\" }",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "respond-too-short",
+      "name": "Respond - Call Too Short",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        880,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build LLM prompt to extract CRM-relevant structured data from ElevenLabs transcript\n\nconst body = $('HMAC Validation').first().json.body || {};\nconst data = body.data || {};\nconst dynamicVars = data.conversation_initiation_client_data?.dynamic_variables || {};\nconst transcript = data.transcript || [];\nconst transcriptText = transcript.map(t => `${t.role}: ${t.message}`).join('\\n');\nconst transcriptSummary = data.analysis?.transcript_summary || '';\n\nconst conversationId = dynamicVars.system__conversation_id || 'unknown';\nconst callDurationSecs = dynamicVars.system__call_duration_secs || 0;\nconst callTime = dynamicVars.system__time_utc || new Date().toISOString();\nconst hsfkUser = dynamicVars.email || dynamicVars.full_name || 'unknown';\nconst executionId = $('HMAC Validation').first().json.execution_id;\n\nconst systemPrompt = `You are a CRM data extraction specialist for a law firm (HSFK). Your task is to analyse a voice debrief transcript and extract structured contact and meeting data suitable for updating an InterAction CRM system.\n\nExtraction rules:\n- Only extract information explicitly stated in the transcript. Never infer or fabricate.\n- For each contact: extract full name, organisation, and any role/title mentioned.\n- For each action item: extract a clear description and owner if mentioned.\n- Assign a confidence score (0.0-1.0) to each extraction based on how clearly it was stated.\n- A score >= 0.8 = high confidence (stated explicitly). A score < 0.8 = low confidence (inferred or ambiguous).\n- If a field is not mentioned, set it to null.\n- Use British English throughout.\n- Respond with raw JSON only, no prose or markdown.`;\n\nconst userPrompt = `Transcript:\n${transcriptText}\n\nTranscript summary:\n${transcriptSummary}\n\nPlease extract the following and return as JSON matching this schema:\n{\n  \"call_date\": \"YYYY-MM-DD\",\n  \"hsfk_user\": \"string\",\n  \"call_duration_secs\": number,\n  \"contacts_mentioned\": [\n    {\n      \"name\": \"string or null\",\n      \"organisation\": \"string or null\",\n      \"role\": \"string or null\",\n      \"confidence\": 0.0-1.0,\n      \"operation\": \"create | update | uncertain\"\n    }\n  ],\n  \"organisations_mentioned\": [\n    {\n      \"name\": \"string\",\n      \"relationship\": \"client | prospect | counterparty | other\",\n      \"confidence\": 0.0-1.0\n    }\n  ],\n  \"meeting_topics\": [\"string\"],\n  \"action_items\": [\n    {\n      \"description\": \"string\",\n      \"owner\": \"string or null\",\n      \"due_date\": \"YYYY-MM-DD or null\",\n      \"confidence\": 0.0-1.0\n    }\n  ],\n  \"mailing_list_updates\": [\n    {\n      \"contact_name\": \"string\",\n      \"action\": \"add | remove\",\n      \"list_name\": \"string or null\",\n      \"confidence\": 0.0-1.0\n    }\n  ],\n  \"overall_confidence\": 0.0-1.0,\n  \"gdpr_flags\": [\"string\"],\n  \"conflict_flags\": [\"string\"],\n  \"extraction_notes\": \"string or null\"\n}`;\n\nreturn {\n  json: {\n    system_prompt: systemPrompt,\n    user_prompt: userPrompt,\n    model: 'gemini-2.5-flash',\n    temperature: 0.2,\n    response_format: 'json',\n    max_tokens: 4096,\n    meta: {\n      conversation_id: conversationId,\n      call_duration_secs: callDurationSecs,\n      call_time: callTime,\n      hsfk_user: hsfkUser,\n      execution_id: executionId,\n      transcript_length: transcriptText.length\n    }\n  }\n};"
+      },
+      "id": "build-llm-prompt",
+      "name": "Build LLM Extraction Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "AI3InmjY6gmJwdXg"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "system_prompt": "={{ $json.system_prompt }}",
+            "user_prompt": "={{ $json.user_prompt }}",
+            "model": "={{ $json.model }}",
+            "temperature": "={{ $json.temperature }}",
+            "response_format": "={{ $json.response_format }}",
+            "max_tokens": "={{ $json.max_tokens }}"
+          },
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "call-llm-shared-04",
+      "name": "Call shared-04 (LLM Extraction)",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        1120,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Validate the LLM extraction output and compute per-record confidence routing\n\nconst llmResult = $json;\nconst promptMeta = $('Build LLM Extraction Prompt').first().json.meta;\n\nconst startTime = Date.now();\n\nif (!llmResult.json_valid || !llmResult.parsed_json) {\n  return {\n    json: {\n      validation_status: 'llm_parse_error',\n      error: 'LLM did not return valid JSON',\n      raw_text: llmResult.text?.substring(0, 500),\n      meta: promptMeta,\n      high_confidence_entities: [],\n      low_confidence_entities: [],\n      overall_confidence: 0,\n      contacts_updated_count: 0,\n      organisations_updated_count: 0,\n      action_items_count: 0,\n      mailing_list_changes_count: 0,\n      gdpr_flags: [],\n      conflict_flags: []\n    }\n  };\n}\n\nconst extracted = llmResult.parsed_json;\nconst overallConfidence = parseFloat(extracted.overall_confidence) || 0;\n\n// Split contacts by confidence threshold\nconst highConfidenceContacts = (extracted.contacts_mentioned || []).filter(c => c.confidence >= 0.8);\nconst lowConfidenceContacts = (extracted.contacts_mentioned || []).filter(c => c.confidence < 0.8);\n\nconst highConfidenceOrgs = (extracted.organisations_mentioned || []).filter(o => o.confidence >= 0.8);\nconst lowConfidenceOrgs = (extracted.organisations_mentioned || []).filter(o => o.confidence < 0.8);\n\n// Action items summary for Slack\nconst actionItems = extracted.action_items || [];\nconst highConfidenceActions = actionItems.filter(a => a.confidence >= 0.8);\n\nconst mailingListChanges = extracted.mailing_list_updates || [];\n\n// Build the InterAction entities JSON (what would go to the CRM)\nconst interactionEntitiesJson = JSON.stringify({\n  contacts: extracted.contacts_mentioned || [],\n  organisations: extracted.organisations_mentioned || [],\n  action_items: actionItems,\n  mailing_list_updates: mailingListChanges,\n  meeting_topics: extracted.meeting_topics || []\n});\n\n// Summary text for Airtable and Slack\nconst contactsStr = (extracted.contacts_mentioned || []).map(c => c.name || 'Unknown').filter(Boolean).join(', ');\nconst orgsStr = (extracted.organisations_mentioned || []).map(o => o.name).filter(Boolean).join(', ');\nconst topicsStr = (extracted.meeting_topics || []).slice(0, 3).join('; ');\n\nreturn {\n  json: {\n    validation_status: 'ok',\n    extracted: extracted,\n    overall_confidence: overallConfidence,\n    confidence_routing: overallConfidence >= 0.8 ? 'high' : 'low',\n    high_confidence_contacts: highConfidenceContacts,\n    low_confidence_contacts: lowConfidenceContacts,\n    high_confidence_orgs: highConfidenceOrgs,\n    low_confidence_orgs: lowConfidenceOrgs,\n    high_confidence_actions: highConfidenceActions,\n    all_action_items: actionItems,\n    mailing_list_changes: mailingListChanges,\n    contacts_updated_count: (extracted.contacts_mentioned || []).length,\n    organisations_updated_count: (extracted.organisations_mentioned || []).length,\n    action_items_count: actionItems.length,\n    mailing_list_changes_count: mailingListChanges.length,\n    gdpr_flags: extracted.gdpr_flags || [],\n    conflict_flags: extracted.conflict_flags || [],\n    interaction_entities_json: interactionEntitiesJson,\n    contacts_summary: contactsStr,\n    orgs_summary: orgsStr,\n    topics_summary: topicsStr,\n    call_date: extracted.call_date || new Date().toISOString().split('T')[0],\n    meta: promptMeta,\n    llm_tokens_used: (llmResult.input_tokens || 0) + (llmResult.output_tokens || 0),\n    processing_duration_ms: Date.now() - startTime\n  }\n};"
+      },
+      "id": "validate-extraction",
+      "name": "Validate Extraction & Route by Confidence",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1360,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "confidence-routing",
+              "leftValue": "={{ $json.confidence_routing }}",
+              "rightValue": "high",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "check-confidence",
+      "name": "High Confidence? (>= 0.8)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1600,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "app0QZAuhY8Zx4I54"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tblTSfZ4RletQ0GIR"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Call Date": "={{ $json.call_date }}",
+            "HSFK User": "={{ $json.meta.hsfk_user }}",
+            "Call Duration (seconds)": "={{ $json.meta.call_duration_secs }}",
+            "Contacts Updated": "={{ $json.contacts_updated_count }}",
+            "Organisations Updated": "={{ $json.organisations_updated_count }}",
+            "Action Items Extracted": "={{ $json.action_items_count }}",
+            "Mailing List Changes": "={{ $json.mailing_list_changes_count }}",
+            "Overall Confidence Score": "={{ $json.overall_confidence }}",
+            "Status": "auto-approved",
+            "GDPR Flags": "={{ $json.gdpr_flags.join(', ') }}",
+            "Conflict Flags": "={{ $json.conflict_flags.join(', ') }}",
+            "InterAction Entities JSON": "={{ $json.interaction_entities_json }}",
+            "Workflow Execution ID": "={{ $json.meta.execution_id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Call Date",
+              "displayName": "Call Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "HSFK User",
+              "displayName": "HSFK User",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Call Duration (seconds)",
+              "displayName": "Call Duration (seconds)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Contacts Updated",
+              "displayName": "Contacts Updated",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Organisations Updated",
+              "displayName": "Organisations Updated",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Action Items Extracted",
+              "displayName": "Action Items Extracted",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Mailing List Changes",
+              "displayName": "Mailing List Changes",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Overall Confidence Score",
+              "displayName": "Overall Confidence Score",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "auto-approved",
+                  "value": "auto-approved"
+                },
+                {
+                  "name": "pending-review",
+                  "value": "pending-review"
+                },
+                {
+                  "name": "applied",
+                  "value": "applied"
+                },
+                {
+                  "name": "rejected",
+                  "value": "rejected"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "GDPR Flags",
+              "displayName": "GDPR Flags",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Conflict Flags",
+              "displayName": "Conflict Flags",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "InterAction Entities JSON",
+              "displayName": "InterAction Entities JSON",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Workflow Execution ID",
+              "displayName": "Workflow Execution ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "write-crm-update-log",
+      "name": "Write to CRM Update Log (High Confidence)",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1840,
+        160
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "AIRTABLE_TOKEN_CRED",
+          "name": "Airtable - Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// For low-confidence extractions, write each entity individually to the Draft Queue\n// so a human reviewer can approve or reject each one separately.\n\nconst validationData = $('Validate Extraction & Route by Confidence').first().json;\nconst executionId = validationData.meta.execution_id;\nconst extracted = validationData.extracted || {};\n\n// Collect all low-confidence entities across contacts, orgs, and action items\nconst draftItems = [];\n\n// Low-confidence contacts\n(validationData.low_confidence_contacts || []).forEach(contact => {\n  draftItems.push({\n    entity_type: 'Contact',\n    operation: contact.operation || 'uncertain',\n    entity_name: contact.name || 'Unknown',\n    proposed_changes_json: JSON.stringify(contact),\n    confidence_score: contact.confidence,\n    confidence_reason: `Name: ${contact.name || 'unspecified'}, Org: ${contact.organisation || 'unspecified'}`,\n    review_status: 'pending',\n    execution_id: executionId\n  });\n});\n\n// All orgs if overall confidence is low\nif (validationData.confidence_routing === 'low') {\n  (validationData.high_confidence_orgs || []).concat(validationData.low_confidence_orgs || []).forEach(org => {\n    draftItems.push({\n      entity_type: 'Organisation',\n      operation: 'update',\n      entity_name: org.name || 'Unknown',\n      proposed_changes_json: JSON.stringify(org),\n      confidence_score: org.confidence,\n      confidence_reason: `Relationship: ${org.relationship || 'unknown'}`,\n      review_status: 'pending',\n      execution_id: executionId\n    });\n  });\n}\n\n// Low-confidence action items\n(extracted.action_items || []).filter(a => a.confidence < 0.8).forEach(action => {\n  draftItems.push({\n    entity_type: 'Action Item',\n    operation: 'create',\n    entity_name: action.description?.substring(0, 100) || 'Unknown action',\n    proposed_changes_json: JSON.stringify(action),\n    confidence_score: action.confidence,\n    confidence_reason: `Owner: ${action.owner || 'unspecified'}, Due: ${action.due_date || 'unspecified'}`,\n    review_status: 'pending',\n    execution_id: executionId\n  });\n});\n\n// If nothing to queue, return an empty marker so downstream nodes still fire\nif (draftItems.length === 0) {\n  return { json: { draft_items: [], draft_count: 0, execution_id: executionId, skipped: true } };\n}\n\n// Return all items as separate outputs for the Split In Batches node\nreturn draftItems.map(item => ({ json: item }));"
+      },
+      "id": "build-draft-items",
+      "name": "Build Draft Queue Items",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1840,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "app0QZAuhY8Zx4I54"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tbl3g73bLh5KkqV1F"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Entity Type": "={{ $json.entity_type }}",
+            "Operation": "={{ $json.operation }}",
+            "Entity Name": "={{ $json.entity_name }}",
+            "Proposed Changes JSON": "={{ $json.proposed_changes_json }}",
+            "Confidence Score": "={{ $json.confidence_score }}",
+            "Confidence Reason": "={{ $json.confidence_reason }}",
+            "Review Status": "pending",
+            "Workflow Execution ID": "={{ $json.execution_id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Entity Type",
+              "displayName": "Entity Type",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Contact",
+                  "value": "Contact"
+                },
+                {
+                  "name": "Organisation",
+                  "value": "Organisation"
+                },
+                {
+                  "name": "Action Item",
+                  "value": "Action Item"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Operation",
+              "displayName": "Operation",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Entity Name",
+              "displayName": "Entity Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Proposed Changes JSON",
+              "displayName": "Proposed Changes JSON",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Confidence Score",
+              "displayName": "Confidence Score",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Confidence Reason",
+              "displayName": "Confidence Reason",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Review Status",
+              "displayName": "Review Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "pending",
+                  "value": "pending"
+                },
+                {
+                  "name": "approved",
+                  "value": "approved"
+                },
+                {
+                  "name": "rejected",
+                  "value": "rejected"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Workflow Execution ID",
+              "displayName": "Workflow Execution ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "write-draft-queue",
+      "name": "Write to CRM Draft Queue (Low Confidence)",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        2080,
+        320
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "AIRTABLE_TOKEN_CRED",
+          "name": "Airtable - Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build Slack summary message for #customer-hsfk channel\n// Merge results from both confidence branches\n\nconst validationData = $('Validate Extraction & Route by Confidence').first().json;\nconst contactsCount = validationData.contacts_updated_count || 0;\nconst orgsCount = validationData.organisations_updated_count || 0;\nconst actionItemsCount = validationData.action_items_count || 0;\nconst mailingChangesCount = validationData.mailing_list_changes_count || 0;\nconst confidenceScore = Math.round((validationData.overall_confidence || 0) * 100);\nconst routing = validationData.confidence_routing;\nconst hsfkUser = validationData.meta?.hsfk_user || 'unknown';\nconst callDurationSecs = validationData.meta?.call_duration_secs || 0;\nconst callDurationMins = Math.floor(callDurationSecs / 60);\nconst callDurationRemSecs = callDurationSecs % 60;\nconst durationStr = `${callDurationMins}m ${callDurationRemSecs}s`;\n\nconst gdprFlags = validationData.gdpr_flags || [];\nconst conflictFlags = validationData.conflict_flags || [];\n\nconst routingEmoji = routing === 'high' ? '✅' : '🟡';\nconst routingLabel = routing === 'high' ? 'Auto-approved (high confidence)' : 'Queued for review (low confidence)';\n\nlet topicsLine = '';\nif (validationData.topics_summary) {\n  topicsLine = `\\n• *Topics:* ${validationData.topics_summary}`;\n}\n\nlet gdprLine = gdprFlags.length > 0 ? `\\n⚠️ *GDPR flags:* ${gdprFlags.join(', ')}` : '';\nlet conflictLine = conflictFlags.length > 0 ? `\\n🚨 *Conflict flags:* ${conflictFlags.join(', ')}` : '';\n\nconst slackMessage = {\n  channel: '#customer-hsfk',\n  text: `CRM debrief processed`,\n  blocks: [\n    {\n      type: 'header',\n      text: {\n        type: 'plain_text',\n        text: `${routingEmoji} CRM Update: ${hsfkUser}`,\n        emoji: true\n      }\n    },\n    {\n      type: 'section',\n      fields: [\n        {\n          type: 'mrkdwn',\n          text: `*Call duration:* ${durationStr}`\n        },\n        {\n          type: 'mrkdwn',\n          text: `*Confidence:* ${confidenceScore}%`\n        },\n        {\n          type: 'mrkdwn',\n          text: `*Contacts:* ${contactsCount}`\n        },\n        {\n          type: 'mrkdwn',\n          text: `*Organisations:* ${orgsCount}`\n        },\n        {\n          type: 'mrkdwn',\n          text: `*Action items:* ${actionItemsCount}`\n        },\n        {\n          type: 'mrkdwn',\n          text: `*Mailing changes:* ${mailingChangesCount}`\n        }\n      ]\n    },\n    {\n      type: 'section',\n      text: {\n        type: 'mrkdwn',\n        text: `*Status:* ${routingLabel}${topicsLine}${gdprLine}${conflictLine}`\n      }\n    }\n  ]\n};\n\nreturn { json: { slack_message: slackMessage, execution_id: validationData.meta?.execution_id } };"
+      },
+      "id": "build-slack-message",
+      "name": "Build Slack Summary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2080,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "channel": "#customer-hsf-kramer",
+        "blocksUi": "={{ JSON.stringify($json.slack_message.blocks) }}",
+        "otherOptions": {}
+      },
+      "id": "post-slack",
+      "name": "Post Slack Summary",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        2320,
+        240
+      ],
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "SLACK_OAUTH_CRED",
+          "name": "Slack - Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"status\": \"processed\",\n  \"execution_id\": \"{{ $('HMAC Validation').first().json.execution_id }}\",\n  \"confidence_routing\": \"{{ $('Validate Extraction & Route by Confidence').first().json.confidence_routing }}\",\n  \"contacts_extracted\": {{ $('Validate Extraction & Route by Confidence').first().json.contacts_updated_count }},\n  \"action_items_extracted\": {{ $('Validate Extraction & Route by Confidence').first().json.action_items_count }}\n}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "respond-200",
+      "name": "Respond 200 OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2320,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "zjwCkfCuH3GnW2qT"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "workflow_name": "HSFK UC 4.1 - Post-Call CRM Update",
+            "use_case_id": "4.1",
+            "trigger_type": "webhook",
+            "input_summary": "={{ 'Conversation ID: ' + $('Build LLM Extraction Prompt').first().json.meta.conversation_id + ' | User: ' + $('Build LLM Extraction Prompt').first().json.meta.hsfk_user + ' | Duration: ' + $('Build LLM Extraction Prompt').first().json.meta.call_duration_secs + 's' }}",
+            "output_summary": "={{ 'Confidence routing: ' + $('Validate Extraction & Route by Confidence').first().json.confidence_routing + ' | Contacts: ' + $('Validate Extraction & Route by Confidence').first().json.contacts_updated_count + ' | Action items: ' + $('Validate Extraction & Route by Confidence').first().json.action_items_count }}",
+            "status": "success",
+            "duration_ms": "={{ $('Validate Extraction & Route by Confidence').first().json.processing_duration_ms || 0 }}"
+          },
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "call-audit-shared-05",
+      "name": "Call shared-05 (Audit Log)",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        2560,
+        240
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook - ElevenLabs Post-Call": {
+      "main": [
+        [
+          {
+            "node": "HMAC Validation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HMAC Validation": {
+      "main": [
+        [
+          {
+            "node": "HMAC Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HMAC Valid?": {
+      "main": [
+        [
+          {
+            "node": "Duration >= 30s?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond 401 Unauthorized",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Duration >= 30s?": {
+      "main": [
+        [
+          {
+            "node": "Build LLM Extraction Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond - Call Too Short",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build LLM Extraction Prompt": {
+      "main": [
+        [
+          {
+            "node": "Call shared-04 (LLM Extraction)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call shared-04 (LLM Extraction)": {
+      "main": [
+        [
+          {
+            "node": "Validate Extraction & Route by Confidence",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Extraction & Route by Confidence": {
+      "main": [
+        [
+          {
+            "node": "High Confidence? (>= 0.8)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "High Confidence? (>= 0.8)": {
+      "main": [
+        [
+          {
+            "node": "Write to CRM Update Log (High Confidence)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Draft Queue Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write to CRM Update Log (High Confidence)": {
+      "main": [
+        [
+          {
+            "node": "Build Slack Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Draft Queue Items": {
+      "main": [
+        [
+          {
+            "node": "Write to CRM Draft Queue (Low Confidence)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write to CRM Draft Queue (Low Confidence)": {
+      "main": [
+        [
+          {
+            "node": "Build Slack Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Slack Summary": {
+      "main": [
+        [
+          {
+            "node": "Post Slack Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post Slack Summary": {
+      "main": [
+        [
+          {
+            "node": "Respond 200 OK",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Call shared-05 (Audit Log)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 1,
+  "meta": null
+}

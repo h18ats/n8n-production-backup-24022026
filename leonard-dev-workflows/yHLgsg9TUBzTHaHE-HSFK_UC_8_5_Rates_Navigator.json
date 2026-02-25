@@ -1,0 +1,400 @@
+{
+  "name": "HSFK UC 8.5 - Rates Navigator",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "hsfk-uc-8.5",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "ca3e0818-3c31-48fd-931a-cc5532bf4651",
+      "name": "ElevenLabs Post-Call",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "402e9c6f-63da-4678-8855-f04e64b191ec"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "bba127f5-8091-4c69-91ca-15195c58f0d3",
+              "name": "matterReference",
+              "value": "={{ $json.body.extracted_data.matterReference }}",
+              "type": "string"
+            },
+            {
+              "id": "3871116a-ca1f-4dcc-b364-b17276adabea",
+              "name": "clientName",
+              "value": "={{ $json.body.extracted_data.clientName }}",
+              "type": "string"
+            },
+            {
+              "id": "a324ddc4-e470-409b-a161-dab23605f0aa",
+              "name": "feeEarnerLevels",
+              "value": "={{ $json.body.extracted_data.feeEarnerLevels }}",
+              "type": "string"
+            },
+            {
+              "id": "ce910904-e15d-4538-a843-c66e69bd6b0a",
+              "name": "currencies",
+              "value": "={{ $json.body.extracted_data.currencies }}",
+              "type": "string"
+            },
+            {
+              "id": "6a6c2108-ae6b-48c9-a622-ac9f4d0ca0d5",
+              "name": "bespokeRates",
+              "value": "={{ $json.body.extracted_data.bespokeRates }}",
+              "type": "string"
+            },
+            {
+              "id": "dbd7f78d-f6f8-45ac-a46d-f8d971a2c96f",
+              "name": "ratesTeamInputNeeded",
+              "value": "={{ $json.body.extracted_data.ratesTeamInputNeeded }}",
+              "type": "boolean"
+            },
+            {
+              "id": "02ff7b75-a33b-437c-98dc-3c6fb44ac6d5",
+              "name": "billableOrNonBillable",
+              "value": "={{ $json.body.extracted_data.billableOrNonBillable }}",
+              "type": "string"
+            },
+            {
+              "id": "b8f633d5-7699-438f-9d42-f22c09625473",
+              "name": "conversation_id",
+              "value": "={{ $json.body.conversation_id }}",
+              "type": "string"
+            },
+            {
+              "id": "8ff20240-8d66-4c9b-9492-af0dbdbe761f",
+              "name": "agent_id",
+              "value": "={{ $json.body.agent_id }}",
+              "type": "string"
+            },
+            {
+              "id": "ee281cf5-4258-4533-b3f1-c980a3ec274a",
+              "name": "duration_seconds",
+              "value": "={{ $json.body.duration_seconds }}",
+              "type": "string"
+            },
+            {
+              "id": "52c2ebbc-aa6e-4544-a618-a5571eb9ff87",
+              "name": "caller_name",
+              "value": "={{ $json.body.metadata?.first_name || 'Unknown' }}",
+              "type": "string"
+            },
+            {
+              "id": "834ca2de-45db-4188-9aec-3be790d28d38",
+              "name": "caller_email",
+              "value": "={{ $json.body.metadata?.email || '' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      },
+      "id": "ab5c656c-717f-4b53-b8bd-22c90292386f",
+      "name": "Extract Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        240,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "combinator": "and"
+          },
+          "conditions": [
+            {
+              "id": "21fc469d-5280-4db3-b2ff-88ef38a2c223",
+              "leftValue": "={{ $json.matterReference }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            },
+            {
+              "id": "2c2c52d7-29ab-4ee3-8882-a53549493b75",
+              "leftValue": "={{ $json.clientName }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            },
+            {
+              "id": "44534630-e90d-4d49-a83f-be0559ef756f",
+              "leftValue": "={{ $json.bespokeRates }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "5f2f3d16-3c87-4d88-89dd-0bfdc6e510cd",
+      "name": "Data Complete?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        480,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b2d1a974-84de-45d1-833f-2fa4481d7121",
+              "name": "summary",
+              "value": "={{ \"## HSFK UC 8.5 - Rates Navigator\\n\\n**Caller:** \" + ($json.caller_name || \"Unknown\") + \" (\" + ($json.caller_email || \"no email\") + \")\\n**Duration:** \" + ($json.duration_seconds || \"?\") + \"s\\n**Conversation ID:** \" + ($json.conversation_id || \"?\") + \"\\n\\n### Captured Data\\n\\n- **matterReference**: \" + ($json.matterReference || \"N/A\") + \"\\n- **clientName**: \" + ($json.clientName || \"N/A\") + \"\\n- **feeEarnerLevels**: \" + ($json.feeEarnerLevels || \"N/A\") + \"\\n- **currencies**: \" + ($json.currencies || \"N/A\") + \"\\n- **bespokeRates**: \" + ($json.bespokeRates || \"N/A\") + \"\\n- **ratesTeamInputNeeded**: \" + ($json.ratesTeamInputNeeded || \"N/A\") + \"\\n- **billableOrNonBillable**: \" + ($json.billableOrNonBillable || \"N/A\") + \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "8d74e215-1ae1-48ae-9060-2e059e1ec8ae",
+              "name": "ucId",
+              "value": "8.5",
+              "type": "string"
+            },
+            {
+              "id": "fd4fc939-c70e-4317-a637-a0a7c4b257bf",
+              "name": "agentName",
+              "value": "Rates Navigator",
+              "type": "string"
+            },
+            {
+              "id": "75db1b46-9924-4adb-b90b-ac9273065793",
+              "name": "timestamp",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "d08b4de4-3d30-4733-9ea3-1c3de04b8ee6",
+      "name": "Format Summary",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        720,
+        -60
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "app0QZAuhY8Zx4I54",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl8hV2nYEoRS8Gif",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "UC ID": "={{ $json.ucId }}",
+            "Agent Name": "={{ $json.agentName }}",
+            "Caller": "={{ $json.caller_name }}",
+            "Email": "={{ $json.caller_email }}",
+            "Summary": "={{ $json.summary }}",
+            "Conversation ID": "={{ $json.conversation_id }}",
+            "Duration": "={{ parseInt($json.duration_seconds) || 0 }}",
+            "Timestamp": "={{ $json.timestamp }}",
+            "Data Complete": true,
+            "Raw Extracted Data": "={{ JSON.stringify($json) }}"
+          },
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "d2c62b83-709e-42b0-95b5-864ec85c5f66",
+      "name": "Log to Airtable",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        960,
+        -60
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "57nd5p5f6kuW4Xs0",
+          "name": "HSFK Airtable"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://slack.com/api/chat.postMessage",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ channel: \"C098F8Z4P1U\", text: \"New voice conversation for UC 8.5 (Rates Navigator):\\nCaller: \" + ($(\"Format Summary\").item.json.caller_name || \"Unknown\") + \" (\" + ($(\"Format Summary\").item.json.caller_email || \"no email\") + \")\\nDuration: \" + ($(\"Format Summary\").item.json.duration_seconds || \"?\") + \"s\\nConversation: \" + ($(\"Format Summary\").item.json.conversation_id || \"?\") }) }}",
+        "options": {}
+      },
+      "id": "97e37fdd-c15a-4d03-9aba-04039ea0aac5",
+      "name": "Notify Slack",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1200,
+        -60
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "rYd0mT6IhOLBmosk",
+          "name": "HSFK Slack Bot (Header Auth)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ status: \"ok\", message: \"Data captured and logged\" }) }}",
+        "options": {}
+      },
+      "id": "4b486f74-caa4-4da8-9592-404fef036681",
+      "name": "Respond OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1440,
+        -60
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ status: \"incomplete\", message: \"Some required fields missing, logged for review\" }) }}",
+        "options": {
+          "responseCode": 202
+        }
+      },
+      "id": "a2409229-d7a1-49f7-8d93-2c7731793c50",
+      "name": "Respond Incomplete",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        720,
+        120
+      ]
+    }
+  ],
+  "connections": {
+    "ElevenLabs Post-Call": {
+      "main": [
+        [
+          {
+            "node": "Extract Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Data": {
+      "main": [
+        [
+          {
+            "node": "Data Complete?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Complete?": {
+      "main": [
+        [
+          {
+            "node": "Format Summary",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Incomplete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Summary": {
+      "main": [
+        [
+          {
+            "node": "Log to Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log to Airtable": {
+      "main": [
+        [
+          {
+            "node": "Notify Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Slack": {
+      "main": [
+        [
+          {
+            "node": "Respond OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 1,
+  "meta": null
+}

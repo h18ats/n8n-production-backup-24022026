@@ -1,0 +1,984 @@
+{
+  "name": "DEV - W1 - Post Call Luke with context - Andy",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 5
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -832,
+        -720
+      ],
+      "id": "5b5742be-3252-4990-bde3-33fedd4467e6",
+      "name": "Schedule Trigger",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        -608,
+        -720
+      ],
+      "id": "3b54b048-38ce-4bba-881d-0ee077a06ff8",
+      "name": "Today"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "f2141cf2-1196-4521-b206-00def7b641ff",
+              "leftValue": "",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "065cfc40-67db-4af8-94bf-43df8f3902de",
+      "name": "IF — No meetings today?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        288,
+        -720
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Use the Perplexity Search tool to perform the following task robustly: \n\nResearch this person for a business meeting subject: {{ $json.subject }}.\nAttendee(s) name: {{ $json.attendeeName }}\nEmail address: {{ $json.attendeeEmail }}\nTheir Company domain is: {{ $json.inferredCompanyDomain }}\n\nTheir Company name is likely to be, or similar to {{ $json.inferredCompanyName }}\n\nIf the {{ $json.attendeeName }} is actually an email address infer what their name would be and use that to search for them based on the company name {{ $json.inferredCompanyName }}.\n\nThese details should ensure you can locate them on linkedin, their official company web page or on professional networks or from more public sources.\n\nUse a range of search options to establish a robust bio for the attendee, who is due to meet with Lee Curtis from Legal Engine - https://www.linkedin.com/in/leeacurtis/ www.legalengine.co.uk. You should be robust in finding out their entire professional background.\n\nOnly use the Perplexity Search tool once per person. Focus on LinkedIn as a key source of information and connections of Lee Curtis to help to identify meeting attendees. Use variations of the names of attendees if no information is found as it's highly unlikley that attendees won't have a linkedin proifile. Also search for matches on UK Companies House (https://find-and-update.company-information.service.gov.uk/company/13160418/officers).\n\nIf there is still no record, look for similar names to {{ $json.attendeeName }} using a fuzzy search on the name who work at {{ $json.inferredCompanyName }} and are related to or work within law or professional services.\n\nTASK:\nProduce a set of results per extrenal attendee to the meeting. If there is more than one attendee cycle through the json inputs to deliver a bio per external attendee.",
+        "options": {
+          "systemMessage": "You write compact, factual bios in UK English. Avoid speculation. Prefer official pages, LinkedIn, company sites, or major press. Return a compact 4–6 sentence bio (UK English), 2–3 recent items with dates, and 2–3 credible links. Keep it under 150 words per person. ",
+          "returnIntermediateSteps": false
+        }
+      },
+      "id": "0dcc3c12-a29c-483e-be27-483d7e55b0ab",
+      "name": "Research Attendee (Agent)",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        1184,
+        -1008
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "resource": "event",
+        "filters": {
+          "custom": "=start/dateTime ge '{{ $json.newDate }}' and start/dateTime lt '{{ $('Today').item.json.currentDate }}'"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        -160,
+        -720
+      ],
+      "id": "d9fb1905-8c00-4d12-ab49-bfee4a5519a5",
+      "name": "Get many events",
+      "webhookId": "67eca0d1-10e3-4c85-971d-91824e8adaa9",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "6M8EKjo0xkpyROgs",
+          "name": "Microsoft Outlook - Lee @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "sonar-reasoning",
+        "messages": {
+          "message": [
+            {
+              "content": "=You are a research assistant for helping with meeting prep. Task: create a full, factual, concise attendee brief with citations.\nThe meeting organiser is Lee Curtis from Legal engine, linkedin profile  here - https://www.linkedin.com/in/leeacurtis/.\n\nRules:\n- Disambiguate the person first. If uncertain, return top 3 candidates with confidence scores.\n- Base facts on public, professional sources only. No contact details or sensitive personal data.\n- Use UK English.\n- Output JSON ONLY that matches the schema in the user message.\n\n\nUse UK English. Today is {{$now.setZone('Europe/London').toFormat('yyyy-LL-dd')}}.",
+              "role": "system"
+            },
+            {
+              "content": "=Inputs:\n- Name: {{ $json.attendeeName }}\n- Email: {{ $json.attendeeEmail }}\n- Company: {{ $json.inferredCompanyName}}\n- Company Domain:  {{ $json.inferredCompanyDomain }}\n- Role (if known):\n- Location (if relevant/if known):\n- Time horizon for \"recent\": last 60 months.\n\n\nDeliverable (JSON only):\n{\n  \"disambiguation\": {\n    \"matched_full_name\": \"\",\n    \"confidence\": 0.0,\n    \"alternates\": [\n      {\"name\": \"\", \"why_considered\": \"\", \"confidence\": 0.0}\n    ]\n  },\n  \"profile\": {\n    \"current_role\": \"\",\n    \"company\": \"\",\n    \"one_line_bio\": \"\",\n    \"3_talking_points\": [\"\" , \"\" , \"\"],\n    \"recent_news\": [\n      {\"headline\": \"\", \"date\": \"\", \"source_title\": \"\", \"source_url\": \"\"}\n    ],\n    \"career_highlights\": [\"\"],\n    \"topics_of_interest\": [\"\"],\n    \"potential_red_flags\": [\"\"]\n  },\n  \"sources_note\": \"Populate source_title/source_url ONLY from search_results metadata.\",\n  \"needs_review\": false\n}\n\nInstructions:\n- Keep \"one_line_bio\" ≤ 200 chars.\n- \"recent_news\" items must be within last 12 months.\n- If identity is ambiguous OR conflicting facts appear, set \"needs_review\": true and include up to 3 candidate profiles.\n"
+            }
+          ]
+        },
+        "options": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.perplexityTool",
+      "typeVersion": 1,
+      "position": [
+        1328,
+        -784
+      ],
+      "id": "5f5993c9-99a7-4766-8716-a9576a8e0f2d",
+      "name": "Perplexity Search",
+      "credentials": {
+        "perplexityApi": {
+          "id": "pOqM7kFIqiYB3qGU",
+          "name": "Perplexity account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalize bios from “Research Attendee (Agent)”\n// Works even if each item only has { output: \"<bio text>\" }.\n// If you also connect Input 1 with “Slim Inputs for Agent” (items with {name,email,domain}),\n// this node will align by index and/or fuzzy name to fill missing emails.\n//\n// Output (one per person):\n//   { emailLower?, email?, name?, domain?, bio, nameKey? }\n//\n// You can merge later by `emailLower` (preferred) and fall back to `nameKey` if email is missing.\n\nfunction clean(s){ return typeof s === 'string' ? s.trim() : ''; }\nfunction lower(s){ return typeof s === 'string' ? s.toLowerCase() : ''; }\n\n// --- regex helpers ---\nvar EMAIL_RE = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/ig;\nvar HOST_RE  = /\\b((?:[a-z0-9-]+\\.)+[a-z]{2,})\\b/ig;\n\n// strip ``` fences and collapse whitespace a bit\nfunction normalizeText(t){\n  var txt = String(t == null ? '' : t);\n  if (txt.indexOf('```') > -1) {\n    txt = txt.replace(/```json/ig,'').replace(/```/g,'');\n  }\n  // trim line ends, collapse >2 newlines to 2\n  txt = txt.split('\\n').map(function(l){ return l.replace(/\\s+$/,''); }).join('\\n');\n  txt = txt.replace(/\\n{3,}/g, '\\n\\n');\n  return txt.trim();\n}\n\n// naive name guess: take leading fragment before \" is \" or first line\nfunction guessNameFromBio(txt){\n  var t = clean(txt);\n  if (!t) return '';\n  var firstLine = t.split('\\n')[0];\n  var beforeIs = firstLine.toString().split(/\\s+is\\s+/i)[0];\n  var cand = clean(beforeIs.length >= 3 ? beforeIs : firstLine);\n  // Keep it reasonable: 2–5 words, title-case-ish\n  var words = cand.split(/\\s+/).filter(Boolean);\n  if (words.length > 6) words = words.slice(0,6);\n  // If it's something like \"Founder and director\", that's not a name; reject if no capital letter start\n  var hasCap = /^[A-Z]/.test(words[0] || '');\n  return hasCap ? words.join(' ') : '';\n}\n\nfunction extractEmailFromText(txt){\n  var m = String(txt||'').match(EMAIL_RE);\n  return (m && m.length) ? m[0] : '';\n}\n\nfunction extractDomainFromText(txt){\n  // pick a plausible company domain; ignore common service hosts\n  var IGNORE = { 'www.google.com':1,'linkedin.com':1,'www.linkedin.com':1,'twitter.com':1,'x.com':1,'facebook.com':1,'instagram.com':1,'youtube.com':1,'outlook.office365.com':1,'microsoft.com':1,'github.com':1,'medium.com':1 };\n  var hosts = []; var h;\n  var text = String(txt||'');\n  while ((h = HOST_RE.exec(text)) !== null){\n    var host = h[1].toLowerCase();\n    if (!IGNORE[host]) hosts.push(host);\n  }\n  // Return the most frequent non-ignored host if any\n  if (hosts.length === 0) return '';\n  var freq = {}; var best = '', bestN = -1;\n  for (var i=0;i<hosts.length;i++){ var k=hosts[i]; freq[k]=(freq[k]||0)+1; if (freq[k]>bestN){ bestN=freq[k]; best=k; } }\n  return best;\n}\n\nfunction domainFromEmail(email){\n  var e = lower(clean(email)); var at = e.indexOf('@'); return at>-1 ? e.slice(at+1) : '';\n}\n\n// --- collect inputs ---\nvar outItems = ($input.all(0) || []).map(function(i){ return i.json; });\nvar hintItems = []; try { hintItems = ($input.all(1) || []).map(function(i){ return i.json; }); } catch(_){}\n\n// Build hint maps (by index, by lower(name), by lower(email))\nvar hintsByIndex = hintItems;\nvar hintsByName  = {};\nvar hintsByEmail = {};\nfor (var hi=0; hi<hintItems.length; hi++){\n  var h = hintItems[hi] || {};\n  var hEmail = clean(h.email || (h.emailAddress && h.emailAddress.address) || '');\n  var hName  = clean(h.name || h.person || h.fullName || h.attendeeName || '');\n  if (hName) hintsByName[lower(hName)] = h;\n  if (hEmail) hintsByEmail[lower(hEmail)] = h;\n}\n\n// Process each research output\nvar results = [];\n\nfor (var i=0; i<outItems.length; i++){\n  var row = outItems[i] || {};\n  var bioRaw = (row.bio !== undefined ? row.bio : (row.output !== undefined ? row.output : (row.text !== undefined ? row.text : row.content)));\n  var bio = normalizeText(bioRaw);\n\n  // Try to resolve identity\n  var email = extractEmailFromText(bio);\n  var name  = '';\n  var domain = '';\n\n  // If no email in text, try to align with hints\n  if (!email && hintsByIndex[i]){\n    var h = hintsByIndex[i];\n    var hEmail = clean(h.email || (h.emailAddress && h.emailAddress.address) || '');\n    if (hEmail) email = hEmail;\n    name = clean(h.name || h.person || h.fullName || h.attendeeName || '');\n    domain = clean(h.domain || '');\n  }\n\n  // If still no email, try name-match from text → hintsByName\n  if (!email){\n    var guessName = guessNameFromBio(bio);\n    if (guessName && hintsByName[lower(guessName)]){\n      var hh = hintsByName[lower(guessName)];\n      email = clean(hh.email || (hh.emailAddress && hh.emailAddress.address) || '');\n      if (!name) name = clean(hh.name || hh.person || hh.fullName || hh.attendeeName || guessName);\n      if (!domain) domain = clean(hh.domain || '');\n    } else if (guessName) {\n      name = name || guessName;\n    }\n  }\n\n  // Derive domain if still missing\n  if (!domain){\n    if (email) domain = domainFromEmail(email);\n    if (!domain){\n      var dTxt = extractDomainFromText(bio);\n      if (dTxt) domain = dTxt;\n    }\n  }\n\n  // Fallback name if still empty\n  if (!name) name = guessNameFromBio(bio);\n\n  var emailLower = lower(email);\n  var nameKey = lower(clean(name));\n\n  results.push({\n    emailLower: emailLower || '',\n    email: email || '',\n    name: name || '',\n    domain: domain || '',\n    nameKey: nameKey || '',\n    bio: bio\n  });\n}\n\n// Deduplicate by emailLower if available; else by nameKey\nvar bestByKey = {};\nfor (var r=0; r<results.length; r++){\n  var it = results[r];\n  var key = it.emailLower || ('name:' + it.nameKey);\n  if (!key) continue;\n  var prev = bestByKey[key];\n  if (!prev || it.bio.length > prev.bio.length){\n    bestByKey[key] = it;\n    // prefer real email if one version had none\n    if (prev && !prev.email && it.email) bestByKey[key].email = it.email;\n    if (prev && !prev.domain && it.domain) bestByKey[key].domain = it.domain;\n  } else {\n    // keep better name if longer\n    if (it.name && (!prev.name || it.name.length > prev.name.length)) bestByKey[key].name = it.name;\n    if (it.domain && !prev.domain) bestByKey[key].domain = it.domain;\n    if (it.email && !prev.email) bestByKey[key].email = it.email;\n  }\n}\n\n// Emit items\nvar out = [];\nfor (var k in bestByKey){\n  out.push({ json: bestByKey[k] });\n}\n\nif (out.length === 0){\n  // Emit diagnostics to help wire Input 1 properly\n  return [{\n    json: {\n      warning: \"No usable bios (no email/name could be resolved). Consider connecting Slim Inputs as Input 1.\",\n      sampleKeys: Object.keys(outItems[0] || {}),\n      note: \"If Agent output only has 'output' text, merge with Slim Inputs by index so we can attach emails.\"\n    }\n  }];\n}\n\nreturn out;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1600,
+        -1008
+      ],
+      "id": "a3de99e4-dd88-4608-9299-b41aaab709fd",
+      "name": "Normalize Bios"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ---------- helpers ----------\nfunction clean(s){ return typeof s === 'string' ? s.trim() : ''; }\nfunction lower(s){ return typeof s === 'string' ? s.toLowerCase() : ''; }\nfunction get(o, path, d){\n  var parts = path.split('.'); var cur = o;\n  for (var i=0;i<parts.length;i++){ \n    var k=parts[i]; \n    if (cur && typeof cur==='object' && (k in cur)) cur = cur[k]; \n    else return d; \n  }\n  return cur;\n}\nfunction domainFromEmail(email){\n  var e = lower(clean(email)); \n  var at = e.indexOf('@'); \n  return at>-1 ? e.slice(at+1) : '';\n}\nfunction normalizeIso(s){\n  s = clean(s); if (!s) return null;\n  var t = s.replace(/Z$/,''); var dot = t.indexOf('.');\n  if (dot>-1) t = t.slice(0,dot);\n  if (t.length>=19) t = t.slice(0,19); // YYYY-MM-DDTHH:MM:SS\n  return t;\n}\nfunction isoFromEpochSec(sec){\n  if (typeof sec !== 'number') return null;\n  var d = new Date(sec*1000);\n  var yyyy = d.getUTCFullYear();\n  var mm = String(d.getUTCMonth()+1).padStart(2,'0');\n  var dd = String(d.getUTCDate()).padStart(2,'0');\n  var hh = String(d.getUTCHours()).padStart(2,'0');\n  var mi = String(d.getUTCMinutes()).padStart(2,'0');\n  var ss = String(d.getUTCSeconds()).padStart(2,'0');\n  return yyyy+'-'+mm+'-'+dd+'T'+hh+':'+mi+':'+ss;\n}\nfunction startISO(ev){\n  var s1 = get(ev,'start.dateTime', null); if (s1) return normalizeIso(String(s1));\n  var s2 = ev.startISO || get(ev,'start', null); if (typeof s2 === 'string') return normalizeIso(s2);\n  var e  = (typeof ev.epoch === 'number') ? ev.epoch : get(ev,'start.epoch', null);\n  if (typeof e === 'number') return normalizeIso(isoFromEpochSec(e));\n  return null;\n}\nfunction endISO(ev){\n  var e1 = get(ev,'end.dateTime', null); if (e1) return normalizeIso(String(e1));\n  var e2 = ev.endISO || get(ev,'end', null); if (typeof e2 === 'string') return normalizeIso(e2);\n  var ee = get(ev,'end.epoch', null);\n  if (typeof ee === 'number') return normalizeIso(isoFromEpochSec(ee));\n  return null;\n}\nfunction titleCase(s){\n  return s.split(/\\s+/).filter(Boolean).map(function(w){\n    return w.charAt(0).toUpperCase() + w.slice(1);\n  }).join(' ');\n}\nfunction inferCompanyFromDomain(domain){\n  domain = lower(clean(domain || ''));\n  if (!domain) return '';\n  var IGNORE = {\n    'gmail.com':1,'googlemail.com':1,'yahoo.com':1,'hotmail.com':1,'outlook.com':1,'live.com':1,\n    'msn.com':1,'icloud.com':1,'me.com':1,'proton.me':1,'protonmail.com':1,'gmx.com':1,'aol.com':1\n  };\n  if (IGNORE[domain]) return '';\n  var d = domain.replace(/^(mail|owa|webmail|mx|smtp|imap|app|portal|m|eu|us)\\./, '');\n  var multiTLDs = ['co.uk','com.au','com.br','com.ar','com.mx','co.jp','co.in','com.sg','com.hk','com.tr','com.cn','co.nz'];\n  for (var i=0;i<multiTLDs.length;i++){\n    var tld = multiTLDs[i];\n    if (d.endsWith('.' + tld)){\n      var base = d.slice(0, -(tld.length + 1));\n      var parts = base.split('.');\n      var label = parts[parts.length - 1] || base;\n      return titleCase(label.replace(/-/g,' '));\n    }\n  }\n  var parts2 = d.split('.');\n  if (parts2.length >= 2){\n    var core = parts2[parts2.length - 2];\n    return titleCase(core.replace(/-/g,' '));\n  }\n  return titleCase(d.replace(/-/g,' '));\n}\nfunction extractJobTitles(text){\n  var t = ' ' + clean(text) + ' ';\n  if (!t) return [];\n  var pats = [\n    /\\bChief\\s+[A-Za-z&\\- ]{2,30}\\b/gi,\n    /\\b(CFO|CEO|COO|CTO|CIO|CMO|CPO|CISO|GC)\\b/gi,\n    /\\b(SVP|EVP|VP|Assoc\\.?\\s?VP|Vice\\s+President)\\b/gi,\n    /\\bManaging\\s+Director\\b/gi,\n    /\\bDirector(?:\\s+of\\s+[A-Za-z&\\- ]{2,40})?\\b/gi,\n    /\\bHead\\s+of\\s+[A-Za-z&\\- ]{2,40}\\b/gi,\n    /\\bGlobal\\s+Head\\s+of\\s+[A-Za-z&\\- ]{2,40}\\b/gi,\n    /\\bPartner\\b/gi,\n    /\\b(Associate\\s+Director|Senior\\s+Manager|Manager)\\b/gi,\n    /\\b(Consultant|Principal)\\b/gi,\n    /\\b(General\\s+Counsel|Legal\\s+Counsel|Counsel|Attorney|Solicitor|Barrister)\\b/gi,\n    /\\b(Product|Engineering|Sales|Marketing|Operations|Finance|HR|People|Data|Design)\\s+(Manager|Director|Lead|Head)\\b/gi,\n    /\\b(Account\\s+Executive|Business\\s+Development|Recruiter)\\b/gi\n  ];\n  var found = [];\n  for (var i=0;i<pats.length;i++){\n    var re = pats[i], m;\n    while ((m = re.exec(t)) !== null){\n      var val = clean(m[0]);\n      if (val && found.indexOf(val) === -1) found.push(val);\n    }\n  }\n  return found;\n}\n\n// ---------- main ----------\nvar items = $input.all().map(function(i){ return i.json || {}; });\nvar out = [];\n\nfor (var i=0;i<items.length;i++){\n  var ev = items[i] || {};\n\n  var meetingId = ev.id || ev.eventId || null;\n  var subject = clean(ev.subject || ev.Subject || '(No subject)');\n  var bodyPreview = clean(ev.description || ev.bodyPreview || '');\n  var jobTitles = extractJobTitles(bodyPreview);\n\n  var sISO = startISO(ev);\n  var eISO = endISO(ev);\n  var tz = get(ev,'start.timeZone', get(ev,'time.timeZone', get(ev,'end.timeZone','UTC')));\n\n  var attendeesRaw = Array.isArray(ev.attendees) ? ev.attendees : [];\n  var attendees = [];\n  for (var a=0; a<attendeesRaw.length; a++){\n    var att = attendeesRaw[a] || {};\n    var email = clean(att.email || get(att,'emailAddress.address',''));\n    var name  = clean(att.name || get(att,'emailAddress.name','') || (email ? email.split('@')[0] : ''));\n    var domain = domainFromEmail(email);\n    var company = inferCompanyFromDomain(domain);\n    var type = clean(att.type || '');\n    var response = clean(att.response || get(att,'status.response','') || '');\n    var respondedAt = clean(att.respondedAt || get(att,'status.time','') || '');\n\n    if (!name && !email) continue;\n\n    attendees.push({\n      name: name,\n      email: email,\n      domain: domain,\n      company: company,\n      type: type,\n      response: response,\n      respondedAt: respondedAt\n    });\n  }\n\n  attendees.sort(function(a,b){\n    var n = (a.name||'').localeCompare(b.name||''); \n    return n!==0 ? n : (a.email||'').localeCompare(b.email||'');\n  });\n\n  out.push({\n    json: {\n      meetingId: meetingId,\n      meetingSubject: subject,\n      startISO: sISO,\n      endISO: eISO,\n      timeZone: tz,\n      bodyPreview: bodyPreview,\n      jobTitles: jobTitles,\n      attendees: attendees\n    }\n  });\n}\n\n// ---- SORT MEETINGS BY DATE ----\n// Ascending (earliest → latest)\nout.sort(function(a, b) {\n  var da = new Date(a.json.startISO || 0);\n  var db = new Date(b.json.startISO || 0);\n  return da - db;\n});\n\n// For most recent first, swap to: return db - da;\n\nreturn out.length ? out : [{ json: { warning: 'No meetings found in input' } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        64,
+        -720
+      ],
+      "id": "6b175d26-dee4-4d82-91b2-361d7a78b453",
+      "name": "Clean Calendar Data"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -832,
+        -528
+      ],
+      "id": "a2d4e2bc-573b-492b-a3c8-82ec90205ac2",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "path": "34479926-04ac-4faa-a0b3-0ec79aa00c9b",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -832,
+        -912
+      ],
+      "id": "38c0498b-e10e-4a23-a99f-95226f9d99d2",
+      "name": "Webhook",
+      "webhookId": "34479926-04ac-4faa-a0b3-0ec79aa00c9b",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "subtractFromDate",
+        "magnitude": "={{ $json.currentDate }}",
+        "duration": 3,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        -384,
+        -720
+      ],
+      "id": "ae224f5f-5705-48ac-a2d7-871e3cd5195d",
+      "name": "Last 3 days"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * Filters meetings to only those with external attendees,\n * adds inferred company domain(s) and company name(s) from those domains.\n */\n\n// >>> Set your internal domains here (lowercase). Add more if needed.\nconst internalDomains = ['legalengine.co.uk'];\n\n// --- helpers ---\nfunction getEmail(att) {\n  return (\n    (att && (\n      att.email ||\n      att.address ||\n      att.mail ||\n      att.userPrincipalName ||\n      (att.emailAddress && (att.emailAddress.address || att.emailAddress.email)) ||\n      ''\n    )) || ''\n  ).toLowerCase();\n}\n\nfunction getName(att) {\n  return (\n    (att && (\n      att.name ||\n      att.displayName ||\n      (att.emailAddress && att.emailAddress.name) ||\n      ''\n    )) || ''\n  ).toString();\n}\n\nfunction isExternal(att) {\n  const email = getEmail(att);\n  if (email && internalDomains.length) {\n    const domain = email.split('@')[1] ? email.split('@')[1].toLowerCase() : '';\n    if (domain) return !internalDomains.includes(domain);\n  }\n  const flag =\n    att?.isExternal === true ||\n    att?.external === true ||\n    /external/i.test(String(att?.type || '')) ||\n    /external/i.test(String(att?.role || ''));\n  return !!flag;\n}\n\nfunction pick(...vals) {\n  return vals.find(v => v !== undefined && v !== null && v !== '') ?? null;\n}\n\n// Infer a company name from a domain (very basic heuristic)\nfunction inferCompanyName(domain) {\n  if (!domain) return null;\n  // Strip common TLDs and SLDs\n  const parts = domain.split('.');\n  if (parts.length < 2) return domain;\n  // Remove last part (TLD)\n  parts.pop();\n  // If second-level TLD (e.g. co.uk), remove again\n  if (['co', 'com', 'org', 'net'].includes(parts[parts.length - 1])) {\n    parts.pop();\n  }\n  return parts[parts.length - 1] || domain;\n}\n\n// --- main ---\nconst out = [];\n\nfor (const { json: m } of items) {\n  const attendees = Array.isArray(m.attendees) ? m.attendees : [];\n  if (!attendees.length) continue;\n\n  const externals = attendees.filter(isExternal);\n  if (!externals.length) continue;\n\n  const allNames = attendees.map(getName).filter(Boolean);\n  const allEmails = attendees.map(getEmail).filter(Boolean);\n  const externalNames = externals.map(getName).filter(Boolean);\n  const externalEmails = externals.map(getEmail).filter(Boolean);\n\n  // Extract domains from external emails\n  const externalDomains = Array.from(\n    new Set(\n      externalEmails\n        .map(e => e.split('@')[1] || null)\n        .filter(Boolean)\n    )\n  );\n\n  // Infer company names\n  const inferredCompanyNames = externalDomains\n    .map(inferCompanyName)\n    .filter(Boolean);\n\n  out.push({\n    json: {\n      id: pick(m.meetingId, m.id),\n      subject: pick(m.meetingSubject, m.subject, m.title),\n      start: pick(m.startISO, m.start, m.startTime),\n      end: pick(m.endISO, m.end, m.endTime),\n      timeZone: pick(m.timeZone, m.timezone),\n      attendeesCount: attendees.length,\n      hasExternalAttendees: true,\n\n      // Attendees (all)\n      attendeeNames: allNames,\n      attendeeEmails: allEmails,\n\n      // External attendees\n      externalAttendeeNames: externalNames,\n      externalAttendeeEmails: externalEmails,\n\n      // Inferred company info\n      inferredCompanyDomains: externalDomains,\n      inferredCompanyNames: inferredCompanyNames,\n\n      // Optional pass-through\n      organizer: m.organizer ?? null,\n      location: m.location ?? null,\n      bodyPreview: m.bodyPreview ?? null,\n      link: m.link ?? m.meetingLink ?? null,\n    }\n  });\n}\n\nreturn out;\n"
+      },
+      "id": "f83ed17b-b629-401b-9b86-f07eaac5f519",
+      "name": "Extract Meetings with External Attendees",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        512,
+        -720
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    json: items[items.length - 1].json   // keeps only the last output\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        736,
+        -720
+      ],
+      "id": "4112e04d-6f24-474a-8e17-379ef9c243bd",
+      "name": "Last Meeting"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini-2025-08-07",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini-2025-08-07"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1200,
+        -784
+      ],
+      "id": "9717d18e-3acf-46c7-bd9b-b96ea0fbf1b2",
+      "name": "OpenAI Chat Model6",
+      "credentials": {
+        "openAiApi": {
+          "id": "LldOhLNBReShSMkE",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1888,
+        -1008
+      ],
+      "id": "a77905af-dee5-4056-a2a6-98dcd69d6ff7",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * Input per item (from previous node):\n * {\n *   id, subject, start, end, timeZone,\n *   externalAttendeeEmails: [ ... ],\n *   inferredCompanyNames: [ ... ],          // from previous node\n *   inferredCompanyDomains: [ ... ]         // optional, from previous node\n * }\n *\n * Output per meeting:\n * - individualExternalCompanyNames: [ \"acme\", \"acme\", \"globex\", ... ]\n * - externalCompanyNames: [ \"acme\", \"globex\" ]  // unique + filtered\n * - externalCompaniesAll: \"acme, globex\"\n */\n\n// --- helpers ---\nfunction normalizeCompanyName(name) {\n  return String(name || '')\n    .trim()\n    .toLowerCase()\n    .replace(/[\\s\\-\\._]/g, ''); // remove spaces, dashes, underscores, dots\n}\n\nfunction isFilteredCompany(name) {\n  const norm = normalizeCompanyName(name);\n  return norm === 'legalengine'; // matches \"legal engine\", \"legal-engine\", \"legal_engine\", etc.\n}\n\n// infer company name from a domain (basic heuristic)\nfunction inferCompanyNameFromDomain(domain) {\n  if (!domain) return null;\n  const parts = String(domain).toLowerCase().split('.').filter(Boolean);\n\n  if (parts.length === 0) return null;\n  // drop TLD\n  parts.pop();\n\n  // drop SLD like \"co\", \"com\", \"org\", \"net\" if present at end\n  if (parts.length && ['co', 'com', 'org', 'net'].includes(parts[parts.length - 1])) {\n    parts.pop();\n  }\n\n  const candidate = parts[parts.length - 1] || null;\n  return candidate;\n}\n\nfunction unique(arr) {\n  return Array.from(new Set(arr));\n}\n\nfunction pick(...vals) {\n  return vals.find(v => v !== undefined && v !== null && v !== '') ?? null;\n}\n\n// --- main ---\nconst out = [];\n\nfor (const { json } of items) {\n  // Pull base fields through (customise as needed)\n  const base = {\n    id: pick(json.id, json.meetingId),\n    subject: pick(json.subject, json.meetingSubject),\n    start: pick(json.start, json.startISO, json.startTime),\n    end: pick(json.end, json.endISO, json.endTime),\n    timeZone: pick(json.timeZone, json.timezone),\n  };\n\n  // Source arrays (may or may not exist)\n  const inferredNamesFromPrev = Array.isArray(json.inferredCompanyNames) ? json.inferredCompanyNames : [];\n  const externalEmails = Array.isArray(json.externalAttendeeEmails) ? json.externalAttendeeEmails : [];\n\n  // Build individual names list (one per external attendee) using email domains when needed\n  const individualExternalCompanyNames = externalEmails.map(e => {\n    const domain = (String(e).split('@')[1] || '').toLowerCase();\n    const inferred = inferCompanyNameFromDomain(domain);\n    return inferred || null;\n  }).filter(Boolean);\n\n  // Merge with prior inferred names (if any) then filter + dedupe\n  const combinedNames = [\n    ...inferredNamesFromPrev.map(String),\n    ...individualExternalCompanyNames.map(String),\n  ]\n    .map(s => s.trim())\n    .filter(Boolean)\n    .filter(n => !isFilteredCompany(n));\n\n  const externalCompanyNames = unique(combinedNames);\n\n  out.push({\n    json: {\n      ...base,\n\n      // keep original lists if you want\n      externalAttendeeEmails: externalEmails,\n      inferredCompanyNamesOriginal: inferredNamesFromPrev,\n\n      // requested outputs\n      individualExternalCompanyNames,         // one per external attendee (may include duplicates)\n      externalCompanyNames,                   // unique & filtered\n      externalCompaniesAll: externalCompanyNames.join(', '), // convenience string\n\n      // pass-throughs if present\n      attendeesCount: json.attendeesCount ?? null,\n      hasExternalAttendees: json.hasExternalAttendees ?? true,\n      organizer: json.organizer ?? null,\n      location: json.location ?? null,\n      link: json.link ?? null,\n    }\n  });\n}\n\nreturn out;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1248,
+        -560
+      ],
+      "id": "bf8905ce-9c92-4ea3-b36f-061bf0e38f43",
+      "name": "Meeting with?"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Input: one item per meeting with arrays like:\n// externalAttendeeNames, externalAttendeeEmails, inferredCompanyDomains, inferredCompanyNames, subject, ...\nconst it = $input.item.json;\n\nconst names  = Array.isArray(it.externalAttendeeNames)  ? it.externalAttendeeNames  : [];\nconst emails = Array.isArray(it.externalAttendeeEmails) ? it.externalAttendeeEmails : [];\nconst domains = Array.isArray(it.inferredCompanyDomains) ? it.inferredCompanyDomains : [];\nconst companies = Array.isArray(it.inferredCompanyNames) ? it.inferredCompanyNames : [];\n\nconst out = [];\n\nfor (let i = 0; i < Math.max(names.length, emails.length); i++) {\n  const name  = names[i]  ?? '';\n  const email = emails[i] ?? '';\n  // Pick the first inferred company/domain if you don’t have a 1:1 mapping\n  const company = companies[i] ?? companies[0] ?? '';\n  const domain  = domains[i]  ?? domains[0]  ?? '';\n\n  out.push({\n    json: {\n      subject: it.subject ?? it.meetingSubject ?? '',\n      attendeeName: name,\n      attendeeEmail: email,\n      inferredCompanyName: company,\n      inferredCompanyDomain: domain,\n\n      // pass-throughs if useful\n      meetingId: it.id ?? it.meetingId ?? '',\n      start: it.start ?? it.startISO ?? '',\n      end: it.end ?? it.endISO ?? '',\n    }\n  });\n}\n\nreturn out.length ? out : [{ json: { warning: \"No external attendees to process\" } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        -1008
+      ],
+      "id": "3349fb94-74a6-4295-8b57-9e37810ad63d",
+      "name": "Split Into indiv Inputs"
+    },
+    {
+      "parameters": {
+        "model": "sonar-reasoning",
+        "messages": {
+          "message": [
+            {
+              "content": "=You are a research assistant for helping with meeting prep. \n\nTASK:\nProduce a the most likely name for the company that would be used if introducing it in a professional context\n\nRules:\n- Disambiguate the company first. If uncertain, return top 3 companies with confidence scores.\n- Base facts on public, professional sources only. No contact details or sensitive personal data.\n- Use UK English.\n- Output JSON ONLY that matches the schema in the user message.\n\n\nUse UK English. Today is {{$now.setZone('Europe/London').toFormat('yyyy-LL-dd')}}.",
+              "role": "system"
+            },
+            {
+              "content": "=Research this business ahead of a meeting subject: {{ $json.subject }}.\nComapy name: {{ $json.externalCompanyNames[0] }}\n\nInputs:\n- Company: {{ $json.externalCompanyNames[0] }}\n\nDeliverable (JSON only):\n{\n  \"disambiguation\": {\n    \"matched_full_name\": \"\",\n    \"confidence\": 0.0,\n    \"alternates\": [\n      {\"name\": \"\", \"why_considered\": \"\", \"confidence\": 0.0}\n    ]\n  },\n  "
+            }
+          ]
+        },
+        "options": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.perplexityTool",
+      "typeVersion": 1,
+      "position": [
+        1680,
+        -496
+      ],
+      "id": "795d4bf1-db4e-47a8-9589-53fac862a8ca",
+      "name": "Perplexity Search1",
+      "credentials": {
+        "perplexityApi": {
+          "id": "pOqM7kFIqiYB3qGU",
+          "name": "Perplexity account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini-2025-08-07",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini-2025-08-07"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1552,
+        -496
+      ],
+      "id": "9cbcd14c-d2a3-40fa-997c-69cc2e01ee8b",
+      "name": "OpenAI Chat Model7",
+      "credentials": {
+        "openAiApi": {
+          "id": "LldOhLNBReShSMkE",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "sonar-reasoning",
+        "messages": {
+          "message": [
+            {
+              "content": "=You are a research assistant for helping with meeting prep.\n\nTask: Produce a the most likely name for the company that would be their trading name if listed on their corporate website\n\nThe meeting organiser is Lee Curtis from Legal engine, linkedin profile  here - https://www.linkedin.com/in/leeacurtis/.\n\nRules:\n- Disambiguate the company first. If uncertain, return top 3 companies with confidence scores.\n- Base facts on public, professional sources only. No contact details or sensitive personal data.\n- Use UK English.\n- Output JSON ONLY that matches the schema in the user message.\n\n\nUse UK English. Today is {{$now.setZone('Europe/London').toFormat('yyyy-LL-dd')}}.",
+              "role": "system"
+            },
+            {
+              "content": "=Research this business ahead of a meeting subject: {{ $json.subject }}.\nComapy name: {{ $json.externalCompanyNames[0] }}\n\nInputs:\n- Company: {{ $json.externalCompanyNames[0] }}\n\nDeliverable (JSON only):\n{\n  \"disambiguation\": {\n    \"matched_full_name\": \"\",\n    \"confidence\": 0.0,\n    \"alternates\": [\n      {\"name\": \"\", \"why_considered\": \"\", \"confidence\": 0.0}\n    ]\n  \n\n\n"
+            }
+          ]
+        },
+        "options": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.perplexityTool",
+      "typeVersion": 1,
+      "position": [
+        2256,
+        -224
+      ],
+      "id": "7ca5c085-faf6-4251-bf97-80def83d6184",
+      "name": "Perplexity Search2",
+      "credentials": {
+        "perplexityApi": {
+          "id": "pOqM7kFIqiYB3qGU",
+          "name": "Perplexity account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini-2025-08-07",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini-2025-08-07"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        2128,
+        -224
+      ],
+      "id": "a1271ee6-4fff-4936-a78d-b012c048be24",
+      "name": "OpenAI Chat Model8",
+      "credentials": {
+        "openAiApi": {
+          "id": "LldOhLNBReShSMkE",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalize bios from “Research Attendee (Agent)”\n// Works even if each item only has { output: \"<bio text>\" }.\n// If you also connect Input 1 with “Slim Inputs for Agent” (items with {name,email,domain}),\n// this node will align by index and/or fuzzy name to fill missing emails.\n//\n// Output (one per person):\n//   { emailLower?, email?, name?, domain?, bio, nameKey? }\n//\n// You can merge later by `emailLower` (preferred) and fall back to `nameKey` if email is missing.\n\nfunction clean(s){ return typeof s === 'string' ? s.trim() : ''; }\nfunction lower(s){ return typeof s === 'string' ? s.toLowerCase() : ''; }\n\n// --- regex helpers ---\nvar EMAIL_RE = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/ig;\nvar HOST_RE  = /\\b((?:[a-z0-9-]+\\.)+[a-z]{2,})\\b/ig;\n\n// strip ``` fences and collapse whitespace a bit\nfunction normalizeText(t){\n  var txt = String(t == null ? '' : t);\n  if (txt.indexOf('```') > -1) {\n    txt = txt.replace(/```json/ig,'').replace(/```/g,'');\n  }\n  // trim line ends, collapse >2 newlines to 2\n  txt = txt.split('\\n').map(function(l){ return l.replace(/\\s+$/,''); }).join('\\n');\n  txt = txt.replace(/\\n{3,}/g, '\\n\\n');\n  return txt.trim();\n}\n\n// naive name guess: take leading fragment before \" is \" or first line\nfunction guessNameFromBio(txt){\n  var t = clean(txt);\n  if (!t) return '';\n  var firstLine = t.split('\\n')[0];\n  var beforeIs = firstLine.toString().split(/\\s+is\\s+/i)[0];\n  var cand = clean(beforeIs.length >= 3 ? beforeIs : firstLine);\n  // Keep it reasonable: 2–5 words, title-case-ish\n  var words = cand.split(/\\s+/).filter(Boolean);\n  if (words.length > 6) words = words.slice(0,6);\n  // If it's something like \"Founder and director\", that's not a name; reject if no capital letter start\n  var hasCap = /^[A-Z]/.test(words[0] || '');\n  return hasCap ? words.join(' ') : '';\n}\n\nfunction extractEmailFromText(txt){\n  var m = String(txt||'').match(EMAIL_RE);\n  return (m && m.length) ? m[0] : '';\n}\n\nfunction extractDomainFromText(txt){\n  // pick a plausible company domain; ignore common service hosts\n  var IGNORE = { 'www.google.com':1,'linkedin.com':1,'www.linkedin.com':1,'twitter.com':1,'x.com':1,'facebook.com':1,'instagram.com':1,'youtube.com':1,'outlook.office365.com':1,'microsoft.com':1,'github.com':1,'medium.com':1 };\n  var hosts = []; var h;\n  var text = String(txt||'');\n  while ((h = HOST_RE.exec(text)) !== null){\n    var host = h[1].toLowerCase();\n    if (!IGNORE[host]) hosts.push(host);\n  }\n  // Return the most frequent non-ignored host if any\n  if (hosts.length === 0) return '';\n  var freq = {}; var best = '', bestN = -1;\n  for (var i=0;i<hosts.length;i++){ var k=hosts[i]; freq[k]=(freq[k]||0)+1; if (freq[k]>bestN){ bestN=freq[k]; best=k; } }\n  return best;\n}\n\nfunction domainFromEmail(email){\n  var e = lower(clean(email)); var at = e.indexOf('@'); return at>-1 ? e.slice(at+1) : '';\n}\n\n// --- collect inputs ---\nvar outItems = ($input.all(0) || []).map(function(i){ return i.json; });\nvar hintItems = []; try { hintItems = ($input.all(1) || []).map(function(i){ return i.json; }); } catch(_){}\n\n// Build hint maps (by index, by lower(name), by lower(email))\nvar hintsByIndex = hintItems;\nvar hintsByName  = {};\nvar hintsByEmail = {};\nfor (var hi=0; hi<hintItems.length; hi++){\n  var h = hintItems[hi] || {};\n  var hEmail = clean(h.email || (h.emailAddress && h.emailAddress.address) || '');\n  var hName  = clean(h.name || h.person || h.fullName || h.attendeeName || '');\n  if (hName) hintsByName[lower(hName)] = h;\n  if (hEmail) hintsByEmail[lower(hEmail)] = h;\n}\n\n// Process each research output\nvar results = [];\n\nfor (var i=0; i<outItems.length; i++){\n  var row = outItems[i] || {};\n  var bioRaw = (row.bio !== undefined ? row.bio : (row.output !== undefined ? row.output : (row.text !== undefined ? row.text : row.content)));\n  var bio = normalizeText(bioRaw);\n\n  // Try to resolve identity\n  var email = extractEmailFromText(bio);\n  var name  = '';\n  var domain = '';\n\n  // If no email in text, try to align with hints\n  if (!email && hintsByIndex[i]){\n    var h = hintsByIndex[i];\n    var hEmail = clean(h.email || (h.emailAddress && h.emailAddress.address) || '');\n    if (hEmail) email = hEmail;\n    name = clean(h.name || h.person || h.fullName || h.attendeeName || '');\n    domain = clean(h.domain || '');\n  }\n\n  // If still no email, try name-match from text → hintsByName\n  if (!email){\n    var guessName = guessNameFromBio(bio);\n    if (guessName && hintsByName[lower(guessName)]){\n      var hh = hintsByName[lower(guessName)];\n      email = clean(hh.email || (hh.emailAddress && hh.emailAddress.address) || '');\n      if (!name) name = clean(hh.name || hh.person || hh.fullName || hh.attendeeName || guessName);\n      if (!domain) domain = clean(hh.domain || '');\n    } else if (guessName) {\n      name = name || guessName;\n    }\n  }\n\n  // Derive domain if still missing\n  if (!domain){\n    if (email) domain = domainFromEmail(email);\n    if (!domain){\n      var dTxt = extractDomainFromText(bio);\n      if (dTxt) domain = dTxt;\n    }\n  }\n\n  // Fallback name if still empty\n  if (!name) name = guessNameFromBio(bio);\n\n  var emailLower = lower(email);\n  var nameKey = lower(clean(name));\n\n  results.push({\n    emailLower: emailLower || '',\n    email: email || '',\n    name: name || '',\n    domain: domain || '',\n    nameKey: nameKey || '',\n    bio: bio\n  });\n}\n\n// Deduplicate by emailLower if available; else by nameKey\nvar bestByKey = {};\nfor (var r=0; r<results.length; r++){\n  var it = results[r];\n  var key = it.emailLower || ('name:' + it.nameKey);\n  if (!key) continue;\n  var prev = bestByKey[key];\n  if (!prev || it.bio.length > prev.bio.length){\n    bestByKey[key] = it;\n    // prefer real email if one version had none\n    if (prev && !prev.email && it.email) bestByKey[key].email = it.email;\n    if (prev && !prev.domain && it.domain) bestByKey[key].domain = it.domain;\n  } else {\n    // keep better name if longer\n    if (it.name && (!prev.name || it.name.length > prev.name.length)) bestByKey[key].name = it.name;\n    if (it.domain && !prev.domain) bestByKey[key].domain = it.domain;\n    if (it.email && !prev.email) bestByKey[key].email = it.email;\n  }\n}\n\n// Emit items\nvar out = [];\nfor (var k in bestByKey){\n  out.push({ json: bestByKey[k] });\n}\n\nif (out.length === 0){\n  // Emit diagnostics to help wire Input 1 properly\n  return [{\n    json: {\n      warning: \"No usable bios (no email/name could be resolved). Consider connecting Slim Inputs as Input 1.\",\n      sampleKeys: Object.keys(outItems[0] || {}),\n      note: \"If Agent output only has 'output' text, merge with Slim Inputs by index so we can attach emails.\"\n    }\n  }];\n}\n\nreturn out;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1888,
+        -720
+      ],
+      "id": "88c3f6b4-ef16-4c98-8eea-1f3ce1e0d90b",
+      "name": "Normalize Summary"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        2464,
+        -448
+      ],
+      "id": "3e332196-ef4b-4f3f-89df-8d057d67cf6c",
+      "name": "Aggregate2"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * Input examples this handles:\n * 1) A stringified JSON like \"{\\\"data\\\":[{\\\"data\\\":[{\\\"bio\\\":\\\"Ray Meiring ...\\\"}]}]}\"\n * 2) An object like { data: [ { data: [ { bio: \"...\" }, ... ] } ] }\n * 3) A Perplexity-style { biz: \"{\\\"data\\\":[{\\\"output\\\":\\\"...\\\"}]}\" } or { biz: { data:[{output:\"...\"}] } }\n * 4) A long string that contains both escaped JSON and a readable tail (fallback: strip the JSON-looking prefix)\n *\n * Output:\n * { text: \"<single clean text stream>\" }\n */\n\nfunction safeParse(x) {\n  if (x == null) return null;\n  if (typeof x === 'object') return x;\n  if (typeof x === 'string') {\n    try { return JSON.parse(x); } catch { return null; }\n  }\n  return null;\n}\n\n// Collect all \"bio\" strings recursively\nfunction collectBios(obj, out) {\n  if (!obj) return;\n  if (typeof obj === 'string') return;\n  if (Array.isArray(obj)) { obj.forEach(v => collectBios(v, out)); return; }\n  if (typeof obj === 'object') {\n    if (typeof obj.bio === 'string' && obj.bio.trim()) out.push(obj.bio.trim());\n    for (const k of Object.keys(obj)) collectBios(obj[k], out);\n  }\n}\n\n// Try to extract Perplexity-like \"output\" fields\nfunction collectOutputs(obj, out) {\n  if (!obj) return;\n  if (typeof obj === 'string') return;\n  if (Array.isArray(obj)) { obj.forEach(v => collectOutputs(v, out)); return; }\n  if (typeof obj === 'object') {\n    if (typeof obj.output === 'string' && obj.output.trim()) out.push(obj.output.trim());\n    for (const k of Object.keys(obj)) collectOutputs(obj[k], out);\n  }\n}\n\n// Fallback: remove a leading escaped-JSON prefix and keep the human-readable tail\nfunction stripEscapedJsonPrefix(s) {\n  if (typeof s !== 'string') return '';\n  // Heuristic: if it starts with \"{\\\"\" or '{\"data\":', cut everything up to the first \" - \" and keep the rest\n  if (/^\\\\?{\\\\?\"/.test(s) || s.startsWith('{\"data\"')) {\n    const idx = s.indexOf(' - ');\n    if (idx !== -1) return s.slice(idx + 3).trim();\n  }\n  // Also unescape common \\\" artifacts\n  return s.replace(/\\\\\"/g, '\"').replace(/\\\\n/g, '\\n').replace(/\\\\t/g, '\\t').trim();\n}\n\n// ---- main ----\nconst input = $input.item.json;\n\n// 1) Find candidate sources\n// - direct text field\nlet textRaw = input.text || input.output || input.bio || null;\n\n// - people/text payload often under textPayload (from your merge packing), or directly at root\nconst peopleObj = input.textPayload || input.peoplePayload || input;\n\n// - biz payload (could be string or object)\nlet bizObj = input.bizPayload || input.biz || null;\nbizObj = safeParse(bizObj) || bizObj; // parse if string\n\n// 2) Try to assemble text from structured objects first\nconst bios = [];\ncollectBios(peopleObj, bios);\n\nconst bizOutputs = [];\ncollectOutputs(bizObj, bizOutputs);\n\n// 3) If we didn’t get anything, try to parse the root if it’s a stringified JSON\nif (!bios.length && typeof input === 'string') {\n  const parsed = safeParse(input);\n  if (parsed) collectBios(parsed, bios);\n}\n\n// 4) Build the final text\nlet blocks = [];\n\n// prefer bios (richest text you showed)\nif (bios.length) blocks.push(bios.join('\\n\\n'));\n\n// include biz output if present\nif (bizOutputs.length) blocks.push(bizOutputs.join('\\n\\n'));\n\n// if still nothing, fall back to stripping messy string content\nif (!blocks.length) {\n  // Pick the most likely raw string field to clean\n  const candidates = [\n    textRaw,\n    typeof input === 'string' ? input : null,\n    typeof input?.peoplePayload === 'string' ? input.peoplePayload : null,\n    typeof input?.biz === 'string' ? input.biz : null\n  ].filter(Boolean);\n\n  if (candidates.length) {\n    const cleaned = stripEscapedJsonPrefix(candidates[0]);\n    if (cleaned) blocks.push(cleaned);\n  }\n}\n\n// As a last resort, emit something explicit\nif (!blocks.length) blocks.push('No readable text content found.');\n\n// Output single text stream\nreturn [{\n  json: {\n    text: blocks.join('\\n\\n---\\n\\n')\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2688,
+        -864
+      ],
+      "id": "465aedcb-6456-4558-a8ac-e4a0b8a920be",
+      "name": "Biz & Attendee Compiler"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Collect all \"output\" strings from all incoming items and return ONE item with a clean text stream.\n\nfunction safeParse(x) {\n  if (x == null) return null;\n  if (typeof x === 'object') return x;\n  if (typeof x === 'string') { try { return JSON.parse(x); } catch { return null; } }\n  return null;\n}\n\nfunction collectOutputs(obj, out) {\n  if (!obj) return;\n  if (typeof obj === 'string') {\n    const parsed = safeParse(obj);\n    if (parsed) { collectOutputs(parsed, out); return; }\n    // plain string fallback\n    const s = obj.trim();\n    if (s) out.push(s);\n    return;\n  }\n  if (Array.isArray(obj)) { obj.forEach(v => collectOutputs(v, out)); return; }\n\n  // object\n  if (typeof obj.output === 'string' && obj.output.trim()) out.push(obj.output.trim());\n  if (Array.isArray(obj.data)) obj.data.forEach(v => collectOutputs(v, out));\n\n  // scan other properties just in case\n  for (const k of Object.keys(obj)) {\n    if (k === 'data' || k === 'output') continue;\n    const v = obj[k];\n    if (typeof v === 'string' || Array.isArray(v) || (v && typeof v === 'object')) {\n      collectOutputs(v, out);\n    }\n  }\n}\n\nconst items = $input.all();\nconst outputs = [];\nfor (const it of items) {\n  collectOutputs(it.json, outputs);\n}\n\n// de-dup consecutive identical blocks; keep order\nconst merged = [];\nfor (const s of outputs) {\n  if (merged.length === 0 || merged[merged.length - 1] !== s) merged.push(s);\n}\n\n// Build single text stream\nconst text = merged.join('\\n\\n---\\n\\n') || 'No output text found.';\n\nreturn [{ json: { text } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2688,
+        -448
+      ],
+      "id": "1114da7d-f2f4-49df-8163-5c1e567d7ce1",
+      "name": "Biz Name compiler"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2912,
+        -720
+      ],
+      "id": "fbaa2ce3-212b-4c4a-946a-cc92bfef2c50",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        2464,
+        -864
+      ],
+      "id": "95cc969e-411f-4faa-b9c2-8f75f701a76c",
+      "name": "Aggregate1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Use the Perplexity Search tool to perform the following task robustly: \n\nResearch this business ahead of a meeting subject: {{ $json.subject }}.\nComapy name: {{ $json.externalCompanyNames[0] }}\n\nThese details should ensure you can locate them on linkedin, their official company web page or on professional networks or from more public sources.\n\nUse a range of search options to establish a robust summaryt for the business, someone from which is due to meet with Lee Curtis from Legal Engine - https://www.linkedin.com/in/leeacurtis/ www.legalengine.co.uk. You should be robust in finding out their entire professional background.\n\nOnly use the Perplexity Search tool once per company. Focus on LinkedIn as a key source of information and connections of Lee Curtis to help to identify the company. Also search for matches on UK Companies House (https://find-and-update.company-information.service.gov.uk/company/13160418/officers).\n\nTASK:\nProduce a set of results per extrenal company. If there is more than one, cycle through the json inputs to deliver a summary per ecompany.",
+        "options": {
+          "systemMessage": "You write compact, factual summaries in UK English. Avoid speculation. Prefer official pages, LinkedIn, company sites, or major press. Return a compact 4–6 sentence summary (UK English), 2–3 recent items with dates, and 2–3 credible links. Keep it under 150 words per person. ",
+          "returnIntermediateSteps": false
+        }
+      },
+      "id": "80ef5c67-ed67-47c5-be33-d15a29a76082",
+      "name": "Research Biz",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        1536,
+        -720
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Use the Perplexity Search tool to perform the following task robustly: \n\nResearch this business ahead of a meeting subject: {{ $json.subject }}.\nComapy name: {{ $json.externalCompanyNames[0] }}\n\nThese details should ensure you can locate them on linkedin, their official company web page or on professional networks or from more public sources.\n\nOnly use the Perplexity Search tool once per company. Focus on LinkedIn as a key source of information and connections of Lee Curtis to help to identify the company. Also search for matches on UK Companies House (https://find-and-update.company-information.service.gov.uk/company/13160418/officers).\n\nTASK:\nProduce the most likely name for the company that would be their trading name if listed on their corporate website\n\nOUTPUT:\nCompany name",
+        "options": {
+          "systemMessage": "TASK:\nProduce the most likely name for the company that would be their trading name if listed on their corporate website",
+          "returnIntermediateSteps": false
+        }
+      },
+      "id": "e8b3ec4e-7406-4376-9c1a-7613035190b9",
+      "name": "Research Biz Name",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        2112,
+        -432
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2176,
+        -864
+      ],
+      "id": "700a4781-8128-4924-8e94-7302b5ac8285",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        3136,
+        -720
+      ],
+      "id": "10999caa-611b-4456-9757-049b7d254502",
+      "name": "Aggregate3"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "803e81bc-4a66-48b7-b461-026276603f7c",
+              "name": "data",
+              "value": "={{ $json.data }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3360,
+        -704
+      ],
+      "id": "bea19893-bbff-444c-a309-41cf33fbe1ab",
+      "name": "Set Nodes to pass"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "kMO0rXhViTBuWZjy",
+          "mode": "list",
+          "cachedResultName": "DEV - W2 - Post Call Luke create Agent with KB"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        3584,
+        -720
+      ],
+      "id": "fba24ecc-2fc2-40cb-a37c-ec3178edf869",
+      "name": "Execute Workflow"
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Today",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Today": {
+      "main": [
+        [
+          {
+            "node": "Last 3 days",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF — No meetings today?": {
+      "main": [
+        [
+          {
+            "node": "Extract Meetings with External Attendees",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Research Attendee (Agent)": {
+      "main": [
+        [
+          {
+            "node": "Normalize Bios",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many events": {
+      "main": [
+        [
+          {
+            "node": "Clean Calendar Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Perplexity Search": {
+      "ai_tool": [
+        [
+          {
+            "node": "Research Attendee (Agent)",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Bios": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean Calendar Data": {
+      "main": [
+        [
+          {
+            "node": "IF — No meetings today?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Today",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Today",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Last 3 days": {
+      "main": [
+        [
+          {
+            "node": "Get many events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Meetings with External Attendees": {
+      "main": [
+        [
+          {
+            "node": "Last Meeting",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Last Meeting": {
+      "main": [
+        [
+          {
+            "node": "Meeting with?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Split Into indiv Inputs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model6": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Research Attendee (Agent)",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Meeting with?": {
+      "main": [
+        [
+          {
+            "node": "Research Biz",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Research Biz Name",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Into indiv Inputs": {
+      "main": [
+        [
+          {
+            "node": "Research Attendee (Agent)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Perplexity Search1": {
+      "ai_tool": [
+        [
+          {
+            "node": "Research Biz",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model7": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Research Biz",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Perplexity Search2": {
+      "ai_tool": [
+        [
+          {
+            "node": "Research Biz Name",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model8": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Research Biz Name",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Summary": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Aggregate2": {
+      "main": [
+        [
+          {
+            "node": "Biz Name compiler",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Biz & Attendee Compiler": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Biz Name compiler": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Aggregate3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate1": {
+      "main": [
+        [
+          {
+            "node": "Biz & Attendee Compiler",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Research Biz": {
+      "main": [
+        [
+          {
+            "node": "Normalize Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Research Biz Name": {
+      "main": [
+        [
+          {
+            "node": "Aggregate2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Aggregate1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate3": {
+      "main": [
+        [
+          {
+            "node": "Set Nodes to pass",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Nodes to pass": {
+      "main": [
+        [
+          {
+            "node": "Execute Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 1,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

@@ -1,0 +1,1507 @@
+{
+  "name": "LIVE - AMY - Legal Engine CMO Dinner Write to airtable",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "amy_cmo_bd_ops_dinner",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "e1c45b2b-5343-4092-b6d4-7c49093da9c3",
+      "name": "Webhook",
+      "webhookId": "28839081-53c9-4485-b984-286f32c43d37"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appqXY4NTowyUys7a",
+          "mode": "list",
+          "cachedResultName": "Lottie Live Data",
+          "cachedResultUrl": "https://airtable.com/appqXY4NTowyUys7a"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblrWmzxwlD6l1mZH",
+          "mode": "list",
+          "cachedResultName": "Legal Engine CMO Dinner",
+          "cachedResultUrl": "https://airtable.com/appqXY4NTowyUys7a/tblrWmzxwlD6l1mZH"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Call Length (s)": "={{ $json.body.data.conversation_initiation_client_data.dynamic_variables.system__call_duration_secs }}",
+            "Call Summary": "={{ $json.body.data.analysis.transcript_summary }}",
+            "Date Last Updated": "={{ $json.body.data.conversation_initiation_client_data.dynamic_variables.system__time_utc }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Surname",
+              "displayName": "Surname",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Too Short?",
+              "displayName": "Too Short?",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Call Length (s)",
+              "displayName": "Call Length (s)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Date Last Updated",
+              "displayName": "Date Last Updated",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Call Summary",
+              "displayName": "Call Summary",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Call Transcript",
+              "displayName": "Call Transcript",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Personal Bio",
+              "displayName": "Personal Bio",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Linkedin Connections",
+              "displayName": "Linkedin Connections",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Key Expertise",
+              "displayName": "Key Expertise",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Personal Hooks",
+              "displayName": "Personal Hooks",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "0d754851-d86c-4a62-8879-7a831ab9e433",
+      "name": "Create a record",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Create a record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "leonard-dev.app.n8n.cloud",
+            "user-agent": "ElevenLabs/1.0",
+            "content-length": "27666",
+            "accept": "*/*",
+            "accept-encoding": "gzip, br",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "34.59.11.47",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "US",
+            "cf-ray": "983ffaaa91dff51e-ORD",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "elevenlabs-signature": "t=1758692763,v0=b09b81f3f32033cab47a2450a06033002ce611a227dbd20bd59c3ec456c4e572",
+            "x-forwarded-for": "34.59.11.47, 172.69.17.154",
+            "x-forwarded-host": "leonard-dev.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-52-6c4f4684d5-tchs5",
+            "x-is-trusted": "yes",
+            "x-real-ip": "34.59.11.47"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "type": "post_call_transcription",
+            "event_timestamp": 1758692763,
+            "data": {
+              "agent_id": "agent_0301k5x11j1kfdkthd2afh0nrcba",
+              "conversation_id": "conv_0301k5x3vtxsevjrc50jpp5vqr47",
+              "status": "done",
+              "user_id": "1jocLV1YMhbdrLSRX3Me8aWkbRX2",
+              "transcript": [
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_0301k5x11j1kfdkthd2afh0nrcba",
+                    "workflow_node_id": null
+                  },
+                  "message": "“Hello, I’m Amy from the Legal Engine team. Lovely to meet you. Could I start by asking your name?”",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 0,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.15502849299991794
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "Sam.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 7,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.1128352470000209
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_0301k5x11j1kfdkthd2afh0nrcba",
+                    "workflow_node_id": null
+                  },
+                  "message": "“It’s wonderful to meet you, Sam! I’m so looking forward to our dinner on Wednesday the first of October. It’s a fantastic opportunity to bring together peers in the industry who are all focused on business development systems like CRM, pitch databases, and marketing technology. Our conversation is under Chatham House rules, so nothing will be attributed to individuals. Afterwards, Legal Engine will consolidate all the insights and share a summary with everyone who attended. Does that sound okay?”",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 9,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.41217481100011355
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.23081361300000935
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.8140734300000076
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.1270639630001824
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 950,
+                          "price": 0.000095
+                        },
+                        "input_cache_read": {
+                          "tokens": 5760,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 97,
+                          "price": 0.0000388
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "Yes, that's fine. Thanks, Sammy.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 37,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.160569556000155
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_0301k5x11j1kfdkthd2afh0nrcba",
+                    "workflow_node_id": null
+                  },
+                  "message": "“Great! To start, could you share one interesting, personal fact about yourself that isn’t easily found online?”",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 39,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.4612134750000223
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.27965459400002146
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.6025508180000543
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.10911833600039245
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 1060,
+                          "price": 0.000106
+                        },
+                        "input_cache_read": {
+                          "tokens": 5758,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 24,
+                          "price": 0.000009600000000000001
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "Yes.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 47,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.1089646220002578
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_0301k5x11j1kfdkthd2afh0nrcba",
+                    "workflow_node_id": null
+                  },
+                  "message": "“I’m all ears!”",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 49,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.428607665999607
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.2638966539998364
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.4285814410000057
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.1110747560001073
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 134,
+                          "price": 0.0000134
+                        },
+                        "input_cache_read": {
+                          "tokens": 6710,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 7,
+                          "price": 0.0000028000000000000003
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "Yeah, okay. I have one leg shorter than the other.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 51,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.18340377599997737
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_0301k5x11j1kfdkthd2afh0nrcba",
+                    "workflow_node_id": null
+                  },
+                  "message": "“That’s a really interesting fact, thank you for sharing, Sam! It reminds me of how we all have our unique attributes.\n\nWhen you think about AI, what comes to mind first — excitement, caution, or maybe a bit of both?”",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 60,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.4880672300000697
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.29955427599998075
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.7701444920003269
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.13921872799983248
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 162,
+                          "price": 0.0000162
+                        },
+                        "input_cache_read": {
+                          "tokens": 6702,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 52,
+                          "price": 0.0000208
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "...",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 72,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.24049070999990363
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_0301k5x11j1kfdkthd2afh0nrcba",
+                    "workflow_node_id": null
+                  },
+                  "message": "“Are you still there, Sam?”",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 81,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.5053260969998519
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.3276937559999169
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.5053073079998285
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.11217125499979375
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 221,
+                          "price": 0.000022100000000000002
+                        },
+                        "input_cache_read": {
+                          "tokens": 6696,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 8,
+                          "price": 0.0000032000000000000003
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "Yeah I'm still here.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 84,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.17559571499987214
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_0301k5x11j1kfdkthd2afh0nrcba",
+                    "workflow_node_id": null
+                  },
+                  "message": "“Great! So, thinking about AI, does that bring excitement, caution, or a bit of both to mind for you?”",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 87,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.4292867340000157
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.23124832600024092
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.5687265569999909
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.09989031799977965
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 6932,
+                          "price": 0.0006932
+                        },
+                        "input_cache_read": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 26,
+                          "price": 0.0000104
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "Definitely a bit of both.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 95,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.18151535700008026
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_0301k5x11j1kfdkthd2afh0nrcba",
+                    "workflow_node_id": null
+                  },
+                  "message": "“I can certainly see that. How do you see AI affecting the day-to-day work of business development and marketing teams in law firms?”",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 96,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.551848734000032
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.36299030800000764
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.6965038889998141
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.12159651699994356
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 283,
+                          "price": 0.0000283
+                        },
+                        "input_cache_read": {
+                          "tokens": 6681,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 30,
+                          "price": 0.000012
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "Well I think it's going to change everything, um I think we're going to see massively reduced team sizes, much more automation um I'm a bit worried to be honest",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 105,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.20038526200005435
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_0301k5x11j1kfdkthd2afh0nrcba",
+                    "workflow_node_id": null
+                  },
+                  "message": "“That’s a very candid perspective, thank you, Sam. It sounds like you’re anticipating significant shifts and perhaps some concerns about the impact on team structures. Our whitepaper also touches on the potential for AI to handle a large portion of current BD tasks, suggesting a move towards more strategic roles for human teams rather than outright replacement. It’ll be fascinating to see how these predictions play out.\n\nIf AI could take away one repetitive or frustrating part of BD work, what would you pick?”",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 119,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.5103793389998827
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.32996250699989105
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.9188258439999117
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.14569956800005457
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 7032,
+                          "price": 0.0007032000000000001
+                        },
+                        "input_cache_read": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 102,
+                          "price": 0.0000408
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "Pitching.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 148,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.704454824000095
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_0301k5x11j1kfdkthd2afh0nrcba",
+                    "workflow_node_id": null
+                  },
+                  "message": "“Pitching, interesting! Could you tell me a bit more about what makes the pitching process particularly repetitive or frustrating for you?”",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 150,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.4538103860004412
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.26421318900020196
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.6031807410004149
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.11721714099985547
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 7137,
+                          "price": 0.0007137000000000001
+                        },
+                        "input_cache_read": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 26,
+                          "price": 0.0000104
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "Yeah, I mean we spend too much time looking for information and not enough time refining it and so yeah too much elapsed time in the pitch process is spent doing kind of repetitive tasks rather than really adding value.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 158,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.1748261130001083
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_0301k5x11j1kfdkthd2afh0nrcba",
+                    "workflow_node_id": null
+                  },
+                  "message": "“I understand. It sounds like the time spent on gathering information for pitches detracts from the more valuable aspects of refining and strategizing. Our whitepaper also highlights this exact challenge, noting that AI agents could handle the data-gathering and formatting, freeing up professionals to focus on higher-value, creative work. It’s encouraging to hear your perspective aligns with this potential for AI to streamline those crucial early stages of pitching.\n\nDo you think AI will mainly reduce headcount, or free people up to do more rewarding and creative work?”",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 176,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.4862886810001328
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.2725260540000818
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 1.095589956999902
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.1018568099998447
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 535,
+                          "price": 0.0000535
+                        },
+                        "input_cache_read": {
+                          "tokens": 6670,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 109,
+                          "price": 0.0000436
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "Unfortunately I think it would definitely reduce headcount quite significantly.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 208,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.15085474799980148
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_0301k5x11j1kfdkthd2afh0nrcba",
+                    "workflow_node_id": null
+                  },
+                  "message": "“Thank you for sharing your thoughts on that, Sam. It’s a concern many are voicing. The whitepaper does suggest that while AI will automate many tasks, the goal should be to leverage this to free up people for more rewarding and creative work, rather than simply reducing headcount. It’s a delicate balance to strike.\n\nLooking ahead, what skills do you think humans will always bring to BD that AI can’t?”\n",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 213,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.4241405930001747
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.2339074569999866
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.9543967390000034
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.13327488999993875
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 655,
+                          "price": 0.0000655
+                        },
+                        "input_cache_read": {
+                          "tokens": 6671,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 90,
+                          "price": 0.000036
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "Empathy.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 237,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.10149263299990707
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_0301k5x11j1kfdkthd2afh0nrcba",
+                    "workflow_node_id": null
+                  },
+                  "message": "“Empathy, absolutely. That’s a crucial human element. Thank you for sharing your insights today, Sam. Your perspective on the impact of AI, particularly regarding pitching and the importance of human skills like empathy, has been incredibly valuable. It will certainly contribute to the summary we’ll share after the dinner. I hope you have a wonderful evening!”\n",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 240,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.45332008499963194
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.27229973199973756
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.9876974799999516
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.15270693999991636
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_0301k5x11j1kfdkthd2afh0nrcba",
+                    "workflow_node_id": null
+                  },
+                  "message": null,
+                  "multivoice_message": null,
+                  "tool_calls": [
+                    {
+                      "type": "system",
+                      "request_id": "end_call_132881a3c55e4303a900ecdff80d4554",
+                      "tool_name": "end_call",
+                      "params_as_json": "{\"system_message_to_speak\": \"Thanks again for your time \\u2014 I\\u2019ll let you go now. Goodbye.\", \"reason\": \"Conversation concluded. User provided insights on AI and BD, and the agent shared relevant information from the whitepaper. The conversation reached a natural closing point.\"}",
+                      "tool_has_been_called": true,
+                      "tool_details": null
+                    }
+                  ],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 240,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.45332008499963194
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.27229973199973756
+                      },
+                      "convai_llm_tool_request_generation_latency": {
+                        "elapsed_time": 0.8120601639998313
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.9876974799999516
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.15270693999991636
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_0301k5x11j1kfdkthd2afh0nrcba",
+                    "workflow_node_id": null
+                  },
+                  "message": null,
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [
+                    {
+                      "request_id": "end_call_132881a3c55e4303a900ecdff80d4554",
+                      "tool_name": "end_call",
+                      "result_value": "{\"result_type\":\"end_call_success\",\"status\":\"success\",\"reason\":\"Conversation concluded. User provided insights on AI and BD, and the agent shared relevant information from the whitepaper. The conversation reached a natural closing point.\",\"message\":null}",
+                      "is_error": false,
+                      "tool_has_been_called": true,
+                      "tool_latency_secs": 0.5007030589999886,
+                      "dynamic_variable_updates": [],
+                      "type": "system",
+                      "result": {
+                        "result_type": "end_call_success",
+                        "status": "success",
+                        "reason": "Conversation concluded. User provided insights on AI and BD, and the agent shared relevant information from the whitepaper. The conversation reached a natural closing point.",
+                        "message": null
+                      }
+                    }
+                  ],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 240,
+                  "conversation_turn_metrics": null,
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 750,
+                          "price": 0.000075
+                        },
+                        "input_cache_read": {
+                          "tokens": 6669,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 130,
+                          "price": 0.000052
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                }
+              ],
+              "metadata": {
+                "start_time_unix_secs": 1758692502,
+                "accepted_time_unix_secs": 1758692502,
+                "call_duration_secs": 259,
+                "cost": 1541,
+                "deletion_settings": {
+                  "deletion_time_unix_secs": null,
+                  "deleted_logs_at_time_unix_secs": null,
+                  "deleted_audio_at_time_unix_secs": null,
+                  "deleted_transcript_at_time_unix_secs": null,
+                  "delete_transcript_and_pii": false,
+                  "delete_audio": false
+                },
+                "feedback": {
+                  "overall_score": null,
+                  "likes": 0,
+                  "dislikes": 0
+                },
+                "authorization_method": "authorization_header",
+                "charging": {
+                  "dev_discount": true,
+                  "is_burst": false,
+                  "tier": "enterprise",
+                  "llm_usage": {
+                    "irreversible_generation": {
+                      "model_usage": {
+                        "gemini-2.5-flash-lite": {
+                          "input": {
+                            "tokens": 25851,
+                            "price": 0.0025851000000000003
+                          },
+                          "input_cache_read": {
+                            "tokens": 58317,
+                            "price": 0
+                          },
+                          "input_cache_write": {
+                            "tokens": 0,
+                            "price": 0
+                          },
+                          "output_total": {
+                            "tokens": 701,
+                            "price": 0.00028040000000000004
+                          }
+                        }
+                      }
+                    },
+                    "initiated_generation": {
+                      "model_usage": {
+                        "gemini-2.5-flash-lite": {
+                          "input": {
+                            "tokens": 26005,
+                            "price": 0.0026005
+                          },
+                          "input_cache_read": {
+                            "tokens": 65018,
+                            "price": 0
+                          },
+                          "input_cache_write": {
+                            "tokens": 0,
+                            "price": 0
+                          },
+                          "output_total": {
+                            "tokens": 714,
+                            "price": 0.00028560000000000006
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "llm_price": 0.0028861,
+                  "llm_charge": 29,
+                  "call_charge": 1512,
+                  "free_minutes_consumed": 0,
+                  "free_llm_dollars_consumed": 0
+                },
+                "phone_call": null,
+                "batch_call": null,
+                "termination_reason": "end_call tool was called.",
+                "error": null,
+                "main_language": "en",
+                "rag_usage": null,
+                "text_only": false,
+                "features_usage": {
+                  "language_detection": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "transfer_to_agent": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "transfer_to_number": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "multivoice": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "dtmf_tones": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "external_mcp_servers": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "pii_zrm_workspace": false,
+                  "pii_zrm_agent": false,
+                  "tool_dynamic_variable_updates": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "is_livekit": false,
+                  "voicemail_detection": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "workflow": {
+                    "enabled": false,
+                    "tool_node": {
+                      "enabled": false,
+                      "used": false
+                    }
+                  },
+                  "agent_testing": {
+                    "enabled": false,
+                    "tests_ran_after_last_modification": false,
+                    "tests_ran_in_last_7_days": false
+                  }
+                },
+                "eleven_assistant": {
+                  "is_eleven_assistant": false
+                },
+                "initiator_id": "1jocLV1YMhbdrLSRX3Me8aWkbRX2",
+                "conversation_initiation_source": "react_sdk",
+                "conversation_initiation_source_version": "0.5.0",
+                "timezone": null
+              },
+              "analysis": {
+                "evaluation_criteria_results": {},
+                "data_collection_results": {},
+                "call_successful": "success",
+                "transcript_summary": "Amy from Legal Engine spoke with Sam about AI's impact on business development. Sam anticipates reduced team sizes and automation, expressing concern. He finds pitching repetitive due to excessive information gathering. Sam believes AI will reduce headcount and emphasizes empathy as a uniquely human skill. The conversation concluded with Amy thanking Sam for his valuable insights.\n",
+                "call_summary_title": "AI in Business Development"
+              },
+              "conversation_initiation_client_data": {
+                "conversation_config_override": {
+                  "tts": {
+                    "voice_id": null,
+                    "stability": null,
+                    "speed": null,
+                    "similarity_boost": null
+                  },
+                  "conversation": {
+                    "text_only": null
+                  },
+                  "agent": {
+                    "first_message": null,
+                    "language": null,
+                    "prompt": null
+                  }
+                },
+                "custom_llm_extra_body": {},
+                "user_id": "1jocLV1YMhbdrLSRX3Me8aWkbRX2",
+                "source_info": {
+                  "source": "react_sdk",
+                  "version": "0.5.0"
+                },
+                "dynamic_variables": {
+                  "system__agent_id": "agent_0301k5x11j1kfdkthd2afh0nrcba",
+                  "system__current_agent_id": "agent_0301k5x11j1kfdkthd2afh0nrcba",
+                  "system__conversation_id": "conv_0301k5x3vtxsevjrc50jpp5vqr47",
+                  "system__caller_id": null,
+                  "system__called_number": null,
+                  "system__call_duration_secs": 259,
+                  "system__time_utc": "2025-09-24T05:46:01.620820+00:00",
+                  "system__time": "Wednesday, 05:46 24 September 2025",
+                  "system__timezone": null,
+                  "system__call_sid": null
+                }
+              }
+            }
+          },
+          "webhookUrl": "https://leonard-dev.app.n8n.cloud/webhook/luke_post_meeting_call",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "triggerCount": 1,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

@@ -1,0 +1,394 @@
+{
+  "name": "HSFK UC 9.6 - Visa Pack Assistant",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "hsfk-uc-9.6",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "e0c2eb50-d781-4d7a-979a-ec54c45376eb",
+      "name": "ElevenLabs Post-Call",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "55290c22-4265-4071-8aa5-c4dfbb5f618b"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1d836aa6-e127-4f19-9b9f-754a7e191861",
+              "name": "traveller",
+              "value": "={{ $json.body.extracted_data.traveller }}",
+              "type": "string"
+            },
+            {
+              "id": "8bf9e8d8-690a-4f2c-beaf-835ca1ba062e",
+              "name": "passportNationality",
+              "value": "={{ $json.body.extracted_data.passportNationality }}",
+              "type": "string"
+            },
+            {
+              "id": "191091d0-f03d-4bf7-9a2a-da08884e8ddc",
+              "name": "destinationCountries",
+              "value": "={{ $json.body.extracted_data.destinationCountries }}",
+              "type": "string"
+            },
+            {
+              "id": "55ff044b-26fc-41fa-8ef8-14da3f8426ce",
+              "name": "travelDates",
+              "value": "={{ $json.body.extracted_data.travelDates }}",
+              "type": "string"
+            },
+            {
+              "id": "fe477e79-dd18-42d3-a2d8-899f4191f269",
+              "name": "previousVisas",
+              "value": "={{ $json.body.extracted_data.previousVisas }}",
+              "type": "string"
+            },
+            {
+              "id": "6384b412-663a-4177-ad42-08eb0607f682",
+              "name": "urgency",
+              "value": "={{ $json.body.extracted_data.urgency }}",
+              "type": "string"
+            },
+            {
+              "id": "0a192498-8cec-44c2-8c4f-0c2c777bd9ef",
+              "name": "conversation_id",
+              "value": "={{ $json.body.conversation_id }}",
+              "type": "string"
+            },
+            {
+              "id": "ab94941a-a875-47e4-9bcd-ebfe081348f2",
+              "name": "agent_id",
+              "value": "={{ $json.body.agent_id }}",
+              "type": "string"
+            },
+            {
+              "id": "ad28e87b-e161-497b-8a6c-b0fe3efb3f33",
+              "name": "duration_seconds",
+              "value": "={{ $json.body.duration_seconds }}",
+              "type": "string"
+            },
+            {
+              "id": "fd253ef7-f5f2-4fab-aaf7-9189903798da",
+              "name": "caller_name",
+              "value": "={{ $json.body.metadata?.first_name || 'Unknown' }}",
+              "type": "string"
+            },
+            {
+              "id": "ca5a4219-00a1-4de2-8c82-5bf002804039",
+              "name": "caller_email",
+              "value": "={{ $json.body.metadata?.email || '' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      },
+      "id": "71ab3c72-90b1-4525-b283-3c244736822d",
+      "name": "Extract Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        240,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "combinator": "and"
+          },
+          "conditions": [
+            {
+              "id": "2386a93a-e1a1-4ef6-b400-fafd2e4a66e4",
+              "leftValue": "={{ $json.traveller }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            },
+            {
+              "id": "60092d05-18c2-4a03-b058-13fd72670f74",
+              "leftValue": "={{ $json.passportNationality }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            },
+            {
+              "id": "af19c190-403c-413b-87b1-b289b67702ad",
+              "leftValue": "={{ $json.urgency }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "981006cb-ce21-4273-864c-13e9c5e6f4fb",
+      "name": "Data Complete?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        480,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a59736e9-0eaa-4dfa-9493-888386f5ced0",
+              "name": "summary",
+              "value": "={{ \"## HSFK UC 9.6 - Visa Pack Assistant\\n\\n**Caller:** \" + ($json.caller_name || \"Unknown\") + \" (\" + ($json.caller_email || \"no email\") + \")\\n**Duration:** \" + ($json.duration_seconds || \"?\") + \"s\\n**Conversation ID:** \" + ($json.conversation_id || \"?\") + \"\\n\\n### Captured Data\\n\\n- **traveller**: \" + ($json.traveller || \"N/A\") + \"\\n- **passportNationality**: \" + ($json.passportNationality || \"N/A\") + \"\\n- **destinationCountries**: \" + ($json.destinationCountries || \"N/A\") + \"\\n- **travelDates**: \" + ($json.travelDates || \"N/A\") + \"\\n- **previousVisas**: \" + ($json.previousVisas || \"N/A\") + \"\\n- **urgency**: \" + ($json.urgency || \"N/A\") + \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "f4984a7e-d2f2-4868-9f2a-a5b66b072e5b",
+              "name": "ucId",
+              "value": "9.6",
+              "type": "string"
+            },
+            {
+              "id": "cfdbe80d-46bc-40b6-840f-c68c417a6686",
+              "name": "agentName",
+              "value": "Visa Pack Assistant",
+              "type": "string"
+            },
+            {
+              "id": "40d3b514-ec42-4971-ad2a-fe159813b466",
+              "name": "timestamp",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "a64f9829-d496-4eee-af97-57fc4da31d71",
+      "name": "Format Summary",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        720,
+        -60
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "app0QZAuhY8Zx4I54",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl8hV2nYEoRS8Gif",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "UC ID": "={{ $json.ucId }}",
+            "Agent Name": "={{ $json.agentName }}",
+            "Caller": "={{ $json.caller_name }}",
+            "Email": "={{ $json.caller_email }}",
+            "Summary": "={{ $json.summary }}",
+            "Conversation ID": "={{ $json.conversation_id }}",
+            "Duration": "={{ parseInt($json.duration_seconds) || 0 }}",
+            "Timestamp": "={{ $json.timestamp }}",
+            "Data Complete": true,
+            "Raw Extracted Data": "={{ JSON.stringify($json) }}"
+          },
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "855de2bb-c75c-41cd-afd5-f05a061c70ff",
+      "name": "Log to Airtable",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        960,
+        -60
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "57nd5p5f6kuW4Xs0",
+          "name": "HSFK Airtable"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://slack.com/api/chat.postMessage",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ channel: \"C098F8Z4P1U\", text: \"New voice conversation for UC 9.6 (Visa Pack Assistant):\\nCaller: \" + ($(\"Format Summary\").item.json.caller_name || \"Unknown\") + \" (\" + ($(\"Format Summary\").item.json.caller_email || \"no email\") + \")\\nDuration: \" + ($(\"Format Summary\").item.json.duration_seconds || \"?\") + \"s\\nConversation: \" + ($(\"Format Summary\").item.json.conversation_id || \"?\") }) }}",
+        "options": {}
+      },
+      "id": "4cd0954a-dd03-4554-b9b7-d190ee50a371",
+      "name": "Notify Slack",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1200,
+        -60
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "rYd0mT6IhOLBmosk",
+          "name": "HSFK Slack Bot (Header Auth)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ status: \"ok\", message: \"Data captured and logged\" }) }}",
+        "options": {}
+      },
+      "id": "bd93146e-1c71-4cd1-a64a-ff4699d6e1b6",
+      "name": "Respond OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1440,
+        -60
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ status: \"incomplete\", message: \"Some required fields missing, logged for review\" }) }}",
+        "options": {
+          "responseCode": 202
+        }
+      },
+      "id": "1e445651-1c3a-4bd8-91cb-704086bc0bf4",
+      "name": "Respond Incomplete",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        720,
+        120
+      ]
+    }
+  ],
+  "connections": {
+    "ElevenLabs Post-Call": {
+      "main": [
+        [
+          {
+            "node": "Extract Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Data": {
+      "main": [
+        [
+          {
+            "node": "Data Complete?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Complete?": {
+      "main": [
+        [
+          {
+            "node": "Format Summary",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Incomplete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Summary": {
+      "main": [
+        [
+          {
+            "node": "Log to Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log to Airtable": {
+      "main": [
+        [
+          {
+            "node": "Notify Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Slack": {
+      "main": [
+        [
+          {
+            "node": "Respond OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 1,
+  "meta": null
+}

@@ -1,0 +1,456 @@
+{
+  "name": "HSFK UC 1.4 - Client Financial Snapshot",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## HSFK UC 1.4 - Client Financial Snapshot\n\n**Trigger:** Webhook POST `/webhook/hsfk-client-financials`\n\n**Purpose:** Manual-entry pattern. Finance/PMD API is not yet available. This workflow reads manually-entered financial data from the Airtable \"HSFK - Client Financial Snapshots\" table, calls shared-04 (LLM) to generate a plain-language summary with trend analysis (latest vs prior period), posts to Slack, and returns the summary in the webhook response.\n\n**Request body:**\n```json\n{\n  \"client_name\": \"Acme Corp\"   // or \"all\" for full report\n}\n```\n\n**Flow:**\n1. Webhook trigger (POST /webhook/hsfk-client-financials)\n2. Extract client_name from request body\n3. Query Airtable Client Financial Snapshots (all for \"all\", filtered for specific client)\n4. If no data: return 404-style message and stop\n5. If data found: prepare LLM prompt with latest + prior period records\n6. Call shared-04 (LLM) for plain-language summary + trend analysis\n7. Post summary to Slack\n8. Return summary in webhook response\n9. Audit log via shared-05\n\n**Sub-workflow IDs:**\n- shared-04 (Vertex AI LLM): `AI3InmjY6gmJwdXg`\n- shared-05 (Airtable Audit): `zjwCkfCuH3GnW2qT`\n\n**Airtable base:** `app0QZAuhY8Zx4I54`\n- Client Financial Snapshots: `tblzkjZP2DoJM1GjN`\n\n**Blocked by:** Finance API / PMD access from HSFK IT. The value is in the LLM summarisation of manually-entered data until the API is available.",
+        "height": 540,
+        "width": 500,
+        "color": 6
+      },
+      "id": "sticky-note-docs",
+      "name": "Documentation",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "path": "hsfk-client-financials",
+        "options": {
+          "responseMode": "responseNode"
+        }
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook: POST /hsfk-client-financials",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -80,
+        240
+      ],
+      "webhookId": "hsfk-client-financials"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract client_name from webhook request body\n// Normalise: trim whitespace, lowercase for comparison\nconst body = $json.body || {};\nconst startTime = Date.now();\n\nconst rawClientName = String(body.client_name || '').trim();\nconst isAllClients = rawClientName.toLowerCase() === 'all' || rawClientName === '';\n\nif (!rawClientName) {\n  // Missing client_name - will return error in next steps\n}\n\nreturn {\n  json: {\n    run_id: `uc14-${startTime}`,\n    started_at: new Date().toISOString(),\n    start_time: startTime,\n    trigger_type: 'webhook',\n    client_name: rawClientName,\n    is_all_clients: isAllClients,\n    filter_formula: isAllClients\n      ? ''\n      : `{Client Name} = \"${rawClientName.replace(/\"/g, '\\\\\\'')}\"`\n  }\n};"
+      },
+      "id": "extract-request",
+      "name": "Extract Request Parameters",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "app0QZAuhY8Zx4I54"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tblzkjZP2DoJM1GjN"
+        },
+        "filterByFormula": "={{ $json.filter_formula }}",
+        "sort": [
+          {
+            "field": "Snapshot Date",
+            "direction": "desc"
+          }
+        ],
+        "maxRecords": 20,
+        "fields": [
+          "Client Name",
+          "Period",
+          "Snapshot Date",
+          "Revenue YTD (GBP)",
+          "Revenue Prior Year Full (GBP)",
+          "Pipeline Value (GBP)",
+          "Write-offs YTD (GBP)",
+          "Lock-up Days",
+          "Profitability Rate",
+          "AI Summary",
+          "Trend vs Prior Period",
+          "Trigger Type"
+        ],
+        "options": {}
+      },
+      "id": "query-financial-snapshots",
+      "name": "Query Client Financial Snapshots",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        400,
+        240
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "AIRTABLE_TOKEN_CRED",
+          "name": "Airtable - Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Check if any records were returned\n// Aggregate all results into a single item for the if-node\nconst items = $input.all();\nconst requestParams = $('Extract Request Parameters').first().json;\n\n// Filter out empty placeholder records (Airtable sometimes returns empty rows)\nconst validRecords = items.filter(item =>\n  item.json['Client Name'] || item.json.id\n);\n\nreturn {\n  json: {\n    request_params: requestParams,\n    record_count: validRecords.length,\n    has_data: validRecords.length > 0,\n    records: validRecords.map(item => item.json)\n  }\n};"
+      },
+      "id": "check-results",
+      "name": "Check Results",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        640,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "has-data",
+              "leftValue": "={{ $json.has_data }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-data-found",
+      "name": "If Data Found",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        880,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// No financial data found for the requested client\n// Return a helpful message explaining manual entry is required\nconst params = $json.request_params;\nconst clientLabel = params.is_all_clients ? 'any clients' : `\"${params.client_name}\"`;\n\nconst message = `No financial data available for ${clientLabel}. Data must be entered manually in the HSFK Airtable base at: https://airtable.com/app0QZAuhY8Zx4I54/tblzkjZP2DoJM1GjN`;\n\nreturn {\n  json: {\n    status: 'no_data',\n    client_name: params.client_name,\n    message: message,\n    response_body: {\n      status: 'no_data',\n      client_name: params.client_name,\n      message: message\n    }\n  }\n};"
+      },
+      "id": "no-data-response",
+      "name": "No Data: Build Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        380
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json.response_body }}",
+        "options": {
+          "responseCode": 404
+        }
+      },
+      "id": "respond-no-data",
+      "name": "Respond: No Data",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1360,
+        380
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Prepare the LLM prompt for financial summary and trend analysis\n// Group records by client, take latest + one prior period per client\nconst data = $json;\nconst records = data.records || [];\nconst params = data.request_params;\n\n// Group by client name\nconst byClient = {};\nrecords.forEach(rec => {\n  const name = rec['Client Name'] || 'Unknown';\n  if (!byClient[name]) byClient[name] = [];\n  byClient[name].push(rec);\n});\n\n// For each client: latest record = index 0 (sorted desc), prior = index 1\nconst clientSummaries = Object.entries(byClient).map(([clientName, recs]) => {\n  const latest = recs[0];\n  const prior = recs[1] || null;\n  return {\n    client_name: clientName,\n    latest: {\n      period: latest['Period'] || 'Unknown',\n      snapshot_date: latest['Snapshot Date'] || null,\n      revenue_ytd: latest['Revenue YTD (GBP)'] || null,\n      revenue_prior_year: latest['Revenue Prior Year Full (GBP)'] || null,\n      pipeline_value: latest['Pipeline Value (GBP)'] || null,\n      writeoffs_ytd: latest['Write-offs YTD (GBP)'] || null,\n      lockup_days: latest['Lock-up Days'] || null,\n      profitability_rate: latest['Profitability Rate'] || null,\n      existing_summary: latest['AI Summary'] || null\n    },\n    prior: prior ? {\n      period: prior['Period'] || 'Unknown',\n      revenue_ytd: prior['Revenue YTD (GBP)'] || null,\n      pipeline_value: prior['Pipeline Value (GBP)'] || null,\n      profitability_rate: prior['Profitability Rate'] || null\n    } : null\n  };\n});\n\n// Format as readable data block for the LLM\nconst dataBlock = clientSummaries.map(c => {\n  let block = `CLIENT: ${c.client_name}\\n`;\n  block += `  Latest period: ${c.latest.period} (snapshot: ${c.latest.snapshot_date || 'unknown'})\\n`;\n  if (c.latest.revenue_ytd !== null) block += `  Revenue YTD: £${c.latest.revenue_ytd.toLocaleString()}\\n`;\n  if (c.latest.revenue_prior_year !== null) block += `  Revenue prior year full: £${c.latest.revenue_prior_year.toLocaleString()}\\n`;\n  if (c.latest.pipeline_value !== null) block += `  Pipeline: £${c.latest.pipeline_value.toLocaleString()}\\n`;\n  if (c.latest.writeoffs_ytd !== null) block += `  Write-offs YTD: £${c.latest.writeoffs_ytd.toLocaleString()}\\n`;\n  if (c.latest.lockup_days !== null) block += `  Lock-up days: ${c.latest.lockup_days}\\n`;\n  if (c.latest.profitability_rate !== null) block += `  Profitability rate: ${c.latest.profitability_rate}%\\n`;\n  if (c.prior) {\n    block += `  Prior period (${c.prior.period}): Revenue £${(c.prior.revenue_ytd || 0).toLocaleString()}, Pipeline £${(c.prior.pipeline_value || 0).toLocaleString()}, Margin ${c.prior.profitability_rate || 'n/a'}%\\n`;\n  } else {\n    block += `  Prior period: no comparison data available\\n`;\n  }\n  return block;\n}).join('\\n');\n\nconst isSingleClient = clientSummaries.length === 1;\nconst clientLabel = params.is_all_clients ? 'all HSFK clients' : `${params.client_name}`;\n\nconst systemPrompt = `You are a financial intelligence analyst for HSFK, a leading international law firm. Generate a concise, plain-language financial summary for ${clientLabel}. Use professional but readable language. Highlight key trends, flag concerns, and surface opportunities.\\n\\nReturn a JSON object with this exact structure:\\n{\\n  \"headline\": \"string - one-line executive summary, e.g. 'Acme Corp: Revenue up 12% YoY, strong pipeline'\",\\n  \"summary\": \"string - 3-5 sentences. Cover: current revenue performance, pipeline health, profitability, write-offs/lock-up where relevant, and trend vs prior period\",\\n  \"trend_analysis\": \"string - 2-3 sentences on YoY and period-over-period trends. Use specific numbers where available.\",\\n  \"flags\": [\"array of strings - concerns or items needing attention, empty if none\"],\\n  \"opportunities\": [\"array of strings - positive signals or growth opportunities, empty if none\"]\\n}`;\n\nconst userPrompt = `Financial data for ${clientLabel}:\\n\\n${dataBlock}\\n\\nGenerate a plain-language financial summary with trend analysis. Where prior period data is not available, note that comparison is unavailable.`;\n\nreturn {\n  json: {\n    client_summaries: clientSummaries,\n    client_count: clientSummaries.length,\n    client_label: clientLabel,\n    is_single_client: isSingleClient,\n    llm_input: {\n      system_prompt: systemPrompt,\n      user_prompt: userPrompt,\n      model: 'gemini-2.5-flash',\n      temperature: 0.3,\n      response_format: 'json',\n      max_tokens: 2048\n    }\n  }\n};"
+      },
+      "id": "build-llm-prompt",
+      "name": "Build LLM Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "AI3InmjY6gmJwdXg"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "system_prompt": "={{ $json.llm_input.system_prompt }}",
+            "user_prompt": "={{ $json.llm_input.user_prompt }}",
+            "model": "={{ $json.llm_input.model }}",
+            "temperature": "={{ $json.llm_input.temperature }}",
+            "response_format": "={{ $json.llm_input.response_format }}",
+            "max_tokens": "={{ $json.llm_input.max_tokens }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "llm-generate-summary",
+      "name": "LLM: Generate Financial Summary",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        1360,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse LLM response and build Slack message + webhook response payload\nconst llmResult = $json;\nconst buildPromptData = $('Build LLM Prompt').first().json;\n\nlet financialSummary = null;\ntry {\n  if (llmResult.parsed_json) {\n    financialSummary = llmResult.parsed_json;\n  } else if (llmResult.text) {\n    financialSummary = JSON.parse(llmResult.text);\n  }\n} catch (e) {\n  financialSummary = {\n    headline: `Financial data available for ${buildPromptData.client_label}`,\n    summary: 'Summary generation failed. Please review the raw financial data in Airtable.',\n    trend_analysis: 'Trend analysis unavailable.',\n    flags: ['LLM parse error - manual review required'],\n    opportunities: []\n  };\n}\n\nconst clientLabel = buildPromptData.client_label;\nconst flags = financialSummary.flags || [];\nconst opportunities = financialSummary.opportunities || [];\n\n// Build Slack message\nlet slackMessage = `:bar_chart: *HSFK Financial Snapshot: ${clientLabel}*\\n\\n`;\nslackMessage += `*${financialSummary.headline || 'Financial update'}*\\n\\n`;\nslackMessage += `${financialSummary.summary || ''}\\n\\n`;\nif (financialSummary.trend_analysis) {\n  slackMessage += `*Trend analysis:* ${financialSummary.trend_analysis}\\n`;\n}\nif (flags.length > 0) {\n  slackMessage += `\\n:warning: *Flags:* ${flags.map(f => `• ${f}`).join('\\n')}\\n`;\n}\nif (opportunities.length > 0) {\n  slackMessage += `\\n:bulb: *Opportunities:* ${opportunities.map(o => `• ${o}`).join('\\n')}\\n`;\n}\nslackMessage += `\\n_Data source: Airtable (manually entered). Finance API integration pending._`;\n\n// Build webhook response\nconst responsePayload = {\n  status: 'success',\n  client_name: buildPromptData.client_label,\n  client_count: buildPromptData.client_count,\n  headline: financialSummary.headline,\n  summary: financialSummary.summary,\n  trend_analysis: financialSummary.trend_analysis,\n  flags: flags,\n  opportunities: opportunities,\n  data_source: 'airtable_manual',\n  generated_at: new Date().toISOString()\n};\n\nreturn {\n  json: {\n    financial_summary: financialSummary,\n    slack_message: slackMessage,\n    response_payload: responsePayload,\n    client_label: clientLabel,\n    client_count: buildPromptData.client_count\n  }\n};"
+      },
+      "id": "parse-llm-response",
+      "name": "Parse LLM Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1600,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://slack.com/api/chat.postMessage",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({ channel: 'hsfk-intelligence', text: $json.slack_message, unfurl_links: false }) }}",
+        "options": {
+          "timeout": 10000,
+          "response": {
+            "response": {
+              "fullResponse": false,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "slack-post-summary",
+      "name": "Post Slack Summary",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1840,
+        140
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "SLACK_BOT_CRED",
+          "name": "Slack Bot - Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $('Parse LLM Response').first().json.response_payload }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "respond-success",
+      "name": "Respond: Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2080,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "zjwCkfCuH3GnW2qT"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "workflow_name": "HSFK UC 1.4 - Client Financial Snapshot",
+            "use_case_id": "1.4",
+            "trigger_type": "webhook",
+            "input_summary": "={{ 'Client financials request: ' + $('Parse LLM Response').first().json.client_label }}",
+            "output_summary": "={{ $('Parse LLM Response').first().json.client_count + ' client(s) summarised. Headline: ' + $('Parse LLM Response').first().json.financial_summary.headline }}",
+            "status": "success",
+            "duration_ms": 0
+          }
+        },
+        "options": {}
+      },
+      "id": "audit-log",
+      "name": "Audit Log via Shared-05",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        2320,
+        140
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook: POST /hsfk-client-financials": {
+      "main": [
+        [
+          {
+            "node": "Extract Request Parameters",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Request Parameters": {
+      "main": [
+        [
+          {
+            "node": "Query Client Financial Snapshots",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query Client Financial Snapshots": {
+      "main": [
+        [
+          {
+            "node": "Check Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Results": {
+      "main": [
+        [
+          {
+            "node": "If Data Found",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Data Found": {
+      "main": [
+        [
+          {
+            "node": "Build LLM Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Data: Build Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "No Data: Build Response": {
+      "main": [
+        [
+          {
+            "node": "Respond: No Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build LLM Prompt": {
+      "main": [
+        [
+          {
+            "node": "LLM: Generate Financial Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM: Generate Financial Summary": {
+      "main": [
+        [
+          {
+            "node": "Parse LLM Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse LLM Response": {
+      "main": [
+        [
+          {
+            "node": "Post Slack Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post Slack Summary": {
+      "main": [
+        [
+          {
+            "node": "Respond: Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond: Success": {
+      "main": [
+        [
+          {
+            "node": "Audit Log via Shared-05",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 1,
+  "meta": null
+}

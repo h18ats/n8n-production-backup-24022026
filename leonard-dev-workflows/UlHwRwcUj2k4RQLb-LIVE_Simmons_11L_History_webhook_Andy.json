@@ -1,0 +1,288 @@
+{
+  "name": "LIVE - Simmons - 11L History webhook - Andy",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "simmons-history",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "ElevenLabs Webhook1",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -240,
+        -96
+      ],
+      "id": "f217688f-65f1-486b-a612-3be606661448",
+      "webhookId": "59884fbc-23ae-4f2b-b0ab-d645b6a49452"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appQYt45MjRLNkvEf",
+          "mode": "list",
+          "cachedResultName": "Fladgate - Leonard Live Data",
+          "cachedResultUrl": "https://airtable.com/appQYt45MjRLNkvEf"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblHgvbVSqcemMjqr",
+          "mode": "list",
+          "cachedResultName": "FG - Conversation History by lawyer",
+          "cachedResultUrl": "https://airtable.com/appQYt45MjRLNkvEf/tblHgvbVSqcemMjqr"
+        },
+        "filterByFormula": "={Email}='{{ $json.body.email }}'",
+        "options": {
+          "fields": [
+            "Email",
+            "Transcript ID",
+            "Full Name",
+            "First Name",
+            "Last Name",
+            "Last Modified",
+            "Conversation History",
+            "Clients",
+            "Matters",
+            "Previous Matters",
+            "Previous Clients",
+            "Previous Submissions"
+          ]
+        }
+      },
+      "name": "Search records1",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        208,
+        -96
+      ],
+      "id": "f5605efa-1698-4399-8ed9-9eb422d8357f"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2247ff15-b8fe-43df-bb1d-f1663de23178",
+              "name": "First Name",
+              "value": "={{ $json[\"First Name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "ae71fb34-3630-429a-bf54-fbe6c654bd24",
+              "name": "Last Name",
+              "value": "={{ $json[\"Last Name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "4caf8e85-0a23-448c-a06e-131c6886edd1",
+              "name": "Conversation history",
+              "value": "={{ $json[\"Conversation History\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "07cc8775-1b97-4d1b-a1e3-bcaa95a87028",
+              "name": "Last Modified Time",
+              "value": "={{ $json[\"Last Modified\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "98344d5b-2a07-471b-b108-40b8b7e1c0f1",
+              "name": "Clients",
+              "value": "={{ $json.Clients }}",
+              "type": "string"
+            },
+            {
+              "id": "963ac931-4ce1-486e-b408-d6b6a55e15bd",
+              "name": "Matters",
+              "value": "={{ $json.Matters }}",
+              "type": "string"
+            },
+            {
+              "id": "e31bceac-2729-4c9a-830d-984ee0e7bd62",
+              "name": "previous_matters",
+              "value": "={{ $json[\"Previous Matters\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "e01a2442-28be-4b90-af28-563c3e71be29",
+              "name": "previous_clients",
+              "value": "={{ $json[\"Previous Clients\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "f3291926-e8c4-4b4e-af26-7b66b1889ee3",
+              "name": "previous_submissions",
+              "value": "={{ $json[\"Previous Submissions\"] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": "={{ false }}",
+        "options": {}
+      },
+      "name": "Edit Fields1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        432,
+        -96
+      ],
+      "id": "f4b3020f-0fc2-44dd-b613-b291b13ca661"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7b023aea-7579-45d0-acdd-e3ac147f550b",
+              "leftValue": "={{ $json.Clients }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "name": "If",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        624,
+        -96
+      ],
+      "id": "cfe9b4da-5f39-462e-a5bf-c71ab21ed8dc"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{\n  \"{\\n\" +\n  \"  \\\"conversation_history\\\": \" + JSON.stringify($json[\"Conversation history\"]) + \",\\n\" +\n  \"  \\\"clients\\\": \" + JSON.stringify($items('Search records1')[0]?.json?.Clients ?? \"no details found\") + \",\\n\" +\n  \"  \\\"matters\\\": \" + JSON.stringify($items('Search records1')[0]?.json?.Matters ?? \"no details found\") + \"\\n\" +\n  \"}\"\n}}\n",
+        "options": {}
+      },
+      "name": "Return 'no details' ElevenLabs",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        864,
+        -64
+      ],
+      "id": "0cfb16a6-7dae-4f50-b800-0c88c814d193"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ \"{\\n\" +\n\"  \\\"conversation_history\\\": \" + JSON.stringify($json[\"Conversation history\"]) + \",\\n\" +\n\"  \\\"clients\\\": \" + JSON.stringify($items('Search records1')[0].json.Clients) + \",\\n\" +\n\"  \\\"matters\\\": \" + JSON.stringify($items('Search records1')[0].json.Matters) + \"\\n\" +\n\"}\" }}\n",
+        "options": {}
+      },
+      "name": "Return Conv History to ElevenLabs",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        864,
+        -240
+      ],
+      "id": "b68b8fc7-9ac4-42ef-b261-03e53af25058"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Helper to walk any object/array and lowercase all \"email\" fields\nfunction lowercaseEmails(obj) {\n  if (obj == null || typeof obj !== 'object') {\n    return;\n  }\n\n  if (Array.isArray(obj)) {\n    for (const el of obj) {\n      lowercaseEmails(el);\n    }\n    return;\n  }\n\n  for (const key of Object.keys(obj)) {\n    const value = obj[key];\n\n    // If the property name is \"email\" and it is a string. lowercase it\n    if (key === 'email' && typeof value === 'string') {\n      obj[key] = value.toLowerCase();\n    }\n\n    // Recurse into nested objects or arrays\n    if (value && typeof value === 'object') {\n      lowercaseEmails(value);\n    }\n  }\n}\n\nreturn items.map(item => {\n  // Clone json so we do not accidentally break references\n  const out = {\n    ...item,\n    json: { ...item.json },\n  };\n\n  // This will hit body.email in your sample payload. plus any other email fields anywhere\n  lowercaseEmails(out.json);\n\n  return out;\n});\n"
+      },
+      "name": "lowercase email",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -16,
+        -96
+      ],
+      "id": "ce393675-7b96-4e7a-8ff0-03d54b29c132"
+    }
+  ],
+  "connections": {
+    "ElevenLabs Webhook1": {
+      "main": [
+        [
+          {
+            "node": "lowercase email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search records1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Return Conv History to ElevenLabs",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return 'no details' ElevenLabs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "lowercase email": {
+      "main": [
+        [
+          {
+            "node": "Search records1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 1,
+  "meta": null
+}

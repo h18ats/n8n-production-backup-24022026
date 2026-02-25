@@ -1,0 +1,1070 @@
+{
+  "name": "Sandbox Version - All Assets inc BD Email & CSV",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "d8e691fa-15d3-4f75-96b5-e4ec351b11a5",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1580,
+        1040
+      ],
+      "id": "f920fbeb-932a-4cf0-b977-720ebc682352",
+      "name": "Webhook",
+      "webhookId": "d8e691fa-15d3-4f75-96b5-e4ec351b11a5"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "email": "={{ $('Webhook').item.json.body.user_email }}",
+        "additionalFields": {
+          "firstName": "={{ $('Webhook').item.json.body.user_name }}"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.hubspot",
+      "typeVersion": 2.1,
+      "position": [
+        -842,
+        540
+      ],
+      "id": "7abec1ee-5dbd-4f13-9de8-d8a5565d6fed",
+      "name": "HubSpot1",
+      "credentials": {
+        "hubspotOAuth2Api": {
+          "id": "4ZWRbZ2jFaCFRgGS",
+          "name": "HubSpot account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "resource": "chatMessage",
+        "chatId": {
+          "__rl": true,
+          "value": "19:3b774197e8f540238b983f2e1cfa5f0f@thread.v2",
+          "mode": "list",
+          "cachedResultName": "sandbox-demo.legalengine.co.uk (group)",
+          "cachedResultUrl": "https://teams.microsoft.com/l/chat/19%3A3b774197e8f540238b983f2e1cfa5f0f%40thread.v2/0?tenantId=fad5c68f-d169-4373-bed7-55243bd99c7b"
+        },
+        "message": "=New sandbox demo session by {{ $('Webhook').item.json.body.user_name }} - {{ $('Webhook').item.json.body.user_email }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftTeams",
+      "typeVersion": 2,
+      "position": [
+        -840,
+        740
+      ],
+      "id": "6da91b5c-e095-4b2d-8572-7869bc361793",
+      "name": "Microsoft Teams",
+      "webhookId": "e5a645e4-6cda-4905-8ae9-e53420fdedcb",
+      "credentials": {
+        "microsoftTeamsOAuth2Api": {
+          "id": "qyoIpk534c3Uq1X6",
+          "name": "Microsoft Teams account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "e4583d5e-fff7-42f1-9c70-f125a9e6bbe6",
+      "name": "OpenAI Model3",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        -892,
+        1260
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "LldOhLNBReShSMkE",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "\"session-id\""
+      },
+      "id": "9c715766-9b8f-4383-97ed-4fce8f62dbd7",
+      "name": "Memory3",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -772,
+        1260
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Please tackle each of the tasks below:\n\nTask Name: Bullet Summary: \nActing as an expert in extracting information from long prose, provide a bullet list summary of the matter broken down into the following headings (formatted in bold, where applicable and only where there is information) followed (in non bold text) by the extracted information that you need to extract:\nClient\nMatter Name:\nMatter Description: \nPractice Area(s):\nJurisdiction(s):\nOutcome:\nDeal Value:\nClient Benefit:\nKey Team Members and roles:\nInnovative Elements:\nStrategic Alignment: \nStatus: including date closed if closed\nMedia Coverage: \nReusability:\n\nTask Name: LinkedIn post Prompt: \nWriting as a superstar linkedin guru, please make me a 50 word linkedin post to drive engagement with my linkedin profile. \n\nTask Name: Website profile entry Prompt: \nWriting as a expert copywriter, and using best practice for UK legal websites, please write me a two sentence summary of the matter for my corporate profile. The format of the entry should read [individual / firm name] advised [client name] on [matter summary]. Highlight in particular the role that the individual played. Make sure it acts as a great business development tool to win future work \n\nTask Name: Website Update\nPrompt: Writing as a expert copywriter, and using best practice for corporate websites, please write me a 150 word posting to appear on my company website under my profile. Make sure it act as a great business development tool to win future work\n\nTask Name: Pitch credentials (short and long form) \nPrompt Writing as an expert in business development, sales and pitching for UK law firms and professional services in a B2B environment, please write me two versions of a credential that can be used in future pitches. \n \nShort form: a two sentence (max 50 words) description of the matter in the form \"[firm name] advised client name on [matter summary]\"   \n \nLong form (case study): a 150 word (max) pitch to use information from this matter which is past and proven work relevant to a future client.  The summary should focus on what the team did to help the client achieve their objectives and the benefits the team bought to the client. \n\nTask Name: Client testimonial \nPrompt: Draft a short email to the client in which you: \n1. thank them for the opportunity to work on such a great matter \n2. Ask for feedback \n3. Ask whether they would be willing to provide a client testimonial on the work performed. Let them know this testimonial would be used on the corporate website and it future marketing materials. \n4. draft them 2 different client testimonials which are taken from the matter summary.\n\nINPUT:\nThe summary of the matter is:{{ $('Webhook').item.json.body.summary }}\nThe user is:{{ $('Webhook').item.json.body.user_name }}\nThe user's email is:{{ $('Webhook').item.json.body.user_email }}\nHere is the date and time: {{ $now }}",
+        "options": {
+          "systemMessage": "=Please tackle each of the tasks below:\n\nTask Name: Bullet Summary: \nActing as an expert in extracting information from long prose, provide a bullet list summary of the matter broken down into the following headings (formatted in bold, where applicable and only where there is information) followed (in non bold text) by the extracted information that you need to extract:\nClient\nMatter Name:\nMatter Description: \nPractice Area(s):\nJurisdiction(s):\nOutcome:\nDeal Value:\nClient Benefit:\nKey Team Members and roles:\nInnovative Elements:\nStrategic Alignment: \nStatus: including date closed if closed\nMedia Coverage: \nReusability:\n\nTask Name: LinkedIn post Prompt: \nWriting as a superstar linkedin guru, please make me a 50 word linkedin post to drive engagement with my linkedin profile. \n\nTask Name: Website profile entry Prompt: \nWriting as a expert copywriter, and using best practice for UK legal websites, please write me a two sentence summary of the matter for my corporate profile. The format of the entry should read [individual / firm name] advised [client name] on [matter summary]. Highlight in particular the role that the individual played. Make sure it acts as a great business development tool to win future work \n\nTask Name: Website Update\nPrompt: Writing as a expert copywriter, and using best practice for corporate websites, please write me a 150 word posting to appear on my company website under my profile. Make sure it act as a great business development tool to win future work\n\nTask Name: Pitch credentials (short and long form) \nPrompt Writing as an expert in business development, sales and pitching for UK law firms and professional services in a B2B environment, please write me two versions of a credential that can be used in future pitches. \n \nShort form: a two sentence (max 50 words) description of the matter in the form \"[firm name] advised client name on [matter summary]\"   \n \nLong form (case study): a 150 word (max) pitch to use information from this matter which is past and proven work relevant to a future client.  The summary should focus on what the team did to help the client achieve their objectives and the benefits the team bought to the client. \n\nTask Name: Client testimonial \nPrompt: Draft a short email to the client in which you: \n1. thank them for the opportunity to work on such a great matter \n2. Ask for feedback \n3. Ask whether they would be willing to provide a client testimonial on the work performed. Let them know this testimonial would be used on the corporate website and it future marketing materials. \n4. draft them 2 different client testimonials which are taken from the matter summary.\n\nINPUT:\nThe summary of the matter is:{{ $('Webhook').item.json.body.summary }}\nThe user is:{{ $('Webhook').item.json.body.user_name }}\nThe user's email is:{{ $('Webhook').item.json.body.user_email }}\nHere is the date and time: {{ $now }}"
+        }
+      },
+      "id": "7b0d6353-b633-43b9-a850-6af82ef481a8",
+      "name": "AI Agent all Assets",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -920,
+        1040
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1StY_wkgJufTYoCsgUknQVETxvzELLYcfJxHwkZsenKc",
+          "mode": "list",
+          "cachedResultName": "Sandbox Leonard Outputs",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1StY_wkgJufTYoCsgUknQVETxvzELLYcfJxHwkZsenKc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1503348126,
+          "mode": "list",
+          "cachedResultName": "Webhook Outputs",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1StY_wkgJufTYoCsgUknQVETxvzELLYcfJxHwkZsenKc/edit#gid=1503348126"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "User Email": "={{ $('Webhook').item.json.body.user_email }}",
+            "Summary": "={{ $('Webhook').item.json.body.summary }}",
+            "Transcript": "={{ $('Webhook').item.json.body.transcript }}",
+            "IP Address": "={{ $('Webhook').item.json.headers[\"x-real-ip\"] }}",
+            "Email": "={{ $json.output }}",
+            "Date/Time": "={{ $('Date & Time').item.json.currentDate }}"
+          },
+          "matchingColumns": [
+            "Date/Time"
+          ],
+          "schema": [
+            {
+              "id": "Date/Time",
+              "displayName": "Date/Time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "User Email",
+              "displayName": "User Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Summary",
+              "displayName": "Summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Transcript",
+              "displayName": "Transcript",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "IP Address",
+              "displayName": "IP Address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -400,
+        1280
+      ],
+      "id": "0fff6cb7-f0f8-4bc4-b402-5a30e7210aeb",
+      "name": "Sandbox Webhook Tracker",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ideYdPgaT4pRzHvx",
+          "name": "Google Sheets account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "toRecipients": "={{ $('Webhook').item.json.body.user_email }}",
+        "subject": "=LegalEngine assets update for {{ $('Webhook').item.json.body.user_name }} ",
+        "bodyContent": "=Hi {{ $('Webhook').item.json.body.user_name }},\n\nThanks for taking the time to test our LegalEngine demo, I hope you found our conversation interesting and insightful.\n\nAs promised, I’ve taken the content of our chat and created a whole bunch of assets that you could use to grow your practice based on the matter we discussed. Some may be more immediately useful than others, however I hope these give you an idea as to what we are capable of. \n\nThis is also only a snapshot of what we can do, please visit info@legalengine.co.uk for access to our comprehensive matter AI Agent which should serve you well and produce a template for your actual submission document. \n\nIf you need further support or have additional questions please contact my team at info@legalengine.co.uk.\n\nCheers,\n\nLeonard\n\nLegal Engine AI Agent\n\n---\n\nMatter summary as agreed on the call:\n{{ $('Webhook').item.json.body.summary }}\n\n---\n\n{{ $json.output }}\n\n---\n",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        -420,
+        1040
+      ],
+      "id": "6e4a336f-8c41-4d9d-8131-89f7c3ef351f",
+      "name": "Email from Leonard - all assets",
+      "webhookId": "4d184676-934b-436b-a5d8-a504d9431ac1",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "APa28clvTTmmzH55",
+          "name": "Microsoft Outlook account 2"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "binaryPropertyName": "leonard-legalengine_CSV",
+        "options": {
+          "delimiter": "\"//n\"",
+          "fileName": "leonard-legalengine_CSV",
+          "headerRow": false
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        -544,
+        840
+      ],
+      "id": "b8ab02cc-b80d-45a2-a370-b1dcd8a25b05",
+      "name": "Convert to File",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "toRecipients": "={{ $('Webhook').item.json.body.user_email }}",
+        "subject": "=LegalEngine CSV of assets for {{ $('Webhook').item.json.body.user_name }} ",
+        "bodyContent": "=Hi {{ $('Webhook').item.json.body.user_name }},\n\nThanks for taking the time to test our LegalEngine demo, I hope you found our conversation interesting and insightful.\n\nAs promised, I’ve taken the content of our chat and created a whole bunch of assets in CSV that you could use to grow your practice based on the matter we discussed by importing them into your CRM. Some may be more immediately useful than others, however I hope these give you an idea as to what we are capable of. \n\nThis is also only a snapshot of what we can do, please visit info@legalengine.co.uk for access to our comprehensive matter AI Agent which should serve you well and produce a template for your actual submission document. \n\nIf you need further support or have additional questions please contact my team at info@legalengine.co.uk.\n\nCheers,\n\nLeonard\n\nLegal Engine AI Agent\n\n---\n\nCSV attached\n\n---",
+        "additionalFields": {
+          "attachments": {
+            "attachments": [
+              {
+                "binaryPropertyName": "leonard-legalengine_CSV"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        -246,
+        840
+      ],
+      "id": "a5dee335-4af5-4d79-baee-865cb9ab2e58",
+      "name": "Email from Leonard - CSV",
+      "webhookId": "9797a6b5-adf7-4292-bf5d-636bf7c8295b",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "APa28clvTTmmzH55",
+          "name": "Microsoft Outlook account 2"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "\"session-id\""
+      },
+      "id": "a83d58ad-f105-42aa-807c-8d4916dfacbd",
+      "name": "Memory5",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -176,
+        1710
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an expert business development researcher, a world leader in helping law and professional service firms and companies grow. Using the following information available, which comes from a perplexity search of similar legal matters to the one originally ingested.\n\nI want you to write a perfectly written summary to send to the lawyer who submitted the original matter, outlining comparable cases including the law firm who dealt with the matter, the lead lawyer, a summary of the matter, the outcome, where it received press/news coverage and how it relates to this matter. I do not need a full email, just the main body in order to show the power of live research.\n\nI then want you to use the information to convince the lawyer that it is possible to cross sell the experience and legal precedents into an up and coming legal matter. I want this to sound authentic and like you're an expert in your field. I do not need a you to produce the closing of an email, just the main body in order to show the power of live research\n\nBe sure to write in UK English and NOT US English.\n\n\nINPUT:\nThe summary is in here:{{ $('Perplexity BD') }}\nHere is the date and time: {{ $now }}",
+        "options": {
+          "systemMessage": "=You are an expert business development researcher, a world leader in helping law and professional service firms and companies grow. Using the following information available, which comes from a perplexity search of similar legal matters to the one originally ingested.\n\nI want you to write a perfectly written summary to send to the lawyer who submitted the original matter, outlining comparable cases including the law firm who dealt with the matter, the lead lawyer, a summary of the matter, the outcome, where it received press/news coverage and how it relates to this matter. I do not need a full email, just the main body in order to show the power of live research.\n\nI then want you to use the information to convince the lawyer that it is possible to cross sell the experience and legal precedents into an up and coming legal matter. I want this to sound authentic and like you're an expert in your field. I do not need a you to produce the closing of an email, just the main body in order to show the power of live research\n\nBe sure to write in UK English and NOT US English.\n\n\nINPUT:\nThe summary is in here:{{ $('Perplexity BD') }}\nHere is the date and time: {{ $now }}"
+        }
+      },
+      "id": "44edcdaf-a0e7-497b-9060-774b77d67684",
+      "name": "BD AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -324,
+        1490
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "6796dbbd-203e-447d-97d8-e4234799ff5f",
+      "name": "OpenAI Model6",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        -296,
+        1710
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "LldOhLNBReShSMkE",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 1,
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -842,
+        1490
+      ],
+      "id": "758a34b1-e141-4356-bd8d-f778eced8a5e",
+      "name": "Wait",
+      "webhookId": "2b4618d0-aac2-47ce-ba94-9306464fabed",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "toRecipients": "={{ $('Webhook').item.json.body.user_email }}",
+        "subject": "=LegalEngine BD Pack for {{ $('Webhook').item.json.body.user_name }} ",
+        "bodyContent": "=Hi {{ $('Webhook').item.json.body.user_name }},\n\nThanks for taking the time to test our LegalEngine demo, I hope you found our conversation interesting and insightful.\n\nI’ve taken the liberty of spending a few minutes doing a little research based on the content of our chat and have identified some similar cases and provided some BD ideas for you.\n\n{{ $json.output }}\n\nThis is only a snapshot of what we can do, please contact my team at info@legalengine.co.uk for more AI wizardry.\n\nCheers,\n\nLeonard\n\nLegal Engine AI Agent\n\n",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        52,
+        1490
+      ],
+      "id": "db6165d7-b7cd-41fd-94ff-274739ab7208",
+      "name": "Email from Leonard - BD assets",
+      "webhookId": "aac76629-ddf0-455a-b7bc-456bc56a27d9",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "APa28clvTTmmzH55",
+          "name": "Microsoft Outlook account 2"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        -1380,
+        1040
+      ],
+      "id": "92533268-41bd-411b-a52d-85f67d12f87b",
+      "name": "Date & Time"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "\"session-id\""
+      },
+      "id": "db376901-0ea6-4b0a-8692-b4d1996f67c5",
+      "name": "Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -200,
+        2100
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an expert business development researcher, a world leader in helping law and professional service firms and companies grow. Using the following information available, which comes from a perplexity search of similar legal matters to the one originally ingested.\n\nI want you to write a perfectly written summary to send to the lawyer who submitted the original matter, outlining comparable cases including the law firm who dealt with the matter, the lead lawyer, a summary of the matter, the outcome, where it received press/news coverage and how it relates to this matter. I do not need a full email, just the main body in order to show the power of live research.\n\nI then want you to use the information to convince the lawyer that it is possible to cross sell the experience and legal precedents into an up and coming legal matter. I want this to sound authentic and like you're an expert in your field. I do not need a you to produce the closing of an email, just the main body in order to show the power of live research\n\nBe sure to write in UK English and NOT US English.\n\n\nINPUT:\nThe summary is in here:{{ $('Perplexity User Research') }}\nHere is the date and time: {{ $now }}",
+        "options": {
+          "systemMessage": "=You are an expert business development researcher, a world leader in helping law and professional service firms and companies grow. Using the following information available, which comes from a perplexity search of similar legal matters to the one originally ingested.\n\nI want you to write a perfectly written summary to send to the lawyer who submitted the original matter, outlining comparable cases including the law firm who dealt with the matter, the lead lawyer, a summary of the matter, the outcome, where it received press/news coverage and how it relates to this matter. I do not need a full email, just the main body in order to show the power of live research.\n\nI then want you to use the information to convince the lawyer that it is possible to cross sell the experience and legal precedents into an up and coming legal matter. I want this to sound authentic and like you're an expert in your field. I do not need a you to produce the closing of an email, just the main body in order to show the power of live research\n\nBe sure to write in UK English and NOT US English.\n\n\nINPUT:\nThe summary is in here:{{ $('Perplexity User Research') }}\nHere is the date and time: {{ $now }}"
+        }
+      },
+      "id": "bb0f5f6e-b36c-4bd2-8e2f-c4c07720479e",
+      "name": "BD AI Agent1",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -340,
+        1880
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "83819e52-bbb0-4c15-8e8c-bd662f88d6de",
+      "name": "OpenAI Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        -320,
+        2100
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "LldOhLNBReShSMkE",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 1
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -860,
+        1880
+      ],
+      "id": "9defe43d-788e-4a7b-b312-4806ed7beb5f",
+      "name": "Wait1",
+      "webhookId": "2b4618d0-aac2-47ce-ba94-9306464fabed",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "toRecipients": "={{ $('Webhook').item.json.body.user_email }}",
+        "subject": "=LegalEngine BD Pack for {{ $('Webhook').item.json.body.user_name }} ",
+        "bodyContent": "=Hi {{ $('Webhook').item.json.body.user_name }},\n\nThanks for taking the time to test our LegalEngine demo, I hope you found our conversation interesting and insightful.\n\nI’ve taken the liberty of spending a few minutes doing a little research based on the content of our chat and have identified some similar cases and provided some BD ideas for you.\n\n{{ $json.output }}\n\nThis is only a snapshot of what we can do, please contact my team at info@legalengine.co.uk for more AI wizardry.\n\nCheers,\n\nLeonard\n\nLegal Engine AI Agent\n\n",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        40,
+        1880
+      ],
+      "id": "9d591b13-fc08-4043-87f4-d162277121ae",
+      "name": "Email from Leonard - BD assets1",
+      "webhookId": "aac76629-ddf0-455a-b7bc-456bc56a27d9",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "APa28clvTTmmzH55",
+          "name": "Microsoft Outlook account 2"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.perplexity.ai/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"sonar\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are a helpful assistant.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"I have the following information; Name={{ $('Webhook').item.json.body.user_name }}, Email={{ $('Webhook').item.json.body.user_email }}, Company={{$('Webhook').item.json.body.user_email.split('@')[1] }}. Please provide the most detailed and accurate possible professional brief in reverse chronological order (we are now in the year 2025). \"\n    }\n  ],\n  \"max_tokens\": 800,\n  \"temperature\": 0.5\n}",
+        "options": {}
+      },
+      "id": "74f823e7-a260-47cf-bbe2-8077780b1691",
+      "name": "Perplexity User Research",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -560,
+        1880
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "Ok9KPJP4UMw6OLgP",
+          "name": "Unnamed credential"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.perplexity.ai/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"sonar\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are an expert business development researcher, a world leader in helping law and professional service firms and companies grow.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Using the following information Name={{ $('Webhook').item.json.body.user_name }}, Email={{ $('Webhook').item.json.body.user_email }}, Company={{ $('Webhook').item.json.body.user_email.split('@')[1] }}. Research at least five similar legal matters that got significant press attention. Focus on the UK market. I want you to return the legal matters ranked with the most similar at the top, outlining the law firm who dealt with the matter, the lead lawyer, a summary of the matter, the outcome, where it received press/news coverage and how it relates to this matter. I then want you to research live opportrunities issues appearing online to identify how it is possible to cross sell the experience and legal precedents into an up and coming legal matter.\"\n    }\n  ],\n  \"max_tokens\": 800,\n  \"temperature\": 0.5\n}",
+        "options": {}
+      },
+      "id": "2e06efe2-dea5-4324-8683-8ccaa1d544e3",
+      "name": "Perplexity BD",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -544,
+        1490
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "Ok9KPJP4UMw6OLgP",
+          "name": "Unnamed credential"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "\"session-id\""
+      },
+      "id": "d4a9b398-8203-4416-9895-3c950dfe8f3d",
+      "name": "Memory1",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -200,
+        2540
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an expert business development researcher, a world leader in helping law and professional service firms and companies grow. Using the following information available, which comes from a perplexity search of similar legal matters to the one originally ingested.\n\nI want you to write a perfectly written summary to send to the lawyer who submitted the original matter, outlining comparable cases including the law firm who dealt with the matter, the lead lawyer, a summary of the matter, the outcome, where it received press/news coverage and how it relates to this matter. I do not need a full email, just the main body in order to show the power of live research.\n\nI then want you to use the information to convince the lawyer that it is possible to cross sell the experience and legal precedents into an up and coming legal matter. I want this to sound authentic and like you're an expert in your field. I do not need a you to produce the closing of an email, just the main body in order to show the power of live research\n\nBe sure to write in UK English and NOT US English.\n\n\nINPUT:\nThe summary is in here:{{ $('Perplexity Firm Research') }}\nHere is the date and time: {{ $now }}",
+        "options": {
+          "systemMessage": "=You are an expert business development researcher, a world leader in helping law and professional service firms and companies grow. Using the following information available, which comes from a perplexity search of similar legal matters to the one originally ingested.\n\nI want you to write a perfectly written summary to send to the lawyer who submitted the original matter, outlining comparable cases including the law firm who dealt with the matter, the lead lawyer, a summary of the matter, the outcome, where it received press/news coverage and how it relates to this matter. I do not need a full email, just the main body in order to show the power of live research.\n\nI then want you to use the information to convince the lawyer that it is possible to cross sell the experience and legal precedents into an up and coming legal matter. I want this to sound authentic and like you're an expert in your field. I do not need a you to produce the closing of an email, just the main body in order to show the power of live research\n\nBe sure to write in UK English and NOT US English.\n\n\nINPUT:\nThe summary is in here:{{ $('Perplexity Firm Research') }}\nHere is the date and time: {{ $now }}"
+        }
+      },
+      "id": "d6b8ea64-279b-4f14-97f9-a034a3729e5c",
+      "name": "BD AI Agent2",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -340,
+        2320
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "4442a3b4-8b12-4b2f-b6ad-fd44e5dc6fd5",
+      "name": "OpenAI Model1",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        -320,
+        2540
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "LldOhLNBReShSMkE",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 1
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -860,
+        2320
+      ],
+      "id": "2029a5d3-8342-4892-bea7-0e96140163db",
+      "name": "Wait2",
+      "webhookId": "2b4618d0-aac2-47ce-ba94-9306464fabed"
+    },
+    {
+      "parameters": {
+        "toRecipients": "={{ $('Webhook').item.json.body.user_email }}",
+        "subject": "=LegalEngine BD Pack for {{ $('Webhook').item.json.body.user_name }} ",
+        "bodyContent": "=Hi {{ $('Webhook').item.json.body.user_name }},\n\nThanks for taking the time to test our LegalEngine demo, I hope you found our conversation interesting and insightful.\n\nI’ve taken the liberty of spending a few minutes doing a little research based on the content of our chat and have identified some similar cases and provided some BD ideas for you.\n\n{{ $json.output }}\n\nThis is only a snapshot of what we can do, please contact my team at info@legalengine.co.uk for more AI wizardry.\n\nCheers,\n\nLeonard\n\nLegal Engine AI Agent\n\n",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        40,
+        2320
+      ],
+      "id": "802a348c-d72b-485c-a7a6-121b8c1c2be3",
+      "name": "Email from Leonard - BD assets2",
+      "webhookId": "aac76629-ddf0-455a-b7bc-456bc56a27d9",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "APa28clvTTmmzH55",
+          "name": "Microsoft Outlook account 2"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.perplexity.ai/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"sonar\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are an expert researcher who uses deep research for professional services and law firms in order to provide lawyers, legal firm partners, business development teams at law firms and marketing departments at law firms with incredibly comprehensive and accurate publicly available information.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"I have the following information; Name={{ $('Webhook').item.json.body.user_name }}, Email={{ $('Webhook').item.json.body.user_email }}, Company={{$('Webhook').item.json.body.user_email.split('@')[1] }}. Please provide an accurate possible professional brief for a senior manager using the sources above, find me all information that relates to the work that the user and their firm have done that may have involved the user and/or is related to the areas of specialism that the user has according to their publicly available research and company bio when looking at work that is related to the user it may be helpful to looking at the sector, the practice area and the office for the user as well as their Relevant experience, Publications and insights, News and client work, Professional bodies, Awards and citations and Career and qualifications. \"\n    }\n  ],\n  \"max_tokens\": 800,\n  \"temperature\": 0.5\n}",
+        "options": {}
+      },
+      "id": "b726226c-b58b-4887-a2ec-587d71ee958f",
+      "name": "Perplexity Firm Research",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -560,
+        2320
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "Ok9KPJP4UMw6OLgP",
+          "name": "Unnamed credential"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.perplexity.ai/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"sonar\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are an expert researcher who uses deep research for professional services and law firms in order to provide lawyers, legal firm partners, business development teams at law firms and marketing departments at law firms with incredibly comprehensive and accurate publicly available information.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"I have the following information; Name={{ $('Webhook').item.json.body.user_name }}, Email={{ $('Webhook').item.json.body.user_email }}, Company={{$('Webhook').item.json.body.user_email.split('@')[1] }}. Please provide an accurate list of clients and matters that the user has worked on using the sources above, find me all information that relates to the work that the user and their firm have done that may have involved the user and/or is related to the areas of specialism that the user has according to their publicly available research and company bio when looking at work that is related to the user it may be helpful to looking at the sector, the practice area and the office for the user as well as their Relevant experience, Publications and insights, News and client work, Professional bodies, Awards and citations and Career and qualifications. \"\n    }\n  ],\n  \"max_tokens\": 800,\n  \"temperature\": 0.5\n}",
+        "options": {}
+      },
+      "id": "f6565fdc-40c8-48e8-afbf-29ab960d7e85",
+      "name": "Perplexity Firm Research1",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -560,
+        2540
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "Ok9KPJP4UMw6OLgP",
+          "name": "Unnamed credential"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.perplexity.ai/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"sonar\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are an expert researcher who uses deep research for professional services and law firms in order to provide lawyers, legal firm partners, business development teams at law firms and marketing departments at law firms with incredibly comprehensive and accurate publicly available information.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"I have the following information; Name={{ $('Webhook').item.json.body.user_name }}, Email={{ $('Webhook').item.json.body.user_email }}, Company={{$('Webhook').item.json.body.user_email.split('@')[1] }}. Please research and state the practice area and sectores of relevance for the user based on the sources above, all information according to publicly available research and company website and company bio - when looking at work that is related to the user it may be helpful to looking at the sector, the practice area and the office for the user. \"\n    }\n  ],\n  \"max_tokens\": 800,\n  \"temperature\": 0.5\n}",
+        "options": {}
+      },
+      "id": "84f206ef-cc16-4c7a-97a5-3f480c6bf428",
+      "name": "Perplexity Practice Area",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -560,
+        2740
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "Ok9KPJP4UMw6OLgP",
+          "name": "Unnamed credential"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Date & Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent all Assets",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memory3": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent all Assets",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent all Assets": {
+      "main": [
+        [
+          {
+            "node": "Email from Leonard - all assets",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Sandbox Webhook Tracker",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Email from Leonard - CSV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memory5": {
+      "ai_memory": [
+        [
+          {
+            "node": "BD AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Model6": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "BD AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "BD AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Email from Leonard - BD assets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Perplexity BD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sandbox Webhook Tracker": {
+      "main": [
+        []
+      ]
+    },
+    "Date & Time": {
+      "main": [
+        [
+          {
+            "node": "AI Agent all Assets",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Microsoft Teams",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HubSpot1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email from Leonard - BD assets": {
+      "main": [
+        []
+      ]
+    },
+    "Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "BD AI Agent1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "BD AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Email from Leonard - BD assets1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "BD AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "Perplexity User Research",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Perplexity User Research": {
+      "main": [
+        [
+          {
+            "node": "BD AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Perplexity BD": {
+      "main": [
+        [
+          {
+            "node": "BD AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "BD AI Agent2",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "BD AI Agent2": {
+      "main": [
+        [
+          {
+            "node": "Email from Leonard - BD assets2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "BD AI Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait2": {
+      "main": [
+        [
+          {
+            "node": "Perplexity Firm Research",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Perplexity Firm Research1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Perplexity Practice Area",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Perplexity Firm Research": {
+      "main": [
+        [
+          {
+            "node": "BD AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "leonard-dev.app.n8n.cloud",
+            "user-agent": "Python/3.12 aiohttp/3.11.16",
+            "content-length": "7462",
+            "accept": "*/*",
+            "accept-encoding": "gzip, br",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "34.67.146.145",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "US",
+            "cf-ray": "9315393647a6d646-CDG",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "x-forwarded-for": "34.67.146.145, 172.71.130.233",
+            "x-forwarded-host": "leonard-dev.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-52-6c4f4684d5-xjzqs",
+            "x-is-trusted": "yes",
+            "x-real-ip": "34.67.146.145"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "user_email": "leonard@legalengine.co.uk",
+            "summary": "The matter was between Sheffield Wednesday and Nottingham Forest, dating back to a seven-one game in the early nineties. The main challenge was addressing mental scarring from childhood bullying due to supporting Sheffield Wednesday. The client sought recompense for this bullying and came to you because of your connection to both parties, leading to a fantastic outcome for the litigator. The advice cost five pounds fifty, with an estimated saving of twenty-five pounds in heartache. Simon Martin, a childhood friend and fellow victim, was a key team member. The case was based in the UK, with social considerations highlighting Nottingham High School as a difficult place for Sheffield Wednesday fans, and the novelty involved using childhood friendship for torturing other pupils. The matter is ongoing, with the client still facing ridicule for their team allegiance. There was local coverage in the Nottingham Evening Post at the time.",
+            "user_name": "Leonard",
+            "transcript": "Hi there Leonard, it's great to meet you, I'm Leonard, here to show you how I can make your Directories submission seamless and easy using the power of voice and AI. Once we've completed our conversation I'll send you a summary to leonard@legalengine.co.uk. Tell me about a matter you worked on to get a sense for what I'm capable of?||Yeah, so a matter between Shepard Winslow and Nottingham Forest.||Okay, I understand. To get started, could you tell me what the matter involved, including the main challenge or objective?||Yes, it was going back to the early 90s when Nottingham Forest beat Sheffield Wednesday 7-1 and I was starting to have mental scarring as a result.||Thank you for sharing that. Why did the client come to you for this matter, and what specific problem were they trying to solve?||They were trying to solve for mental torture and scarring as a result of childhood bullying for supporting a rubbish team.||I see. What was the outcome for the client, and what specific positive impact did your team provide to the client to achieve this outcome? Please also mention how this matter aligned with the client's strategic objectives.||Yes, so the client's strategic objectives were to seek recompense for childhood bullying. They came to me because I'm known to both parties and produced a fantastic outcome for the litigator.||And what was the deal size or transaction value for this matter? Were there any notable cost savings or revenue implications for the client?||It was $5,050 for the advice and I think I saved £25 in heartache.||Okay, thank you. And who were the key team members who worked with you on this matter, and what were their roles?||The main one was Simon Martin and he was there as a childhood friend and fellow victim of said bullying.||Understood. How many jurisdictions were involved in this matter, and which were the primary ones?||This was just the UK case.||Were there any innovative legal approaches or novel issues you addressed in this matter, including any precedent-setting aspects? Are there any regulatory impact or sustainability or social considerations worth highlighting?||Yeah, just social considerations were Nottingham High School was a horrible place to attend as a Sheffield Wednesday fan. And so, you know, the novelty was really around using childhood friendship as a way of torturing other pupils.||And what is the current status of this matter? If completed, when did it finish?||No, it's still open. I still get regularly shown up for my allegiance to the Owls.||Understood. Was there any press coverage or awards related to this matter that we should mention?||Not really. The Nottingham Evening Post covered it at the time, based on their own gleefulness at the victory.||Thank you for sharing those details. Let me summarise my understanding of this matter to ensure I've captured everything correctly:\n\nThe matter involves Shepard Winslow and Nottingham Forest, dating back to a seven-one game in the early nineties. The main challenge was addressing mental scarring from childhood bullying due to supporting Sheffield Wednesday. The client sought recompense for this bullying and came to you because of your connection to both parties, leading to a fantastic outcome for the litigator. The advice cost five thousand and fifty dollars, with an estimated saving of twenty-five pounds in heartache. Simon Martin, a childhood friend and fellow victim, was a key team member. The case was based in the UK, with social considerations highlighting Nottingham High School as a difficult place for Sheffield Wednesday fans, and the novelty involved using childhood friendship for torturing other pupils. The matter is ongoing, with the client still facing ridicule for their team allegiance. There was local coverage in the Nottingham Evening Post at the time.\n\nIs this summary accurate, or would you like to make any corrections before we move on?||Two corrections, so right at the start you got it wrong, it should be Sheffield Wednesday right at the start of the summary and the matter value was £5.50.||Thank you for the corrections. Let me update the summary:\n\nThe matter involves Shepard Winslow and Nottingham Forest, dating back to a seven-one game in the early nineties. The main challenge was addressing mental scarring from childhood bullying due to supporting Sheffield Wednesday. The client sought recompense for this bullying and came to you because of your connection to both parties, leading to a fantastic outcome for the litigator. The advice cost five pounds fifty, with an estimated saving of twenty-five pounds in heartache. Simon Martin, a childhood friend and fellow victim, was a key team member. The case was based in the UK, with social considerations highlighting Nottingham High School as a difficult place for Sheffield Wednesday fans, and the novelty involved using childhood friendship for torturing other pupils. The matter is ongoing, with the client still facing ridicule for their team allegiance. There was local coverage in the Nottingham Evening Post at the time.\n\nIs this summary accurate now?||No, so right at the start Leonard it should read the matter was between or related to Sheffield Wednesday and Nottingham Forest.||Okay, I understand. Let me revise the summary once more:\n\nThe matter was between Sheffield Wednesday and Nottingham Forest, dating back to a seven-one game in the early nineties. The main challenge was addressing mental scarring from childhood bullying due to supporting Sheffield Wednesday. The client sought recompense for this bullying and came to you because of your connection to both parties, leading to a fantastic outcome for the litigator. The advice cost five pounds fifty, with an estimated saving of twenty-five pounds in heartache. Simon Martin, a childhood friend and fellow victim, was a key team member. The case was based in the UK, with social considerations highlighting Nottingham High School as a difficult place for Sheffield Wednesday fans, and the novelty involved using childhood friendship for torturing other pupils. The matter is ongoing, with the client still facing ridicule for their team allegiance. There was local coverage in the Nottingham Evening Post at the time.\n\nIs this summary accurate now, or are there any further corrections?||No, all accurate thank you Leonard.All accurate now, Leonard. That's great.You still there, Leonard?"
+          },
+          "webhookUrl": "https://leonard-dev.app.n8n.cloud/webhook/649c7e8a-fa63-4d63-8b2b-e3bee21e3c02",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "triggerCount": 1,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

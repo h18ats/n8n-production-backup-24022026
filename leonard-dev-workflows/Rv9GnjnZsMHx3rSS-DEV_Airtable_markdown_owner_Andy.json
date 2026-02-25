@@ -1,0 +1,371 @@
+{
+  "name": "DEV - Airtable markdown - owner Andy",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "airtableTokenApi",
+        "baseId": {
+          "__rl": true,
+          "value": "app9ltuh0pY06YDym",
+          "mode": "id"
+        },
+        "tableId": {
+          "__rl": true,
+          "value": "=tblQr96ww454xJuWp",
+          "mode": "id"
+        },
+        "triggerField": "Created",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.airtableTrigger",
+      "typeVersion": 1,
+      "position": [
+        -304,
+        0
+      ],
+      "id": "c6a81720-6fe3-4a19-9c0a-395e790cc0ec",
+      "name": "Airtable Trigger",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.fields['File Upload'][0].url }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -96,
+        0
+      ],
+      "id": "45b37e1f-dc09-419e-9412-417700ba9175",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        144,
+        0
+      ],
+      "id": "d808b9d4-6d84-4d4b-a0e2-7b5627fb8f93",
+      "name": "Convert to File",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * Convert HTML (from .docx) to basic Markdown\n * Input: $json.html (string)\n * Output: { markdown: string }\n */\n\nfunction htmlToMarkdown(html) {\n  return html\n    .replace(/<\\/h1>/gi, '\\n\\n')\n    .replace(/<h1[^>]*>/gi, '# ')\n    .replace(/<\\/h2>/gi, '\\n\\n')\n    .replace(/<h2[^>]*>/gi, '## ')\n    .replace(/<\\/h3>/gi, '\\n\\n')\n    .replace(/<h3[^>]*>/gi, '### ')\n    .replace(/<p[^>]*>/gi, '\\n\\n')\n    .replace(/<\\/p>/gi, '\\n\\n')\n    .replace(/<br\\s*\\/?>/gi, '\\n')\n    .replace(/<strong[^>]*>/gi, '**')\n    .replace(/<\\/strong>/gi, '**')\n    .replace(/<b[^>]*>/gi, '**')\n    .replace(/<\\/b>/gi, '**')\n    .replace(/<em[^>]*>/gi, '*')\n    .replace(/<\\/em>/gi, '*')\n    .replace(/<i[^>]*>/gi, '*')\n    .replace(/<\\/i>/gi, '*')\n    .replace(/<ul[^>]*>/gi, '\\n')\n    .replace(/<\\/ul>/gi, '\\n')\n    .replace(/<li[^>]*>/gi, '- ')\n    .replace(/<\\/li>/gi, '\\n')\n    .replace(/<[^>]+>/g, '')        // strip any other tags\n    .replace(/\\n{3,}/g, '\\n\\n')     // normalise spacing\n    .trim();\n}\n\nreturn items.map(item => {\n  const html = item.json.html || '';\n  const markdown = htmlToMarkdown(html);\n  return { json: { markdown } };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        352,
+        0
+      ],
+      "id": "12634814-0e4e-49fc-9dbe-e741b2a10afc",
+      "name": "Code in JavaScript",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "app9ltuh0pY06YDym",
+          "mode": "list",
+          "cachedResultName": "Playground 1",
+          "cachedResultUrl": "https://airtable.com/app9ltuh0pY06YDym"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblQr96ww454xJuWp",
+          "mode": "list",
+          "cachedResultName": "Web Form Uploads",
+          "cachedResultUrl": "https://airtable.com/app9ltuh0pY06YDym/tblQr96ww454xJuWp"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Created": "={{ $('Airtable Trigger').item.json.createdTime }}",
+            "Markdown Output": "={{ $json.markdown }}"
+          },
+          "matchingColumns": [
+            "Created"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Submission Name",
+              "displayName": "Submission Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "File Upload",
+              "displayName": "File Upload",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Original Text",
+              "displayName": "Original Text",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Markdown Output",
+              "displayName": "Markdown Output",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Segmented Output",
+              "displayName": "Segmented Output",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Uploaded",
+                  "value": "Uploaded"
+                },
+                {
+                  "name": "Markdown Conversion Complete",
+                  "value": "Markdown Conversion Complete"
+                },
+                {
+                  "name": "Segmented",
+                  "value": "Segmented"
+                },
+                {
+                  "name": "Processed",
+                  "value": "Processed"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Notes",
+              "displayName": "Notes",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Submitters LAst Name",
+              "displayName": "Submitters LAst Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Practice Area",
+              "displayName": "Practice Area",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Created",
+              "displayName": "Created",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        576,
+        0
+      ],
+      "id": "5acad09e-c3ef-45ac-8078-2aaf1d3a069a",
+      "name": "Update record",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * Convert .docx to Markdown (inside n8n Code node)\n * Input: Binary file (from Airtable, HTTP Request, etc.)\n * Output: { markdown: \"...\" }\n * \n * Note: This is a simplified converter that reads the text content\n * from \"word/document.xml\" and applies minimal Markdown formatting.\n */\n\nasync function unzipDocx(buffer) {\n  // n8n Code node has no JSZip, so we use a Web API-based approach\n  const zip = new Uint8Array(buffer);\n  // Workaround\n  return [{\n    json: {\n      error: \"Direct .docx parsing is not supported in n8n's sandboxed Code node. Please add a 'Convert Document' node before this one to convert .docx → HTML, then feed that HTML into this Code node to convert HTML → Markdown.\"\n    }\n  }];\n}\n\nreturn await unzipDocx();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        304,
+        240
+      ],
+      "id": "775005eb-0df7-4c1e-9cce-15603205957b",
+      "name": "Code in JavaScript1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "language": "python",
+        "pythonCode": "# n8n Python Code node — DOCX -> Markdown (JsProxy safe, prints binary.data keys, no external libs)\n\nimport os, io, re, base64, zipfile, json\nimport xml.etree.ElementTree as ET\n\n# ---- 0) Convert JS proxies to plain Python via JSON stringify ----\ntry:\n    from js import JSON  # available inside n8n's Pyodide runtime\n    item0 = json.loads(JSON.stringify(items[0]))\nexcept Exception:\n    try:\n        from pyodide.ffi import to_py\n        item0 = to_py(items[0])\n    except Exception:\n        item0 = items[0]\n\n# ---- 1) Sanity print step ----\nprint(\"binary.data keys:\", list(item0.get(\"binary\", {}).get(\"data\", {}).keys()))\n\n# ---- 2) Extract DOCX base64 ----\nif not isinstance(item0, dict) or \"binary\" not in item0 or \"data\" not in item0[\"binary\"]:\n    raise ValueError(\"Expected items[0].binary.data after JsProxy conversion.\")\n\nb = item0[\"binary\"][\"data\"]\nif not isinstance(b, dict):\n    raise ValueError(f\"items[0].binary.data is not an object; got {type(b).__name__}\")\n\nraw_b64 = b.get(\"data\")\nif not isinstance(raw_b64, str) or len(raw_b64) < 16:\n    raise ValueError(f\"items[0].binary.data has no usable 'data' string. Keys present: {list(b.keys())}\")\n\nin_filename = b.get(\"fileName\") or \"document.docx\"\n\n# ---- 3) Decode and validate DOCX ----\ndef b64_decode_flex(s: str) -> bytes:\n    s = s.strip().replace(\"\\n\",\"\").replace(\"\\r\",\"\")\n    pad = len(s) % 4\n    if pad: s += \"=\" * (4 - pad)\n    try:\n        return base64.b64decode(s)\n    except Exception:\n        return base64.urlsafe_b64decode(s)\n\ndocx_bytes = b64_decode_flex(raw_b64)\nif not (len(docx_bytes) >= 4 and docx_bytes[:2] == b\"PK\"):\n    raise ValueError(\"Decoded bytes do not look like a DOCX zip (missing 'PK'). Ensure HTTP node uses Download=ON and Response=File.\")\n\n# ---- 4) DOCX parsing helpers ----\nNS = {\n    \"w\": \"http://schemas.openxmlformats.org/wordprocessingml/2006/main\",\n    \"r\": \"http://schemas.openxmlformats.org/officeDocument/2006/relationships\",\n    \"a\": \"http://schemas.openxmlformats.org/drawingml/2006/main\",\n    \"rels\": \"http://schemas.openxmlformats.org/package/2006/relationships\",\n}\ndef n(tag):   return f\"{{{NS['w']}}}{tag}\"\ndef nrel(t):  return f\"{{{NS['r']}}}{t}\"\ndef ndraw(t): return f\"{{{NS['a']}}}{t}\"\ndef escape_md(s): return s.replace(\"\\\\\",\"\\\\\\\\\").replace(\"*\",\"\\\\*\").replace(\"_\",\"\\\\_\").replace(\"`\",\"\\\\`\")\n\ndef text_from_runs(p):\n    parts=[]\n    for el in p.iter():\n        if el.tag == n(\"r\"):\n            rpr=el.find(n(\"rPr\"))\n            bold=rpr is not None and rpr.find(n(\"b\")) is not None\n            italic=rpr is not None and rpr.find(n(\"i\")) is not None\n            underline=rpr is not None and rpr.find(n(\"u\")) is not None\n            run_text=\"\"\n            for t in el.findall(n(\"t\")): run_text+=t.text or \"\"\n            for br in el.findall(n(\"br\")): run_text+=\"  \\n\"\n            if run_text:\n                run_text=escape_md(run_text)\n                if bold: run_text=f\"**{run_text}**\"\n                if italic: run_text=f\"*{run_text}*\"\n                if underline: run_text=f\"<u>{run_text}</u>\"\n                parts.append(run_text)\n    return \"\".join(parts)\n\ndef para_heading_level(p):\n    ppr=p.find(n(\"pPr\"))\n    if ppr is None: return None\n    pstyle=ppr.find(n(\"pStyle\"))\n    if pstyle is None: return None\n    val=pstyle.attrib.get(\"val\") or pstyle.attrib.get(\"w:val\")\n    if not val: return None\n    m=re.match(r\"Heading([1-6])\", val, re.IGNORECASE)\n    return int(m.group(1)) if m else None\n\ndef para_is_list(p):\n    ppr=p.find(n(\"pPr\"))\n    if ppr is None: return (None,None)\n    numPr=ppr.find(n(\"numPr\"))\n    if numPr is None: return (None,None)\n    numId=numPr.find(n(\"numId\"))\n    ilvl=numPr.find(n(\"ilvl\"))\n    if numId is not None and ilvl is not None:\n        return (numId.attrib.get(n(\"val\")), int(ilvl.attrib.get(n(\"val\"),\"0\")))\n    return (None,None)\n\ndef read_relationships(zf, rels_path):\n    rels={}\n    if rels_path in zf.namelist():\n        root=ET.fromstring(zf.read(rels_path))\n        for rnode in root.findall(\"rels:Relationship\", NS):\n            rId=rnode.attrib.get(\"Id\")\n            rels[rId]={\"target\":rnode.attrib.get(\"Target\"),\"type\":rnode.attrib.get(\"Type\")}\n    return rels\n\ndef parse_numbering(zf):\n    numbering_map, abstract_map = {}, {}\n    if \"word/numbering.xml\" not in zf.namelist(): return numbering_map\n    root=ET.fromstring(zf.read(\"word/numbering.xml\"))\n    for an in root.findall(n(\"abstractNum\")):\n        aid=an.attrib.get(n(\"abstractNumId\"))\n        levels={}\n        for lvl in an.findall(n(\"lvl\")):\n            ilvl=int(lvl.attrib.get(n(\"ilvl\"),\"0\"))\n            numfmt=lvl.find(n(\"numFmt\"))\n            lvltext=lvl.find(n(\"lvlText\"))\n            fmt=(numfmt.attrib.get(n(\"val\")) if numfmt is not None else \"bullet\")\n            levels[ilvl]={\"fmt\":fmt,\"lvltext\":(lvltext.attrib.get(n(\"val\")) if lvltext is not None else \"%1.\")}\n        abstract_map[aid]=levels\n    for num in root.findall(n(\"num\")):\n        nid=num.attrib.get(n(\"numId\"))\n        abstract=num.find(n(\"abstractNumId\"))\n        if abstract is not None:\n            aid=abstract.attrib.get(n(\"val\"))\n            if aid in abstract_map:\n                numbering_map[nid]=abstract_map[aid]\n    return numbering_map\n\ndef paragraph_to_markdown(p, rels, numbering_map):\n    parts=[]\n    for node in p:\n        if node.tag==n(\"hyperlink\"):\n            rid=node.attrib.get(nrel(\"id\"))\n            link_text=text_from_runs(node)\n            url=rels.get(rid,{}).get(\"target\") if rid in rels else None\n            parts.append(f\"[{link_text}]({url})\" if url else link_text)\n        elif node.tag==n(\"r\"):\n            rpr=node.find(n(\"rPr\"))\n            bold=rpr is not None and rpr.find(n(\"b\")) is not None\n            italic=rpr is not None and rpr.find(n(\"i\")) is not None\n            underline=rpr is not None and rpr.find(n(\"u\")) is not None\n            run_text=\"\"\n            for t in node.findall(n(\"t\")): run_text+=t.text or \"\"\n            for br in node.findall(n(\"br\")): run_text+=\"  \\n\"\n            if run_text:\n                run_text=escape_md(run_text)\n                if bold: run_text=f\"**{run_text}**\"\n                if italic: run_text=f\"*{run_text}*\"\n                if underline: run_text=f\"<u>{run_text}</u>\"\n                parts.append(run_text)\n        elif node.tag==n(\"drawing\"): parts.append(\"\")\n    raw=\"\".join(parts).strip()\n    h=para_heading_level(p)\n    if h: return f\"{'#'*max(1,min(6,h))} {raw}\".rstrip()\n    numId, ilvl=para_is_list(p)\n    if numId is not None and numId in numbering_map:\n        lvl=numbering_map[numId].get(ilvl,{\"fmt\":\"bullet\"})\n        fmt=(lvl.get(\"fmt\") or \"bullet\").lower()\n        indent=\"  \"*ilvl\n        return f\"{indent}- {raw}\" if fmt in (\"bullet\",\"none\") else f\"{indent}1. {raw}\"\n    return raw\n\ndef drawings_to_images(p, rels, zf):\n    out=[]\n    for drawing in p.findall(f\".//{n('drawing')}\"):\n        blip=drawing.find(f\".//{ndraw('blip')}\")\n        if blip is not None:\n            rid=blip.attrib.get(nrel(\"embed\"))\n            if rid and rid in rels:\n                target=rels[rid][\"target\"]\n                if target.startswith(\"media/\"):\n                    src=f\"word/{target}\"\n                    if src in zf.namelist():\n                        fname=os.path.basename(src)\n                        out.append((fname,zf.read(src)))\n    return out\n\ndef table_to_markdown(tbl, rels, numbering_map):\n    def cell_text(cell):\n        chunks=[]\n        for p in cell.findall(f\".//{n('p')}\"):\n            chunks.append(paragraph_to_markdown(p, rels, numbering_map))\n        return \"<br>\".join(chunks).strip()\n    rows=[]\n    for tr in tbl.findall(n(\"tr\")):\n        rows.append([cell_text(tc) for tc in tr.findall(n(\"tc\"))])\n    if not rows: return \"\"\n    width=max(len(r) for r in rows)\n    for r in rows:\n        while len(r)<width: r.append(\"\")\n    out=[]\n    out.append(\"| \"+\" | \".join(rows[0])+\" |\")\n    out.append(\"| \"+\" | \".join([\"---\"]*width)+\" |\")\n    for r in rows[1:]:\n        out.append(\"| \"+\" | \".join(r)+\" |\")\n    return \"\\n\".join(out)\n\n# ---- 5) Convert DOCX to Markdown ----\nwith zipfile.ZipFile(io.BytesIO(docx_bytes)) as zf:\n    if \"word/document.xml\" not in zf.namelist():\n        raise ValueError(\"Invalid DOCX: missing word/document.xml\")\n    rels=read_relationships(zf,\"word/_rels/document.xml.rels\")\n    numbering_map=parse_numbering(zf)\n    body=ET.fromstring(zf.read(\"word/document.xml\")).find(n(\"body\"))\n    md_lines=[]; images=[]\n    for child in body:\n        if child.tag==n(\"p\"):\n            imgs=drawings_to_images(child, rels, zf)\n            images.extend(imgs)\n            para_md=paragraph_to_markdown(child, rels, numbering_map)\n            if para_md: md_lines.append(para_md)\n            for fname,_ in imgs: md_lines.append(f\"![{fname}](./{fname})\")\n            md_lines.append(\"\")\n        elif child.tag==n(\"tbl\"):\n            md=table_to_markdown(child, rels, numbering_map)\n            if md: md_lines.append(md); md_lines.append(\"\")\n    markdown_text=re.sub(r\"\\n{3,}\",\"\\n\\n\",\"\\n\".join(md_lines)).strip()+\"\\n\"\n\n# ---- 6) Return binaries ----\ndef mime_from_ext(fn):\n    ext=os.path.splitext(fn)[1].lower()\n    return {\n        \".png\":\"image/png\",\".jpg\":\"image/jpeg\",\".jpeg\":\"image/jpeg\",\".gif\":\"image/gif\",\n        \".bmp\":\"image/bmp\",\".tif\":\"image/tiff\",\".tiff\":\"image/tiff\",\".svg\":\"image/svg+xml\",\n    }.get(ext,\"application/octet-stream\")\n\nbase=os.path.splitext(in_filename)[0] or \"document\"\nmd_filename=f\"{base}.md\"\n\nout_bin={\n    \"markdown\":{\n        \"data\":base64.b64encode(markdown_text.encode(\"utf-8\")).decode(),\n        \"fileName\":md_filename,\n        \"mimeType\":\"text/markdown\",\n    }\n}\nfor i,(fname,content) in enumerate(images,1):\n    out_bin[f\"image_{i}\"]={\n        \"data\":base64.b64encode(content).decode(),\n        \"fileName\":fname,\n        \"mimeType\":mime_from_ext(fname),\n    }\n\nreturn [{\n    \"json\":{\n        \"fileName\":md_filename,\n        \"imageCount\":len(images),\n        \"note\":\"Markdown in binary.markdown; images in binary.image_1..N\",\n    },\n    \"binary\":out_bin\n}]\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        128,
+        -176
+      ],
+      "id": "0cf3f70e-a83f-4e1c-82c2-73a4c3d840ef",
+      "name": "Code in Python (Beta)",
+      "disabled": true
+    }
+  ],
+  "connections": {
+    "Airtable Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code in Python (Beta)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Update record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 0,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

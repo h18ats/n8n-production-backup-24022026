@@ -1,0 +1,254 @@
+{
+  "name": "ADAPTIVE - Email Poller",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 2
+            }
+          ]
+        }
+      },
+      "id": "cron-trigger",
+      "name": "Every 2 Minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        240,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Prepare Outlook search parameters\n// Poll edu@legalengine.co.uk for emails with Adaptive/Onboarding in subject\n// In production: change to adaptive-onboarding@simmons-simmons.com\n\n// Load last poll timestamp from static data to avoid reprocessing\nconst lastPoll = $getWorkflowStaticData('global').last_poll_timestamp || null;\nconst now = new Date().toISOString();\n\nlet filterQuery = \"(contains(subject, 'Adaptive') or contains(subject, 'Onboarding') or contains(subject, 'adaptive') or contains(subject, 'onboarding'))\";\n\nif (lastPoll) {\n  // Only fetch emails received after last poll\n  filterQuery += ` and receivedDateTime gt ${lastPoll}`;\n}\n\n// Save current timestamp for next run\n$getWorkflowStaticData('global').last_poll_timestamp = now;\n\nreturn [{\n  json: {\n    filter_query: filterQuery,\n    last_poll: lastPoll,\n    current_poll_time: now,\n    graph_api_url: `https://graph.microsoft.com/v1.0/me/messages?$filter=${encodeURIComponent(filterQuery)}&$top=25&$orderby=receivedDateTime desc&$select=id,subject,body,from,receivedDateTime,conversationId,isRead`,\n  }\n}];"
+      },
+      "id": "prepare-poll-request",
+      "name": "Prepare Poll Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "url": "={{ $json.graph_api_url }}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": false
+            }
+          }
+        }
+      },
+      "id": "fetch-outlook-emails",
+      "name": "Fetch Outlook Emails (Graph API)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        640,
+        400
+      ],
+      "credentials": {
+        "oAuth2Api": {
+          "id": "outlook-graph-api-edu",
+          "name": "Outlook Graph API - edu@legalengine.co.uk"
+        }
+      },
+      "notes": "Requires Microsoft OAuth2 credential configured with Mail.ReadWrite + Mail.Send scopes"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalise Outlook message format and filter out already-processed emails\nconst response = $input.first().json;\nconst messages = response.value || [];\n\nif (messages.length === 0) {\n  console.log('No new messages found');\n  return [];\n}\n\nconsole.log(`Found ${messages.length} messages matching filter`);\n\nconst normalisedMessages = messages.map(msg => ({\n  message_id: msg.id,\n  subject: msg.subject || '(no subject)',\n  body: msg.body?.content || '',\n  body_preview: (msg.body?.content || '').substring(0, 500),\n  from_email: msg.from?.emailAddress?.address?.toLowerCase() || '',\n  from_name: msg.from?.emailAddress?.name || '',\n  received_at: msg.receivedDateTime,\n  thread_id: msg.conversationId || msg.id,\n  is_read: msg.isRead || false,\n}));\n\n// Filter out emails from the agent itself to avoid loops\nconst filteredMessages = normalisedMessages.filter(msg => {\n  const fromEmail = msg.from_email;\n  // Skip emails sent from the monitored inbox itself\n  const excludeAddresses = ['edu@legalengine.co.uk', 'adaptive-onboarding@simmons-simmons.com'];\n  return !excludeAddresses.includes(fromEmail);\n});\n\nconsole.log(`Processing ${filteredMessages.length} messages after filtering`);\n\n// Return each message as a separate item for processing\nreturn filteredMessages.map(msg => ({ json: msg }));"
+      },
+      "id": "normalise-messages",
+      "name": "Normalise Messages",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        840,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "has-messages",
+              "leftValue": "={{ $json.from_email }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "check-has-messages",
+      "name": "Has Messages?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1040,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "={{ $vars.ADAPTIVE_EMAIL_PROCESSOR_WORKFLOW_ID }}",
+          "mode": "id"
+        },
+        "source": "passthrough",
+        "responseData": "lastNode",
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "id": "trigger-processor",
+      "name": "Trigger Email Processor",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1,
+      "position": [
+        1240,
+        300
+      ],
+      "notes": "Triggers ADAPTIVE - Email Processor for each message. Set ADAPTIVE_EMAIL_PROCESSOR_WORKFLOW_ID variable after deploying processor workflow."
+    },
+    {
+      "parameters": {
+        "operation": "markAsRead",
+        "messageId": "={{ $json.message_id }}",
+        "options": {}
+      },
+      "id": "mark-email-read",
+      "name": "Mark Email as Read",
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        1440,
+        300
+      ],
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "outlook-edu-legalengine",
+          "name": "Microsoft Outlook - edu@legalengine.co.uk"
+        }
+      },
+      "notes": "Marks processed email as read to avoid reprocessing on next poll"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Log polling run summary\nconst pollTime = $('Prepare Poll Request').first().json.current_poll_time;\nconsole.log(`Poll completed at ${pollTime}. No new messages or processing complete.`);\nreturn [{ json: { status: 'no_messages', poll_time: pollTime } }];"
+      },
+      "id": "no-messages-log",
+      "name": "Log: No Messages",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1240,
+        560
+      ]
+    }
+  ],
+  "connections": {
+    "Every 2 Minutes": {
+      "main": [
+        [
+          {
+            "node": "Prepare Poll Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Poll Request": {
+      "main": [
+        [
+          {
+            "node": "Fetch Outlook Emails (Graph API)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Outlook Emails (Graph API)": {
+      "main": [
+        [
+          {
+            "node": "Normalise Messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalise Messages": {
+      "main": [
+        [
+          {
+            "node": "Has Messages?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Messages?": {
+      "main": [
+        [
+          {
+            "node": "Trigger Email Processor",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log: No Messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trigger Email Processor": {
+      "main": [
+        [
+          {
+            "node": "Mark Email as Read",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "errorWorkflow": "",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 0,
+  "meta": null
+}

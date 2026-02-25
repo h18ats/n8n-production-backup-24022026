@@ -1,0 +1,1442 @@
+{
+  "name": "CONFIDENTIAL - ANDY - Feedback 2025",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "andy_feedback_1",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1600,
+        112
+      ],
+      "id": "9bd6d2e5-4326-4f59-96c0-a7627d663ae9",
+      "name": "Post meeting Webhook",
+      "webhookId": "98f9bc2a-1573-4fac-9b00-ff6b486b95aa"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Use this transcript -  {{ $json.markdown }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "✅ SYSTEM PROMPT — Deliveroo Feedback Transcript-to-Review Generator (Final Version, Enforced Section Output)\n\nYou are an expert feedback synthesis model specialising in transforming conversational interview transcripts into structured, behaviour-based, Deliveroo-aligned annual review feedback for employees.\n\nYour purpose is to take a full transcript of a 5-minute voice conversation and convert it into complete, high-quality answers to the three required end-of-year feedback questions.\nYour output must always contain the three required answers as separate, clearly labelled sections, exactly as described in the OUTPUT FORMAT section.\n\n📌 THE THREE OUTPUT QUESTIONS\n\nYou will produce one section for each of the following questions:\n\n1. What impact has this person had during the time that you have worked with them, and what competencies and values did they demonstrate while doing it?\n2. What areas (competencies and values) could this person improve on in the coming year to have more impact?\n3. How often do you work with this person?\n🎯 OUTPUT REQUIREMENTS (MANDATORY)\n\nYour output must always contain three separate sections, in this exact structure:\n\n1. Impact, Competencies, and Values Demonstrated\n\nA detailed but concise narrative, SBIE-aligned, explicitly linking behaviours to Deliveroo values and core competencies.\n\n2. Development Areas (Competencies & Values to Improve)\n\nFuture-focused, constructive, behavioural, grounded in transcript details, tied explicitly to values and competencies.\n\n3. Frequency of Collaboration\n\nA clear statement summarising how often the reviewer interacts with the employee.\n\nYou must not deviate from this structure under any circumstances.\n\n🧠 YOUR KNOWLEDGE BASE (DELIVEROO VALUES & COMPETENCIES)\n\nYou MUST embed and utilise the following values and competencies when interpreting or categorising behaviours from the transcript.\n\nDeliveroo Values:\n\nLive and Breathe Our Marketplace — immersion in customer/rider/restaurant ecosystem; empathy; grounding decisions in lived insight.\nPlay to Win — bold goals, grit, resilience, ownership, overcoming obstacles.\nCelebrate Difference — inclusion, belonging, fairness, diversity of thought.\nChampion Big and Small Innovations — experimentation, continuous improvement, creativity, learning fast.\nObsess About Operational Excellence — rigour, scalable processes, prioritisation, automation, quality.\nBe Curious and Intellectually Honest — truth-seeking, challenging assumptions, balancing data and judgement.\n\nCore Competencies:\n\nDelivering Results — ownership, urgency, persistence, outcome focus.\nProblem Solving & Strategic Thinking — structured analysis, foresight, judgement.\nTechnical Competence — mastery, continuous learning.\nBusiness Acumen — understanding commercial mechanics, financial implications.\nCommunication & Influence — clarity, trust-building, constructive challenge.\nCollaboration & Teamwork — stakeholder engagement, conflict resolution, shared ownership.\nSelf & Team Development — growth mindset, feedback, mentorship.\nPeople Management — coaching, expectation-setting, performance oversight.\nValues Alignment — visibly role-modelling values.\nCommunity Building — contributing to culture, inclusion, and colleague support.\n\nYou must map behaviours to values and competencies whenever appropriate.\n\n🧩 WHAT YOU MUST DO WITH THE TRANSCRIPT\n1. Extract key behavioural evidence\n\nIdentify all SBIE components:\n\nSituations\n\nBehaviours\n\nImpacts\n\nExpectations or forward signals\n\n2. Reconstruct clear, polished, professional feedback\n\nUse only transcript content.\nNo invented facts. No hallucinations.\n\n3. Enforce SBIE rigorously\n\nFor Question 1, ensure the narrative includes:\n\nSituation – the context\n\nBehaviour – what the person specifically did\n\nImpact – what changed\n\nExpectation – the implied standard or future direction\n\nIf not all components are provided, include only what is present.\n\n4. Explicitly map to values and competencies\n\nWhere applicable, identify and name:\n\nDeliveroo values demonstrated\n\nCore competencies demonstrated\n\nProvide short explanations of why.\n\n5. Identify development areas\n\nThese must be:\n\nBehavioural\n\nSpecific\n\nFuture-focused\n\nConnected to Deliveroo values or competencies\n\nNever personality-focused\n\nNever vague (“communicate better”)\n\nNever coded or biased\n\n6. Extract frequency of collaboration\n\nUse the reviewer’s phrasing if clear.\nIf ambiguous, paraphrase faithfully.\n\n🛑 STRICTLY PROHIBITED\n\nInventing examples or facts\n\nPersonality descriptions\n\nSubjective descriptors (“nice,” “abrasive,” “quiet”)\n\nCoded language\n\nValue judgments\n\nIrrelevant content\n\nCombining or reordering the three required sections\n\nAdding introductory or closing text beyond the required content\n\n🎨 OUTPUT FORMAT (STRICT — MUST FOLLOW EXACTLY)\n\nProduce your final output in exactly this structure:\n\n1. Impact, Competencies, and Values Demonstrated\n\nWrite a full SBIE-aligned narrative here, grounded entirely in the transcript, mapping behaviours to the relevant Deliveroo values and competencies.\n\n2. Development Areas (Competencies & Values to Improve)\n\nProvide 1–3 clear development themes, each anchored in observable behaviour and tied to relevant competencies/values.\n\n3. Frequency of Collaboration\n\nState exactly how often the reviewer works with this person, based on the transcript.\n\n🎤 OVERARCHING MISSION\n\nTransform the transcript into a formal, professional set of answers that embody:\n\nConcrete behavioural evidence\n\nDeep alignment with Deliveroo expectations\n\nClarity and accuracy\n\nActionability\n\nHigh quality suitable for official performance reviews\n\n✅ You are now the Deliveroo Feedback Synthesis Engine.\n\nYour outputs must always be structured into the three required sections, containing polished, SBIE-aligned, values- and competency-mapped feedback."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -928,
+        112
+      ],
+      "id": "686ac986-1924-49af-af1f-719032d43dae",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -920,
+        336
+      ],
+      "id": "ec0b21a4-ef9b-4e1b-bf38-b52901f15bdc",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "LldOhLNBReShSMkE",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toRecipients": "=andy.batty@deliveroo.co.uk",
+        "subject": "=Feedback for {{ $('Post meeting Webhook').item.json.body.data.analysis.data_collection_results.feedback_subject.value }}",
+        "bodyContent": "=This is the feedback for {{ $('Post meeting Webhook').item.json.body.data.analysis.data_collection_results.feedback_subject.value }}\n\n11L Feedback:\nWhat impact has this person had during the time that you have worked with them, and what competencies and values did they demonstrate while doing it?\n{{ $('Post meeting Webhook').item.json.body.data.analysis.data_collection_results.feedback.value }}\n\nWhat areas (competencies and values) do you think this person could improve on in the coming year to have more impact?\n{{ $('Post meeting Webhook').item.json.body.data.analysis.data_collection_results.improve.value }}\n\nHow often do you work with this person?\n{{ $('Post meeting Webhook').item.json.body.data.analysis.data_collection_results.howoften.value }}\n\n-=-=-=-=-=-=-=-=-=-\n\nChat GPT Feedback:\nWhat impact has this person had during the time that you have worked with them, and what competencies and values did they demonstrate while doing it?\n{{ $json.output.impact }}\n\nWhat areas (competencies and values) do you think this person could improve on in the coming year to have more impact?\n{{ $json.output.development_areas }}\n\nHow often do you work with this person?\n{{ $json.output.frequency_of_collaboration }}",
+        "additionalFields": {
+          "bodyContentType": "Text"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        -576,
+        112
+      ],
+      "id": "df160395-2268-4509-847c-d729e934277d",
+      "name": "Email from Andy",
+      "webhookId": "dba5b59f-aca4-46ad-a57b-801377929e27",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "J6emPxQ1aamee9nR",
+          "name": "Microsoft Outlook - Andy Personal Hotmail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the incoming JSON body\nconst input = items[0].json;\n\n// Navigate to the transcript array\nconst transcript = input.body.data.transcript;\n\n// Build Markdown\nlet md = `# Conversation Transcript\\n\\n`;\n\ntranscript.forEach((turn) => {\n  const role = turn.role === \"agent\" ? \"**Agent**\" : \"**User**\";\n  const message = turn.message ? turn.message.trim() : \"\";\n\n  md += `${role}:\\n\\n${message}\\n\\n---\\n\\n`;\n});\n\n// Optionally include extracted analysis metadata\nconst analysis = input.body.data.analysis?.data_collection_results;\n\nif (analysis) {\n  md += `# Extracted Metadata\\n\\n`;\n\n  if (analysis.feedback_subject?.value) {\n    md += `**Feedback Subject:** ${analysis.feedback_subject.value}\\n\\n`;\n  }\n\n  if (analysis.feedback?.value) {\n    md += `**Feedback Provided:**\\n\\n${analysis.feedback.value}\\n\\n`;\n  }\n\n  if (analysis.improve?.value) {\n    md += `**Areas for Improvement:**\\n\\n${analysis.improve.value}\\n\\n`;\n  }\n\n  if (analysis.howoften?.value) {\n    md += `**Frequency of Interaction:** ${analysis.howoften.value}\\n\\n`;\n  }\n}\n\n// Return markdown as output\nreturn [\n  {\n    json: {\n      markdown: md\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1376,
+        112
+      ],
+      "id": "196619b3-c58c-419c-8228-aa4a2b7c543a",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"impact\": {\n      \"type\": \"string\",\n      \"description\": \"Impact, competencies, and values demonstrated by the employee.\"\n    },\n    \"development_areas\": {\n      \"type\": \"string\",\n      \"description\": \"Areas for improvement linked to competencies and values.\"\n    },\n    \"frequency_of_collaboration\": {\n      \"type\": \"string\",\n      \"description\": \"How often the reviewer works with this person.\"\n    }\n  },\n  \"required\": [\n    \"impact\",\n    \"development_areas\",\n    \"frequency_of_collaboration\"\n  ]\n}\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -792,
+        336
+      ],
+      "id": "01c038f3-89d7-45cc-b604-a29a8f170ae6",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "84f296ec-21cf-476e-8781-1e600dcd7699",
+              "leftValue": "={{ $('Post meeting Webhook').item.json.body.data.conversation_initiation_client_data.dynamic_variables.system__call_duration_secs }}",
+              "rightValue": 60,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1152,
+        112
+      ],
+      "id": "24dbcb26-b041-4415-abe7-90de333781c8",
+      "name": "If"
+    }
+  ],
+  "connections": {
+    "Post meeting Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Email from Andy",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {
+    "Post meeting Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "leonard-dev.app.n8n.cloud",
+            "user-agent": "ElevenLabs/1.0",
+            "content-length": "31732",
+            "accept": "*/*",
+            "accept-encoding": "gzip, br",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "34.59.11.47",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "US",
+            "cf-ray": "9aaf2d1a25921ce8-ORD",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "elevenlabs-signature": "t=1765227457,v0=038bfcefc96fb6498dcdc8993f905d0b056171620b20fdef95c539a2dd08b1cf",
+            "x-forwarded-for": "34.59.11.47, 172.70.127.143",
+            "x-forwarded-host": "leonard-dev.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-52-6c4f4684d5-swjxv",
+            "x-is-trusted": "yes",
+            "x-real-ip": "34.59.11.47"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "type": "post_call_transcription",
+            "event_timestamp": 1765227457,
+            "data": {
+              "agent_id": "agent_5701kbz9j7pjegas578bpt7yfzsb",
+              "conversation_id": "conv_8001kbzvp3saep0rk1pc4892a3y9",
+              "status": "done",
+              "user_id": "1jocLV1YMhbdrLSRX3Me8aWkbRX2",
+              "branch_id": null,
+              "transcript": [
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_5701kbz9j7pjegas578bpt7yfzsb",
+                    "branch_id": null,
+                    "workflow_node_id": null
+                  },
+                  "message": "Hi who are you here to provide feedback about today?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 0,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.28494526899885386
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "Gus.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 5,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.10764806899533141
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_5701kbz9j7pjegas578bpt7yfzsb",
+                    "branch_id": null,
+                    "workflow_node_id": null
+                  },
+                  "message": "Great, thanks. I'll be asking you a few questions about Gus to gather some feedback. We'll focus on specific examples of their behaviour and the impact it had. This will help us build a clear picture of their contributions and development areas. We should be able to cover everything in about five minutes.\n\nTo start, what impact has Gus had during the time you’ve worked with them, and which competencies or values did they demonstrate while doing it?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 6,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.42586034999840194
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.283009143997333
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.7109888150007464
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.10685019999800716
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 264,
+                          "price": 0.0000264
+                        },
+                        "input_cache_read": {
+                          "tokens": 2031,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 94,
+                          "price": 0.0000376
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "So Gus has been incredibly diligent in migrating to a much bigger role as Tim departed the function and it's been incredibly impressive to see Gus both take ownership for reporting at a higher level, manage through a number of different line manager changes, some of which had the potential to be quite disruptive. He certainly showed a very strong ability to play to win because he was very good at just continuing to drive through the uncertainty from a defensive perspective. And from a competence point of view, definitely impressive results delivery, massive amounts of accountability and ownership. And I think really just pleasing to see how his collaboration and teamwork has also improved significantly, having in the past really thought of him as somebody who is great at building models, but whereby the usefulness of the models is limited. What I've seen this year is him develop into a real finance person. He's been doing it for years, and he's done it for years. And he's done it for years, and he's done it for years.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 30,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.17861863300640834
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_5701kbz9j7pjegas578bpt7yfzsb",
+                    "branch_id": null,
+                    "workflow_node_id": null
+                  },
+                  "message": "That's very helpful. Could you tell me more about the situation where Gus took ownership for reporting at a higher level and managed through line manager changes? What specific actions did he take, and what was the observable effect of those actions?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 120,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.44668142800219357
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.3379878350024228
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.5692031889993814
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.14155726399621926
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 569,
+                          "price": 0.00005690000000000001
+                        },
+                        "input_cache_read": {
+                          "tokens": 2025,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 48,
+                          "price": 0.000019200000000000003
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "So he, uh, he managed through, um, uh, when his prior line manager left the business, um, and, uh, his, uh, the more senior person in the team also departed. And I think the accountability was for a combination of, um, a rider cost per order reporting throughout 2025. Um, but most importantly all of the various different forecasts and re-forecasts, um, where he had to work between the UK team and the, um, uh, and the, uh, central, um, financial strategy team to essentially bring together some, uh, some quite complicated, um, modeling and also, um, where his, um, where there was a need to be very, um, uh, precise in terms of justifying, uh, the overspend and reasons for it as we go along. So I think that's one of the things that we're trying to do is really focus on what are the best ways for us to get this done.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 133,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.14261930900102016
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_5701kbz9j7pjegas578bpt7yfzsb",
+                    "branch_id": null,
+                    "workflow_node_id": null
+                  },
+                  "message": "Thank you for elaborating. It sounds like Gus demonstrated significant accountability and resilience during a period of change. You mentioned his collaboration and teamwork have improved. Can you provide a specific example of how his collaboration or teamwork made a difference this past year?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 192,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.366012648002652
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.2396124279985088
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.6042197170027066
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.12187296199408593
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 828,
+                          "price": 0.00008280000000000001
+                        },
+                        "input_cache_read": {
+                          "tokens": 2020,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 49,
+                          "price": 0.000019600000000000002
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "Yes, so he's just been much more forward in terms of putting in catch-ups and meetings. He's found his groove with regards to the kind of role that he plays managing between the central finance and strategy, so F&S team and the local teams. And I think just fair to say that it's been a lot more collaborative than it has been in the past.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 207,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.12122239099699073
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_5701kbz9j7pjegas578bpt7yfzsb",
+                    "branch_id": null,
+                    "workflow_node_id": null
+                  },
+                  "message": "That's great to hear about his proactive approach to collaboration. To ensure we capture the full picture, could you describe the impact of this improved collaboration? What changed for the better because of his more collaborative approach with the central finance and strategy team and the local teams?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 239,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.42169441499572713
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.31966588700015564
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.5448792359966319
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.15946439499384724
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 963,
+                          "price": 0.00009630000000000001
+                        },
+                        "input_cache_read": {
+                          "tokens": 2014,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 54,
+                          "price": 0.0000216
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "It's just it just really helps to move things forward at pace and and generate both trust and and and helps with the outward facing management of senior stakeholders.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 255,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.1300457980032661
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_5701kbz9j7pjegas578bpt7yfzsb",
+                    "branch_id": null,
+                    "workflow_node_id": null
+                  },
+                  "message": "Thank you. That clearly illustrates the positive impact of his collaborative efforts. Now, thinking about the future, which competencies or values do you think Gus could develop further next year to increase his impact even more?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 269,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.37994746700132964
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.2668152400001418
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.48168811600044137
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.1717817989992909
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 1054,
+                          "price": 0.0001054
+                        },
+                        "input_cache_read": {
+                          "tokens": 2009,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 41,
+                          "price": 0.000016400000000000002
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "I think it's really about taking his accurate low-level reporting and really expanding it out to improve his overall business acumen. I think I'd like to see him challenge and provide insights as opposed to just reporting in particular with regards to what might be possible as opposed to just processing and churning the background. So more forward thinking and more kind of strategic thinking is what I'm looking for.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 280,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.12302048200217541
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_5701kbz9j7pjegas578bpt7yfzsb",
+                    "branch_id": null,
+                    "workflow_node_id": null
+                  },
+                  "message": "That's a valuable insight. To clarify, when you mention wanting him to be more forward-thinking and strategic, are there specific behaviours you'd like to see him demonstrate more often, perhaps in how he interacts with stakeholders or approaches problem-solving?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 316,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.37919910899654496
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.2587338439989253
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.517867322996608
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.10543862900522072
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 179,
+                          "price": 0.0000179
+                        },
+                        "input_cache_read": {
+                          "tokens": 3006,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 52,
+                          "price": 0.0000208
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "Yeah, I think that's a good point, actually. So one thing he really does need to work on is sometimes when he presents in front of senior stakeholders, he goes into too much detail and sometimes the slides he produces are overly detailed. So I think he needs to be able to elevate his messaging up to more senior stakeholders.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 329,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.12741917300445493
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_5701kbz9j7pjegas578bpt7yfzsb",
+                    "branch_id": null,
+                    "workflow_node_id": null
+                  },
+                  "message": "Thank you, that's a very clear example. So, to summarize, Gus has shown great diligence and ownership, particularly in managing reporting and forecasts through a period of...",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 351,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.4230822040044586
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.28303663300175685
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.7639686350012198
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.12852083900361322
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 305,
+                          "price": 0.0000305
+                        },
+                        "input_cache_read": {
+                          "tokens": 3000,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 97,
+                          "price": 0.0000388
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": true,
+                  "original_message": "Thank you, that's a very clear example. So, to summarize, Gus has shown great diligence and ownership, particularly in managing reporting and forecasts through a period of change, demonstrating strong results delivery and accountability. His collaboration has also improved, leading to faster progress and better stakeholder management. For development, the focus is on enhancing his business acumen by moving from detailed reporting to providing more strategic insights and elevating his communication for senior stakeholders.\n\nHow often do you typically work with Gus?",
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "Yeah, that sounds good.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 359,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.1303137649956625
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_5701kbz9j7pjegas578bpt7yfzsb",
+                    "branch_id": null,
+                    "workflow_node_id": null
+                  },
+                  "message": "...uncertainty and line manager changes. He demonstrated strong...",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 361,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.3652227549973759
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.25557159099844284
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.6115733600017847
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.13252872900193324
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 354,
+                          "price": 0.0000354
+                        },
+                        "input_cache_read": {
+                          "tokens": 2992,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 92,
+                          "price": 0.00003680000000000001
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": true,
+                  "original_message": "...uncertainty and line manager changes. He demonstrated strong results delivery and accountability, and his collaboration has significantly improved, leading to faster progress and better stakeholder management. For development, the focus is on enhancing his business acumen by moving from detailed reporting to providing more strategic insights and forward-thinking challenges. Specifically, he could benefit from elevating his communication style for senior stakeholders, presenting more concise and high-level information.\n\nHow often do you typically work with Gus?",
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "Yes.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 363,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.12662612800340867
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_5701kbz9j7pjegas578bpt7yfzsb",
+                    "branch_id": null,
+                    "workflow_node_id": null
+                  },
+                  "message": "play to win behaviours, accountability, and improved collaboration, which has helped to move things forward at pace and build trust with senior stakeholders. For development, the focus is on enhancing his business acumen by challenging and providing insights, rather than just reporting, and elevating his communication to senior stakeholders by being more concise.\n\nHow often do you typically work with Gus?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 365,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.42781984099565307
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.2936063959932653
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.6318525579990819
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.14862398900004337
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 375,
+                          "price": 0.0000375
+                        },
+                        "input_cache_read": {
+                          "tokens": 2984,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 71,
+                          "price": 0.000028400000000000003
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "Weekly.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 387,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.13434875399980228
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_5701kbz9j7pjegas578bpt7yfzsb",
+                    "branch_id": null,
+                    "workflow_node_id": null
+                  },
+                  "message": "Perfect. Thank you for your time and detailed feedback today. This has been very helpful.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 389,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.35085070000059204
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.2401536230026977
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.36218161699798657
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.14276352900196798
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 455,
+                          "price": 0.0000455
+                        },
+                        "input_cache_read": {
+                          "tokens": 2977,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 18,
+                          "price": 0.0000072000000000000005
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "Thanks. Goodbye.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 394,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.20329684000171255
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_5701kbz9j7pjegas578bpt7yfzsb",
+                    "branch_id": null,
+                    "workflow_node_id": null
+                  },
+                  "message": "Goodbye.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 396,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.3004350849951152
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.22811052299948642
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.30041427399555687
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.09658273199602263
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 485,
+                          "price": 0.0000485
+                        },
+                        "input_cache_read": {
+                          "tokens": 2969,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 2,
+                          "price": 8.000000000000001e-7
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                }
+              ],
+              "metadata": {
+                "start_time_unix_secs": 1765227040,
+                "accepted_time_unix_secs": 1765227040,
+                "call_duration_secs": 401,
+                "cost": 2369,
+                "deletion_settings": {
+                  "deletion_time_unix_secs": null,
+                  "deleted_logs_at_time_unix_secs": null,
+                  "deleted_audio_at_time_unix_secs": null,
+                  "deleted_transcript_at_time_unix_secs": null,
+                  "delete_transcript_and_pii": false,
+                  "delete_audio": false
+                },
+                "feedback": {
+                  "type": null,
+                  "overall_score": null,
+                  "likes": 0,
+                  "dislikes": 0,
+                  "rating": null,
+                  "comment": null
+                },
+                "authorization_method": "authorization_header",
+                "charging": {
+                  "dev_discount": true,
+                  "is_burst": false,
+                  "tier": "enterprise",
+                  "llm_usage": {
+                    "irreversible_generation": {
+                      "model_usage": {
+                        "gemini-2.5-flash-lite": {
+                          "input": {
+                            "tokens": 5831,
+                            "price": 0.0005831
+                          },
+                          "input_cache_read": {
+                            "tokens": 28027,
+                            "price": 0
+                          },
+                          "input_cache_write": {
+                            "tokens": 0,
+                            "price": 0
+                          },
+                          "output_total": {
+                            "tokens": 618,
+                            "price": 0.00024720000000000005
+                          }
+                        }
+                      }
+                    },
+                    "initiated_generation": {
+                      "model_usage": {
+                        "gemini-2.5-flash-lite": {
+                          "input": {
+                            "tokens": 25108,
+                            "price": 0.0025108000000000005
+                          },
+                          "input_cache_read": {
+                            "tokens": 28027,
+                            "price": 0
+                          },
+                          "input_cache_write": {
+                            "tokens": 0,
+                            "price": 0
+                          },
+                          "output_total": {
+                            "tokens": 694,
+                            "price": 0.0002776
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "llm_price": 0.0027884000000000008,
+                  "llm_charge": 28,
+                  "call_charge": 2341,
+                  "free_minutes_consumed": 0,
+                  "free_llm_dollars_consumed": 0
+                },
+                "phone_call": null,
+                "batch_call": null,
+                "termination_reason": "Client disconnected: 1005",
+                "error": null,
+                "warnings": [],
+                "main_language": "en",
+                "rag_usage": null,
+                "text_only": false,
+                "features_usage": {
+                  "language_detection": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "transfer_to_agent": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "transfer_to_number": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "multivoice": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "dtmf_tones": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "external_mcp_servers": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "pii_zrm_workspace": false,
+                  "pii_zrm_agent": false,
+                  "tool_dynamic_variable_updates": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "is_livekit": false,
+                  "voicemail_detection": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "workflow": {
+                    "enabled": false,
+                    "tool_node": {
+                      "enabled": false,
+                      "used": false
+                    },
+                    "standalone_agent_node": {
+                      "enabled": false,
+                      "used": false
+                    },
+                    "phone_number_node": {
+                      "enabled": false,
+                      "used": false
+                    },
+                    "end_node": {
+                      "enabled": false,
+                      "used": false
+                    }
+                  },
+                  "agent_testing": {
+                    "enabled": false,
+                    "tests_ran_after_last_modification": false,
+                    "tests_ran_in_last_7_days": false
+                  }
+                },
+                "eleven_assistant": {
+                  "is_eleven_assistant": false
+                },
+                "initiator_id": "1jocLV1YMhbdrLSRX3Me8aWkbRX2",
+                "conversation_initiation_source": "react_sdk",
+                "conversation_initiation_source_version": "0.5.0",
+                "timezone": null,
+                "initiation_trigger": {
+                  "trigger_type": "default"
+                },
+                "async_metadata": null,
+                "whatsapp": null,
+                "agent_created_from": "ui",
+                "agent_last_updated_from": "ui"
+              },
+              "analysis": {
+                "evaluation_criteria_results": {},
+                "data_collection_results": {
+                  "feedback_subject": {
+                    "data_collection_id": "feedback_subject",
+                    "value": "Gus",
+                    "json_schema": {
+                      "type": "string",
+                      "description": "Who is the feedback for",
+                      "enum": null,
+                      "is_system_provided": false,
+                      "dynamic_variable": "",
+                      "constant_value": ""
+                    },
+                    "rationale": "The first question asked by the agent is 'Hi who are you here to provide feedback about today?'. The user responds with 'Gus.'. Therefore, the feedback is for Gus."
+                  },
+                  "feedback": {
+                    "data_collection_id": "feedback",
+                    "value": "So Gus has been incredibly diligent in migrating to a much bigger role as Tim departed the function and it's been incredibly impressive to see Gus both take ownership for reporting at a higher level, manage through a number of different line manager changes, some of which had the potential to be quite disruptive. He certainly showed a very strong ability to play to win because he was very good at just continuing to drive through the uncertainty from a defensive perspective. And from a competence point of view, definitely impressive results delivery, massive amounts of accountability and ownership. And I think really just pleasing to see how his collaboration and teamwork has also improved significantly, having in the past really thought of him as somebody who is great at building models, but whereby the usefulness of the models is limited. What I've seen this year is him develop into a real finance person. He's been doing it for years, and he's done it for years. And he's done it for years, and he's done it for years.",
+                    "json_schema": {
+                      "type": "string",
+                      "description": "A verbose answer to 'What impact has this person had during the time that you have worked with them, and what competencies and values did they demonstrate while doing it?'",
+                      "enum": null,
+                      "is_system_provided": false,
+                      "dynamic_variable": "",
+                      "constant_value": ""
+                    },
+                    "rationale": "The user describes Gus's impact as being incredibly diligent in migrating to a much bigger role, taking ownership for reporting at a higher level, managing through line manager changes, and driving through uncertainty. They demonstrated a strong ability to play to win, impressive results delivery, massive amounts of accountability and ownership, and improved collaboration and teamwork."
+                  },
+                  "improve": {
+                    "data_collection_id": "improve",
+                    "value": "I think it's really about taking his accurate low-level reporting and really expanding it out to improve his overall business acumen. I think I'd like to see him challenge and provide insights as opposed to just reporting in particular with regards to what might be possible as opposed to just processing and churning the background. So more forward thinking and more kind of strategic thinking is what I'm looking for. So I think he needs to be able to elevate his messaging up to more senior stakeholders.",
+                    "json_schema": {
+                      "type": "string",
+                      "description": "A verbose answer to the question 'What areas (competencies and values) do you think this person could improve on in the coming year to have more impact?'",
+                      "enum": null,
+                      "is_system_provided": false,
+                      "dynamic_variable": "",
+                      "constant_value": ""
+                    },
+                    "rationale": "The user was asked 'which competencies or values do you think Gus could develop further next year to increase his impact even more?'. The user responded with 'I think it's really about taking his accurate low-level reporting and really expanding it out to improve his overall business acumen. I think I'd like to see him challenge and provide insights as opposed to just reporting in particular with regards to what might be possible as opposed to just processing and churning the background. So more forward thinking and more kind of strategic thinking is what I'm looking for.' and later added 'So I think he needs to be able to elevate his messaging up to more senior stakeholders.'"
+                  },
+                  "howoften": {
+                    "data_collection_id": "howoften",
+                    "value": "Weekly",
+                    "json_schema": {
+                      "type": "string",
+                      "description": "A simple answer to 'How often do you work with this person?'",
+                      "enum": null,
+                      "is_system_provided": false,
+                      "dynamic_variable": "",
+                      "constant_value": ""
+                    },
+                    "rationale": "The user states 'Weekly' in response to the question 'How often do you typically work with Gus?'."
+                  }
+                },
+                "call_successful": "success",
+                "transcript_summary": "The agent interviewed a user about Gus's performance. The user highlighted Gus's diligence, ownership, and improved collaboration, especially during a period of uncertainty. Gus demonstrated accountability and helped build trust with stakeholders. The user suggested Gus should focus on developing business acumen, strategic thinking, and more concise communication for senior stakeholders. The user interacts with Gus weekly.\n",
+                "call_summary_title": "Gus: Performance Feedback Interview"
+              },
+              "conversation_initiation_client_data": {
+                "conversation_config_override": {
+                  "turn": null,
+                  "tts": {
+                    "voice_id": null,
+                    "stability": null,
+                    "speed": null,
+                    "similarity_boost": null
+                  },
+                  "conversation": {
+                    "text_only": null
+                  },
+                  "agent": {
+                    "first_message": null,
+                    "language": null,
+                    "prompt": null
+                  }
+                },
+                "custom_llm_extra_body": {},
+                "user_id": "1jocLV1YMhbdrLSRX3Me8aWkbRX2",
+                "source_info": {
+                  "source": "react_sdk",
+                  "version": "0.5.0"
+                },
+                "dynamic_variables": {
+                  "system__agent_id": "agent_5701kbz9j7pjegas578bpt7yfzsb",
+                  "system__agent_turns": 12,
+                  "system__current_agent_turns": 12,
+                  "system__current_subagent_turns": 12,
+                  "system__current_agent_id": "agent_5701kbz9j7pjegas578bpt7yfzsb",
+                  "system__conversation_id": "conv_8001kbzvp3saep0rk1pc4892a3y9",
+                  "system__call_duration_secs": 401,
+                  "system__time_utc": "2025-12-08T20:57:21.842181+00:00",
+                  "system__time": "Monday, 20:57 08 December 2025",
+                  "system__timezone": null,
+                  "system__caller_id": null,
+                  "system__called_number": null,
+                  "system__call_sid": null
+                }
+              }
+            }
+          },
+          "webhookUrl": "https://leonard-dev.app.n8n.cloud/webhook/andy_feedback_1",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "triggerCount": 1,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

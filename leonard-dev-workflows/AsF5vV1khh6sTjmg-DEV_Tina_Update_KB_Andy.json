@@ -1,0 +1,287 @@
+{
+  "name": "DEV - Tina - Update KB - Andy",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.elevenlabs.io/v1/convai/knowledge-base/text",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "xi-api-key",
+              "value": "sk_3eca705a3c2780af4cb1116beb64d3e1d3bfc187a8d565f8"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "text",
+              "value": "={{ $('When Executed by Another Workflow').item.json.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -656,
+        -224
+      ],
+      "id": "536472e8-1681-4e79-a16f-1b1c99de1b70",
+      "name": "Create KB"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.elevenlabs.io/v1/convai/agents/create",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "xi-api-key",
+              "value": "sk_3eca705a3c2780af4cb1116beb64d3e1d3bfc187a8d565f8"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"agent_id\": \"agent_2501k48nnbsmf429wcznt872frw9\",\n    \"name\": \"N8N TEST: Luke - Pre Meeting Prep [owner: Andy] - {{ $('Today').item.json.currentDate }}\",\n    \"conversation_config\": {\n        \"asr\": {\n            \"quality\": \"high\",\n            \"provider\": \"elevenlabs\",\n            \"user_input_audio_format\": \"pcm_16000\",\n            \"keywords\": []\n        },\n        \"turn\": {\n            \"turn_timeout\": 10,\n            \"silence_end_call_timeout\": -1,\n            \"mode\": \"turn\"\n        },\n        \"tts\": {\n            \"model_id\": \"eleven_flash_v2\",\n            \"voice_id\": \"AwP2bjcqrSky0yiDhZSe\",\n            \"supported_voices\": [],\n            \"agent_output_audio_format\": \"pcm_16000\",\n            \"optimize_streaming_latency\": 4,\n            \"stability\": 0.65,\n            \"speed\": 0.99,\n            \"similarity_boost\": 0.45,\n            \"pronunciation_dictionary_locators\": []\n        },\n        \"conversation\": {\n            \"text_only\": false,\n            \"max_duration_seconds\": 3600,\n            \"client_events\": [\n                \"audio\",\n                \"interruption\"\n            ]\n        },\n        \"language_presets\": {},\n        \"agent\": {\n            \"first_message\": \"Hey Andy? Ready for a quick brief on what's planned for today?\",\n            \"language\": \"en\",\n            \"dynamic_variables\": {\n                \"dynamic_variable_placeholders\": {}\n            },\n            \"prompt\": {\n                \"prompt\": \"VOICE AGENT SYSTEM PROMPT — Luke (Pre Meeting Assistant)\\n\\nYou are Luke, an expert legal Business Development assistant.\\nYou are professional yet approachable, and your role is to coach a lawyer immediately after a client meeting.\\nYour job is to take the information in the knowledge base and brief the Sales Development Manager on the various meeting planned. \\n\\nThis should include, dates, times, subject or meeting title, duration, attendees and most importantly the information you have gathered on the bios  of external attendees \\n\",\n                \"llm\": \"gemini-2.5-flash-lite\",\n                \"temperature\": 0.3,\n                \"max_tokens\": -1,\n                \"tool_ids\": [],\n                \"built_in_tools\": {\n                    \"end_call\": {\n                        \"type\": \"system\",\n                        \"name\": \"end_call\",\n                        \"description\": \"\",\n                        \"response_timeout_secs\": 20,\n                        \"disable_interruptions\": false,\n                        \"force_pre_tool_speech\": false,\n                        \"assignments\": [],\n                        \"params\": {\n                            \"system_tool_type\": \"end_call\"\n                        }\n                    },\n                    \"language_detection\": null,\n                    \"transfer_to_agent\": null,\n                    \"transfer_to_number\": null,\n                    \"skip_turn\": null,\n                    \"play_keypad_touch_tone\": null,\n                    \"voicemail_detection\": {\n                        \"type\": \"system\",\n                        \"name\": \"voicemail_detection\",\n                        \"description\": \"\",\n                        \"response_timeout_secs\": 20,\n                        \"disable_interruptions\": false,\n                        \"force_pre_tool_speech\": false,\n                        \"assignments\": [],\n                        \"params\": {\n                            \"system_tool_type\": \"voicemail_detection\",\n                            \"voicemail_message\": \"Hi, this is Luke from Legal Engine, I've just tried to call to get a quick debrief on your last meeting. Speak soon.\"\n                        }\n                    }\n                },\n                \"mcp_server_ids\": [],\n                \"native_mcp_server_ids\": [],\n                \"knowledge_base\": [\n        {\n                        \"type\": \"text\",\n                        \"name\": \"{{ $json.name }}\",\n                        \"id\": \"{{ $json.id }}\",\n                        \"usage_mode\": \"prompt\"\n                    },                    \n{\n                        \"type\": \"url\",\n                        \"name\": \"GitHub - noslegal/taxonomy: noslegal taxonomy facets and release notes\",\n                        \"id\": \"WTSeALM0hCdp3JOAQkh7\",\n                        \"usage_mode\": \"auto\"\n                    },\n                    {\n                        \"type\": \"url\",\n                        \"name\": \"taxonomy/2025.03 v3 noslegal release/2025.03 guide - noslegal 3.0.pdf at main · noslegal/taxonomy\",\n                        \"id\": \"asdugn4RGhF5gvo638Mz\",\n                        \"usage_mode\": \"auto\"\n                    },\n                    {\n                        \"type\": \"file\",\n                        \"name\": \"MASTER - Legal Engine Agents_security architecture.docx\",\n                        \"id\": \"ppbrfEfQtSZAeubOmOd0\",\n                        \"usage_mode\": \"auto\"\n                    }\n                ],\n                \"custom_llm\": null,\n                \"ignore_default_personality\": false,\n                \"rag\": {\n                    \"enabled\": true,\n                    \"embedding_model\": \"e5_mistral_7b_instruct\",\n                    \"max_vector_distance\": 0.6,\n                    \"max_documents_length\": 50000,\n                    \"max_retrieved_rag_chunks_count\": 20\n                },\n                \"timezone\": null,\n                \"tools\": [\n                    {\n                        \"type\": \"system\",\n                        \"name\": \"end_call\",\n                        \"description\": \"\",\n                        \"response_timeout_secs\": 20,\n                        \"disable_interruptions\": false,\n                        \"force_pre_tool_speech\": false,\n                        \"assignments\": [],\n                        \"params\": {\n                            \"system_tool_type\": \"end_call\"\n                        }\n                    },\n                    {\n                        \"type\": \"system\",\n                        \"name\": \"voicemail_detection\",\n                        \"description\": \"\",\n                        \"response_timeout_secs\": 20,\n                        \"disable_interruptions\": false,\n                        \"force_pre_tool_speech\": false,\n                        \"assignments\": [],\n                        \"params\": {\n                            \"system_tool_type\": \"voicemail_detection\",\n                            \"voicemail_message\": \"Hi, this is Luke from Legal Engine, I've just tried to call to get a quick debrief on your last meeting. Speak soon.\"\n                        }\n                    }\n                ]\n            }\n        }\n    },\n    \"metadata\": {\n        \"created_at_unix_secs\": 1756932779,\n        \"updated_at_unix_secs\": 1756932956\n    },\n    \"platform_settings\": {\n        \"auth\": {\n            \"enable_auth\": false,\n            \"allowlist\": [],\n            \"shareable_token\": null\n        },\n        \"evaluation\": {\n            \"criteria\": []\n        },\n        \"widget\": {\n            \"variant\": \"full\",\n            \"placement\": \"bottom-right\",\n            \"expandable\": \"never\",\n            \"avatar\": {\n                \"type\": \"orb\",\n                \"color_1\": \"#2792dc\",\n                \"color_2\": \"#9ce6e6\"\n            },\n            \"feedback_mode\": \"during\",\n            \"bg_color\": \"#ffffff\",\n            \"text_color\": \"#000000\",\n            \"btn_color\": \"#000000\",\n            \"btn_text_color\": \"#ffffff\",\n            \"border_color\": \"#e1e1e1\",\n            \"focus_color\": \"#000000\",\n            \"border_radius\": null,\n            \"btn_radius\": null,\n            \"action_text\": null,\n            \"start_call_text\": null,\n            \"end_call_text\": null,\n            \"expand_text\": null,\n            \"listening_text\": null,\n            \"speaking_text\": null,\n            \"shareable_page_text\": null,\n            \"shareable_page_show_terms\": false,\n            \"terms_text\": null,\n            \"terms_html\": null,\n            \"terms_key\": null,\n            \"show_avatar_when_collapsed\": false,\n            \"disable_banner\": false,\n            \"override_link\": null,\n            \"mic_muting_enabled\": false,\n            \"transcript_enabled\": false,\n            \"text_input_enabled\": false,\n            \"default_expanded\": false,\n            \"always_expanded\": false,\n            \"text_contents\": {\n                \"main_label\": \"Ready to debrief?\",\n                \"start_call\": \"Chat now\",\n                \"start_chat\": null,\n                \"new_call\": null,\n                \"end_call\": null,\n                \"mute_microphone\": null,\n                \"change_language\": null,\n                \"collapse\": null,\n                \"expand\": null,\n                \"copied\": null,\n                \"accept_terms\": null,\n                \"dismiss_terms\": null,\n                \"listening_status\": null,\n                \"speaking_status\": null,\n                \"connecting_status\": null,\n                \"chatting_status\": null,\n                \"input_label\": null,\n                \"input_placeholder\": null,\n                \"input_placeholder_text_only\": null,\n                \"input_placeholder_new_conversation\": null,\n                \"user_ended_conversation\": null,\n                \"agent_ended_conversation\": null,\n                \"conversation_id\": null,\n                \"error_occurred\": null,\n                \"copy_id\": null\n            },\n            \"styles\": {\n                \"base\": null,\n                \"base_hover\": null,\n                \"base_active\": null,\n                \"base_border\": null,\n                \"base_subtle\": null,\n                \"base_primary\": null,\n                \"base_error\": null,\n                \"accent\": null,\n                \"accent_hover\": null,\n                \"accent_active\": null,\n                \"accent_border\": null,\n                \"accent_subtle\": null,\n                \"accent_primary\": null,\n                \"overlay_padding\": null,\n                \"button_radius\": null,\n                \"input_radius\": null,\n                \"bubble_radius\": null,\n                \"sheet_radius\": null,\n                \"compact_sheet_radius\": null,\n                \"dropdown_sheet_radius\": null\n            },\n            \"language_selector\": false,\n            \"supports_text_only\": false,\n            \"custom_avatar_path\": null,\n            \"language_presets\": {}\n        },\n        \"data_collection\": {},\n        \"overrides\": {\n            \"conversation_config_override\": {\n                \"tts\": {\n                    \"voice_id\": false,\n                    \"stability\": false,\n                    \"speed\": false,\n                    \"similarity_boost\": false\n                },\n                \"conversation\": {\n                    \"text_only\": true\n                },\n                \"agent\": {\n                    \"first_message\": false,\n                    \"language\": false,\n                    \"prompt\": {\n                        \"prompt\": false,\n                        \"native_mcp_server_ids\": false\n                    }\n                }\n            },\n            \"custom_llm_extra_body\": false,\n            \"enable_conversation_initiation_client_data_from_webhook\": false\n        },\n        \"call_limits\": {\n            \"agent_concurrency_limit\": -1,\n            \"daily_limit\": 100000,\n            \"bursting_enabled\": true\n        },\n        \"ban\": null,\n        \"privacy\": {\n            \"record_voice\": true,\n            \"retention_days\": -1,\n            \"delete_transcript_and_pii\": false,\n            \"delete_audio\": false,\n            \"apply_to_existing_conversations\": false,\n            \"zero_retention_mode\": false\n        },\n        \"workspace_overrides\": {\n            \"conversation_initiation_client_data_webhook\": null,\n            \"webhooks\": {\n                \"post_call_webhook_id\": \"00ee7b70f25448ba886fd2756957683f\",\n                \"send_audio\": false\n            }\n        },\n        \"testing\": {\n            \"attached_tests\": [],\n            \"referenced_tests_ids\": []\n        },\n        \"safety\": {\n            \"is_blocked_ivc\": false,\n            \"is_blocked_non_ivc\": false,\n            \"ignore_safety_evaluation\": false\n        }\n    },\n    \"phone_numbers\": [],\n    \"workflow\": {\n        \"edges\": {},\n        \"nodes\": {\n            \"start_node\": {\n                \"type\": \"start\",\n                \"position\": {\n                    \"x\": 0,\n                    \"y\": 0\n                }\n            }\n        }\n    },\n    \"access_info\": {\n        \"is_creator\": true,\n        \"creator_name\": \"leonard@legalengine.co.uk\",\n        \"creator_email\": \"leonard@legalengine.co.uk\",\n        \"role\": \"admin\"\n    },\n    \"tags\": []\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -208,
+        -224
+      ],
+      "id": "b4b53944-f9f8-4aca-a0a9-38ef6c869d65",
+      "name": "Create 11L agent with KB"
+    },
+    {
+      "parameters": {
+        "amount": 10,
+        "path": "62689fb3-703d-4cbf-942b-5abf034d5f43"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        16,
+        -224
+      ],
+      "id": "49e2331f-b95c-459e-b79d-fb6bc97dfb8c",
+      "name": "Wait 10s1",
+      "webhookId": "62689fb3-703d-4cbf-942b-5abf034d5f43"
+    },
+    {
+      "parameters": {
+        "amount": 10,
+        "path": "d41069d0-f148-4a63-94d7-fc436a39201e"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -432,
+        -224
+      ],
+      "id": "fddd414d-698f-4c50-bd6c-c4510fdd3b5c",
+      "name": "Wait 10s2",
+      "webhookId": "d41069d0-f148-4a63-94d7-fc436a39201e"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1104,
+        -224
+      ],
+      "id": "5c1133f3-c977-4ba0-80bc-96bee562c892",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        -880,
+        -224
+      ],
+      "id": "76256149-5fa8-4602-a8d6-be59f5788520",
+      "name": "Today"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "7ATEVc0RTFrVRAGv",
+          "mode": "list",
+          "cachedResultName": "DEV - S3 - Find a slot in an outlook calendar and book into slot"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        464,
+        -224
+      ],
+      "id": "6a642dd0-0c8e-4e76-8209-6808a42ae268",
+      "name": "Execute Workflow"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4b1d2468-3f3e-45db-84e0-d0b4bd58b458",
+              "name": "agent_id",
+              "value": "={{ $('Create 11L agent with KB').item.json.agent_id }}",
+              "type": "string"
+            },
+            {
+              "id": "32873103-5b12-46ef-8e03-cc955018811f",
+              "name": "id",
+              "value": "={{ $('Create KB').item.json.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        240,
+        -224
+      ],
+      "id": "4e43e5c2-4857-495d-bee0-37d9af858601",
+      "name": "Set Nodes to pass"
+    }
+  ],
+  "connections": {
+    "Create KB": {
+      "main": [
+        [
+          {
+            "node": "Wait 10s2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create 11L agent with KB": {
+      "main": [
+        [
+          {
+            "node": "Wait 10s1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 10s2": {
+      "main": [
+        [
+          {
+            "node": "Create 11L agent with KB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 10s1": {
+      "main": [
+        [
+          {
+            "node": "Set Nodes to pass",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Today",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Today": {
+      "main": [
+        [
+          {
+            "node": "Create KB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Nodes to pass": {
+      "main": [
+        [
+          {
+            "node": "Execute Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {
+    "Set Nodes to pass": [
+      {
+        "json": {
+          "agent_id": "agent_5301k48jatm1f3fbnqt3c5d97bvt",
+          "id": "StTLYACCDShjUk3Zg0U2"
+        }
+      }
+    ],
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "text": "{\"data\":[{\"output\":\"Meeting: Legal Engine — intro call\\nDate & start time: 2025-09-05 at 14:00 (calendar entry has no timezone specified — please confirm which timezone this is scheduled in)\\nMeeting length: Not specified on the calendar. Recommend 30 minutes (standard intro) or 45–60 minutes if you expect a deeper product/demo conversation. Please confirm desired duration.\\n\\nAttendees (as listed)\\n- Lee Curtis (Legal Engine) — listed on the invite\\n- Ori Das (ori.das@padme.services) — external\\n- Other invitee rows are blank on the calendar (no additional named attendees)\\n\\nMeeting purpose / context\\n- Introductory call between Legal Engine (Lee Curtis) and Ori Das (padme.services). Likely a first meeting to explore potential collaboration or services. Notes on preparation recommend confirming Ori’s role and background ahead of the call.\\n\\nExternal attendee bio (for prep)\\n- Ori Das (ori.das@padme.services)\\n  - Public professional profile for this individual could not be located in a Perplexity search (03 Sep 2025). No LinkedIn, company bio, or Companies House officer record was found tied to the padme.services domain.\\n  - The email domain (padme.services) resolves to https://www.padme.services but that site did not show verifiable staff details for Ori as of the search date.\\n  - Recommendation: treat Ori as an unverified external contact until they supply a role/title and a brief CV or LinkedIn link.\\n\\nInternal / counterparty links & quick reference\\n- Lee Curtis — LinkedIn: https://www.linkedin.com/in/leeacurtis/\\n- Legal Engine: https://www.legalengine.co.uk\\n- Padme domain (provided): https://www.padme.services\\n- UK Companies House officers (reference): https://find-and-update.company-information.service.gov.uk/company/13160418/officers\\n\\nSuggested pre-meeting actions (high priority)\\n1. Confirm timezone and exact meeting length on the calendar.\\n2. Ask Ori to confirm role/title and provide a LinkedIn profile or short CV ahead of the call (recommended at least 24 hours before).\\n3. If relevant, request a short agenda from Ori or confirm your intended agenda items so both sides can prepare.\\n\\nSuggested agenda (30-minute call)\\n- 0–5m: Quick introductions and roles\\n- 5–15m: Ori — background, role, and objectives / Lee — brief overview of Legal Engine\\n- 15–25m: Exploration of potential fit / questions on capabilities & needs\\n- 25–30m: Next steps, follow ups, and actions\\n\\nSuggested prep materials to have ready\\n- One-page summary of Legal Engine offerings and key contacts\\n- Any case studies or pricing structure you expect to reference\\n- Questions to confirm Ori’s objectives and constraints (use cases, timeline, budget, decision makers)\\n\\nOption: draft confirmation email\\n- I can draft a short confirmation message to Ori asking for:\\n  - Their role/title and LinkedIn link or short CV\\n  - Confirmation of timezone and preferred meeting length\\n  - Any specific topics they want on the agenda\\nWould you like me to draft that email now?\"},{\"output\":\"Meeting: Sumer <> Legal Engine\\nDate & start time: 2025-09-08 at 11:00 (time zone not supplied — please confirm)\\nDuration: not specified in the event details. Suggest 60 minutes unless you want a different length.\\n\\nAttendees\\n- Sam Stamp\\n- Claire Peers — external (claire.peers@sumer.co.uk)\\n- Eduardo Aguilar Pelaez\\n- Elliot Clark\\n\\nLocation/format: not provided — please confirm (in-person / Teams / Zoom / dial-in).\\n\\nExternal attendee bio (Claire Peers — attendee listed as claire.peers@sumer.co.uk)\\n- I could not locate a reliable public professional profile for Claire Peers at Sumer using standard sources (LinkedIn, the Sumer corporate site, Companies House and media). Searches against the email domain and probable name variations returned no confirmed match. Please confirm Claire’s role/title or an alternative spelling to enable a fuller bio. For the meeting, I recommend verifying her position and objectives in advance.\\n\\nRecent checks\\n- No LinkedIn profile or company bio located for “Claire Peers” at Sumer — checked 03 Sep 2025.\\n- No matching officer/appointment on Companies House for that name at the Sumer domain — checked 03 Sep 2025.\\n\\nUseful links\\n- Sumer — https://www.sumer.co.uk\\n- Lee Curtis (Legal Engine) LinkedIn — https://www.linkedin.com/in/leeacurtis/\\n- Legal Engine — https://www.legalengine.co.uk\\n\\nSuggested pre-meeting actions (to prepare attendees)\\n1. Confirm Claire’s role/title and correct spelling of name/email, and ask her for a short company bio and objectives for the meeting.\\n2. Confirm meeting duration, location/virtual link and time zone.\\n3. Share a proposed agenda in advance (suggested items below).\\n4. Review Sumer’s site and any recent news; review Legal Engine materials and Lee Curtis’s profile (link above).\\n5. Prepare questions to clarify Sumer’s expectations and any contract/legal scope to be discussed.\\n\\nSuggested agenda (if helpful)\\n- Introductions and roles (5–10 min)\\n- Sumer’s goals / scope for this engagement (10–20 min)\\n- Legal Engine’s proposed approach and capabilities (15–20 min)\\n- Key commercial/contractual points, timelines and next steps (10–15 min)\\n- Q&A and actions (5–10 min)\\n\\nWould you like me to:\\n- Attempt fresh web searches for Claire given alternative spellings, job title, or other identifying details?\\n- Draft an agenda and a short pre-meeting email to send to Claire requesting role/agenda confirmation and a short bio?\"},{\"output\":\"Meeting summary — Broadfield - sales training mop up session\\n\\n- Date: 2025-09-04\\n- Start time: 09:00 (calendar entry does not specify time zone — please confirm local time zone if needed)\\n- Meeting length: Not specified in the calendar. Please confirm duration; recommended 60 minutes for a mop-up/training follow-up (30–60 min acceptable depending on agenda).\\n- Attendees (as listed): Lee Curtis; Elliot Clark (inferred from elliot.clark@sumer.co.uk)\\n  - Elliot Clark (external): elliot.clark@sumer.co.uk\\n  - Lee Curtis (Legal Engine) — meeting counterpart\\n\\nPurpose / likely agenda\\n- Follow-up / mop-up from recent sales training: questions, clarifications, outstanding actions, next steps and ownership.\\n- Confirm understanding of materials, identify any gaps, and agree on implementation/rollout or further training needs.\\n\\nExternal attendee bio (for prep — 4–6 sentences)\\n- Elliot Clark (inferred from elliot.clark@sumer.co.uk) — No reliable public professional profile matching this name/email could be found in available sources (LinkedIn, company site, Companies House, press). The email domain belongs to Sumer (sumer.co.uk), but an Elliot Clark associated with Sumer was not located. For meeting prep, treat Elliot’s role/title and organisational authority as unconfirmed and plan to verify at the start of the meeting. It is recommended to ask Elliot to share a LinkedIn profile or a short role description on arrival so you can confirm decision‑making context. If you need a more formal verification, check Sumer’s officers list on Companies House or request a company contact/validation from Elliot before the meeting.\\n\\nOther checks & useful links\\n- 03 Sep 2025 — Targeted searches (LinkedIn, company site, Companies House) found no reliable public profile matching “Elliot Clark” at Sumer.\\n- Sumer website: https://www.sumer.co.uk\\n- Companies House (Sumer officers): https://find-and-update.company-information.service.gov.uk/company/13160418/officers\\n- Lee Curtis (Legal Engine) — LinkedIn: https://www.linkedin.com/in/leeacurtis/ (use to confirm Lee’s role and prep approach)\\n\\nPreparation actions / recommendations\\n1. Before the meeting:\\n   - Confirm meeting duration and time zone with attendees.\\n   - Send a short confirmation request to Elliot asking for his job title, role in relation to the sales training, and a LinkedIn/profile link (I can draft this email for you).\\n   - Prepare a concise recap (slides or bullet points) of the training topics, outstanding actions, and proposed next steps to share during the session.\\n2. At meeting start:\\n   - Verify Elliot’s role/title and decision‑making authority; if not confirmed, clarify who will own follow‑up actions.\\n   - Confirm desired outcomes for the session (close open items, schedule further training, assign owners).\\n3. Post‑meeting:\\n   - Capture agreed actions, owners, and deadlines; send a short minutes/action email to all attendees.\\n\\nIf you’d like, I can:\\n- Draft the confirmation email to Elliot requesting title/LinkedIn and confirming time/duration.\\n- Create a suggested 60‑minute agenda and a short training recap slide/text to share in the meeting.\"},{\"output\":\"I didn’t produce a meeting summary because none of the meeting attendees you provided include connor.adams@simmons-simmons.com. Per your instruction, I only prepare summaries for meetings with that external attendee.\\n\\nWould you like me to:\\n- Prepare the full meeting summary anyway for the 2025-09-08 Info sharing / AI roadmap meeting (using the attendees you provided), or\\n- Confirm whether Connor Adams will attend (and if so, provide his role/contact), or\\n- Run a deeper search for Connor Adams / confirm alternate spellings and report back?\\n\\nTell me which option you prefer and I’ll proceed.\"},{\"output\":\"Meeting: Stuart Pearce lunch\\n- Date & start time: 2025-09-04, 11:30 (ISO: 2025-09-04T11:30:00)\\n- Duration: Not specified in calendar (please confirm). Typical lunch length: 45–90 minutes — confirm expected end time.\\n- Location: Not specified (please confirm venue).\\n- Attendees (as provided):\\n  - Internal: Lee Curtis\\n  - External: Jo Cooper — jo.cooper@simmons-simmons.com (listed in event materials)\\n\\nExternal attendee profile / bio (for Jo Cooper)\\n- I could not locate a public professional profile for Jo Cooper that matches jo.cooper@simmons-simmons.com. The email domain is consistent with Simmons & Simmons, but there is no named Simmons & Simmons biography or LinkedIn profile for a Jo Cooper I can verify. Without a verifiable public profile I cannot provide confirmed role, seniority or career history. Recommend asking the attendee for a LinkedIn link or job title before the meeting.\\n- Recent checks (dates): Checked LinkedIn, Simmons & Simmons site and web for jo.cooper@simmons-simmons.com — no verified match found (3 Sep 2025). Verified Lee Curtis (Legal Engine) LinkedIn for connections/context (3 Sep 2025). Reviewed Simmons & Simmons officers entry on Companies House for related names (3 Sep 2025).\\n- Links:\\n  - Simmons & Simmons — https://www.simmons-simmons.com\\n  - Lee Curtis (Legal Engine) — https://www.linkedin.com/in/leeacurtis/\\n  - Companies House (Simmons & Simmons officers) — https://find-and-update.company-information.service.gov.uk/company/13160418/officers\\n\\nSuggested prep actions\\n- Ask Jo Cooper (or the meeting organiser) to confirm:\\n  - Jo’s job title and team at Simmons & Simmons and a link to a public profile (LinkedIn or firm bio).\\n  - Meeting location and expected end time.\\n  - Any specific topics or objectives for the lunch.\\n- Prepare brief background/ talking points:\\n  - Lee Curtis — review Lee’s LinkedIn (link above) and recent projects to align topics.\\n  - Simmons & Simmons — have high-level notes on the firm (link above) in case introductions steer to firm capabilities or relationships.\\n- Draft 2–3 opening questions to establish Jo’s role and interests (e.g., “Can you tell me about your role at Simmons & Simmons and your main priorities this year?”).\\n\\nIf you’d like, I can:\\n- Re-run a targeted search for alternate name variants (e.g., Joanne, Joann, Josephine Cooper) at Simmons & Simmons and on LinkedIn.\\n- Draft an email to Jo (or the organiser) requesting job title, LinkedIn link, meeting duration and location.\"}]}"
+        }
+      }
+    ]
+  },
+  "triggerCount": 0,
+  "meta": null
+}

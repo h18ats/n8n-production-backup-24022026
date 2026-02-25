@@ -1,0 +1,955 @@
+{
+  "name": "TEST DEV - Email Attachment - owner ANDY",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -3424,
+        416
+      ],
+      "id": "37de6a6f-3e2d-4723-89c1-816f2007ece0",
+      "name": "When clicking ‘Execute workflow’",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "app9ltuh0pY06YDym",
+          "mode": "list",
+          "cachedResultName": "Playground 1",
+          "cachedResultUrl": "https://airtable.com/app9ltuh0pY06YDym"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblQr96ww454xJuWp",
+          "mode": "list",
+          "cachedResultName": "Web Form Uploads",
+          "cachedResultUrl": "https://airtable.com/app9ltuh0pY06YDym/tblQr96ww454xJuWp"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -3200,
+        416
+      ],
+      "id": "18539cc5-a34c-400b-aed4-f5f059d96d6f",
+      "name": "Search records",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "url": "={{ $json['File Upload'][0].url }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2976,
+        416
+      ],
+      "id": "7c76f82e-f4e3-4745-a6a0-83a79886f58d",
+      "name": "HTTP Request",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "toRecipients": "=andy@legalengine.co.uk,  {{ $json['Submitters Email'] }}",
+        "subject": "Your attachment ",
+        "bodyContent": "=Hey  {{ $json['Practice Area'] }}, here is your attachment.\n\nCheers \n\nAndy",
+        "additionalFields": {
+          "attachments": {
+            "attachments": [
+              {
+                "binaryPropertyName": "data"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        -2752,
+        416
+      ],
+      "id": "8a27e924-3b77-479f-a48d-76833d824e2f",
+      "name": "Send a message",
+      "webhookId": "663fc29c-a347-476d-83f7-350c2e951c7c",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "Xdyk0xjYi9in64OY",
+          "name": "Microsoft Outlook - Amy @ Legal Engine"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.fields[\"File Upload\"][0].url }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -528,
+        -576
+      ],
+      "id": "c453e4af-bd58-46a3-a1e8-21a871012f03",
+      "name": "HTTP Request1",
+      "executeOnce": false,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "toRecipients": "=andy@legalengine.co.uk, {{ $json.airtable.fields[\"Submitters Email\"] }}",
+        "subject": "=Your attachments {{ $json.airtable.fields[\"Submitters First Name\"] }}",
+        "bodyContent": "=Hey {{ $json.airtable.fields[\"Submitters First Name\"] }}, here are your two attachments.\n\nCheers \n\nLegal Engine",
+        "additionalFields": {
+          "attachments": {
+            "attachments": [
+              {
+                "binaryPropertyName": "=data1"
+              },
+              {
+                "binaryPropertyName": "=data2"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        944,
+        -480
+      ],
+      "id": "e508a009-d9c2-4928-9f4e-74656a8c5d0b",
+      "name": "Send a message with att",
+      "webhookId": "663fc29c-a347-476d-83f7-350c2e951c7c",
+      "alwaysOutputData": false,
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "Xdyk0xjYi9in64OY",
+          "name": "Microsoft Outlook - Amy @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Count binaries named like \"data\", \"data1\", \"data2\", ... from a prior node\n// Set this to the exact node name that produced the binaries:\nconst SOURCE_NODE = 'data-producer';\n\n// Try to fetch items directly from the source node (Code node API).\n// Fallback to current input if not available.\nlet srcItems;\ntry {\n  // n8n Code node (v1+) supports $items('Node Name')\n  srcItems = $items(SOURCE_NODE);\n  if (!Array.isArray(srcItems) || srcItems.length === 0) {\n    // if the source yields nothing, fall back\n    srcItems = items;\n  }\n} catch (e) {\n  // Legacy fallback: rely on connected input\n  srcItems = items;\n}\n\nconst dataKeyRegex = /^data\\d*$/i;\n\nlet totalDataKeys = 0;\nconst uniqueDataKeys = new Set();\nconst perItem = [];\n\nfor (let i = 0; i < srcItems.length; i++) {\n  const bin = srcItems[i].binary || {};\n  const keys = Object.keys(bin).filter(k => dataKeyRegex.test(k));\n\n  perItem.push({\n    itemIndex: i + 1,\n    dataKeys: keys,\n    count: keys.length,\n  });\n\n  totalDataKeys += keys.length;\n  keys.forEach(k => uniqueDataKeys.add(k));\n}\n\n// Return a single summary item\nreturn [{\n  json: {\n    sourceNode: SOURCE_NODE,\n    totalItemsFromSource: srcItems.length,\n    totalDataOutputs: totalDataKeys,        // sum across items\n    uniqueDataOutputs: uniqueDataKeys.size, // unique data* keys\n    uniqueDataKeys: Array.from(uniqueDataKeys),\n    perItem,                                // per-item breakdown\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3024,
+        672
+      ],
+      "id": "c8726244-c30c-4409-a70c-7404aad19b55",
+      "name": "count atts",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "aa25a7b5-ddab-4fe5-9b6e-536f17feebb8",
+              "leftValue": "={{ $('comp').item.json.totalDataOutputs }}",
+              "rightValue": 2,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        224,
+        -560
+      ],
+      "id": "61cd304d-c98f-4d5a-ae86-21d308b99dca",
+      "name": "If",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "toRecipients": "=andy@legalengine.co.uk, {{ $('Airtable').item.json.fields['Submitters Email'] }}",
+        "subject": "=Your attachment {{ $('Airtable').item.json.fields[\"Submitters First Name\"] }}",
+        "bodyContent": "=Hey {{ $('Airtable').item.json.fields[\"Submitters First Name\"] }}, here is your attachment.\n\nCheers \n\nLegal Engine",
+        "additionalFields": {
+          "attachments": {
+            "attachments": [
+              {
+                "binaryPropertyName": "=data1"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        448,
+        -656
+      ],
+      "id": "90313841-e254-4c49-a6a0-e263bd04bbeb",
+      "name": "Send a message with att1",
+      "webhookId": "663fc29c-a347-476d-83f7-350c2e951c7c",
+      "alwaysOutputData": false,
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "Xdyk0xjYi9in64OY",
+          "name": "Microsoft Outlook - Amy @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "aa25a7b5-ddab-4fe5-9b6e-536f17feebb8",
+              "leftValue": "={{ $('comp').item.json.totalDataOutputs }}",
+              "rightValue": 3,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            },
+            {
+              "id": "4963783e-fa46-4ac4-946d-5e21f19a0283",
+              "leftValue": "={{ $('comp').item.json.totalDataOutputs }}",
+              "rightValue": 1,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        448,
+        -464
+      ],
+      "id": "044d7d05-b289-418f-9edb-d986641e0b01",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Merge incoming items' binaries into a single item.\n// Uses json.fieldName to pick the correct binary key (data1, data2, ...)\n// and overrides the fileName from json.filename if provided.\n\nconst merged = {\n  json: { fileCount: 0 },\n  binary: {},\n};\n\nfor (const item of items) {\n  const key = item.json?.fieldName || `data${item.json?.index || 1}`;\n\n  // If the expected key exists, copy that one\n  if (item.binary?.[key]) {\n    merged.binary[key] = item.binary[key];\n    // Override filename if provided\n    if (item.json?.filename) {\n      merged.binary[key].fileName = item.json.filename;\n    }\n    merged.json.fileCount++;\n    continue;\n  }\n\n  // Fallback: if key isn't found, merge all binaries on the item\n  if (item.binary) {\n    for (const [bKey, bVal] of Object.entries(item.binary)) {\n      merged.binary[bKey] = bVal;\n      if (item.json?.filename && bKey === key) {\n        merged.binary[bKey].fileName = item.json.filename;\n      }\n      merged.json.fileCount++;\n    }\n  }\n}\n\nreturn [merged];\n\n\n// After you've built `merged` with merged.binary = { data1:..., data2:... }\nmerged.json.attachmentKeys = Object.keys(merged.binary || {});\nreturn [merged];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3280,
+        656
+      ],
+      "id": "87b1e08e-1b8a-432a-b253-9c35153b5de4",
+      "name": "Compiler",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the file array from Airtable or wherever\nconst files = $json.fields['File Upload'] || [];\n\n// Define max number of files to loop through\nconst maxFiles = Math.min(files.length, 5);\n\n// Create an array of output items, one per file\nconst output = [];\n\nfor (let i = 0; i < maxFiles; i++) {\n  const file = files[i];\n  if (!file?.url) continue;\n\n  // Fetch file as binary\n  const data = await this.helpers.httpRequest({\n    url: file.url,\n    method: 'GET',\n    encoding: null,  // important: keeps binary data as Buffer\n  });\n\n  // Create one item per file with binary data and name like data1, data2...\n  output.push({\n    json: {\n      index: i + 1,\n      filename: file.filename,\n      fieldName: `data${i + 1}`,\n    },\n    binary: {\n      [`data${i + 1}`]: {\n        data: Buffer.from(data).toString('base64'),\n        mimeType: file.type || 'application/octet-stream',\n        fileName: file.filename || `file${i + 1}`,\n      },\n    },\n  });\n}\n\nreturn output;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -304,
+        -576
+      ],
+      "id": "56de965f-6a11-41a0-ac0c-6ee26607c12c",
+      "name": "data-producer"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => {\n  // 1) Attachments from binaries (for Outlook JSON Params = ON)\n  const bin = item.binary || {};\n  item.json.attachments = Object.keys(bin).map(k => ({\n    binaryPropertyName: k,\n    fileName: bin[k]?.fileName,\n    mimeType: bin[k]?.mimeType,\n  }));\n\n  // 2) Helpers to find fields regardless of location/casing\n  const containers = [item.json?.fields, item.json, item.json?.properties].filter(Boolean);\n\n  const pickCI = (labels) => {\n    // Find first value where any container has a key matching any label (case-insensitive)\n    for (const obj of containers) {\n      const keys = Object.keys(obj || {});\n      for (const label of labels) {\n        const hit = keys.find(k => k.toLowerCase() === String(label).toLowerCase());\n        if (hit) return obj[hit];\n      }\n    }\n    return undefined;\n  };\n\n  return item;\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        704,
+        -480
+      ],
+      "id": "6d62598a-7d40-44e7-ae72-1b2b125608b3",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ONE Code node: read from 'data-producer', merge binaries, count data*, build Outlook attachments,\n// and (optionally) merge JSON from existing 'Airtable' node — no new nodes added.\n\nconst SOURCE_NODE = 'data-producer';\nconst AIRTABLE_NODE = 'Airtable';\n\n// --- 1) Load source items (from named node; fallback to current input) ---\nlet srcItems;\ntry {\n  srcItems = $items(SOURCE_NODE);\n  if (!Array.isArray(srcItems) || srcItems.length === 0) srcItems = items;\n} catch (_) {\n  srcItems = items;\n}\n\n// --- 2) Merge binaries into a single item; prefer json.fieldName or data{index} ---\nconst merged = { json: {}, binary: {} };\n\nfor (const item of srcItems) {\n  const impliedKey = item.json?.fieldName || (item.json?.index ? `data${item.json.index}` : undefined);\n\n  if (impliedKey && item.binary?.[impliedKey]) {\n    merged.binary[impliedKey] = item.binary[impliedKey];\n    if (item.json?.filename) merged.binary[impliedKey].fileName = item.json.filename;\n    continue;\n  }\n\n  if (item.binary) {\n    for (const [bKey, bVal] of Object.entries(item.binary)) {\n      merged.binary[bKey] = bVal; // last one wins if duplicate keys\n      if (item.json?.filename && impliedKey === bKey) {\n        merged.binary[bKey].fileName = item.json.filename;\n      }\n    }\n  }\n}\n\n// --- 3) Count data* binaries (total + unique) and per-item breakdown ---\nconst dataKeyRegex = /^data\\d*$/i;\n\nlet totalDataKeys = 0;\nconst uniqueDataKeys = new Set();\nconst perItem = [];\n\nfor (let i = 0; i < srcItems.length; i++) {\n  const bin = srcItems[i].binary || {};\n  const keys = Object.keys(bin).filter(k => dataKeyRegex.test(k));\n  perItem.push({ itemIndex: i + 1, dataKeys: keys, count: keys.length });\n  totalDataKeys += keys.length;\n  keys.forEach(k => uniqueDataKeys.add(k));\n}\n\n// --- 4) Build Outlook-friendly attachments array (JSON Parameters = ON) ---\nconst allKeys = Object.keys(merged.binary || {});\nmerged.json.attachments = allKeys.map(k => ({\n  binaryPropertyName: k,\n  fileName: merged.binary[k]?.fileName,\n  mimeType: merged.binary[k]?.mimeType,\n}));\n\n// --- 5) (Optional) Merge JSON from existing 'Airtable' node (no new nodes created) ---\ntry {\n  const airtableItems = $items(AIRTABLE_NODE); // will throw if node doesn't exist\n  if (Array.isArray(airtableItems) && airtableItems.length > 0) {\n    const airtableJson = airtableItems[0]?.json ?? {};\n\n    // (a) Shallow-merge ALL top-level Airtable fields into merged.json (last write wins)\n    for (const [k, v] of Object.entries(airtableJson)) {\n      merged.json[k] = v;\n    }\n\n    // (b) Keep a namespaced copy to avoid key collisions / for debugging\n    merged.json.airtable = airtableJson;\n\n    // (c) If there's an Airtable \"Attachments\" array, add a flattened read-friendly view\n    if (Array.isArray(airtableJson.Attachments)) {\n      merged.json.airtableAttachments = airtableJson.Attachments.map(att => ({\n        id: att?.id,\n        url: att?.url,\n        filename: att?.filename,\n        size: att?.size,\n        type: att?.type,\n      }));\n    }\n  }\n} catch (_) {\n  // If 'Airtable' node isn't present, do nothing.\n}\n\n// --- 6) Summary meta (explicit totals) ---\nmerged.json.sourceNode = SOURCE_NODE;\nmerged.json.totalItems = srcItems.length;\nmerged.json.totalItemsFromSource = srcItems.length;\nmerged.json.totalBinaryKeys = allKeys.length;\nmerged.json.totalDataOutputs = totalDataKeys;\nmerged.json.uniqueDataOutputs = uniqueDataKeys.size;\nmerged.json.uniqueDataKeys = Array.from(uniqueDataKeys);\nmerged.json.perItem = perItem;\n\n// --- 7) Return ONE merged item ---\nreturn [merged];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -80,
+        -576
+      ],
+      "id": "ad85e9db-5820-485f-b7b1-cf92c4bc8649",
+      "name": "comp"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "aa25a7b5-ddab-4fe5-9b6e-536f17feebb8",
+              "leftValue": "={{ $('comp').item.json.totalDataOutputs }}",
+              "rightValue": 4,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            },
+            {
+              "id": "4963783e-fa46-4ac4-946d-5e21f19a0283",
+              "leftValue": "={{ $('comp').item.json.totalDataOutputs }}",
+              "rightValue": 2,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        656,
+        -272
+      ],
+      "id": "9e113d80-4c29-4067-95ef-b902f2c086bc",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "aa25a7b5-ddab-4fe5-9b6e-536f17feebb8",
+              "leftValue": "={{ $('comp').item.json.totalDataOutputs }}",
+              "rightValue": 5,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            },
+            {
+              "id": "4963783e-fa46-4ac4-946d-5e21f19a0283",
+              "leftValue": "={{ $('comp').item.json.totalDataOutputs }}",
+              "rightValue": 3,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        928,
+        -80
+      ],
+      "id": "a7dcaece-44f9-49ae-aaa5-67f745abd14d",
+      "name": "If3"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "aa25a7b5-ddab-4fe5-9b6e-536f17feebb8",
+              "leftValue": "={{ $('comp').item.json.totalDataOutputs }}",
+              "rightValue": 6,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            },
+            {
+              "id": "4963783e-fa46-4ac4-946d-5e21f19a0283",
+              "leftValue": "={{ $('comp').item.json.totalDataOutputs }}",
+              "rightValue": 4,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1120,
+        112
+      ],
+      "id": "200c40d3-0fcf-4a66-9792-02b8ff6924a4",
+      "name": "If4"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "app9ltuh0pY06YDym",
+          "mode": "list",
+          "cachedResultName": "Playground 1",
+          "cachedResultUrl": "https://airtable.com/app9ltuh0pY06YDym"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblQr96ww454xJuWp",
+          "mode": "list",
+          "cachedResultName": "Web Form Uploads",
+          "cachedResultUrl": "https://airtable.com/app9ltuh0pY06YDym/tblQr96ww454xJuWp"
+        },
+        "options": {
+          "fields": [
+            "Submitters Email",
+            "Submitters First Name",
+            "Submitters Last Name",
+            "Practice Area",
+            "Markdown Output",
+            "Segmented Output",
+            "Extracted Title (File Upload)",
+            "Attachment Summary (File Upload)",
+            "Outline (File Upload)"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -2768,
+        672
+      ],
+      "id": "d722d52a-34e1-4b0a-8ea7-e8e3297ae724",
+      "name": "Search records1",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "airtableTokenApi",
+        "baseId": {
+          "__rl": true,
+          "value": "app9ltuh0pY06YDym",
+          "mode": "id"
+        },
+        "tableId": {
+          "__rl": true,
+          "value": "tblQr96ww454xJuWp",
+          "mode": "id"
+        },
+        "triggerField": "Created",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.airtableTrigger",
+      "typeVersion": 1,
+      "position": [
+        -752,
+        -576
+      ],
+      "id": "7c6e0032-7193-4993-a8c8-0d5bfea561a6",
+      "name": "Airtable",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => {\n  // 1) Attachments from binaries (for Outlook JSON Params = ON)\n  const bin = item.binary || {};\n  item.json.attachments = Object.keys(bin).map(k => ({\n    binaryPropertyName: k,\n    fileName: bin[k]?.fileName,\n    mimeType: bin[k]?.mimeType,\n  }));\n\n  // 2) Helpers to find fields regardless of location/casing\n  const containers = [item.json?.fields, item.json, item.json?.properties].filter(Boolean);\n\n  const pickCI = (labels) => {\n    // Find first value where any container has a key matching any label (case-insensitive)\n    for (const obj of containers) {\n      const keys = Object.keys(obj || {});\n      for (const label of labels) {\n        const hit = keys.find(k => k.toLowerCase() === String(label).toLowerCase());\n        if (hit) return obj[hit];\n      }\n    }\n    return undefined;\n  };\n\n  return item;\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        944,
+        -304
+      ],
+      "id": "26765479-dd82-4da4-8975-877254a533f3",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "toRecipients": "=andy@legalengine.co.uk, {{ $json.airtable.fields[\"Submitters Email\"] }}",
+        "subject": "=Your attachments {{ $json.airtable.fields[\"Submitters First Name\"] }}",
+        "bodyContent": "=Hey {{ $json.airtable.fields[\"Submitters First Name\"] }}, here are your three attachments.\n\nCheers \n\nLegal Engine",
+        "additionalFields": {
+          "attachments": {
+            "attachments": [
+              {
+                "binaryPropertyName": "=data1"
+              },
+              {
+                "binaryPropertyName": "=data2"
+              },
+              {
+                "binaryPropertyName": "=data3"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        1152,
+        -304
+      ],
+      "id": "000d3bf3-2557-4c2c-b815-a2a6d0f1ebf3",
+      "name": "Send a message with att2",
+      "webhookId": "663fc29c-a347-476d-83f7-350c2e951c7c",
+      "alwaysOutputData": false,
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "Xdyk0xjYi9in64OY",
+          "name": "Microsoft Outlook - Amy @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => {\n  // 1) Attachments from binaries (for Outlook JSON Params = ON)\n  const bin = item.binary || {};\n  item.json.attachments = Object.keys(bin).map(k => ({\n    binaryPropertyName: k,\n    fileName: bin[k]?.fileName,\n    mimeType: bin[k]?.mimeType,\n  }));\n\n  // 2) Helpers to find fields regardless of location/casing\n  const containers = [item.json?.fields, item.json, item.json?.properties].filter(Boolean);\n\n  const pickCI = (labels) => {\n    // Find first value where any container has a key matching any label (case-insensitive)\n    for (const obj of containers) {\n      const keys = Object.keys(obj || {});\n      for (const label of labels) {\n        const hit = keys.find(k => k.toLowerCase() === String(label).toLowerCase());\n        if (hit) return obj[hit];\n      }\n    }\n    return undefined;\n  };\n\n  return item;\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1280,
+        -128
+      ],
+      "id": "b2c64100-512a-422a-9556-06890086e33c",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "toRecipients": "=andy@legalengine.co.uk, {{ $json.airtable.fields[\"Submitters Email\"] }}",
+        "subject": "=Your attachments {{ $json.airtable.fields[\"Submitters First Name\"] }}",
+        "bodyContent": "=Hey {{ $json.airtable.fields[\"Submitters First Name\"] }}, here are your four attachments.\n\nCheers \n\nLegal Engine",
+        "additionalFields": {
+          "attachments": {
+            "attachments": [
+              {
+                "binaryPropertyName": "=data1"
+              },
+              {
+                "binaryPropertyName": "=data2"
+              },
+              {
+                "binaryPropertyName": "=data3"
+              },
+              {
+                "binaryPropertyName": "data4"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        1488,
+        -128
+      ],
+      "id": "7f8de578-f6ce-4ab5-83a6-ce48167841cc",
+      "name": "Send a message with att3",
+      "webhookId": "663fc29c-a347-476d-83f7-350c2e951c7c",
+      "alwaysOutputData": false,
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "Xdyk0xjYi9in64OY",
+          "name": "Microsoft Outlook - Amy @ Legal Engine"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Search records",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search records": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "data-producer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message with att": {
+      "main": [
+        []
+      ]
+    },
+    "count atts": {
+      "main": [
+        []
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send a message with att1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compiler": {
+      "main": [
+        [
+          {
+            "node": "count atts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "data-producer": {
+      "main": [
+        [
+          {
+            "node": "comp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Send a message with att",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "comp": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If3": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If4": {
+      "main": [
+        []
+      ]
+    },
+    "Search records1": {
+      "main": [
+        []
+      ]
+    },
+    "Airtable": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Send a message with att2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Send a message with att3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": {
+    "node:Airtable Trigger": {
+      "lastTimeChecked": "2025-10-16T23:52:44Z"
+    },
+    "node:Airtable": {
+      "lastTimeChecked": "2025-11-09T10:29:35Z"
+    }
+  },
+  "pinData": {
+    "Airtable": [
+      {
+        "json": {
+          "id": "recmMnhu9eBwR7Mhy",
+          "createdTime": "2025-10-16T23:34:53.000Z",
+          "fields": {
+            "Submission Name": "Two",
+            "File Upload": [
+              {
+                "id": "attXWlyzJw9mdXsMG",
+                "url": "https://v5.airtableusercontent.com/v3/e/46/46/1760666400000/PrlevwULTq0t3PchMVkB_A/P8gpJnuNA8U92muMLTSbYbnPRsvMx7ont0ctegL0xYw5RCws3vZPjP_0QlN9KvG7CH2LI_73ZsFV6Vw2Pm78UqAgLAqrk9NT00sCl6oKtG0NVNzdCGKM78LsXTNs103aL_vJVQkbrrJysBpW6xwpW_2qe7gFKrOFBN6OuPsVg_G7DMI62mu3AWU6kk09AarWNet99a6kC197qb0R7Uc625Igoilt2c-uEW_WeNxquLSeTI2gYjUUEUa-fJYxcDs_/MwWS223HVJc07AAFZYrsu9gqAoSgGQ-37I4ImfBWXNU",
+                "filename": "Chambers Europe 2024 - Simmons Simmons NL - Capital Markets Debt, Equity, Securitisation(100124672.1).doc",
+                "size": 443392,
+                "type": "application/msword",
+                "thumbnails": {
+                  "small": {
+                    "url": "https://v5.airtableusercontent.com/v3/e/46/46/1760666400000/WsS5FLTzbuoJSvNgPzvayg/GSC7p0AEWOq6u7qWKT_dhrPsM0oYDrwgsmNuFyVgDpMPDqpArfQXfC5n-MUuahp2at2SojdHdulIzulrRD7XFKNoMbS_6mE88f4rxGn20BQIKlxWu8GT9-lV6d3akaWdvneY7sAhWGq3E-8gLFHAFw/gHmHD4rBI_eLwvu7QCKR6S8KKPpS8Mj5SH_jtUMgQko",
+                    "width": 25,
+                    "height": 35
+                  },
+                  "large": {
+                    "url": "https://v5.airtableusercontent.com/v3/e/46/46/1760666400000/kpS_SY_x6PuN2B6lQCex0g/TpjswzSgU9rtticXjRO0tzwuP_ADt8RZbD9I5LjLfFW3TA5Yn7ltImkrHB-FK1Kcjput65pkb_WDQnNNawuFrppBKRhboAKTTh7vfkKzpEJNwOHEHJpwqDhERcsdWT-wOVkbamI2Zju7lC4yPhhBJg/PXkURgBnOPx4LHdwaqIv_C385ptF8eeIyPy35vFeyLk",
+                    "width": 512,
+                    "height": 724
+                  }
+                }
+              },
+              {
+                "id": "att8NVkqjq5qZacBA",
+                "url": "https://v5.airtableusercontent.com/v3/e/46/46/1760666400000/U_teFce1k0rqCD_TSG8UVQ/zuMSaU4etHmexhqE05EK-pmjqsDhHm7KFpg-dxt4uI1H5ankbUn9eb6GodwFa4BL3ByrXafIBE4vjESJtau9mJGJ8BBSowfjZRKe6B2G7hPpiiTf4f9lyd1O3_7buVs_nN0GctKHL9OphWPt_24sscGyZ7Bw3_8pORXv1B90LcQmKXjoXspBEhZqj3nb6xHaqaB8w50p7yEPGIDej3rFaNh-Uo-Ho9EnWe0RJ2jeQRY/MeLDrQ_WtPsV4uuXjKZtnoxJrobPckKY9ZXJko17DTc",
+                "filename": "Chambers Europe 2024 - Simmons Simmons NL - Banking & Finance(100124669.1).docx",
+                "size": 85232,
+                "type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                "thumbnails": {
+                  "small": {
+                    "url": "https://v5.airtableusercontent.com/v3/e/46/46/1760666400000/Zf5w9zQGXc5MVZ0giVdX7g/d4hGTBL0WZ-M1_QTWdd71iPR08q4MSyd7vfUNX9iHUqglf0HSQMTk4eeMahrGFo4ymhf2_3PExtZdR8DFQW0iDEMDJKSPjCLfPiIz7hphrLWM7h5kZ0d3z9_d0Ko1vIhtlIxwojWiW-WmrABGVu0pg/mHA8cUbMVKz7aQHEDwtFK1FRcIcoLmp5ly_BjAB3rtw",
+                    "width": 25,
+                    "height": 35
+                  },
+                  "large": {
+                    "url": "https://v5.airtableusercontent.com/v3/e/46/46/1760666400000/UiBsZlsfu_g5cttWI86oGw/z7PNhQs3vzW20935Zy5hfLANjJ4FpPV-WUKRmvonQbJykXNAElM00KYvwLvM7UpFapF8SY-B6tOOloGh4ax3-9EBj7hV0BDLB8xYS5TVDzWFhSR3KU0QDQl1YCd2aNzQMFwWlkh1APoB0w8uS2DPBA/VyCaY5KagU6_IsVn338ABWaRWGyg52fDlceCHKGP-FQ",
+                    "width": 512,
+                    "height": 724
+                  }
+                }
+              }
+            ],
+            "Markdown Output": {
+              "state": "error",
+              "errorType": "emptyDependency",
+              "value": null,
+              "isStale": false
+            },
+            "Segmented Output": {
+              "state": "error",
+              "errorType": "emptyDependency",
+              "value": null,
+              "isStale": false
+            },
+            "Submitters LAst Name": "Batty",
+            "Practice Area": "2",
+            "Created": "2025-10-16T23:34:53.000Z",
+            "Submitters Email": "b18ats@gmail.com",
+            "Attachment Summary (File Upload)": {
+              "state": "empty",
+              "value": null,
+              "isStale": true
+            },
+            "Extracted Title (File Upload)": {
+              "state": "empty",
+              "value": null,
+              "isStale": true
+            },
+            "Outline (File Upload)": {
+              "state": "empty",
+              "value": null,
+              "isStale": true
+            }
+          }
+        }
+      }
+    ]
+  },
+  "triggerCount": 1,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

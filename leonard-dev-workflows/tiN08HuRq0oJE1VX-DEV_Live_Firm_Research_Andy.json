@@ -1,0 +1,154 @@
+{
+  "name": "DEV - Live Firm Research - Andy",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "search_firm_website",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -80,
+        -48
+      ],
+      "id": "53a50013-b3b5-4628-b990-a8152ce37998",
+      "name": "Webhook",
+      "webhookId": "667ca354-cc10-40fe-896b-08153fad7857"
+    },
+    {
+      "parameters": {
+        "model": "sonar-pro",
+        "messages": {
+          "message": [
+            {
+              "content": "=You are a Perplexity model inside an n8n workflow. Your job is to gather high-quality, conversation-ready intelligence about a law firm and its practice group so a voice agent can sound informed, impressive and personalised.\n\nThe incoming query from the voice agent is:\n\n{{ $json.body.searchQuery }}\n\nThis will usually contain:\n- The lawyer or BD professional’s name.\n- Their law firm.\n- Their practice group or team.\n- Occasional hints about sectors, clients, deals or notable work.\n\nYour task:\n1. Infer the exact law firm name and relevant practice group.\n2. Conduct focused, high-quality web research.\n3. Prioritise the following sources:\n   - The firm’s official website (practice pages, news, insights, deals, awards).\n   - Reliable news coverage, legal trade press and industry sources.\n   - Recent information from the past 12–24 months.\n4. Extract insights that are genuinely *conversation-useful* for a lawyer or BD person.\n\nOutput format:\nReturn **only valid JSON** with the following structure:\n\n{\n  \"firmName\": \"Exact firm name\",\n  \"practiceGroup\": \"Inferred practice group\",\n  \"websiteUrl\": \"Official firm website URL\",\n\n  \"firmSummary\": \"A concise explanation (2–3 sentences) of the firm’s positioning, markets, distinguishing features, size or strategic focus.\",\n\n  \"practiceSummary\": \"A focused description (2–3 sentences) of what this practice is known for at the firm. Include work types, industries, strengths and notable capabilities.\",\n\n  \"signatureWork\": [\n    {\n      \"title\": \"Short description of a notable deal, case or matter\",\n      \"parties\": \"Key clients or counterparties involved\",\n      \"sector\": \"Relevant sector or industry\",\n      \"approximateDate\": \"Month Year or Year\",\n      \"whyItMatters\": \"Why this is impressive or distinctive for conversation\"\n    }\n  ],\n\n  \"recentThemes\": [\n    \"Concise themes or trends affecting the practice. e.g., surge in cross-border M&A, disputes relating to crypto assets, restructuring activity, ESG-driven mandates, etc.\"\n  ],\n\n  \"industryFocus\": [\n    \"Industries the firm or practice is active in. e.g., financial services, tech, life sciences, private capital, infrastructure, energy.\"\n  ],\n\n  \"clientTypes\": [\n    \"Short descriptions of typical clients. e.g., PE sponsors, banks, FTSE corporates, scale-ups, sovereign wealth funds.\"\n  ],\n\n  \"directoryHighlights\": [\n    \"Short snippets of Legal 500 / Chambers commentary or rankings if clearly identifiable.\"\n  ],\n\n  \"notablePeople\": [\n    {\n      \"name\": \"Name of a key partner or leader\",\n      \"role\": \"Role or title\",\n      \"whyRelevant\": \"Why this person is noteworthy in conversation, e.g. lead partner on a major mandate\"\n    }\n  ],\n\n  \"topicsToAskAbout\": [\n    \"Short conversational hooks based on the research. e.g. 'Your team recently advised X on Y—were you involved?'\"\n  ],\n\n  \"sourceLinks\": [\n    \"List of public URLs used\"\n  ]\n}\n\nRules:\n- Always populate the JSON as richly as the research supports.\n- If specific information is unavailable, leave arrays empty or omit irrelevant details.\n- Never mention that anything was missing or unavailable.\n- Never apologise or describe limitations.\n- Ensure all descriptions are concise and suitable for a spoken conversation.\n- Do not include text outside of the JSON.\n"
+            }
+          ]
+        },
+        "simplify": true,
+        "options": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.perplexity",
+      "typeVersion": 1,
+      "position": [
+        96,
+        -48
+      ],
+      "id": "ddfb807b-5a0e-46c7-a474-f640b3d8f9ce",
+      "name": "Message a model",
+      "credentials": {
+        "perplexityApi": {
+          "id": "pOqM7kFIqiYB3qGU",
+          "name": "Perplexity account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message }}",
+        "options": {
+          "systemMessage": "=# Overview\nYou are an expert research agent. You will be fed information, and you need to make a concise summary. It should only be about three sentences. "
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        240,
+        304
+      ],
+      "id": "4603ecdc-111c-43f1-a867-9515dbc0a1fd",
+      "name": "AI Agent1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        560,
+        -48
+      ],
+      "id": "fce532df-e3c8-46aa-8653-6afdb93bdefe",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        240,
+        512
+      ],
+      "id": "2e08a2b5-816b-4bef-afbf-91aba29fd678",
+      "name": "Google Vertex Chat Model",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      },
+      "disabled": true
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        []
+      ]
+    },
+    "Google Vertex Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 1,
+  "meta": null
+}

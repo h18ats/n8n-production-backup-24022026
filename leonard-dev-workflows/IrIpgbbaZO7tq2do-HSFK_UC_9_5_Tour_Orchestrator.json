@@ -1,0 +1,397 @@
+{
+  "name": "HSFK UC 9.5 - Tour Orchestrator",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "hsfk-uc-9.5",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "5ae8d31d-bb8e-412b-9fb9-beab6a0412ed",
+      "name": "ElevenLabs Post-Call",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "d3a3ea29-b7f9-428c-81c5-e0a3944f9698"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e971f477-d6c7-492c-ba51-2f09db8656b7",
+              "name": "cities",
+              "value": "={{ $json.body.extracted_data.cities }}",
+              "type": "string"
+            },
+            {
+              "id": "7255ca66-d312-4b73-8a59-d5b4836539e5",
+              "name": "dates",
+              "value": "={{ $json.body.extracted_data.dates }}",
+              "type": "string"
+            },
+            {
+              "id": "c2032a73-d291-4c9a-96b7-22193a028a7d",
+              "name": "fixedMeetings",
+              "value": "={{ $json.body.extracted_data.fixedMeetings }}",
+              "type": "string"
+            },
+            {
+              "id": "933d71bc-f65f-42c7-ab0b-6c916c1ae194",
+              "name": "officeContacts",
+              "value": "={{ $json.body.extracted_data.officeContacts }}",
+              "type": "string"
+            },
+            {
+              "id": "d2602cf6-2d6e-44ae-b30d-f6b8fbb7ea2b",
+              "name": "roomRequirements",
+              "value": "={{ $json.body.extracted_data.roomRequirements }}",
+              "type": "string"
+            },
+            {
+              "id": "7c45d470-7bd0-4ed9-b75c-ab1e5bdfea5a",
+              "name": "flightConstraints",
+              "value": "={{ $json.body.extracted_data.flightConstraints }}",
+              "type": "string"
+            },
+            {
+              "id": "c449ee7e-5cc3-4fe0-bd7e-1dafd28fba98",
+              "name": "openGaps",
+              "value": "={{ $json.body.extracted_data.openGaps }}",
+              "type": "string"
+            },
+            {
+              "id": "7f317953-8d74-473d-a258-b3c49e5f1264",
+              "name": "parallelTrips",
+              "value": "={{ $json.body.extracted_data.parallelTrips }}",
+              "type": "string"
+            },
+            {
+              "id": "2f10ea70-de9b-4fd3-b1ff-beedc77cb336",
+              "name": "conversation_id",
+              "value": "={{ $json.body.conversation_id }}",
+              "type": "string"
+            },
+            {
+              "id": "f52a3179-8059-4bd4-b2ca-b53ef013079c",
+              "name": "agent_id",
+              "value": "={{ $json.body.agent_id }}",
+              "type": "string"
+            },
+            {
+              "id": "0cabae6e-9141-497a-80aa-f45e407748b9",
+              "name": "duration_seconds",
+              "value": "={{ $json.body.duration_seconds }}",
+              "type": "string"
+            },
+            {
+              "id": "9b282cbb-d772-4e98-a801-3b4e782a8ee7",
+              "name": "caller_name",
+              "value": "={{ $json.body.metadata?.first_name || 'Unknown' }}",
+              "type": "string"
+            },
+            {
+              "id": "541f344b-6a6b-40f3-81dc-f26bacc9cf07",
+              "name": "caller_email",
+              "value": "={{ $json.body.metadata?.email || '' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      },
+      "id": "f411b9ed-76a4-4fba-94cd-0a84922ab668",
+      "name": "Extract Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        240,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "combinator": "and"
+          },
+          "conditions": [
+            {
+              "id": "0bcfaff0-b564-41ac-ab8f-39695425c7e0",
+              "leftValue": "={{ $json.flightConstraints }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            },
+            {
+              "id": "1b172b06-88be-4c77-b995-2ba362c5804f",
+              "leftValue": "={{ $json.parallelTrips }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "47270bcf-9517-49ee-99b0-433afcd7a6a2",
+      "name": "Data Complete?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        480,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "199badac-2b38-435a-91a0-a1eb7cfb3b3c",
+              "name": "summary",
+              "value": "={{ \"## HSFK UC 9.5 - Tour Orchestrator\\n\\n**Caller:** \" + ($json.caller_name || \"Unknown\") + \" (\" + ($json.caller_email || \"no email\") + \")\\n**Duration:** \" + ($json.duration_seconds || \"?\") + \"s\\n**Conversation ID:** \" + ($json.conversation_id || \"?\") + \"\\n\\n### Captured Data\\n\\n- **cities**: \" + ($json.cities || \"N/A\") + \"\\n- **dates**: \" + ($json.dates || \"N/A\") + \"\\n- **fixedMeetings**: \" + ($json.fixedMeetings || \"N/A\") + \"\\n- **officeContacts**: \" + ($json.officeContacts || \"N/A\") + \"\\n- **roomRequirements**: \" + ($json.roomRequirements || \"N/A\") + \"\\n- **flightConstraints**: \" + ($json.flightConstraints || \"N/A\") + \"\\n- **openGaps**: \" + ($json.openGaps || \"N/A\") + \"\\n- **parallelTrips**: \" + ($json.parallelTrips || \"N/A\") + \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "7b6e8d10-25b7-4f1a-92fe-1ae858b218f2",
+              "name": "ucId",
+              "value": "9.5",
+              "type": "string"
+            },
+            {
+              "id": "b31607c5-109a-40fd-9afb-4b37b196f5a6",
+              "name": "agentName",
+              "value": "Tour Orchestrator",
+              "type": "string"
+            },
+            {
+              "id": "a534368d-d732-437b-9f6a-9b7a467d7e7b",
+              "name": "timestamp",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "cb540daf-e35a-4c4d-b714-16ae575c9b99",
+      "name": "Format Summary",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        720,
+        -60
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "app0QZAuhY8Zx4I54",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl8hV2nYEoRS8Gif",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "UC ID": "={{ $json.ucId }}",
+            "Agent Name": "={{ $json.agentName }}",
+            "Caller": "={{ $json.caller_name }}",
+            "Email": "={{ $json.caller_email }}",
+            "Summary": "={{ $json.summary }}",
+            "Conversation ID": "={{ $json.conversation_id }}",
+            "Duration": "={{ parseInt($json.duration_seconds) || 0 }}",
+            "Timestamp": "={{ $json.timestamp }}",
+            "Data Complete": true,
+            "Raw Extracted Data": "={{ JSON.stringify($json) }}"
+          },
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "79758ea6-8c13-4dc5-b681-fbde8a293227",
+      "name": "Log to Airtable",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        960,
+        -60
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "57nd5p5f6kuW4Xs0",
+          "name": "HSFK Airtable"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://slack.com/api/chat.postMessage",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ channel: \"C098F8Z4P1U\", text: \"New voice conversation for UC 9.5 (Tour Orchestrator):\\nCaller: \" + ($(\"Format Summary\").item.json.caller_name || \"Unknown\") + \" (\" + ($(\"Format Summary\").item.json.caller_email || \"no email\") + \")\\nDuration: \" + ($(\"Format Summary\").item.json.duration_seconds || \"?\") + \"s\\nConversation: \" + ($(\"Format Summary\").item.json.conversation_id || \"?\") }) }}",
+        "options": {}
+      },
+      "id": "319387d2-76ea-4b26-9e6b-99ed431998ff",
+      "name": "Notify Slack",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1200,
+        -60
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "rYd0mT6IhOLBmosk",
+          "name": "HSFK Slack Bot (Header Auth)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ status: \"ok\", message: \"Data captured and logged\" }) }}",
+        "options": {}
+      },
+      "id": "5f3c5f30-1148-4d21-8958-054964d44371",
+      "name": "Respond OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1440,
+        -60
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ status: \"incomplete\", message: \"Some required fields missing, logged for review\" }) }}",
+        "options": {
+          "responseCode": 202
+        }
+      },
+      "id": "62226e1c-78e3-43e9-8516-70a83ca1a1f6",
+      "name": "Respond Incomplete",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        720,
+        120
+      ]
+    }
+  ],
+  "connections": {
+    "ElevenLabs Post-Call": {
+      "main": [
+        [
+          {
+            "node": "Extract Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Data": {
+      "main": [
+        [
+          {
+            "node": "Data Complete?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Complete?": {
+      "main": [
+        [
+          {
+            "node": "Format Summary",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Incomplete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Summary": {
+      "main": [
+        [
+          {
+            "node": "Log to Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log to Airtable": {
+      "main": [
+        [
+          {
+            "node": "Notify Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Slack": {
+      "main": [
+        [
+          {
+            "node": "Respond OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 1,
+  "meta": null
+}

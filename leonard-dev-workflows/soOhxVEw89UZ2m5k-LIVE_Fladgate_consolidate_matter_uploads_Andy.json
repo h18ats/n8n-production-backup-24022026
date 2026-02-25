@@ -1,0 +1,4540 @@
+{
+  "name": "LIVE - Fladgate consolidate matter uploads - Andy",
+  "nodes": [
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "156090cc-9c17-4309-89eb-1171f9745d19",
+              "leftValue": "={{ $('Search existing matters').item.json.Attachments[0].id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -2880,
+        176
+      ],
+      "id": "1e749876-9182-4fee-8da7-14f6d4167de8",
+      "name": "If",
+      "alwaysOutputData": false,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appUvJyzSky12m4HA",
+          "mode": "list",
+          "cachedResultName": "Fladgate - Leonard Live Data",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl3ADT2yOV8EJCnZ",
+          "mode": "list",
+          "cachedResultName": "FG - Conversation History by lawyer",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA/tbl3ADT2yOV8EJCnZ"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Email": "={{ $('Search for new matter').item.json.Email }}",
+            "Transcript ID": "={{ $('Search for new matter').item.json.id }}",
+            "First Name": "={{ $('Search for new matter').item.json[\"First Name\"] }}",
+            "Last Name": "={{ $('Search for new matter').item.json[\"Last Name\"] }}",
+            "Number of Calls": 0,
+            "Call Length": "={{ $('Search for new matter').item.json[\"Call Length (s)\"] }}",
+            "Conversation History": "={{ $json.output }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Transcript ID",
+              "displayName": "Transcript ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Created",
+              "displayName": "Created",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Last Modified",
+              "displayName": "Last Modified",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Conversation History",
+              "displayName": "Conversation History",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Call Length",
+              "displayName": "Call Length",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Number of Calls",
+              "displayName": "Number of Calls",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -2592,
+        336
+      ],
+      "id": "32aeed84-c146-4b45-abda-bcd2006a705a",
+      "name": "Create new conv summary",
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        -2592,
+        160
+      ],
+      "id": "4d28e9b5-f1e1-41ad-8068-8f71504de9f9",
+      "name": "Google Vertex Chat Model3",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        -1792,
+        272
+      ],
+      "id": "c1ba3c45-1518-4cf1-9b5e-ead4ea3b9dfb",
+      "name": "Google Vertex Chat Model",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=New Matter Summary:{{ $('Set pre IF').item.json[\"New Matter Summary\"] }}\nNew Matter Extract: {{ $('Set pre IF').item.json[\"New Matter Extract\"] }}\nExisting Matter Summary: {{ $('Set pre IF').item.json[\"Existing Matter Summary\"] }}\nExisting Matter Extract: {{ $('Set pre IF').item.json[\"Existing Matter Extract\"] }}\nExisting Matter Lead Lawyer: {{ $('Set pre IF').item.json[\"Existing Matter Lead Lawyer\"] }}\nExisting Matter Client: {{ $('Set pre IF').item.json[\"Existing Matter Client\"] }}\nNew Matter Lead Lawyer: {{ $('Set pre IF').item.json[\"New Matter Lead Lawyer\"] }}\nNew Matter Client: {{ $('Set pre IF').item.json[\"New Matter Client\"] }}\nNew Matter Short Summary: {{ $('Set pre IF').item.json[\"New Matter Short Summary\"] }}\nExisting Matter Short Summary: {{ $('Set pre IF').item.json[\"Existing Matter Short Summary\"] }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You are an expert in extracting client names from a series of converations ({{ $('Matter history agent').item.json.output }}) ready to act as a knowledge base for a voice AI agent. \n\nThe aim is to ensure the knowledge base has a comprehensive list of all clients, firms and companies this lawyer has worked for or represented.\n\nThe output should be a very concise list of clients separated by commas in a single short text stream, ranked in a weighted order of relevance with the most relevant first."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -1856,
+        48
+      ],
+      "id": "8ff89b28-f625-465b-a19a-4939c7026320",
+      "name": "Client Extraction"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "value": "appUvJyzSky12m4HA",
+          "mode": "list",
+          "cachedResultName": "Fladgate - Leonard Live Data",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblFoqBZuazSwqy3m",
+          "mode": "list",
+          "cachedResultName": "FG - Conslodated Matter History by lawyer",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA/tblFoqBZuazSwqy3m"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Email": "={{ $('Search for new matter').item.json.Email }}",
+            "Clients": "={{ $json.output }}"
+          },
+          "matchingColumns": [
+            "Email"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Created",
+              "displayName": "Created",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Last Modified",
+              "displayName": "Last Modified",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Matter History",
+              "displayName": "Matter History",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Clients",
+              "displayName": "Clients",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Matters",
+              "displayName": "Matters",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -1504,
+        48
+      ],
+      "id": "3d43e650-6c5a-4244-a96a-8220634f38aa",
+      "name": "Create new conv summary2",
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "value": "appUvJyzSky12m4HA",
+          "mode": "list",
+          "cachedResultName": "Fladgate - Leonard Live Data",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblFoqBZuazSwqy3m",
+          "mode": "list",
+          "cachedResultName": "FG - Conslodated Matter History by lawyer",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA/tblFoqBZuazSwqy3m"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Email": "={{ $('Search for new matter').item.json.Email }}",
+            "Matters": "={{ $json.output }}"
+          },
+          "matchingColumns": [
+            "Email"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Created",
+              "displayName": "Created",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Last Modified",
+              "displayName": "Last Modified",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Matter History",
+              "displayName": "Matter History",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Clients",
+              "displayName": "Clients",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Matters",
+              "displayName": "Matters",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -704,
+        48
+      ],
+      "id": "edf4d594-8f35-4668-a746-b2cb3225cd14",
+      "name": "Create new conv summary3",
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "May use an output parser",
+        "height": 400,
+        "width": 336
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1920,
+        16
+      ],
+      "typeVersion": 1,
+      "id": "843da521-06c6-4765-b90c-a88f7ac2403b",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "value": "appUvJyzSky12m4HA",
+          "mode": "list",
+          "cachedResultName": "Fladgate - Leonard Live Data",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblFoqBZuazSwqy3m",
+          "mode": "list",
+          "cachedResultName": "FG - Conslodated Matter History by lawyer",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA/tblFoqBZuazSwqy3m"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Email": "={{ $('Set pre IF').item.json.Email }}",
+            "Last Name": "={{ $('Search for new matter').item.json[\"Last Name\"] }}",
+            "First Name": "={{ $('Search for new matter').item.json[\"First Name\"] }}",
+            "Matter History": "={{ $json.output }}"
+          },
+          "matchingColumns": [
+            "Email"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Created",
+              "displayName": "Created",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Last Modified",
+              "displayName": "Last Modified",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Matter History",
+              "displayName": "Matter History",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Clients",
+              "displayName": "Clients",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Matters",
+              "displayName": "Matters",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -2304,
+        48
+      ],
+      "id": "a63bc94c-b989-4af4-89ec-c2ef976730fc",
+      "name": "Create new summary for new conv",
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "airtableTokenApi",
+        "baseId": {
+          "__rl": true,
+          "value": "https://airtable.com/appUvJyzSky12m4HA/tblje0fc5drcChsFR/viwSNFkNswHK2MyyR?blocks=hide",
+          "mode": "url"
+        },
+        "tableId": {
+          "__rl": true,
+          "value": "https://airtable.com/appUvJyzSky12m4HA/tblje0fc5drcChsFR/viwSNFkNswHK2MyyR?blocks=hide",
+          "mode": "url"
+        },
+        "triggerField": "Created time",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.airtableTrigger",
+      "typeVersion": 1,
+      "position": [
+        -4448,
+        288
+      ],
+      "id": "58f31362-c0a4-4bba-8fc4-e6c243c8c361",
+      "name": "On New FG Matter Upload",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "base": {
+          "__rl": true,
+          "value": "https://airtable.com/appUvJyzSky12m4HA/tbl9NJsjg5hJRqpPx/viwImoxUDoxhhVvIx?blocks=hide",
+          "mode": "url"
+        },
+        "table": {
+          "__rl": true,
+          "value": "https://airtable.com/appUvJyzSky12m4HA/tbl9NJsjg5hJRqpPx/viwImoxUDoxhhVvIx?blocks=hide",
+          "mode": "url"
+        },
+        "id": "={{ $('On New FG Matter Upload').item.json.id }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -4000,
+        288
+      ],
+      "id": "7c53dc40-0116-4560-95d1-de8c976b9f88",
+      "name": "Get new matter",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appUvJyzSky12m4HA",
+          "mode": "list",
+          "cachedResultName": "Fladgate - Leonard Live Data",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblje0fc5drcChsFR",
+          "mode": "list",
+          "cachedResultName": "FG_Uploaded_matter_log",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA/tblje0fc5drcChsFR"
+        },
+        "filterByFormula": "={Email}='{{ $json.Email }}'",
+        "returnAll": false,
+        "limit": 1,
+        "options": {
+          "fields": [
+            "Email",
+            "Full Name",
+            "First Name",
+            "Date Last Updated",
+            "Last Name"
+          ]
+        },
+        "sort": {
+          "property": [
+            {
+              "field": "Date Last Updated"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -3552,
+        176
+      ],
+      "id": "b9479175-7d6a-4bcd-9235-3cf31826afc5",
+      "name": "Search for new matter",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appUvJyzSky12m4HA",
+          "mode": "list",
+          "cachedResultName": "Fladgate - Leonard Live Data",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl3ADT2yOV8EJCnZ",
+          "mode": "list",
+          "cachedResultName": "FG - Conversation History by lawyer",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA/tbl3ADT2yOV8EJCnZ"
+        },
+        "filterByFormula": "={Email}='{{ $json.Email }}'",
+        "returnAll": false,
+        "limit": 1,
+        "options": {},
+        "sort": {
+          "property": [
+            {
+              "field": "Email"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -3328,
+        176
+      ],
+      "id": "e60eb571-cfc8-493a-9231-14033d0f184c",
+      "name": "Search existing matters",
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=New Matter Summary:{{ $('Set pre IF').item.json[\"New Matter Summary\"] }}\nNew Matter Extract: {{ $('Set pre IF').item.json[\"New Matter Extract\"] }}\nExisting Matter Summary: {{ $('Set pre IF').item.json[\"Existing Matter Summary\"] }}\nExisting Matter Extract: {{ $('Set pre IF').item.json[\"Existing Matter Extract\"] }}\nExisting Matter Lead Lawyer: {{ $('Set pre IF').item.json[\"Existing Matter Lead Lawyer\"] }}\nExisting Matter Client: {{ $('Set pre IF').item.json[\"Existing Matter Client\"] }}\nNew Matter Lead Lawyer: {{ $('Set pre IF').item.json[\"New Matter Lead Lawyer\"] }}\nNew Matter Client: {{ $('Set pre IF').item.json[\"New Matter Client\"] }}\nNew Matter Short Summary: {{ $('Set pre IF').item.json[\"New Matter Short Summary\"] }}\nExisting Matter Short Summary: {{ $('Set pre IF').item.json[\"Existing Matter Short Summary\"] }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You are an expert in taking a series of summaries and facts about a legal metter and consolidating them into a single output which ia consolidated version ready to act as a knowledge base for a voice AI agent. \n\nYou should make sure to use as much detail as possible from each conversation. You should keep all structure and output in a way that ensures matters are not mixed or confused if later used by an LLM.\n\nMake sure that the new and existing matters are kept structually separate to ensure the facts are not confused between matters. \n\nKeep the total output to a digestible size for an LLM to avoid excess latency. The content will be machine only readable so make it the most effective and accurate source of information charecter for character. "
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -2656,
+        -64
+      ],
+      "id": "8ec1c3f8-08fe-4c82-9a5b-a012d14e76d8",
+      "name": "Matter history agent"
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        -992,
+        272
+      ],
+      "id": "f1103cc0-28a0-4877-89ae-b52213caddca",
+      "name": "Google Vertex Chat Model2",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=New Matter Summary:{{ $('Set pre IF').item.json[\"New Matter Summary\"] }}\nNew Matter Extract: {{ $('Set pre IF').item.json[\"New Matter Extract\"] }}\nExisting Matter Summary: {{ $('Set pre IF').item.json[\"Existing Matter Summary\"] }}\nExisting Matter Extract: {{ $('Set pre IF').item.json[\"Existing Matter Extract\"] }}\nExisting Matter Lead Lawyer: {{ $('Set pre IF').item.json[\"Existing Matter Lead Lawyer\"] }}\nExisting Matter Client: {{ $('Set pre IF').item.json[\"Existing Matter Client\"] }}\nNew Matter Lead Lawyer: {{ $('Set pre IF').item.json[\"New Matter Lead Lawyer\"] }}\nNew Matter Client: {{ $('Set pre IF').item.json[\"New Matter Client\"] }}\nNew Matter Short Summary: {{ $('Set pre IF').item.json[\"New Matter Short Summary\"] }}\nExisting Matter Short Summary: {{ $('Set pre IF').item.json[\"Existing Matter Short Summary\"] }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You are an expert in extracting short and concise matter summaries from a lawyer's converation history ({{ $('Matter history agent').item.json.output }}) ready to act as a knowledge base for a voice AI agent. \n\nThe aim is to ensure the knowledge base has a comprehensive list of all matters this lawyer has worked on, with a maximum 50 words per matter. Each matter summary should include the name of the client and a brief decription of the matter.\n\nThe output should be a very concise list of matters separated by commas in a single short text stream, ranked in a weighted order of relevance with the most relevant first."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -1056,
+        48
+      ],
+      "id": "00df81e0-6f13-4716-9530-58f1fe27bfed",
+      "name": "Matter Extraction"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "value": "appUvJyzSky12m4HA",
+          "mode": "list",
+          "cachedResultName": "Fladgate - Leonard Live Data",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl3ADT2yOV8EJCnZ",
+          "mode": "list",
+          "cachedResultName": "FG - Conversation History by lawyer",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA/tbl3ADT2yOV8EJCnZ"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Email": "={{ $json.fields.Email }}",
+            "Previous Submissions": "={{ $json.fields[\"Matter History\"] }}"
+          },
+          "matchingColumns": [
+            "Email"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Transcript ID",
+              "displayName": "Transcript ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Created",
+              "displayName": "Created",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Last Modified",
+              "displayName": "Last Modified",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Call Length",
+              "displayName": "Call Length",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Number of Calls",
+              "displayName": "Number of Calls",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Number of Matters Uploaded",
+              "displayName": "Number of Matters Uploaded",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Conversation History",
+              "displayName": "Conversation History",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Clients",
+              "displayName": "Clients",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Matters",
+              "displayName": "Matters",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Matters from prior conversations",
+              "displayName": "Matters from prior conversations",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Prior Conversation History",
+              "displayName": "Prior Conversation History",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Clients from prior conversations",
+              "displayName": "Clients from prior conversations",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Previous Matters",
+              "displayName": "Previous Matters",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Previous Clients",
+              "displayName": "Previous Clients",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Previous Submissions",
+              "displayName": "Previous Submissions",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -2080,
+        48
+      ],
+      "id": "46f7d508-9dbb-4d45-b1c7-e0161a22abb0",
+      "name": "Upload Matter History",
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "value": "appUvJyzSky12m4HA",
+          "mode": "list",
+          "cachedResultName": "Fladgate - Leonard Live Data",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl3ADT2yOV8EJCnZ",
+          "mode": "list",
+          "cachedResultName": "FG - Conversation History by lawyer",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA/tbl3ADT2yOV8EJCnZ"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Email": "={{ $json.fields.Email }}",
+            "Previous Clients": "={{ $json.fields.Clients }}"
+          },
+          "matchingColumns": [
+            "Email"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Transcript ID",
+              "displayName": "Transcript ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Created",
+              "displayName": "Created",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Last Modified",
+              "displayName": "Last Modified",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Conversation History",
+              "displayName": "Conversation History",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Call Length",
+              "displayName": "Call Length",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Number of Calls",
+              "displayName": "Number of Calls",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Clients",
+              "displayName": "Clients",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Matters",
+              "displayName": "Matters",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Previous Matters",
+              "displayName": "Previous Matters",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Previous Clients",
+              "displayName": "Previous Clients",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Previous Submissions",
+              "displayName": "Previous Submissions",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -1280,
+        48
+      ],
+      "id": "26529fcd-ecd1-42ec-bdd9-5ab145f7dead",
+      "name": "Upload Previous Clients",
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "value": "appUvJyzSky12m4HA",
+          "mode": "list",
+          "cachedResultName": "Fladgate - Leonard Live Data",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl3ADT2yOV8EJCnZ",
+          "mode": "list",
+          "cachedResultName": "FG - Conversation History by lawyer",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA/tbl3ADT2yOV8EJCnZ"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Email": "={{ $json.fields.Email }}",
+            "Previous Matters": "={{ $json.fields.Matters }}"
+          },
+          "matchingColumns": [
+            "Email"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Transcript ID",
+              "displayName": "Transcript ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Created",
+              "displayName": "Created",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Last Modified",
+              "displayName": "Last Modified",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Conversation History",
+              "displayName": "Conversation History",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Call Length",
+              "displayName": "Call Length",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Number of Calls",
+              "displayName": "Number of Calls",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Clients",
+              "displayName": "Clients",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Matters",
+              "displayName": "Matters",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Previous Matters",
+              "displayName": "Previous Matters",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Previous Clients",
+              "displayName": "Previous Clients",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Previous Submissions",
+              "displayName": "Previous Submissions",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -480,
+        48
+      ],
+      "id": "8043af50-6ad2-43be-8424-cd915445fb11",
+      "name": "Upload Previous Clients1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f6051f2f-8330-4e41-84b0-26762da5732e",
+              "leftValue": "={{ $json[\"Extracted Data\"].value }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "ffef5e9f-49fe-4f45-b997-46cb2751b650",
+              "leftValue": "={{ $json[\"Extract 1\"].value }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "f5f94871-cdde-4311-bbf8-9aca0c934c29",
+              "leftValue": "={{ $json[\"Client Name\"].value }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -3776,
+        192
+      ],
+      "id": "c0358da9-212f-44dd-8b31-cb801c608220",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "amount": 20
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -3552,
+        384
+      ],
+      "id": "b907f627-b1c5-4914-a9be-9511f3806248",
+      "name": "Wait",
+      "webhookId": "5370f286-e087-476f-9bd1-ad37d3501ac6"
+    },
+    {
+      "parameters": {
+        "content": "Need to build logic for single new matter vs consolodating lots of existing"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2672,
+        -240
+      ],
+      "typeVersion": 1,
+      "id": "5ac5a906-ba19-481f-9904-c34c5471e889",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fac072bc-3a1b-4c03-80e4-d068b36ec5c2",
+              "name": "Email",
+              "value": "={{ $('Search for new matter').item.json.Email }}",
+              "type": "string"
+            },
+            {
+              "id": "abeb6ada-a847-4ccb-b987-37e4ae4877ea",
+              "name": "First Name",
+              "value": "={{ $('Search for new matter').item.json[\"First Name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "7b3e5846-8258-41ed-97c3-bd46740e71a2",
+              "name": "Last Name",
+              "value": "={{ $('Search for new matter').item.json[\"Last Name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "17ee2a3f-b44a-408f-8e86-be4f921d1d68",
+              "name": "New Matter Summary",
+              "value": "={{ $('Get new matter').item.json[\"Extracted Data\"].value }}",
+              "type": "string"
+            },
+            {
+              "id": "9c70d49d-7ecc-4688-9482-00eddd0a5b85",
+              "name": "New Matter Extract",
+              "value": "={{ $('Get new matter').item.json[\"Extract 1\"].value }}",
+              "type": "string"
+            },
+            {
+              "id": "36a94abc-4d85-4e5f-aebf-05ea0eac73f4",
+              "name": "Existing Matter Summary",
+              "value": "={{ $json[\"Previous Submissions\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "ba245cec-5921-46f4-93e0-78c68afe68ba",
+              "name": "Existing Matter Extract",
+              "value": "={{ $json[\"Previous Matters\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "40e11599-fab6-4c51-a17c-1703bf605b6f",
+              "name": "Existing Matter Client",
+              "value": "={{ $json[\"Previous Clients\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "26a6d12b-999e-4ef4-9199-845cce45e082",
+              "name": "New Matter Lead Lawyer",
+              "value": "={{ $('Get new matter').item.json[\"Lead Lawyer\"].value }}",
+              "type": "string"
+            },
+            {
+              "id": "3e242243-d2d2-4d3c-b024-12f4867b6c64",
+              "name": "New Matter Short Summary",
+              "value": "={{ $('Get new matter').item.json[\"Client Name\"].value }}",
+              "type": "string"
+            },
+            {
+              "id": "8f7d2ea3-0755-4ba4-8fce-3108d9d1e65c",
+              "name": "New Matter Client",
+              "value": "={{ $('Get new matter').item.json[\"Client Name\"].value }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3104,
+        176
+      ],
+      "id": "dce44a2f-8179-40a2-adfb-465e600d7a47",
+      "name": "Set pre IF"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "1cae44cb-3d7e-41ec-a0ef-4106a6f46f3f",
+              "leftValue": "={{ $json.Email }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -3328,
+        -32
+      ],
+      "id": "e219a81a-94a1-48e3-a821-021d8e02256f",
+      "name": "If2",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appUvJyzSky12m4HA",
+          "mode": "list",
+          "cachedResultName": "Fladgate - Leonard Live Data",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl3ADT2yOV8EJCnZ",
+          "mode": "list",
+          "cachedResultName": "FG - Conversation History by lawyer",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA/tbl3ADT2yOV8EJCnZ"
+        },
+        "filterByFormula": "={Email}='{{ $json.Email }}'",
+        "returnAll": false,
+        "limit": 1,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -3552,
+        -32
+      ],
+      "id": "4349809c-0c32-4768-920c-73e74b8e220f",
+      "name": "Does user exist?",
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "value": "appUvJyzSky12m4HA",
+          "mode": "list",
+          "cachedResultName": "Fladgate - Leonard Live Data",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl3ADT2yOV8EJCnZ",
+          "mode": "list",
+          "cachedResultName": "FG - Conversation History by lawyer",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA/tbl3ADT2yOV8EJCnZ"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Email": "={{ $('Get new matter').item.json.Email }}",
+            "Number of Matters Uploaded": 1,
+            "Matters from prior conversations": ".",
+            "Prior Conversation History": ".",
+            "Clients from prior conversations": ".",
+            "Previous Matters": ".",
+            "Previous Clients": ".",
+            "Previous Submissions": ".",
+            "Last Name": "={{ $('Get new matter').item.json[\"Last Name\"] }}",
+            "First Name": "={{ $('Get new matter').item.json[\"First Name\"] }}"
+          },
+          "matchingColumns": [
+            "Email"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Transcript ID",
+              "displayName": "Transcript ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Created",
+              "displayName": "Created",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Last Modified",
+              "displayName": "Last Modified",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Call Length",
+              "displayName": "Call Length",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Number of Calls",
+              "displayName": "Number of Calls",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Number of Matters Uploaded",
+              "displayName": "Number of Matters Uploaded",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Conversation History",
+              "displayName": "Conversation History",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Clients",
+              "displayName": "Clients",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Matters",
+              "displayName": "Matters",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Matters from prior conversations",
+              "displayName": "Matters from prior conversations",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Prior Conversation History",
+              "displayName": "Prior Conversation History",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Clients from prior conversations",
+              "displayName": "Clients from prior conversations",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Previous Matters",
+              "displayName": "Previous Matters",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Previous Clients",
+              "displayName": "Previous Clients",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Previous Submissions",
+              "displayName": "Previous Submissions",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -3104,
+        -32
+      ],
+      "id": "4d3bea8c-2cbd-4ee0-b071-d5db0a9b7d94",
+      "name": "Upload Matter History1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 60
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -4240,
+        288
+      ],
+      "id": "d376089f-31b7-4e9a-afd3-4988eebd3ab4",
+      "name": "Wait 60s",
+      "webhookId": "5370f286-e087-476f-9bd1-ad37d3501ac6"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "value": "appUvJyzSky12m4HA",
+          "mode": "list",
+          "cachedResultName": "Fladgate - Leonard Live Data",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblje0fc5drcChsFR",
+          "mode": "list",
+          "cachedResultName": "FG_Uploaded_matter_log",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA/tblje0fc5drcChsFR"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('On New FG Matter Upload').item.json.id }}",
+            "n8n flow completed to update user history?": true
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Attachments",
+              "displayName": "Attachments",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Matter Summary",
+              "displayName": "Matter Summary",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "How Many Matters?",
+              "displayName": "How Many Matters?",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Multiple Matters",
+              "displayName": "Multiple Matters",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Extract 1",
+              "displayName": "Extract 1",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Extract 2",
+              "displayName": "Extract 2",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Extract 3",
+              "displayName": "Extract 3",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Extract 4",
+              "displayName": "Extract 4",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Extract D1 Name of client",
+              "displayName": "Extract D1 Name of client",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Extract D2 Matter Summary",
+              "displayName": "Extract D2 Matter Summary",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Extract D3 Matter Value",
+              "displayName": "Extract D3 Matter Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Extract D4 Is this a cross-border matter",
+              "displayName": "Extract D4 Is this a cross-border matter",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Extract D5 Lead Lawyer",
+              "displayName": "Extract D5 Lead Lawyer",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Extract D6 Other team members",
+              "displayName": "Extract D6 Other team members",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Extract D7 Other firms advising on the matter and their role(s)",
+              "displayName": "Extract D7 Other firms advising on the matter and their role(s)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Extract D8 Date of completion or current status",
+              "displayName": "Extract D8 Date of completion or current status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Extract D9 Other information about this matter",
+              "displayName": "Extract D9 Other information about this matter",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Client Name",
+              "displayName": "Client Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Extracted Data",
+              "displayName": "Extracted Data",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Lead Lawyer",
+              "displayName": "Lead Lawyer",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Last Modified",
+              "displayName": "Last Modified",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Created time",
+              "displayName": "Created time",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Created by",
+              "displayName": "Created by",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Date Modified by",
+              "displayName": "Date Modified by",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Date Last Updated",
+              "displayName": "Date Last Updated",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "n8n flow completed to update user history?",
+              "displayName": "n8n flow completed to update user history?",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Webhook Called",
+              "displayName": "Webhook Called",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D0 - Confidential",
+              "displayName": "D0 - Confidential",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D0 - Confidential Value",
+              "displayName": "D0 - Confidential Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D0 - Confidential Rationale",
+              "displayName": "D0 - Confidential Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D1 - Client Name",
+              "displayName": "D1 - Client Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D1 - Client Name Value",
+              "displayName": "D1 - Client Name Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D1 - Client Name Rationale",
+              "displayName": "D1 - Client Name Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D2 - Formatted Output",
+              "displayName": "D2 - Formatted Output",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D2 - Formatted Output Value",
+              "displayName": "D2 - Formatted Output Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D2 - Formatted Output Rationale",
+              "displayName": "D2 - Formatted Output Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D2 - Matter Description",
+              "displayName": "D2 - Matter Description",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D2 - Matter Description Value",
+              "displayName": "D2 - Matter Description Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D2 - Matter Description Rationale",
+              "displayName": "D2 - Matter Description Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D2 - Why Important",
+              "displayName": "D2 - Why Important",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D2 - Why Important Value",
+              "displayName": "D2 - Why Important Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D2 - Why Important Rationale",
+              "displayName": "D2 - Why Important Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D2 - Department Role",
+              "displayName": "D2 - Department Role",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D2 - Department Role Value",
+              "displayName": "D2 - Department Role Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D2 - Department Role Rationale",
+              "displayName": "D2 - Department Role Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D2 - Work Done Last 12m",
+              "displayName": "D2 - Work Done Last 12m",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D2 - Work Done Last 12m Value",
+              "displayName": "D2 - Work Done Last 12m Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D2 - Work Done Last 12m Rationale",
+              "displayName": "D2 - Work Done Last 12m Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D3 - Matter Value",
+              "displayName": "D3 - Matter Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D3 - Matter Value Value",
+              "displayName": "D3 - Matter Value Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D3 - Matter Value Rationale",
+              "displayName": "D3 - Matter Value Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D3 - Matter Value Currency",
+              "displayName": "D3 - Matter Value Currency",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D3 - Matter Value Currency Value",
+              "displayName": "D3 - Matter Value Currency Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D3 - Matter Value Currency Rationale",
+              "displayName": "D3 - Matter Value Currency Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D4 - Cross Border",
+              "displayName": "D4 - Cross Border",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D4 - Cross Border Value",
+              "displayName": "D4 - Cross Border Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D4 - Cross Border Rationale",
+              "displayName": "D4 - Cross Border Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D4 - Jurisdictions",
+              "displayName": "D4 - Jurisdictions",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D4 - Jurisdictions Value",
+              "displayName": "D4 - Jurisdictions Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D4 - Jurisdictions Rationale",
+              "displayName": "D4 - Jurisdictions Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D5 - Lead Lawyer Name",
+              "displayName": "D5 - Lead Lawyer Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D5 - Lead Lawyer Name Value",
+              "displayName": "D5 - Lead Lawyer Name Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D5 - Lead Lawyer Name Rationale",
+              "displayName": "D5 - Lead Lawyer Name Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D5 - Lead Lawyer Practice Group",
+              "displayName": "D5 - Lead Lawyer Practice Group",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D5 - Lead Lawyer Practice Group Value",
+              "displayName": "D5 - Lead Lawyer Practice Group Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D5 - Lead Lawyer Practice Group Rationale",
+              "displayName": "D5 - Lead Lawyer Practice Group Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D5 - Lead Lawyer Office",
+              "displayName": "D5 - Lead Lawyer Office",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D5 - Lead Lawyer Office Value",
+              "displayName": "D5 - Lead Lawyer Office Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D5 - Lead Lawyer Office Rationale",
+              "displayName": "D5 - Lead Lawyer Office Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D6 - Other Team Members",
+              "displayName": "D6 - Other Team Members",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D6 - Other Team Members Value",
+              "displayName": "D6 - Other Team Members Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D6 - Other Team Members Rationale",
+              "displayName": "D6 - Other Team Members Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D7 - Other Firms",
+              "displayName": "D7 - Other Firms",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D7 - Other Firms Value",
+              "displayName": "D7 - Other Firms Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D7 - Other Firms Rationale",
+              "displayName": "D7 - Other Firms Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D8 - Completed",
+              "displayName": "D8 - Completed",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D8 - Completed Value",
+              "displayName": "D8 - Completed Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D8 - Completed Rationale",
+              "displayName": "D8 - Completed Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D8 - Start Date",
+              "displayName": "D8 - Start Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D8 - Start Date Value",
+              "displayName": "D8 - Start Date Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D8 - Start Date Value Rationale",
+              "displayName": "D8 - Start Date Value Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D9 - Press Coverage",
+              "displayName": "D9 - Press Coverage",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D9 - Press Coverage Value",
+              "displayName": "D9 - Press Coverage Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D9 - Press Coverage Rationale",
+              "displayName": "D9 - Press Coverage Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D9 - Other Information",
+              "displayName": "D9 - Other Information",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D9 - Other Information Value",
+              "displayName": "D9 - Other Information Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D9 - Other Information Rationale",
+              "displayName": "D9 - Other Information Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "JSON Validation",
+              "displayName": "JSON Validation",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Is Confidential",
+              "displayName": "MD - Is Confidential",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Client Name",
+              "displayName": "MD - Client Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Client Output",
+              "displayName": "MD - Client Output",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Matter Description",
+              "displayName": "MD - Matter Description",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Department",
+              "displayName": "MD - Department",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Last 12m",
+              "displayName": "MD - Last 12m",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Why Important",
+              "displayName": "MD - Why Important",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Format Output",
+              "displayName": "MD - Format Output",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Matter Value",
+              "displayName": "MD - Matter Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Matter Currency",
+              "displayName": "MD - Matter Currency",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Value Output",
+              "displayName": "MD - Value Output",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Cross Border?",
+              "displayName": "MD - Cross Border?",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Jurisdiction 1",
+              "displayName": "MD - Jurisdiction 1",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Jurisdiction 2",
+              "displayName": "MD - Jurisdiction 2",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Jurisdiction 3",
+              "displayName": "MD - Jurisdiction 3",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Jurisdiction 4",
+              "displayName": "MD - Jurisdiction 4",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Jurisdiction 5",
+              "displayName": "MD - Jurisdiction 5",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Jurisdictions output",
+              "displayName": "MD - Jurisdictions output",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Lead Lawyer Name",
+              "displayName": "MD - Lead Lawyer Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Lead Lawyer Office",
+              "displayName": "MD - Lead Lawyer Office",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Lead Lawyer Practice Group",
+              "displayName": "MD - Lead Lawyer Practice Group",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Lead Lawyer Output",
+              "displayName": "MD - Lead Lawyer Output",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Other Team Member 1",
+              "displayName": "MD - Other Team Member 1",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Other Team Member 1 office",
+              "displayName": "MD - Other Team Member 1 office",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Other Team Member 1 PG",
+              "displayName": "MD - Other Team Member 1 PG",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Other Team Member 2",
+              "displayName": "MD - Other Team Member 2",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Other Team Member 2 office",
+              "displayName": "MD - Other Team Member 2 office",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Other Team Member 2 PG",
+              "displayName": "MD - Other Team Member 2 PG",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Other Team Member 3",
+              "displayName": "MD - Other Team Member 3",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Other Team Member 3 office",
+              "displayName": "MD - Other Team Member 3 office",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Other Team Member 3 PG",
+              "displayName": "MD - Other Team Member 3 PG",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Other Team Member 4",
+              "displayName": "MD - Other Team Member 4",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Other Team Member 4 office",
+              "displayName": "MD - Other Team Member 4 office",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Other Team Member 4 PG",
+              "displayName": "MD - Other Team Member 4 PG",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Other Team Member 5",
+              "displayName": "MD - Other Team Member 5",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Other Team Member 5 office",
+              "displayName": "MD - Other Team Member 5 office",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Other Team Member 5 PG",
+              "displayName": "MD - Other Team Member 5 PG",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Other Team Members Output",
+              "displayName": "MD - Other Team Members Output",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Other Firms - Name",
+              "displayName": "MD - Other Firms - Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Other Firms - Role",
+              "displayName": "MD - Other Firms - Role",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Other Firms Output",
+              "displayName": "MD - Other Firms Output",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Start Date",
+              "displayName": "MD - Start Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - End Date",
+              "displayName": "MD - End Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Completed",
+              "displayName": "MD - Completed",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Date Output",
+              "displayName": "MD - Date Output",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Press Link 1",
+              "displayName": "MD - Press Link 1",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Press Link 2",
+              "displayName": "MD - Press Link 2",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Press Link 3",
+              "displayName": "MD - Press Link 3",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Press Link 4",
+              "displayName": "MD - Press Link 4",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Other Info",
+              "displayName": "MD - Other Info",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Press Output",
+              "displayName": "MD - Press Output",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Submission Suggestions",
+              "displayName": "MD - Submission Suggestions",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Email Sent?",
+              "displayName": "Email Sent?",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Word",
+              "displayName": "Word",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Word Name",
+              "displayName": "Word Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Word Sent?",
+              "displayName": "Word Sent?",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "BD 1 Email",
+              "displayName": "BD 1 Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "BD 2 Email",
+              "displayName": "BD 2 Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Shared Inbox",
+              "displayName": "Shared Inbox",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Summary (Attachments)",
+              "displayName": "Summary (Attachments)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Title (Attachments)",
+              "displayName": "Title (Attachments)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -240,
+        48
+      ],
+      "id": "87d9fd48-142d-4d28-9712-da8b15918d59",
+      "name": "n8n history update tick",
+      "alwaysOutputData": false,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Matter history agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create new conv summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Matter history agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Client Extraction",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Client Extraction": {
+      "main": [
+        [
+          {
+            "node": "Create new conv summary2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create new conv summary2": {
+      "main": [
+        [
+          {
+            "node": "Upload Previous Clients",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create new summary for new conv": {
+      "main": [
+        [
+          {
+            "node": "Upload Matter History",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On New FG Matter Upload": {
+      "main": [
+        [
+          {
+            "node": "Wait 60s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get new matter": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search for new matter": {
+      "main": [
+        [
+          {
+            "node": "Search existing matters",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search existing matters": {
+      "main": [
+        [
+          {
+            "node": "Set pre IF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Matter history agent": {
+      "main": [
+        [
+          {
+            "node": "Create new summary for new conv",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Matter Extraction",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Matter Extraction": {
+      "main": [
+        [
+          {
+            "node": "Create new conv summary3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Matter History": {
+      "main": [
+        [
+          {
+            "node": "Client Extraction",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Previous Clients": {
+      "main": [
+        [
+          {
+            "node": "Matter Extraction",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create new conv summary3": {
+      "main": [
+        [
+          {
+            "node": "Upload Previous Clients1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Search for new matter",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Does user exist?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Get new matter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set pre IF": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Does user exist?": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Upload Matter History1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 60s": {
+      "main": [
+        [
+          {
+            "node": "Get new matter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Previous Clients1": {
+      "main": [
+        [
+          {
+            "node": "n8n history update tick",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "any",
+    "executionTimeout": 300,
+    "availableInMCP": false,
+    "errorWorkflow": "nSr5syzpgcboR5Da"
+  },
+  "staticData": {
+    "node:On New FG Conversation": {
+      "lastTimeChecked": "2025-11-14T19:43:21Z"
+    },
+    "node:On New FG Matter Upload": {
+      "lastTimeChecked": "2026-02-21T02:02:48Z"
+    }
+  },
+  "pinData": {
+    "Get new matter": [
+      {
+        "json": {
+          "id": "recv3Lo2ACvi8cwdm",
+          "createdTime": "2025-11-24T08:30:21.000Z",
+          "Full Name": "Lee Curtis",
+          "Last Name": "Curtis",
+          "First Name": "Lee",
+          "Email": "lee@legalengine.co.uk",
+          "Date Last Updated": "2025-11-24T08:33:27.000Z",
+          "Date Modified by": {
+            "id": "usrAISERVICE00000",
+            "email": "aiassist@noreply.airtable.com",
+            "name": "AI"
+          },
+          "Created by": {
+            "id": "usrPAGESHARE00000",
+            "email": "anonymous+formpage@noreply.airtable.com",
+            "name": "Anonymous"
+          },
+          "Created time": "2025-11-24T08:30:21.000Z",
+          "MD - Is Confidential": {
+            "state": "error",
+            "errorType": "emptyDependency",
+            "value": null,
+            "isStale": false
+          },
+          "Last Modified": "2025-11-24T08:33:27.000Z",
+          "Attachments": [
+            {
+              "id": "attxDZfOlDwM16u1n",
+              "url": "https://v5.airtableusercontent.com/v3/e/47/47/1763985600000/iXmDEbU0NODjOTVGsMPmSQ/N6lhXIE0e7JKlwc6YOj7VKabv9TGIzTDdBQ1CxIywJEpbYurMcWW6uS2GCcCWyDJ8HXTAYjPjgELXOU_7zHq38yy8f-8IYyRFcWddCrfnKm-H5bJSd0DFsIwed5BEC7qsRGoGVSfaTfd_VMb9lYmOliILy1aeQ08T_06rllo18dQUQPfajUYWe64fiRdln4uXCea-Zvi4V3kywav0YiMJZ0riq61El5uilHbK5bYCGw/dgSsQBUiShGI-XB6V1lo5I46rCMVhFJTJgA5RurKEx0",
+              "filename": "FINAL Fladgate Family-Matrimonial Finance 2027 - Hetty Leonard M_520686_17.docx",
+              "size": 72690,
+              "type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+              "thumbnails": {
+                "small": {
+                  "url": "https://v5.airtableusercontent.com/v3/e/47/47/1763985600000/So9hMGpWof1I5yqlj4GO1A/bGesGtiHDHCt18XkIQGlw8AZTW1iJtsOtEyl5emL79qJjcsheVjkjQpABrOK4SqazZAg0JSDFegLmwq4YooiLYLpSTPYFlsuGwE4f_LYELVP9mcOKiYh1vd4Y6Sc-9MJlWM1_t3_LwthG-9aHjJfYg/fLqeP6bS4ubHjlQSxKjfxJKiyJIsNOmWeYtrXhSgQK4",
+                  "width": 25,
+                  "height": 35
+                },
+                "large": {
+                  "url": "https://v5.airtableusercontent.com/v3/e/47/47/1763985600000/YuDkqkaZBDT_0wzI0iekWw/y9rjgPI6ci79J3LmQqxtBV28mmwef2kbIe9JvnR5vyhalqYt1uwnnKFkQ7I1DPsdgLfY3rV6ZynDQse4al00TNYTMa-vPC8DhNPonw5L2TBMRyp2y98QjBJNFLFL315IGhYnsdkqEmVjWnP53Ddf0w/EiYtWhvEDfR1poJSPpndboeZ0IMvd54eODTXfd779gc",
+                  "width": 512,
+                  "height": 724
+                }
+              }
+            }
+          ],
+          "Summary (Attachments)": {
+            "state": "empty",
+            "value": null,
+            "isStale": true
+          },
+          "Title (Attachments)": {
+            "state": "empty",
+            "value": null,
+            "isStale": true
+          },
+          "Extracted Data": {
+            "state": "generated",
+            "value": "- Matter reference and title: PAM007; Confidential Matter 17.\n- Client: Wife/Hotelier whose husband transitioned from male to female during the proceedings.\n- Overview and department role/importance: Acting for W in divorce and financial proceedings after a 20-year marriage; novel issue on whether matrimonial funds can be used for H’s transitioning costs during the divorce. Assets span the UK, Italy, USA, Switzerland, Germany, Argentina, and Morocco, including a Moroccan hotel business.\n- Key issues:\n  - Forum: H commenced parallel divorce proceedings in Italy.\n  - Interim maintenance, disclosure, valuations (including impact of the Moroccan earthquake on the hotel), and classification of matrimonial vs non‑matrimonial assets.\n- Key disputed positions:\n  - H disputes W’s entitlement to her “fair share,” asserting he created most family wealth.\n  - H claims entitlement to use matrimonial funds for transitioning; dispute over whether surgery is imperative or elective.\n- Opponent conduct and applications/orders:\n  - Refused to comply with interim maintenance orders; W’s enforcement succeeded and punitive costs were awarded against H.\n  - Refused to contribute to W’s legal expenses.\n  - Issued Italian divorce to run concurrently; Italian court dismissed for lack of jurisdiction and awarded W costs.\n  - Sold company shares and reinvested proceeds without consent; Freezing Order over net proceeds granted after a contested hearing; H is appealing.\n  - Profligate spending increased liabilities; extent and nature of liabilities in issue.\n  - Non‑disclosure of US land interests discovered prior to the PTR.\n- Status and forthcoming steps: Approaching final hearing; parties cannot agree the asset schedule for division. Judicial intervention already required on transitioning costs; further transitioning costs may be argued at trial as a niche point of law.\n- Matter value: £3–4 million.\n- Cross‑border elements: Jurisdictions include Italy, Switzerland, US, Germany, Argentina, Morocco; assets/business footprint also includes the UK and a hotel in Morocco.\n- Team:\n  - Lead lawyer: Hetty Gleave (Partner, Fladgate).\n  - Other team members: Patrick Buck (Associate), Isabelle McGregor (Trainee).\n- Other advisers and roles:\n  - Adverse: Susan Apthorp, Keystone Law.\n  - Counsel: Alexis Campbell KC (Band 2), Simon Calhaem (Band 3), Laura Heaton (Band 2) — 29 Bedford Row.\n  - For our client (Italian law): Michele Menato, B&M Law.\n- Completion status: Ongoing.\n- Other information (press/links): Not provided.",
+            "isStale": false
+          },
+          "Matter Summary": {
+            "state": "generated",
+            "value": "Cross-border divorce finance case: gender transition funding, asset freezing, forum disputes, enforcement; assets worth £3–4m.",
+            "isStale": false
+          },
+          "Client Name": {
+            "state": "generated",
+            "value": "The client is described as \"Wife (W),\" a wife/hotelier whose husband transitioned from male to female during the proceedings. The matter is confidential, so the high-level client description \"Wife (W)\" is used rather than a personal name.",
+            "isStale": false
+          },
+          "Lead Lawyer": {
+            "state": "generated",
+            "value": "Hetty Gleave",
+            "isStale": false
+          },
+          "Multiple Matters": {
+            "state": "generated",
+            "value": "No. It contains only one matter with a single E1 section and no D1/E1 duplication.",
+            "isStale": false
+          },
+          "How Many Matters?": {
+            "state": "generated",
+            "value": "1",
+            "isStale": false
+          },
+          "Extract 1": {
+            "state": "generated",
+            "value": "# Confidential Matter 17\nRef: PAM007\n\n## E1 Name of client (for ranking purposes only)\nWife/Hotelier whose husband transitioned from male to female during the proceedings\n\n## E2 Summary of matter and your department's role - Please say why this matter was important. Also, tell us exactly what role your department played\nThis case has raised novel areas of law in relation to the treatment of family assets when acting for a party who requires funds to transition from male to female during the divorce process. We are acting for a wife (W) in divorce and financial proceedings who has been married to her husband (H) for 20 years. The marriage broke down when W was told by H that they wish to transition to a lesbian trans woman. The parties have multiple properties/land which span the globe, including the UK, Italy, USA, Switzerland, Germany, Argentina, Morocco, as well as a hotel business in Morocco.\n\nWhilst the matter is complicated by the number of foreign jurisdictions involved, the matter is further complicated by the fact that H does not believe that our client is entitled to her 'fair share' of the matrimonial pot on the basis he believes he has earned most of the family wealth. H also believes they are entitled to use matrimonial funds for the purpose of transitioning during the divorce process, triggering arguments about whether it was imperative or elective surgery.\n\nThe matter has raised several issues, ranging from the correct forum for the proceedings (the husband immediately commenced parallel proceedings in Italy) interim maintenance, disclosure, valuations, particularly in relation to their hotel in Morocco following the recent earthquake, and the nature of matrimonial and non-matrimonial assets.\n\nH has sought to run our client's finances into the ground by:\n\n1. Refusing to comply with orders for interim maintenance on the basis he had no income, which was demonstrably untrue, requiring the client to issue enforcement proceedings which were successful and resulted in punitive costs orders against H.\n2. Refusing to make any contribution towards our client's legal expenses.\n3. Issuing proceedings for divorce in Italy to run concurrently with the UK proceedings, even though H had submitted to the UK jurisdiction in order to drain our client of cash. The Italian court has recently determined they have no jurisdiction and dismissed the application in Italy and awarded our client costs.\n4. Selling shares in a company and reinvesting some of the proceeds without our client's knowledge or consent, which forced her to apply for a Freezing Order in relation to the net proceeds, which was made following a bitterly fought hearing. H is now appealing the Freezing Order.\n5. H's profligate spending which has significantly increased liabilities and so the nature and extent of those liabilities is in question.\n6. H's non-disclosure of land interests in the US, which have only become apparent prior to the PTR.\n\nThe matter is coming up to a final hearing as the parties have been unable to agree the assets schedule which enables them to agree the accurate division of matrimonial assets. Whether the costs associated with the H's transitioning to female during the proceedings should be paid from the known matrimonial assets was a novel point which required judicial intervention to resolve. It may be that further costs associated with transitioning will form part of the husband's argument at trial and debate about how they are paid for will be a niche point of law.\n\n## E3 Matter value - include currency and amount in figures\n£3-4 million\n\n## E4 Is this a cross-border matter? If yes, please indicate the jurisdictions involved.\nItaly, Switzerland, US, Germany, Argentina, Morocco\n\nRef: PAM007\n\n## E5–E9\n\n| Field | Details |\n|---|---|\n| E5 Lead lawyer | Hetty Gleave (Partner, Fladgate) |\n| E6 Other team members | Patrick Buck (Associate, Fladgate); Isabelle McGregor (Trainee, Fladgate) |\n| E7 Other firms advising on the matter and their role(s) | Susan Apthorp, Keystone Law (adverse); Alexis Campbell KC, (Band 2 Family: Matrimonial Finance), Simon Calhaem (Band 3 Family: Matrimonial Finance), Laura Heaton (Band 2 Family: Matrimonial Finance) - 29 Beford Row; Michele Menato, B&M Law (Italian law advice for our client) |\n| E8 Date of completion or current status | Ongoing |\n| E9 Other information about this matter - e.g. link to press coverage |  |\n\nRef: PAM007",
+            "isStale": false
+          },
+          "Extract 2": {
+            "state": "empty",
+            "value": null,
+            "isStale": true
+          },
+          "Extract 3": {
+            "state": "empty",
+            "value": null,
+            "isStale": true
+          },
+          "Extract 4": {
+            "state": "empty",
+            "value": null,
+            "isStale": true
+          }
+        }
+      }
+    ],
+    "On New FG Matter Upload": [
+      {
+        "json": {
+          "id": "recih8DpN8fmuKhhH",
+          "createdTime": "2026-01-26T21:31:10.000Z",
+          "fields": {
+            "Full Name": "Taj Rehal",
+            "Last Name": "Rehal",
+            "First Name": "Taj",
+            "Email": "TSR1384@fladgate.com",
+            "Date Last Updated": "2026-01-26T21:31:11.000Z",
+            "Date Modified by": {
+              "id": "usr5IyyKTeTSJZ7db",
+              "email": "leonard@legalengine.co.uk",
+              "name": "Leonard"
+            },
+            "Created by": {
+              "id": "usr5IyyKTeTSJZ7db",
+              "email": "leonard@legalengine.co.uk",
+              "name": "Leonard"
+            },
+            "Created time": "2026-01-26T21:31:10.000Z",
+            "MD - Is Confidential": {
+              "state": "error",
+              "errorType": "emptyDependency",
+              "value": null,
+              "isStale": false
+            },
+            "Last Modified": "2026-01-26T21:31:11.000Z",
+            "Attachments": [
+              {
+                "id": "attn3J9EA27jBh9Bj",
+                "url": "https://v5.airtableusercontent.com/v3/e/49/49/1769472000000/VxI5dKT41cIbXjRBdrOfBw/hZgSH53tOGiOMhfdHKEdCjs5bx2ohfeB1_Bh3znE1DZL2vfBZ9EFIArc4nXo8ZIcxxA0o8xVHPy8a14WNB9HEVfmyWv8UQx2XaUfC9-bkQfdV590e3c-zio7qHw1vcjS858jMzGWJ7vk8vvl56USNphAJGFJ5VquqmX0wRVAHaY/uR4FxKhf--_9fEQBaJH3H9oZLh49nGjy6zpR5ah1K3o",
+                "filename": "FG E TR3.docx",
+                "size": 15851,
+                "type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                "thumbnails": {
+                  "small": {
+                    "url": "https://v5.airtableusercontent.com/v3/e/49/49/1769472000000/WoSFPrw60Z1DFZQhqdsPbQ/l62fAf9yyZGAehBO7SwCHD3e-VxXO_aHXMJZoGBJDEavDq-5CLht1NdQQfeal6UPdCWJZES6NuYZtiovqf7_7sKNNYnE6abI4KWMlrNmYK-G1SGA6vLjhySokgaguF6HlriAaRNeX5d9Scj7XVBoaA/XB1KZy2KBkYTYR3IbbJpOvuRvdYtRAywbapee1sKxu8",
+                    "width": 25,
+                    "height": 35
+                  },
+                  "large": {
+                    "url": "https://v5.airtableusercontent.com/v3/e/49/49/1769472000000/H3jeswZx-BaD5SC07ju7uA/Zd3NLbJm65n3vCuhVSzM1MJCQVTYHf99vhOBZf3wJvnbQkekKTfPFobefLooGZAEdRPUQaYsfcjhcZURMgXjZb3Ydsxvu31NCDVah6y3ri87bC1d9kUQosX8mDb1Q25OxfGfQMA9F91fK-9T34U0Zw/-9w229C3eut5iFAvEHt1swDi662nZwU4Azp5Liq15lw",
+                    "width": 512,
+                    "height": 724
+                  }
+                }
+              }
+            ],
+            "Summary (Attachments)": {
+              "state": "empty",
+              "value": null,
+              "isStale": true
+            },
+            "Title (Attachments)": {
+              "state": "empty",
+              "value": null,
+              "isStale": true
+            },
+            "Extracted Data": {
+              "state": "generated",
+              "value": "Confidential Matter 7\nE1 Name of client (for ranking purposes only)\nA global healthcare software technology company\nE2 Summary of matter and your department's role – Please say why this matter was important. Also, tell us exactly what role your department played\nFladgate is advising a global healthcare software technology company on several matters arising from a grievance raised by an employee based in the client’s London office. The original grievance alleged that a colleague had sexually assaulted the employee in her home, and we were instructed following her involvement of the police and appeal of the grievance after the client had tried to resolve it internally. The employee has raised several subsequent grievances, including sexual harassment, sexual discrimination and disability discrimination claims as a result of missing work due to anxiety.\n\nThis is an extremely complex and highly sensitive situation for the private equity-backed client, and it involves significant reputational risk issues.\n\nE3 Matter value – include currency and amount in figures\nN/A\nE4 Is this a cross-border matter? If yes, please indicate the jurisdictions involved.\nNo\nE5 Lead partner\nTaj Rehal\nE6 Other team members\nIngrid Hesselbo, Helena McElroy, Caroline Philipps\nE7 Other firms advising on the matter and their role(s)\nUnite Union representing the individual employee\nE8 Date of completion or current status\nOngoing\nE9 Other information about this matter – e.g. link to press coverage\n ",
+              "isStale": true
+            },
+            "Matter Summary": {
+              "state": "loading",
+              "value": "Advising health tech firm on ongoing complex grievance alleging assault, harassment, discrimination; high reputational risk.",
+              "isStale": false
+            },
+            "Client Name": {
+              "state": "loading",
+              "value": "The client is described as \"a global healthcare software technology company.\"",
+              "isStale": false
+            },
+            "Lead Lawyer": {
+              "state": "loading",
+              "value": "Taj Rehal",
+              "isStale": false
+            },
+            "Multiple Matters": {
+              "state": "loading",
+              "value": "No. It contains only one matter; there is a single E1 section (“E1 Name of client”) and no duplicated D1 or E1 sections.",
+              "isStale": false
+            },
+            "How Many Matters?": {
+              "state": "loading",
+              "value": "1",
+              "isStale": false
+            },
+            "Extract 1": {
+              "state": "loading",
+              "value": "# Confidential Matter 7\n- E1 Name of client (for ranking purposes only):\n- A global healthcare software technology company\n- E2 Summary of matter and your department's role - Please say why this matter was important. Also, tell us exactly what role your department played:\n- Fladgate is advising a global healthcare software technology company on several matters arising from a grievance raised by an employee based in the client's London office. The original grievance alleged that a colleague had sexually assaulted the employee in her home, and we were instructed following her involvement of the police and appeal of the grievance after the client had tried to resolve it internally. The employee has raised several subsequent grievances, including sexual harassment, sexual discrimination and disability discrimination claims as a result of missing work due to anxiety.\n- This is an extremely complex and highly sensitive situation for the private equity-backed client, and it involves significant reputational risk issues.\n- E3 Matter value — include currency and amount in figures:\n- N/A\n- E4 Is this a cross-border matter? If yes, please indicate the jurisdictions involved.:\n- No\n- E5 Lead partner:\n- Taj Rehal\n- E6 Other team members:\n- Ingrid Hesselbo, Helena McElroy, Caroline Philipps\n- E7 Other firms advising on the matter and their role(s):\n- Unite Union representing the individual employee\n- E8 Date of completion or current status:\n- Ongoing\n- E9 Other information about this matter - e.g. link to press coverage:\n- [None provided]",
+              "isStale": false
+            },
+            "Extract 2": {
+              "state": "loading",
+              "value": "No conditions met.",
+              "isStale": false
+            },
+            "Extract 3": {
+              "state": "loading",
+              "value": "NA",
+              "isStale": false
+            },
+            "Extract 4": {
+              "state": "loading",
+              "value": "NA",
+              "isStale": false
+            },
+            "Extract D5 Lead Lawyer": {
+              "state": "loading",
+              "value": "Taj Rehal",
+              "isStale": false
+            },
+            "Extract D1 Name of client": {
+              "state": "loading",
+              "value": "A global healthcare software technology company.",
+              "isStale": false
+            },
+            "Extract D3 Matter Value": {
+              "state": "loading",
+              "value": "N/A",
+              "isStale": false
+            },
+            "Extract D2 Matter Summary": {
+              "state": "loading",
+              "value": "Advising a global healthcare software technology company on several matters arising from an employee grievance in its London office. The initial grievance alleged sexual assault by a colleague at the employee’s home; we were instructed after police involvement and an appeal following the client’s internal attempt to resolve. The employee has since raised further grievances, including sexual harassment, sex discrimination and disability discrimination linked to anxiety-related absence. This is an extremely complex and highly sensitive matter for the private equity‑backed client, involving significant reputational risk.",
+              "isStale": false
+            },
+            "Extract D4 Is this a cross-border matter": {
+              "state": "loading",
+              "value": "No",
+              "isStale": false
+            },
+            "Extract D7 Other firms advising on the matter and their role(s)": {
+              "state": "loading",
+              "value": "Unite Union – representing the individual employee.",
+              "isStale": false
+            },
+            "Extract D6 Other team members": {
+              "state": "loading",
+              "value": "Ingrid Hesselbo, Helena McElroy, Caroline Philipps",
+              "isStale": false
+            },
+            "Extract D9 Other information about this matter": {
+              "state": "loading",
+              "value": "None provided.",
+              "isStale": false
+            },
+            "Extract D8 Date of completion or current status": {
+              "state": "loading",
+              "value": "Ongoing.",
+              "isStale": false
+            }
+          }
+        }
+      }
+    ]
+  },
+  "triggerCount": 1,
+  "meta": null
+}

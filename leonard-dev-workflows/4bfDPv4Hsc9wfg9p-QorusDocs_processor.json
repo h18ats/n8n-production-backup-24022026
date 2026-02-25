@@ -1,0 +1,2150 @@
+{
+  "name": "QorusDocs processor",
+  "nodes": [
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        -528,
+        1488
+      ],
+      "id": "61b82e5c-ce18-4c9d-8dee-e34128ea186f",
+      "name": "Google Vertex Chat Model2",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        -544,
+        2336
+      ],
+      "id": "cc61a41e-ef52-44af-9e69-94d54ce76126",
+      "name": "Google Vertex Chat Model3",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://ps-dev-qc-scu-legalengine-integrations.azurewebsites.net:443/api/ps-dev-qc-scu-legalengine-create-smart-list-matter/triggers/input/invoke?api-version=2022-05-01&sp=%2Ftriggers%2Finput%2Frun&sv=1.0&sig=AbLGVn6hdJ1djH7uBO8ySqNQ8Nk_ZsOBpd8odNAo2Y0",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $('AI Agent - Create Matter').item.json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -240,
+        1376
+      ],
+      "id": "1790a6b3-1832-4174-829a-f8064ae636e2",
+      "name": "QorusDocs CREATE MATTER"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Extract the following fields from the transcript and dynamic variables: MatterName, Logo, ClientName, ClientIndustries, ResponsiblePartner, DefaultNarrative, TotalBillingsITD, MatterLocation, MatterPractice, UserEmailAddress, UserFirstName, UserLastName. Please ensure the DefaultNarrative is clear, well-written, and ideally between 100 and 150 words. If the original content is significantly shorter or longer, adjust as needed to improve clarity and consistency, while preserving key facts and tone. Output as raw JSON without the markdown backtick decorators. \n\nBelow is an example JSON reference documentation:\n{    \n    \"MatterName\": \"string\",    \t\t // Required\n    \"ClientName\": \"string\",    \t\t // Required\n    \"ClientIndustries\": \"string\",    \t// Optional\n    \"ResponsiblePartner\": \"string\",  \t// Required\n    \"DefaultNarrative\": \"string\",    \t// Required\n    \"TotalBillingsITD\": \"string\",    \t// Optional  \n    \"MatterLocation\": \"string\",\t\t // Required\n    \"MatterPractice\": \"string\",\t\t // Required\n    \"Logo\": \"string\"\t\t\t // Required - If no logo is provided please leave it empty `\"\"`\n    \"UserEmailAddress\": \"string\",\t // Required\n    \"UserFirstName\": \"string\",\t\t // Required\n    \"UserLastName\": \"string\"\t\t // Required\n}\n\nBelow is a sample JSON with dummy data, this is for reference only:\nSAMPLE\n{\n    \"MatterName\": \"TEST 123\",\n    \"Logo\": \"https://abc.com.jo/wp-content/uploads/2023/04/ABC-and-MDS.png\",\n    \"ClientName\": \"Wachovia Corporation\",\n    \"ClientIndustries\": \"Finance/Banking\",\n    \"ResponsiblePartner\": \"William Latourneau\",\n    \"DefaultNarrative\": \"$1.83 Billion in IPO and follow-on offerings for lodging REIT Represented a hospitality REIT focused on upper-upscale hotel properties on its $150 million IPO; its $247.6 million follow-on offering; its $260.5 million follow-on offering; its $175 million offering of Series A cumulative redeemable preferred shares; its $138.3 million follow-on offering; its $183 million follow-on offering; and its $100 million at-the-market continuous offering program.\",\n    \"TotalBillingsITD\": \"$96,960\",\n    \"MatterLocation\": \"San Francisco, California - United States\",\n    \"MatterPractice\": \"Securities and Corporate Finance\",\n\t\"UserEmailAddress\": \"jambrose@qorusdocs.com\",\n    \"UserFirstName\": \"James\",\n    \"UserLastName\": \"Ambrose\"\n}\n\n\nBelow is a sample JSON with some of the prefilled data. Please use this as a starting point but try to fill in the empty, blank or null values or places where it says \"string\":\nSAMPLE\n{    \n    \"MatterName\": \"{{ $json.body.data.analysis.data_collection_results.matter_name.value }}\",    \t\t // Required\n    \"ClientName\": \"{{ $json.body.data.analysis.data_collection_results.client_name.value }}\",    \t\t // Required\n    \"ClientIndustries\": \"{{ $json.body.data.analysis.data_collection_results.client_industry.value }}\",    \t// Optional\n    \"ResponsiblePartner\": \"{{ $json.body.data.analysis.data_collection_results.responsible_partner.value }}\",  \t// Required\n    \"DefaultNarrative\": \"{{ $json.body.data.analysis.data_collection_results.default_narrative.value }}\",    \t// Required\n    \"TotalBillingsITD\": \"{{ $json.body.data.analysis.data_collection_results.billings.value }}\",    \t// Optional  \n    \"MatterLocation\": \"{{ $json.body.data.analysis.data_collection_results.matter_location.value }}\",\t\t // Required\n    \"MatterPractice\": \"{{ $json.body.data.analysis.data_collection_results.matter_practice.value }}\",\t\t // Required\n    \"Logo\": \"\"\t\t\t // Required - Default applied if no logo supplied\n    \"UserEmailAddress\": \"{{ $json.body.data.conversation_initiation_client_data.dynamic_variables.email }}\",\t // Required\n    \"UserFirstName\": \"{{ $json.body.data.conversation_initiation_client_data.dynamic_variables.first_name }}\",\t\t // Required\n    \"UserLastName\": \"{{ $json.body.data.conversation_initiation_client_data.dynamic_variables.last_name }}\"\t\t // Required\n}\n\n\n---\nTranscript: {{ $json.body.data.transcript.map(t => t.message).join(' ') }}\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -592,
+        1264
+      ],
+      "id": "1cb6f8b4-efe8-437e-90ea-fdeda1006a07",
+      "name": "AI Agent - Create Matter"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Extract the following fields from the transcript and dynamic variables: ClientName, Geography, PracticeArea, EmailToAddress, EmailToFirstName, EmailToLastName. Output as raw JSON without the markdown backtick decorators.\n\nBelow is a reference of the expected JSON output:\n{\n   \"ClientName\":\t\t\"string\",\t// Required \n   \"Geography\": \t\t\"string\",\t// Required\n   \"PracticeArea\": \t\t\"string\",\t// Required\n   \"EmailToAddress\": \t\t\"string\",\t// Required\n   \"EmailToFirstName\":\t \t\"string\",\t// Required\n   \"EmailToLastName\": \t\t\"string\"\t// Required\n}\n\nBelow is a SAMPLE of what the output JSON could look like:\n {\n    \"ClientName\":\t\t\"Shrute Levinson\",\n    \"Geography\": \t\t\"San Francisco\",\n    \"PracticeArea\": \t\t\"Securities and Corporate Finance\",\n    \"EmailToAddress\": \t\t\"jambrose@qorusdocs.com\",\n    \"EmailToFirstName\":\t \t\"James\",\n    \"EmailToLastName\": \t\t\"Ambrose\"\n}\n\nBelow is a starting point based on the inputs available:\n{\n   \"ClientName\":\t\t\"{{ $json.body.data.analysis.data_collection_results.client_name.value }}\",\t// Required \n   \"Geography\": \t\t\"{{ $json.body.data.analysis.data_collection_results.geography.value }}\",\t// Required\n   \"PracticeArea\": \t\t\"{{ $json.body.data.analysis.data_collection_results.practice_area.value }}\",\t// Required\n   \"EmailToAddress\": \t\t\"{{ $json.body.data.conversation_initiation_client_data.dynamic_variables.email }}\",\t// Required\n   \"EmailToFirstName\":\t \t\"{{ $json.body.data.conversation_initiation_client_data.dynamic_variables.first_name }}\",\t// Required\n   \"EmailToLastName\": \t\t\"{{ $json.body.data.conversation_initiation_client_data.dynamic_variables.last_name }}\"\t// Required\n}\n\n\nTranscript: {{ $json.body.data.transcript.map(t => t.message).join(' ') }}\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -608,
+        2112
+      ],
+      "id": "6a99d7bc-c42d-4187-95e8-3154def80ef0",
+      "name": "AI Agent - Generate Pitch"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://ps-dev-qc-scu-legalengine-integrations.azurewebsites.net:443/api/ps-dev-qc-scu-legalengine-generate-proposal/triggers/genprop/invoke?api-version=2022-05-01&sp=%2Ftriggers%2Fgenprop%2Frun&sv=1.0&sig=pcUlVeBCrClBMh7CzCWZYPANXswb_G6ISuR0ibTxN-8",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $('AI Agent - Generate Pitch').item.json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -240,
+        2192
+      ],
+      "id": "c3af9949-467f-48a6-b3d9-a62d5854202c",
+      "name": "QorusDocs GENERATE PITCH"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "qorusdocs_demo_create_matter",
+        "options": {
+          "binaryPropertyName": "data"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -816,
+        1376
+      ],
+      "id": "80a8d477-7096-41ac-ab67-08c95e208a5a",
+      "name": "post_call_transcription Create Matter",
+      "webhookId": "db5fecfa-1f33-40f1-99c2-82457a6659c0"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "qorusdocs_demo_generate_pitch",
+        "options": {
+          "binaryPropertyName": "data"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -816,
+        2192
+      ],
+      "id": "9b337608-7867-4d22-9652-166b4c4ea602",
+      "name": "post_call_transcription Generate Pitch",
+      "webhookId": "db5fecfa-1f33-40f1-99c2-82457a6659c0"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://ps-dev-qc-scu-legalengine-integrations.azurewebsites.net:443/api/ps-dev-qc-scu-legalengine-create-smart-list-matter/triggers/input/invoke?api-version=2022-05-01&sp=%2Ftriggers%2Finput%2Frun&sv=1.0&sig=AbLGVn6hdJ1djH7uBO8ySqNQ8Nk_ZsOBpd8odNAo2Y0",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"MatterName\": \"{{ $json.MatterName }}\",\n    \"Logo\": \"{{ $json.Logo }}\",\n    \"ClientName\": \"{{ $json.ClientName }}\",\n    \"ClientIndustries\": \"{{ $json.ClientIndustries }}\",\n    \"ResponsiblePartner\": \"{{ $json.ResponsiblePartner }}\",\n    \"DefaultNarrative\": \"{{ $json.DefaultNarrative }}\",\n    \"TotalBillingsITD\": \"{{ $json.TotalBillingsITD }}\",\n    \"MatterLocation\": \"{{ $json.MatterLocation }}\",\n    \"MatterPractice\": \"{{ $json.MatterPractice }}\",\n    \"UserEmailAddress\": \"{{ $json.UserEmailAddress }}\",\n    \"UserFirstName\": \"{{ $json.UserFirstName }}\",\n    \"UserLastName\": \"{{ $json.UserLastName }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -592,
+        1040
+      ],
+      "id": "e15f3386-b9e6-4bc8-900e-7379163b6e73",
+      "name": "QorusDocs CREATE MATTER1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://ps-dev-qc-scu-legalengine-integrations.azurewebsites.net:443/api/ps-dev-qc-scu-legalengine-generate-proposal/triggers/genprop/invoke?api-version=2022-05-01&sp=%2Ftriggers%2Fgenprop%2Frun&sv=1.0&sig=pcUlVeBCrClBMh7CzCWZYPANXswb_G6ISuR0ibTxN-8",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "= {\n    \"ClientName\":\t\t\"{{ $json.ClientName }}\",\n    \"Geography\": \t\t\"{{ $json.Geography }}\",\n    \"PracticeArea\": \t\t\"{{ $json.PracticeArea }}\",\n    \"EmailToAddress\": \t\t\"{{ $json.EmailToAddress }}\",\n    \"EmailToFirstName\":\t \t\"{{ $json.EmailToFirstName }}\",\n    \"EmailToLastName\": \t\t\"{{ $json.EmailToLastName }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -592,
+        1872
+      ],
+      "id": "0f476cdd-1a47-4797-9b77-8640f363eac8",
+      "name": "QorusDocs GENERATE PITCH1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "QorusDocs-Demo-Generate-Pitch-Form",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -816,
+        1872
+      ],
+      "id": "e3b58677-a113-438e-a144-e89e1120951a",
+      "name": "Direct form - Generate Pitch",
+      "webhookId": "b2de79f6-f1e7-4509-969f-fa807c4b9f55",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "QorusDocs-Demo-Create-Matter-Form",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -816,
+        1040
+      ],
+      "id": "a7f48c77-5ca3-4946-b052-e8f8220de1d2",
+      "name": "Direct form - Create Matter",
+      "webhookId": "b2de79f6-f1e7-4509-969f-fa807c4b9f55",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "## Create Matter\nForm is for manual testing only.",
+        "height": 720,
+        "width": 912
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -912,
+        928
+      ],
+      "typeVersion": 1,
+      "id": "412aa64d-42dc-420b-b7c1-c648b2417760",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Generate Pitch\nForm is for manual testing only.",
+        "height": 720,
+        "width": 912
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -912,
+        1760
+      ],
+      "typeVersion": 1,
+      "id": "fa1fbf91-5d57-4e0c-b41d-5853a1edc8be",
+      "name": "Sticky Note1"
+    }
+  ],
+  "connections": {
+    "Google Vertex Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent - Create Matter",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent - Generate Pitch",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent - Create Matter": {
+      "main": [
+        [
+          {
+            "node": "QorusDocs CREATE MATTER",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent - Generate Pitch": {
+      "main": [
+        [
+          {
+            "node": "QorusDocs GENERATE PITCH",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "post_call_transcription Create Matter": {
+      "main": [
+        [
+          {
+            "node": "AI Agent - Create Matter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "post_call_transcription Generate Pitch": {
+      "main": [
+        [
+          {
+            "node": "AI Agent - Generate Pitch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Direct form - Create Matter": {
+      "main": [
+        [
+          {
+            "node": "QorusDocs CREATE MATTER1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Direct form - Generate Pitch": {
+      "main": [
+        [
+          {
+            "node": "QorusDocs GENERATE PITCH1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {
+    "post_call_transcription Create Matter": [
+      {
+        "json": {
+          "headers": {
+            "host": "leonard-dev.app.n8n.cloud",
+            "user-agent": "ElevenLabs/1.0",
+            "content-length": "15802",
+            "accept": "*/*",
+            "accept-encoding": "gzip, br",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "34.77.234.246",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "BE",
+            "cf-ray": "98f8363832bc9ef8-CDG",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "elevenlabs-signature": "t=1760624582,v0=4c6bb970bfc4a857d116bc3875ae4bc419d9a57b2251fceebd12647350066186",
+            "x-forwarded-for": "34.77.234.246, 172.69.223.102",
+            "x-forwarded-host": "leonard-dev.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-52-6c4f4684d5-sbjk8",
+            "x-is-trusted": "yes",
+            "x-real-ip": "34.77.234.246"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "type": "post_call_transcription",
+            "event_timestamp": 1760624582,
+            "data": {
+              "agent_id": "agent_3301k726sk9qe1dbswth9t91vk9x",
+              "conversation_id": "conv_1401k7ppb0dwekpvraedjp1gwvhy",
+              "status": "done",
+              "user_id": null,
+              "transcript": [
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_3301k726sk9qe1dbswth9t91vk9x",
+                    "workflow_node_id": null
+                  },
+                  "message": "Hi Eduardo, it’s Corey from Legal Engine. Thanks for speaking with me. I hear you've recently opened a new matter?.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 0,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.3308409080000274
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "Yeah, that's right.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 7,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.10532519499997761
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_3301k726sk9qe1dbswth9t91vk9x",
+                    "workflow_node_id": null
+                  },
+                  "message": "Could you tell me a bit about the matter — what the client’s trying to achieve, what stage you’re at, and any key themes or challenges so far?\n",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 11,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.48788415999990775
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.33754376399997454
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.4878579289999152
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.33766023999999106
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.0-flash-001": {
+                        "input": {
+                          "tokens": 1558,
+                          "price": 0.00015580000000000002
+                        },
+                        "input_cache_read": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 36,
+                          "price": 0.000014400000000000001
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "So the client's Coca-Cola. They came to us about a month ago. They've paid us about £30,000 so far. Their goal is to explore the acquisition, possible acquisition of Tango drinks in the UK. There have been some concerns about the possibility that this may become a monopoly that the UK government then tries to clamp down. But so far, that is only a hypothesis and the risk is low. And yes, Sam Stamp is the main person on it.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 19,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.11813458699998591
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_3301k726sk9qe1dbswth9t91vk9x",
+                    "workflow_node_id": null
+                  },
+                  "message": "Okay, that's great. To summarise, Coca-Cola is exploring the acquisition of Tango drinks in the UK, with Sam Stamp leading the work. There are some potential monopoly concerns, and the work has been billed at around thirty thousand pounds so far. What's the name or internal reference for this matter?\n",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 59,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.37192414899993764
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.26279285399994023
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.7281801469999891
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.18824757699997008
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.0-flash-001": {
+                        "input": {
+                          "tokens": 1696,
+                          "price": 0.00016960000000000003
+                        },
+                        "input_cache_read": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 65,
+                          "price": 0.000026
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "Coca-Cola acquisition of Tango drinks.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 76,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.12292969899999662
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_3301k726sk9qe1dbswth9t91vk9x",
+                    "workflow_node_id": null
+                  },
+                  "message": "Understood. Which practice area does this matter fall under?\n",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 82,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.7413056249999954
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.6441347429999951
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.7412819159999344
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.23621952700000293
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.0-flash-001": {
+                        "input": {
+                          "tokens": 1769,
+                          "price": 0.00017690000000000002
+                        },
+                        "input_cache_read": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 13,
+                          "price": 0.0000052
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "Mergers and acquisitions.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 85,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.12224836699999742
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_3301k726sk9qe1dbswth9t91vk9x",
+                    "workflow_node_id": null
+                  },
+                  "message": "Perfect — thanks very much. That’s all I need for now. I’ll make sure this gets logged so we can turn it into future marketing material. Goodbye.\n",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 88,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.4011025629999949
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.3295659049999813
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.5040638220000346
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.23566365500005304
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.0-flash-001": {
+                        "input": {
+                          "tokens": 1786,
+                          "price": 0.00017860000000000003
+                        },
+                        "input_cache_read": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 36,
+                          "price": 0.000014400000000000001
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                }
+              ],
+              "metadata": {
+                "start_time_unix_secs": 1760624476,
+                "accepted_time_unix_secs": 1760624476,
+                "call_duration_secs": 101,
+                "cost": 1187,
+                "deletion_settings": {
+                  "deletion_time_unix_secs": null,
+                  "deleted_logs_at_time_unix_secs": null,
+                  "deleted_audio_at_time_unix_secs": null,
+                  "deleted_transcript_at_time_unix_secs": null,
+                  "delete_transcript_and_pii": false,
+                  "delete_audio": false
+                },
+                "feedback": {
+                  "overall_score": null,
+                  "likes": 0,
+                  "dislikes": 0
+                },
+                "authorization_method": "public",
+                "charging": {
+                  "dev_discount": false,
+                  "is_burst": false,
+                  "tier": "enterprise",
+                  "llm_usage": {
+                    "irreversible_generation": {
+                      "model_usage": {
+                        "gemini-2.0-flash-001": {
+                          "input": {
+                            "tokens": 6809,
+                            "price": 0.0006809
+                          },
+                          "input_cache_read": {
+                            "tokens": 0,
+                            "price": 0
+                          },
+                          "input_cache_write": {
+                            "tokens": 0,
+                            "price": 0
+                          },
+                          "output_total": {
+                            "tokens": 150,
+                            "price": 0.000059999999999999995
+                          }
+                        }
+                      }
+                    },
+                    "initiated_generation": {
+                      "model_usage": {
+                        "gemini-2.0-flash-001": {
+                          "input": {
+                            "tokens": 6809,
+                            "price": 0.0006809
+                          },
+                          "input_cache_read": {
+                            "tokens": 0,
+                            "price": 0
+                          },
+                          "input_cache_write": {
+                            "tokens": 0,
+                            "price": 0
+                          },
+                          "output_total": {
+                            "tokens": 150,
+                            "price": 0.000059999999999999995
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "llm_price": 0.0007409000000000001,
+                  "llm_charge": 8,
+                  "call_charge": 1179,
+                  "free_minutes_consumed": 0,
+                  "free_llm_dollars_consumed": 0
+                },
+                "phone_call": null,
+                "batch_call": null,
+                "termination_reason": "Client disconnected: 1005",
+                "error": null,
+                "main_language": "en",
+                "rag_usage": null,
+                "text_only": false,
+                "features_usage": {
+                  "language_detection": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "transfer_to_agent": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "transfer_to_number": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "multivoice": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "dtmf_tones": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "external_mcp_servers": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "pii_zrm_workspace": false,
+                  "pii_zrm_agent": false,
+                  "tool_dynamic_variable_updates": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "is_livekit": false,
+                  "voicemail_detection": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "workflow": {
+                    "enabled": false,
+                    "tool_node": {
+                      "enabled": false,
+                      "used": false
+                    },
+                    "standalone_agent_node": {
+                      "enabled": false,
+                      "used": false
+                    },
+                    "phone_number_node": {
+                      "enabled": false,
+                      "used": false
+                    },
+                    "end_node": {
+                      "enabled": false,
+                      "used": false
+                    }
+                  },
+                  "agent_testing": {
+                    "enabled": false,
+                    "tests_ran_after_last_modification": false,
+                    "tests_ran_in_last_7_days": false
+                  }
+                },
+                "eleven_assistant": {
+                  "is_eleven_assistant": false
+                },
+                "initiator_id": null,
+                "conversation_initiation_source": "widget",
+                "conversation_initiation_source_version": "0.3.0",
+                "timezone": null,
+                "initiation_trigger": {
+                  "trigger_type": "default"
+                },
+                "async_metadata": null,
+                "whatsapp": null,
+                "agent_created_from": "unknown",
+                "agent_last_updated_from": "ui"
+              },
+              "analysis": {
+                "evaluation_criteria_results": {},
+                "data_collection_results": {
+                  "responsible_partner": {
+                    "data_collection_id": "responsible_partner",
+                    "value": "Sam Stamp",
+                    "json_schema": {
+                      "type": "string",
+                      "description": "The lead or responsible partner within the firm who is managing the matter on behalf of the client.",
+                      "enum": null,
+                      "dynamic_variable": "",
+                      "constant_value": ""
+                    },
+                    "rationale": "The user states that 'Sam Stamp is the main person on it', referring to the Coca-Cola acquisition of Tango drinks. Therefore, Sam Stamp is the lead or responsible partner within the firm who is managing the matter on behalf of the client."
+                  },
+                  "matter_location": {
+                    "data_collection_id": "matter_location",
+                    "value": "UK",
+                    "json_schema": {
+                      "type": "string",
+                      "description": "The location where the matter is being conducted. There may be multiple locations. These locations will be countries, regions or cities. Separate jurisdictions by commas if multiple.",
+                      "enum": null,
+                      "dynamic_variable": "",
+                      "constant_value": ""
+                    },
+                    "rationale": "The user mentions that Coca-Cola is exploring the acquisition of Tango drinks in the UK. Therefore, the location where the matter is being conducted is the UK."
+                  },
+                  "matter_practice": {
+                    "data_collection_id": "matter_practice",
+                    "value": "Mergers and acquisitions",
+                    "json_schema": {
+                      "type": "string",
+                      "description": "The practice group within the firm that is leading on the matter being discussed.",
+                      "enum": null,
+                      "dynamic_variable": "",
+                      "constant_value": ""
+                    },
+                    "rationale": "The agent asks 'Which practice area does this matter fall under?' and the user responds with 'Mergers and acquisitions.'. Therefore, the practice group is Mergers and acquisitions."
+                  },
+                  "default_narrative": {
+                    "data_collection_id": "default_narrative",
+                    "value": "Coca-Cola is exploring the acquisition of Tango drinks in the UK, with Sam Stamp leading the work. There are some potential monopoly concerns, and the work has been billed at around thirty thousand pounds so far.",
+                    "json_schema": {
+                      "type": "string",
+                      "description": "A description of the work that the legal team provided to the client. ",
+                      "enum": null,
+                      "dynamic_variable": "",
+                      "constant_value": ""
+                    },
+                    "rationale": "The legal team (Legal Engine) provided services to Coca-Cola regarding the exploration of the acquisition of Tango drinks in the UK. The work involved addressing potential monopoly concerns and has been billed at around £30,000 so far."
+                  },
+                  "client_name": {
+                    "data_collection_id": "client_name",
+                    "value": "Coca-Cola",
+                    "json_schema": {
+                      "type": "string",
+                      "description": "Name of the client we are acting for.",
+                      "enum": null,
+                      "dynamic_variable": "",
+                      "constant_value": ""
+                    },
+                    "rationale": "The client's name is explicitly mentioned in the conversation: 'So the client's Coca-Cola.'"
+                  },
+                  "client_industry": {
+                    "data_collection_id": "client_industry",
+                    "value": "beverage",
+                    "json_schema": {
+                      "type": "string",
+                      "description": "The industry sector the client we are acting for operates in.",
+                      "enum": null,
+                      "dynamic_variable": "",
+                      "constant_value": ""
+                    },
+                    "rationale": "The client is Coca-Cola, which operates in the beverage industry. Therefore, the industry sector is 'beverage'."
+                  },
+                  "matter_name": {
+                    "data_collection_id": "matter_name",
+                    "value": "Coca-Cola acquisition of Tango drinks",
+                    "json_schema": {
+                      "type": "string",
+                      "description": "The name that the matter should be referred to as. ",
+                      "enum": null,
+                      "dynamic_variable": "",
+                      "constant_value": ""
+                    },
+                    "rationale": "The agent asks 'What's the name or internal reference for this matter?' and the user responds with 'Coca-Cola acquisition of Tango drinks.' This is the name that the matter should be referred to as."
+                  },
+                  "billings": {
+                    "data_collection_id": "billings",
+                    "value": 30000,
+                    "json_schema": {
+                      "type": "number",
+                      "description": "The amount that has been billed on the matter to date including a currency symbol. ",
+                      "enum": null,
+                      "dynamic_variable": "",
+                      "constant_value": ""
+                    },
+                    "rationale": "The user mentions that Coca-Cola has paid them about \\u00a330,000 so far. This is the amount that has been billed on the matter to date including a currency symbol."
+                  }
+                },
+                "call_successful": "success",
+                "transcript_summary": "Corey from Legal Engine spoke with Eduardo about Coca-Cola's potential acquisition of Tango drinks in the UK, led by Sam Stamp. The matter falls under Mergers and Acquisitions, with potential monopoly concerns. The work has been billed at around £30,000. The matter name is \"Coca-Cola acquisition of Tango drinks.\" This information will be used for future marketing.\n",
+                "call_summary_title": "New matter intake"
+              },
+              "conversation_initiation_client_data": {
+                "conversation_config_override": {
+                  "tts": {
+                    "voice_id": null,
+                    "stability": null,
+                    "speed": null,
+                    "similarity_boost": null
+                  },
+                  "conversation": {
+                    "text_only": null
+                  },
+                  "agent": {
+                    "first_message": null,
+                    "language": "en",
+                    "prompt": {
+                      "prompt": null,
+                      "llm": null,
+                      "native_mcp_server_ids": null
+                    }
+                  }
+                },
+                "custom_llm_extra_body": {},
+                "user_id": null,
+                "source_info": {
+                  "source": "widget",
+                  "version": "0.3.0"
+                },
+                "dynamic_variables": {
+                  "first_name": "Eduardo",
+                  "last_name": "Aguilar Pelaez",
+                  "email": "edu@legalengine.co.uk",
+                  "system__agent_id": "agent_3301k726sk9qe1dbswth9t91vk9x",
+                  "system__current_agent_id": "agent_3301k726sk9qe1dbswth9t91vk9x",
+                  "system__conversation_id": "conv_1401k7ppb0dwekpvraedjp1gwvhy",
+                  "system__caller_id": null,
+                  "system__called_number": null,
+                  "system__call_duration_secs": 101,
+                  "system__time_utc": "2025-10-16T14:22:57.654272+00:00",
+                  "system__time": "Thursday, 14:22 16 October 2025",
+                  "system__timezone": null,
+                  "system__call_sid": null
+                }
+              }
+            }
+          },
+          "webhookUrl": "https://leonard-dev.app.n8n.cloud/webhook/qorusdocs_demo_create_matter",
+          "executionMode": "production"
+        }
+      }
+    ],
+    "post_call_transcription Generate Pitch": [
+      {
+        "json": {
+          "headers": {
+            "host": "leonard-dev.app.n8n.cloud",
+            "user-agent": "ElevenLabs/1.0",
+            "content-length": "20996",
+            "accept": "*/*",
+            "accept-encoding": "gzip, br",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "34.77.234.246",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "BE",
+            "cf-ray": "98f84bbc7466d3b3-CDG",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "elevenlabs-signature": "t=1760625463,v0=1a8272c879e14e7f53dda208a2fe0c5ee40058c1caddd39e790309496778dcf5",
+            "x-forwarded-for": "34.77.234.246, 172.71.127.147",
+            "x-forwarded-host": "leonard-dev.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-52-6c4f4684d5-mfqhm",
+            "x-is-trusted": "yes",
+            "x-real-ip": "34.77.234.246"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "type": "post_call_transcription",
+            "event_timestamp": 1760625463,
+            "data": {
+              "agent_id": "agent_0801k726vc78ebrbtpc0jm6z5fvm",
+              "conversation_id": "conv_6301k7pq5r5xfne9pm02zaxdp0rs",
+              "status": "done",
+              "user_id": null,
+              "transcript": [
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_0801k726vc78ebrbtpc0jm6z5fvm",
+                    "workflow_node_id": null
+                  },
+                  "message": "Hi Eduardo, it’s Corey from Legal Engine. I understand you might have an opportunity to pitch for some work. Have you got 2 minutes so I can capture some details and get cracking on the doc?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 0,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.1781643780000195
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "Yeah, sure.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 11,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.2304926440001509
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_0801k726vc78ebrbtpc0jm6z5fvm",
+                    "workflow_node_id": null
+                  },
+                  "message": "Great. Could you give me a short overview of the discussion, what the client was interested in and what kind of opportunity or issue came up?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 12,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.48340883700029735
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.4830775890000041
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.7771209930001532
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.10237569299988536
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.0-flash-001": {
+                        "input": {
+                          "tokens": 1408,
+                          "price": 0.0001408
+                        },
+                        "input_cache_read": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 29,
+                          "price": 0.0000116
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "Sorry, can you repeat that question again?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 22,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.11351362200002768
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_0801k726vc78ebrbtpc0jm6z5fvm",
+                    "workflow_node_id": null
+                  },
+                  "message": "No problem. Could you give me a short overview of the discussion, what the client was interested in, and what kind of opportunity or issue came up?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 24,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.4268894219999311
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.35537146600017877
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.5002186030001212
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.1019748730000174
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.0-flash-001": {
+                        "input": {
+                          "tokens": 1446,
+                          "price": 0.0001446
+                        },
+                        "input_cache_read": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 31,
+                          "price": 0.0000124
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "Oh, so the discussion had to do with mergers and acquisitions and it was in the drinks industry and what came up was the recent UK government rules about monopolies",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 33,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.11923092400002133
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_0801k726vc78ebrbtpc0jm6z5fvm",
+                    "workflow_node_id": null
+                  },
+                  "message": "Okay, that's helpful. Which jurisdiction should the pitch focus on?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 55,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.43382821400018656
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.3355750519999674
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.4338059729998349
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.1567047469998215
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.0-flash-001": {
+                        "input": {
+                          "tokens": 1508,
+                          "price": 0.0001508
+                        },
+                        "input_cache_read": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 15,
+                          "price": 0.000006
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "The UK.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 59,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.1876289930000894
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_0801k726vc78ebrbtpc0jm6z5fvm",
+                    "workflow_node_id": null
+                  },
+                  "message": "And who will be the lead person in the pitch?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 61,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.4906737310002427
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.4022355460001563
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.49065443500012407
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.16598724599998604
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.0-flash-001": {
+                        "input": {
+                          "tokens": 1526,
+                          "price": 0.0001526
+                        },
+                        "input_cache_read": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 11,
+                          "price": 0.0000044
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "Sam Stamp.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 64,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.17833587399991302
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_0801k726vc78ebrbtpc0jm6z5fvm",
+                    "workflow_node_id": null
+                  },
+                  "message": "Which practice group should the pitch sit under?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 66,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.4940853809998771
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.460016583000197
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.49407207600006586
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.13561587899994265
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.0-flash-001": {
+                        "input": {
+                          "tokens": 1540,
+                          "price": 0.000154
+                        },
+                        "input_cache_read": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 9,
+                          "price": 0.0000036000000000000003
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "Mergers and Acquisitions.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 70,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.20225767699957942
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_0801k726vc78ebrbtpc0jm6z5fvm",
+                    "workflow_node_id": null
+                  },
+                  "message": "Is there an existing matter or opportunity that this pitch links to? If so, what is the matter name and client name?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 72,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.5457906209999237
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.350533773999814
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.6707154939999782
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.17560490200003187
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.0-flash-001": {
+                        "input": {
+                          "tokens": 1554,
+                          "price": 0.0001554
+                        },
+                        "input_cache_read": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 25,
+                          "price": 0.00001
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "So I think it was Coca-Cola and I think it was Coca-Cola acquisition of Tango drinks.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 80,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.17493183799979306
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_0801k726vc78ebrbtpc0jm6z5fvm",
+                    "workflow_node_id": null
+                  },
+                  "message": "Perfect, thanks very much. That gives me what I need to generate the draft pitch. I’ll get that prepared and sent through shortly. Goodbye.\n",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 91,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.5727486580003642
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.5027971470003649
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.6497339170000487
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.12910902799967516
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.0-flash-001": {
+                        "input": {
+                          "tokens": 1600,
+                          "price": 0.00016
+                        },
+                        "input_cache_read": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 32,
+                          "price": 0.000012800000000000001
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "Thank you.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 98,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.1687039339999501
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_0801k726vc78ebrbtpc0jm6z5fvm",
+                    "workflow_node_id": null
+                  },
+                  "message": "Happy to help! Have a great day!",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 102,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.6097128189999239
+                      },
+                      "convai_llm_tool_request_generation_latency": {
+                        "elapsed_time": 0.610305106999931
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.1471974549999686
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_0801k726vc78ebrbtpc0jm6z5fvm",
+                    "workflow_node_id": null
+                  },
+                  "message": null,
+                  "multivoice_message": null,
+                  "tool_calls": [
+                    {
+                      "type": "system",
+                      "request_id": "end_call_3d78cf73a3794b12b7b1051fa4322099",
+                      "tool_name": "end_call",
+                      "params_as_json": "{\"system__message_to_speak\": \"Happy to help! Have a great day!\", \"reason\": \"User said thank you and all questions have been answered.\"}",
+                      "tool_has_been_called": true,
+                      "tool_details": null
+                    }
+                  ],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 102,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.6097128189999239
+                      },
+                      "convai_llm_tool_request_generation_latency": {
+                        "elapsed_time": 0.610305106999931
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.1471974549999686
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_0801k726vc78ebrbtpc0jm6z5fvm",
+                    "workflow_node_id": null
+                  },
+                  "message": null,
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [
+                    {
+                      "request_id": "end_call_3d78cf73a3794b12b7b1051fa4322099",
+                      "tool_name": "end_call",
+                      "result_value": "{\"result_type\":\"end_call_success\",\"status\":\"success\",\"reason\":\"User said thank you and all questions have been answered.\",\"message\":null}",
+                      "is_error": false,
+                      "tool_has_been_called": true,
+                      "tool_latency_secs": 0.5021196279999458,
+                      "dynamic_variable_updates": [],
+                      "type": "system",
+                      "result": {
+                        "result_type": "end_call_success",
+                        "status": "success",
+                        "reason": "User said thank you and all questions have been answered.",
+                        "message": null
+                      }
+                    }
+                  ],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 102,
+                  "conversation_turn_metrics": null,
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.0-flash-001": {
+                        "input": {
+                          "tokens": 1635,
+                          "price": 0.0001635
+                        },
+                        "input_cache_read": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 31,
+                          "price": 0.0000124
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                }
+              ],
+              "metadata": {
+                "start_time_unix_secs": 1760625352,
+                "accepted_time_unix_secs": 1760625352,
+                "call_duration_secs": 106,
+                "cost": 1242,
+                "deletion_settings": {
+                  "deletion_time_unix_secs": null,
+                  "deleted_logs_at_time_unix_secs": null,
+                  "deleted_audio_at_time_unix_secs": null,
+                  "deleted_transcript_at_time_unix_secs": null,
+                  "delete_transcript_and_pii": false,
+                  "delete_audio": false
+                },
+                "feedback": {
+                  "overall_score": null,
+                  "likes": 0,
+                  "dislikes": 0
+                },
+                "authorization_method": "public",
+                "charging": {
+                  "dev_discount": false,
+                  "is_burst": false,
+                  "tier": "enterprise",
+                  "llm_usage": {
+                    "irreversible_generation": {
+                      "model_usage": {
+                        "gemini-2.0-flash-001": {
+                          "input": {
+                            "tokens": 12217,
+                            "price": 0.0012217
+                          },
+                          "input_cache_read": {
+                            "tokens": 0,
+                            "price": 0
+                          },
+                          "input_cache_write": {
+                            "tokens": 0,
+                            "price": 0
+                          },
+                          "output_total": {
+                            "tokens": 183,
+                            "price": 0.0000732
+                          }
+                        }
+                      }
+                    },
+                    "initiated_generation": {
+                      "model_usage": {
+                        "gemini-2.0-flash-001": {
+                          "input": {
+                            "tokens": 12217,
+                            "price": 0.0012217
+                          },
+                          "input_cache_read": {
+                            "tokens": 0,
+                            "price": 0
+                          },
+                          "input_cache_write": {
+                            "tokens": 0,
+                            "price": 0
+                          },
+                          "output_total": {
+                            "tokens": 183,
+                            "price": 0.0000732
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "llm_price": 0.0012949,
+                  "llm_charge": 13,
+                  "call_charge": 1229,
+                  "free_minutes_consumed": 0,
+                  "free_llm_dollars_consumed": 0
+                },
+                "phone_call": null,
+                "batch_call": null,
+                "termination_reason": "end_call tool was called.",
+                "error": null,
+                "main_language": "en",
+                "rag_usage": null,
+                "text_only": false,
+                "features_usage": {
+                  "language_detection": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "transfer_to_agent": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "transfer_to_number": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "multivoice": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "dtmf_tones": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "external_mcp_servers": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "pii_zrm_workspace": false,
+                  "pii_zrm_agent": false,
+                  "tool_dynamic_variable_updates": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "is_livekit": false,
+                  "voicemail_detection": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "workflow": {
+                    "enabled": false,
+                    "tool_node": {
+                      "enabled": false,
+                      "used": false
+                    },
+                    "standalone_agent_node": {
+                      "enabled": false,
+                      "used": false
+                    },
+                    "phone_number_node": {
+                      "enabled": false,
+                      "used": false
+                    },
+                    "end_node": {
+                      "enabled": false,
+                      "used": false
+                    }
+                  },
+                  "agent_testing": {
+                    "enabled": false,
+                    "tests_ran_after_last_modification": false,
+                    "tests_ran_in_last_7_days": false
+                  }
+                },
+                "eleven_assistant": {
+                  "is_eleven_assistant": false
+                },
+                "initiator_id": null,
+                "conversation_initiation_source": "widget",
+                "conversation_initiation_source_version": "0.3.0",
+                "timezone": null,
+                "initiation_trigger": {
+                  "trigger_type": "default"
+                },
+                "async_metadata": null,
+                "whatsapp": null,
+                "agent_created_from": "unknown",
+                "agent_last_updated_from": "ui"
+              },
+              "analysis": {
+                "evaluation_criteria_results": {},
+                "data_collection_results": {
+                  "geography": {
+                    "data_collection_id": "geography",
+                    "value": "The UK",
+                    "json_schema": {
+                      "type": "string",
+                      "description": "The jurisdiction / country in which the matter we are pitching for will take place.",
+                      "enum": null,
+                      "dynamic_variable": "",
+                      "constant_value": ""
+                    },
+                    "rationale": "The user specifies that the jurisdiction for the pitch should focus on 'The UK' at 2025-10-16T14:36:51+00:00."
+                  },
+                  "client_name": {
+                    "data_collection_id": "client_name",
+                    "value": "Coca-Cola",
+                    "json_schema": {
+                      "type": "string",
+                      "description": "The name of the client we are developing the pitch for.",
+                      "enum": null,
+                      "dynamic_variable": "",
+                      "constant_value": ""
+                    },
+                    "rationale": "The client name is mentioned in the conversation at 2025-10-16T14:37:12+00:00 as Coca-Cola."
+                  },
+                  "practice_area": {
+                    "data_collection_id": "practice_area",
+                    "value": "mergers and acquisitions",
+                    "json_schema": {
+                      "type": "string",
+                      "description": "The area of legal expertise that we need to demonstrate experience in for the pitch.",
+                      "enum": null,
+                      "dynamic_variable": "",
+                      "constant_value": ""
+                    },
+                    "rationale": "The user mentions that the discussion had to do with 'mergers and acquisitions' in the drinks industry. This indicates the area of legal expertise needed for the pitch."
+                  },
+                  "pitch-summary": {
+                    "data_collection_id": "pitch-summary",
+                    "value": "The pitch is about mergers and acquisitions in the drinks industry, specifically related to the recent UK government rules about monopolies, and the Coca-Cola acquisition of Tango drinks.",
+                    "json_schema": {
+                      "type": "string",
+                      "description": "A brief description on what the pitch is about.",
+                      "enum": null,
+                      "dynamic_variable": "",
+                      "constant_value": ""
+                    },
+                    "rationale": "The user describes the pitch as being about mergers and acquisitions in the drinks industry, specifically related to the recent UK government rules about monopolies, and the Coca-Cola acquisition of Tango drinks. This information provides a brief overview of the pitch's subject matter."
+                  }
+                },
+                "call_successful": "success",
+                "transcript_summary": "Corey from Legal Engine spoke with Eduardo to gather details for a pitch document. The pitch is for a mergers and acquisitions opportunity in the drinks industry, specifically related to recent UK government rules about monopolies. The jurisdiction is the UK, the lead person is Sam Stamp, and it links to the Coca-Cola acquisition of Tango drinks. Corey will prepare a draft pitch.\n",
+                "call_summary_title": "Legal pitch details capture"
+              },
+              "conversation_initiation_client_data": {
+                "conversation_config_override": {
+                  "tts": {
+                    "voice_id": null,
+                    "stability": null,
+                    "speed": null,
+                    "similarity_boost": null
+                  },
+                  "conversation": {
+                    "text_only": null
+                  },
+                  "agent": {
+                    "first_message": null,
+                    "language": "en",
+                    "prompt": {
+                      "prompt": null,
+                      "llm": null,
+                      "native_mcp_server_ids": null
+                    }
+                  }
+                },
+                "custom_llm_extra_body": {},
+                "user_id": null,
+                "source_info": {
+                  "source": "widget",
+                  "version": "0.3.0"
+                },
+                "dynamic_variables": {
+                  "first_name": "Eduardo",
+                  "last_name": "Aguilar Pelaez",
+                  "email": "edu@legalengine.co.uk",
+                  "system__agent_id": "agent_0801k726vc78ebrbtpc0jm6z5fvm",
+                  "system__current_agent_id": "agent_0801k726vc78ebrbtpc0jm6z5fvm",
+                  "system__conversation_id": "conv_6301k7pq5r5xfne9pm02zaxdp0rs",
+                  "system__caller_id": null,
+                  "system__called_number": null,
+                  "system__call_duration_secs": 105,
+                  "system__time_utc": "2025-10-16T14:37:38.276432+00:00",
+                  "system__time": "Thursday, 14:37 16 October 2025",
+                  "system__timezone": null,
+                  "system__call_sid": null
+                }
+              }
+            }
+          },
+          "webhookUrl": "https://leonard-dev.app.n8n.cloud/webhook/qorusdocs_demo_generate_pitch",
+          "executionMode": "production"
+        }
+      }
+    ],
+    "Direct form - Generate Pitch": [
+      {
+        "json": {
+          "ClientName": "Shrute Levinson",
+          "Geography": "San Francisco",
+          "PracticeArea": "Securities and Corporate Finance",
+          "EmailToAddress": "jambrose@qorusdocs.com",
+          "EmailToFirstName": "James",
+          "EmailToLastName": "Ambrose"
+        }
+      }
+    ],
+    "Direct form - Create Matter": [
+      {
+        "json": {
+          "MatterName": "TEST 123",
+          "Logo": "https://abc.com.jo/wp-content/uploads/2023/04/ABC-and-MDS.png",
+          "ClientName": "Wachovia Corporation",
+          "ClientIndustries": "Finance/Banking",
+          "ResponsiblePartner": "William Latourneau",
+          "DefaultNarrative": "$1.83 Billion in IPO and follow-on offerings for lodging REIT Represented a hospitality REIT focused on upper-upscale hotel properties on its $150 million IPO; its $247.6 million follow-on offering; its $260.5 million follow-on offering; its $175 million offering of Series A cumulative redeemable preferred shares; its $138.3 million follow-on offering; its $183 million follow-on offering; and its $100 million at-the-market continuous offering program.",
+          "TotalBillingsITD": "$96,960",
+          "MatterLocation": "San Francisco, California - United States",
+          "MatterPractice": "Securities and Corporate Finance",
+          "UserEmailAddress": "jambrose@qorusdocs.com",
+          "UserFirstName": "James",
+          "UserLastName": "Ambrose"
+        }
+      }
+    ]
+  },
+  "triggerCount": 2,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

@@ -1,0 +1,261 @@
+{
+  "name": "DEV - S3 - Find a slot in an outlook calendar and book into slot",
+  "nodes": [
+    {
+      "parameters": {
+        "resource": "event",
+        "operation": "create",
+        "calendarId": {
+          "__rl": true,
+          "value": "AAMkAGMxYzIyMDNiLTMwNDQtNDE5OC05OGE2LTgyYmMxZjc0N2MxYgBGAAAAAACBf1OFgphsQr9q5Dg5U1xxBwBDq17NBUT6TZpi2QJ2WTqUAAAAAAEGAABDq17NBUT6TZpi2QJ2WTqUAAAAAIZiAAA=",
+          "mode": "list",
+          "cachedResultName": "Calendar"
+        },
+        "subject": "=Pre-Day Meeting Briefing",
+        "startDateTime": "={{ $json.slotStartUTC }}",
+        "endDateTime": "={{ $json.slotEndUTC }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        144,
+        -176
+      ],
+      "id": "8f27cdce-f34e-4d6e-acd3-67402d16a487",
+      "name": "Create an event",
+      "webhookId": "6c6edfa8-cbf5-492d-b350-cdc78c68a9d0",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "NEL55RMRYkKmOgp4",
+          "name": "Microsoft Outlook - Andy"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Find first free slot in [windowStart, windowEnd) using scheduleItems from the getSchedule node,\n// rounding start up to the next 15-minute boundary (00/15/30/45).\n\n// CHANGE this to your getSchedule node name\nconst GET_SCHEDULE_NODE = \"Outlook find time in next 60m\";\n\nconst res = $node[GET_SCHEDULE_NODE].json.value?.[0];\nconst items = (res && res.scheduleItems) ? res.scheduleItems : [];\n\nconst zone = 'Europe/London';\nconst now = DateTime.now().setZone(zone);\n\n// Read inputs from prior node (this item). Fallbacks if missing.\nlet windowStart = $json.windowStart\n  ? DateTime.fromISO($json.windowStart, { zone })\n  : now;\nlet windowEnd = $json.windowEnd\n  ? DateTime.fromISO($json.windowEnd, { zone })\n  : windowStart.plus({ minutes: 60 });\n\nconst durationMin = Number.isFinite($json.durationMinutes) ? $json.durationMinutes : 15;\n\n// Helpers\nfunction roundUpToQuarter(dt) {\n  let t = dt.set({ second: 0, millisecond: 0 });\n  const m = t.minute % 15;\n  return m === 0 ? t : t.plus({ minutes: 15 - m });\n}\nfunction fmtLocalISOWithOffset(dt) {\n  // Local time with +00:00 / +01:00 and correct DST label for that datetime\n  return dt.toISO({ suppressMilliseconds: true, includeOffset: true });\n}\nfunction fmtUTC(dt) {\n  // UTC timestamp (Z) for systems that prefer absolute time\n  return dt.setZone('UTC').toISO({ suppressMilliseconds: true, includeOffset: true });\n}\n\n// Ensure windowStart isn't in the past and is snapped to next quarter\nif (windowStart < now) windowStart = now;\nwindowStart = roundUpToQuarter(windowStart);\n\n// Validate window\nif (windowEnd <= windowStart) {\n  return [{ error: \"Invalid window: end is before or equal to start.\" }];\n}\n\n// Normalize & sort busy items that overlap the window\nconst busy = items\n  .map(i => ({\n    start: DateTime.fromISO(i.start.dateTime, { zone }),\n    end:   DateTime.fromISO(i.end.dateTime,   { zone }),\n  }))\n  .filter(i => i.end > windowStart && i.start < windowEnd)\n  .sort((a, b) => a.start - b.start);\n\n// Scan for the first free gap >= durationMin\nlet cursor = windowStart;\n\nfor (const b of busy) {\n  if (b.start > cursor) {\n    const gapEnd = b.start < windowEnd ? b.start : windowEnd;\n    if (gapEnd.diff(cursor, 'minutes').minutes >= durationMin) {\n      const slotStart = cursor;\n      const slotEnd = slotStart.plus({ minutes: durationMin });\n      return [{\n        slotStart: fmtLocalISOWithOffset(slotStart),\n        slotEnd:   fmtLocalISOWithOffset(slotEnd),\n        timeZone:  slotStart.offsetNameShort,       // \"BST\" or \"GMT\" for the slot time\n        slotStartUTC: fmtUTC(slotStart),\n        slotEndUTC:   fmtUTC(slotEnd),\n        // Optional if you need Windows zone for Graph later:\n        // timeZoneWindows: \"GMT Standard Time\"\n      }];\n    }\n  }\n  // Move cursor to just after this busy block, snapped to next quarter\n  if (b.end > cursor) cursor = roundUpToQuarter(b.end);\n\n  if (cursor >= windowEnd) {\n    return [{ error: `No free ${durationMin}-minute slot in the requested window.` }];\n  }\n}\n\n// Tail after last busy block\nif (windowEnd.diff(cursor, 'minutes').minutes >= durationMin) {\n  const slotStart = cursor;\n  const slotEnd = slotStart.plus({ minutes: durationMin });\n  return [{\n    slotStart: fmtLocalISOWithOffset(slotStart),\n    slotEnd:   fmtLocalISOWithOffset(slotEnd),\n    timeZone:  slotStart.offsetNameShort,         // \"BST\" or \"GMT\" for the slot time\n    slotStartUTC: fmtUTC(slotStart),\n    slotEndUTC:   fmtUTC(slotEnd),\n    // timeZoneWindows: \"GMT Standard Time\"\n  }];\n}\n\n// Nothing found\nreturn [{ error: `No free ${durationMin}-minute slot in the requested window.` }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -80,
+        -176
+      ],
+      "id": "37d07fe2-6099-45f8-b9ea-fdb9e5a9a50c",
+      "name": "Pick Slot on 15m"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.microsoft.com/v1.0/me/calendar/getSchedule",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "microsoftOutlookOAuth2Api",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"Content-Type\": \"application/json\",\n  \"Prefer\": \"outlook.timezone=\\\"GMT Standard Time\\\"\"\n}\n",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"schedules\": [\"andy@legalengine.co.uk\"],\n  \"startTime\": {\n    \"dateTime\": \"{{$now.setZone('Europe/London').toISO({ suppressMilliseconds: true, includeOffset: true })}}\",\n    \"timeZone\": \"{{$now.setZone('Europe/London').offsetNameShort}}\"\n  },\n  \"endTime\": {\n    \"dateTime\": \"{{$now.setZone('Europe/London').plus({ minutes: 60 }).toISO({ suppressMilliseconds: true, includeOffset: true })}}\",\n    \"timeZone\": \"{{$now.setZone('Europe/London').offsetNameShort}}\"\n  },\n  \"availabilityViewInterval\": 15\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -304,
+        -176
+      ],
+      "id": "34319ccc-287d-4e82-89fc-d0619722e0e6",
+      "name": "Outlook find time in next 60m",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "NEL55RMRYkKmOgp4",
+          "name": "Microsoft Outlook - Andy"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resume": "specificTime",
+        "dateTime": "={{ DateTime.fromISO($json.start.dateTime, { zone: 'UTC' })\n     .setZone('Europe/London')\n     .toISO({ suppressMilliseconds: true, includeOffset: true }) }}\n"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        368,
+        -176
+      ],
+      "id": "a919e64b-56d9-48f8-8d81-2a3bc4547076",
+      "name": "Wait",
+      "webhookId": "b3b5e134-9841-4ba3-8b30-f6c50cb04633"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "HVct6QrCYlt8Dxm5",
+          "mode": "list",
+          "cachedResultName": "DEV - S4 - Outbound Call with Agent ID set"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        816,
+        -176
+      ],
+      "id": "96c1ff4d-6f90-4ba4-af9d-60088f244fc2",
+      "name": "Execute Workflow"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -528,
+        -176
+      ],
+      "id": "c961813f-9190-4cf5-b500-38ac52581f3b",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a7518b23-e670-4c5b-b688-be09a1e6a1ec",
+              "name": "agent_id",
+              "value": "={{ $('When Executed by Another Workflow').item.json.agent_id }}",
+              "type": "string"
+            },
+            {
+              "id": "04dd8171-07a9-4301-87af-c04cfde78325",
+              "name": "id",
+              "value": "={{ $('When Executed by Another Workflow').item.json.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        592,
+        -176
+      ],
+      "id": "fc0fee20-0cc1-4c24-bebe-ecbb2d5e01b7",
+      "name": "Set Nodes to pass"
+    },
+    {
+      "parameters": {
+        "resume": "specificTime",
+        "dateTime": "=1"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        368,
+        32
+      ],
+      "id": "fe98c650-1bee-442e-bb71-f37eb99d76af",
+      "name": "Wait1",
+      "webhookId": "b3b5e134-9841-4ba3-8b30-f6c50cb04633",
+      "disabled": true
+    }
+  ],
+  "connections": {
+    "Pick Slot on 15m": {
+      "main": [
+        [
+          {
+            "node": "Create an event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Outlook find time in next 60m": {
+      "main": [
+        [
+          {
+            "node": "Pick Slot on 15m",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create an event": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Set Nodes to pass",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Outlook find time in next 60m",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Nodes to pass": {
+      "main": [
+        [
+          {
+            "node": "Execute Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "agent_id": "agent_5501k48hmmj2fjx8qs4fdc5hd29v"
+        }
+      }
+    ]
+  },
+  "triggerCount": 0,
+  "meta": null
+}

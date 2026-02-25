@@ -1,0 +1,1914 @@
+{
+  "name": "DEV2 - Voice Agent to create a voice agent - owner Andy",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Call sumamry here: {{ $json.body.data.analysis.transcript_summary }}\nCall transcript here: {{ $json.body.data.transcript }}",
+        "options": {
+          "systemMessage": "=You are the **Voice Agent Creation Agent**.\n\nYour job is to take structured input describing the desired purpose, tone, behaviour, and technical requirements of a new ElevenLabs voice agent — and return a **single, valid JSON object** that is 100% syntactically correct and ready for use inside an n8n workflow.\n\n---\n\n### 🎯 YOUR OUTPUT REQUIREMENTS\n\nYou must output **only** a single JSON object that matches the following schema:\n\n```json\n{\n  \"status\": \"success\",\n  \"agent_prompt\": \"string\"\n}\n```"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        416,
+        -400
+      ],
+      "id": "d1cac6c0-eba5-4819-9bc1-8c2453c68f95",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        496,
+        -176
+      ],
+      "id": "f6134f9b-199f-42d8-a096-41b95931e221",
+      "name": "Google Vertex Chat Model",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.elevenlabs.io/v1/convai/agents/create",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "xi-api-key",
+              "value": "sk_3eca705a3c2780af4cb1116beb64d3e1d3bfc187a8d565f8"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"agent_id\": \"agent_0201k4b73d15egvvd88yqxzvz19g\",\n  \"name\": \"Custom Agentic AI Agent Baldrick - [owner: Andy] - {{ $('Webhook1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.system__time }}\",\n  \"conversation_config\": {\n    \"asr\": {\"quality\": \"high\", \"provider\": \"elevenlabs\", \"user_input_audio_format\": \"pcm_16000\", \"keywords\": []},\n    \"turn\": {\"turn_timeout\": 10.0, \"silence_end_call_timeout\": -1.0, \"mode\": \"turn\"},\n    \"tts\": {\"model_id\": \"eleven_flash_v2\", \"voice_id\": \"AwP2bjcqrSky0yiDhZSe\", \"supported_voices\": [], \"agent_output_audio_format\": \"pcm_16000\", \"optimize_streaming_latency\": 4, \"stability\": 0.65, \"speed\": 0.99, \"similarity_boost\": 0.45, \"pronunciation_dictionary_locators\": []},\n    \"conversation\": {\"text_only\": false, \"max_duration_seconds\": 3600, \"client_events\": [\"audio\", \"interruption\"]},\n    \"language_presets\": {},\n    \"agent\": {\n      \"first_message\": \"Hi, I'm Baldrick, your super smart bespoke Agentic AI Voice Agent. I hear you're interested in creating a voice agent to help you with a task so let's get going. What do you want to start with?\",\n      \"language\": \"en\",\n      \"dynamic_variables\": {\"dynamic_variable_placeholders\": {}},\n      \"prompt\": {\n        \"prompt\": \"{{ $json.agent_prompt }}\",\n        \"llm\": \"gemini-2.5-flash-lite\",\n        \"temperature\": 0.3,\n        \"max_tokens\": -1,\n        \"tool_ids\": [],\n        \"built_in_tools\": {\n          \"end_call\": {\"type\": \"system\", \"name\": \"end_call\", \"description\": \"\", \"response_timeout_secs\": 20, \"disable_interruptions\": false, \"force_pre_tool_speech\": false, \"assignments\": [], \"params\": {\"system_tool_type\": \"end_call\"}},\n          \"language_detection\": null,\n          \"transfer_to_agent\": null,\n          \"transfer_to_number\": null,\n          \"skip_turn\": null,\n          \"play_keypad_touch_tone\": null,\n          \"voicemail_detection\": {\"type\": \"system\", \"name\": \"voicemail_detection\", \"description\": \"\", \"response_timeout_secs\": 20, \"disable_interruptions\": false, \"force_pre_tool_speech\": false, \"assignments\": [], \"params\": {\"system_tool_type\": \"voicemail_detection\", \"voicemail_message\": \"\"}}\n        },\n        \"mcp_server_ids\": [],\n        \"native_mcp_server_ids\": [],\n        \"knowledge_base\": [],\n        \"custom_llm\": null,\n        \"ignore_default_personality\": false,\n        \"rag\": {\"enabled\": true, \"embedding_model\": \"e5_mistral_7b_instruct\", \"max_vector_distance\": 0.6, \"max_documents_length\": 50000, \"max_retrieved_rag_chunks_count\": 20},\n        \"timezone\": null,\n        \"tools\": [\n          {\"type\": \"system\", \"name\": \"end_call\", \"description\": \"\", \"response_timeout_secs\": 20, \"disable_interruptions\": false, \"force_pre_tool_speech\": false, \"assignments\": [], \"params\": {\"system_tool_type\": \"end_call\"}},\n          {\"type\": \"system\", \"name\": \"voicemail_detection\", \"description\": \"\", \"response_timeout_secs\": 20, \"disable_interruptions\": false, \"force_pre_tool_speech\": false, \"assignments\": [], \"params\": {\"system_tool_type\": \"voicemail_detection\", \"voicemail_message\": \"\"}}\n        ]\n      }\n    }\n  },\n  \"metadata\": {\"created_at_unix_secs\": 1757018174, \"updated_at_unix_secs\": 1757018174},\n  \"platform_settings\": {\"auth\": {\"enable_auth\": false, \"allowlist\": [], \"shareable_token\": null}, \"evaluation\": {\"criteria\": []}, \"widget\": {\"variant\": \"full\", \"placement\": \"bottom-right\", \"expandable\": \"never\", \"avatar\": {\"type\": \"orb\", \"color_1\": \"#2792dc\", \"color_2\": \"#9ce6e6\"}, \"feedback_mode\": \"during\", \"bg_color\": \"#ffffff\", \"text_color\": \"#000000\", \"btn_color\": \"#000000\", \"btn_text_color\": \"#ffffff\", \"border_color\": \"#e1e1e1\", \"focus_color\": \"#000000\", \"border_radius\": null, \"btn_radius\": null, \"action_text\": null, \"start_call_text\": null, \"end_call_text\": null, \"expand_text\": null, \"listening_text\": null, \"speaking_text\": null, \"shareable_page_text\": null, \"shareable_page_show_terms\": false, \"terms_text\": null, \"terms_html\": null, \"terms_key\": null, \"show_avatar_when_collapsed\": false, \"disable_banner\": false, \"override_link\": null, \"mic_muting_enabled\": false, \"transcript_enabled\": false, \"text_input_enabled\": false, \"default_expanded\": false, \"always_expanded\": false, \"text_contents\": {\"main_label\": \"Chat to your Agent ?\", \"start_call\": \"Chat now\", \"start_chat\": null, \"new_call\": null, \"end_call\": null, \"mute_microphone\": null, \"change_language\": null, \"collapse\": null, \"expand\": null, \"copied\": null, \"accept_terms\": null, \"dismiss_terms\": null, \"listening_status\": null, \"speaking_status\": null, \"connecting_status\": null, \"chatting_status\": null, \"input_label\": null, \"input_placeholder\": null, \"input_placeholder_text_only\": null, \"input_placeholder_new_conversation\": null, \"user_ended_conversation\": null, \"agent_ended_conversation\": null, \"conversation_id\": null, \"error_occurred\": null, \"copy_id\": null}, \"styles\": {\"base\": null, \"base_hover\": null, \"base_active\": null, \"base_border\": null, \"base_subtle\": null, \"base_primary\": null, \"base_error\": null, \"accent\": null, \"accent_hover\": null, \"accent_active\": null, \"accent_border\": null, \"accent_subtle\": null, \"accent_primary\": null, \"overlay_padding\": null, \"button_radius\": null, \"input_radius\": null, \"bubble_radius\": null, \"sheet_radius\": null, \"compact_sheet_radius\": null, \"dropdown_sheet_radius\": null}, \"language_selector\": false, \"supports_text_only\": false, \"custom_avatar_path\": null, \"language_presets\": {}}, \"data_collection\": {}, \"overrides\": {\"conversation_config_override\": {\"tts\": {\"voice_id\": false, \"stability\": false, \"speed\": false, \"similarity_boost\": false}, \"conversation\": {\"text_only\": true}, \"agent\": {\"first_message\": false, \"language\": false, \"prompt\": {\"prompt\": false, \"native_mcp_server_ids\": false}}}, \"custom_llm_extra_body\": false, \"enable_conversation_initiation_client_data_from_webhook\": false}, \"call_limits\": {\"agent_concurrency_limit\": -1, \"daily_limit\": 100000, \"bursting_enabled\": true}, \"ban\": null, \"privacy\": {\"record_voice\": true, \"retention_days\": -1, \"delete_transcript_and_pii\": false, \"delete_audio\": false, \"apply_to_existing_conversations\": false, \"zero_retention_mode\": false}, \"workspace_overrides\": {\"conversation_initiation_client_data_webhook\": null, \"webhooks\": {\"post_call_webhook_id\": \"\", \"send_audio\": false}}, \"testing\": {\"attached_tests\": [], \"referenced_tests_ids\": []}, \"safety\": {\"is_blocked_ivc\": false, \"is_blocked_non_ivc\": false, \"ignore_safety_evaluation\": false}},\n  \"phone_numbers\": [],\n  \"workflow\": {\"edges\": {}, \"nodes\": {\"start_node\": {\"type\": \"start\", \"position\": {\"x\": 0.0, \"y\": 0.0}}}}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1216,
+        -400
+      ],
+      "id": "feeb924d-dff4-423c-b5cd-0a843ea2db65",
+      "name": "Create 11L agent with KB1"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "voice_agent_creates_a_voice_agent",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -32,
+        -400
+      ],
+      "id": "b635be2b-3f4c-4b6a-8600-3c6388260be2",
+      "name": "Webhook1",
+      "webhookId": "8d4fd933-8d10-4310-bcd5-15e2a8d6fb9e"
+    },
+    {
+      "parameters": {
+        "toRecipients": "=leonard@legalengine.co.uk, andy@legalengine.co.uk, {{ $('AI Agent2').item.json.output }}",
+        "subject": "=Your bespoke voice agent ",
+        "bodyContent": "=<!doctype html>\n<html lang=\"en\" style=\"margin:0;padding:0;\">\n  <!-- keep your full HTML here as before -->\n</html>\n",
+        "additionalFields": {
+          "bodyContentType": "html"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        2016,
+        -400
+      ],
+      "id": "ac018882-bc07-441d-a50a-6da6366fc470",
+      "name": "HTML Email to user1",
+      "webhookId": "a837a6a6-8c20-4b92-9f5f-a5967da4c24b",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "eweG9vjyeWb4mfPE",
+          "name": "Microsoft Outlook - Support @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "10d0d682-5b65-41ab-8541-cd65011e7e15",
+              "leftValue": "={{ $json.body.data.conversation_initiation_client_data.dynamic_variables.system__call_duration_secs }}",
+              "rightValue": 45,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        192,
+        -400
+      ],
+      "id": "d6b622a9-dce8-42b1-9983-4976560e2771",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "amount": 30,
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        2240,
+        -400
+      ],
+      "id": "69d61aa8-9c86-4505-a567-c1a51aa9d92d",
+      "name": "Wait1",
+      "webhookId": "71335561-2e36-4ac6-a7d1-424d3179920f"
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "=https://api.elevenlabs.io/v1/convai/agents/{{ $('Create 11L agent with KB1').item.json.agent_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "xi-api-key",
+              "value": "sk_3eca705a3c2780af4cb1116beb64d3e1d3bfc187a8d565f8"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        2464,
+        -400
+      ],
+      "id": "25b5e470-b2df-4840-adf1-49263ebd7b62",
+      "name": "Delete Agent1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// === Voice Agent JSON Sanitiser ===\nlet raw = $json.output || $json.data || $input.item.json.text || \"\";\nraw = raw.trim()\n  .replace(/^```json/i, \"\")\n  .replace(/^```/, \"\")\n  .replace(/```$/, \"\")\n  .replace(/[\\u0000-\\u001F]+/g, \" \")\n  .trim();\nconst firstBrace = raw.indexOf(\"{\");\nconst lastBrace = raw.lastIndexOf(\"}\");\nif (firstBrace > -1 && lastBrace > firstBrace) raw = raw.slice(firstBrace, lastBrace + 1);\nlet parsed;\ntry { parsed = JSON.parse(raw); } catch (err) {\n  let repaired = raw.replace(/\\n+/g, \" \").replace(/\\r+/g, \" \")\n    .replace(/\\\\(?![\"\\\\/bfnrtu])/g, \"\\\\\\\\\")\n    .replace(/“|”/g, '\"').replace(/‘|’/g, \"'\");\n  try { parsed = JSON.parse(repaired); } catch { return [{ json: { status: \"error\", message: \"Invalid or unrepairable JSON\", raw_response: raw } }]; }\n}\nif (!parsed || typeof parsed !== \"object\") return [{ json: { status: \"error\", message: \"Output not an object\", raw_response: raw } }];\nif (!parsed.agent_prompt || typeof parsed.agent_prompt !== \"string\") { parsed.status = \"error\"; parsed.message = \"Missing or invalid agent_prompt\"; }\nif (parsed.agent_prompt) parsed.agent_prompt = parsed.agent_prompt.replace(/\\s+/g, \" \").replace(/\\\\n/g, \" \").replace(/[\\\"]+/g, '\"').trim();\nreturn [{ json: { status: parsed.status || \"success\", agent_prompt: parsed.agent_prompt || \"\", validated: true } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        768,
+        -400
+      ],
+      "id": "506dbec0-4de5-4f19-ba76-9b7737f3e8ea",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "amount": 2,
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        1792,
+        -400
+      ],
+      "id": "7174de68-ed0d-4922-b0b1-4cede77692a0",
+      "name": "Wait2",
+      "webhookId": "4b43094e-9f35-4ef5-b099-8aaed61b9912"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Email address if validated here: \n{{ $('If1').item.json.body.data.analysis.data_collection_results.email_address.value }}\nRationale for decision on email address here:\n{{ $('If1').item.json.body.data.analysis.data_collection_results.email_address.rationale }}",
+        "options": {
+          "systemMessage": "=Take the inputs and produce the most likely email address that the user is trying to give to the voice agent in particular paying attention to the word 'at' which is likely to actually be a @.\n\nOutput is a well formulated email address."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        1440,
+        -400
+      ],
+      "id": "62eeeebe-8db3-451b-bdf3-0aa287d6a056",
+      "name": "AI Agent2"
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        1520,
+        -176
+      ],
+      "id": "d30a38d7-8e17-48d6-be0e-94a2125f4945",
+      "name": "Google Vertex Chat Model1",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "voice_agent_creates_a_voice_agent",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -32,
+        -80
+      ],
+      "id": "97abebab-9da6-4fb9-9940-7d1cb5ca8b7e",
+      "name": "Webhook",
+      "webhookId": "8d4fd933-8d10-4310-bcd5-15e2a8d6fb9e",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "45f8b73b-bdf2-4d65-97f2-22ed56b9dca6",
+              "name": "agent_prompt",
+              "value": "={{ $json.agent_prompt }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        992,
+        -400
+      ],
+      "id": "98a34eee-8141-4cdf-8fad-b57cd53fd84d",
+      "name": "Set Nodes to pass2"
+    }
+  ],
+  "connections": {
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create 11L agent with KB1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML Email to user1": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "Delete Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Set Nodes to pass2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait2": {
+      "main": [
+        [
+          {
+            "node": "HTML Email to user1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent2": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Nodes to pass2": {
+      "main": [
+        [
+          {
+            "node": "Create 11L agent with KB1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {
+    "Webhook1": [
+      {
+        "json": {
+          "headers": {
+            "host": "leonard-dev.app.n8n.cloud",
+            "user-agent": "ElevenLabs/1.0",
+            "content-length": "33621",
+            "accept": "*/*",
+            "accept-encoding": "gzip, br",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "34.59.11.47",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "US",
+            "cf-ray": "99238633864d2d06-IAD",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "elevenlabs-signature": "t=1761078745,v0=beb7ab2227307a4b56d9031978f8544427e2c3131a137c776ab9bf9c775f3c00",
+            "x-forwarded-for": "34.59.11.47, 172.71.223.184",
+            "x-forwarded-host": "leonard-dev.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-52-6c4f4684d5-swjxv",
+            "x-is-trusted": "yes",
+            "x-real-ip": "34.59.11.47"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "type": "post_call_transcription",
+            "event_timestamp": 1761078745,
+            "data": {
+              "agent_id": "agent_8901k7z2y5v8fghbhaqefp0g6arq",
+              "conversation_id": "conv_9501k8473ygfeyyvye6gqpwj08s5",
+              "status": "done",
+              "user_id": null,
+              "transcript": [
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_8901k7z2y5v8fghbhaqefp0g6arq",
+                    "workflow_node_id": null
+                  },
+                  "message": "Hey, how are you today? Ready to get going with designing a voice agent? ",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 0,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.17126459200017052
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "Yeah, sure. I said yes.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 7,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.1194842489999246
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_8901k7z2y5v8fghbhaqefp0g6arq",
+                    "workflow_node_id": null
+                  },
+                  "message": "Excellent! I'm Architect Voice, and I'm here to help you design your new voice AI agent. I'll ask you a few short questions to understand what you're looking for.\n\nFirst, could you please provide me with your email address? This will help me keep track of our conversation.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 21,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.40654363300018304
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.30817160800006604
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.73009958800003
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.1024558040003285
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash": {
+                        "input": {
+                          "tokens": 1469,
+                          "price": 0.00022035
+                        },
+                        "input_cache_read": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 64,
+                          "price": 0.0000384
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "eduardo.aguilarpelaez@gmail.com",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 34,
+                  "conversation_turn_metrics": null,
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "text"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_8901k7z2y5v8fghbhaqefp0g6arq",
+                    "workflow_node_id": null
+                  },
+                  "message": "Got it. Your email is eduardo.aguilarpelaez@gmail.com. Thank you for that.\n\nNow, let's start with the core purpose. What is the main goal or outcome you want this new agent to achieve? What should it primarily do or help people with?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 35,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.6460412520000318
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.33313934299985704
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.7429974570000013
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.14913111499981824
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash": {
+                        "input": {
+                          "tokens": 1544,
+                          "price": 0.0002316
+                        },
+                        "input_cache_read": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 59,
+                          "price": 0.0000354
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "It should... Help people understand their priorities and the idea is that the agent will be very open-ended and ask them how their day was, talk about, listen to everything they have to say and then try to ascertain their motivations. And then try to understand their immediate goals and then short term goals and then sort of life goals all the way up to the point of like discussing values and priorities, et cetera. And then the idea is that this conversation then has memory and takes place every day or so. And it's essentially like a trusted advisor slash coach that helps people to get their knowledge, their skills, their skills together. So I think that's what we're trying to do here. Be a little bit more deliberate about their choices and how they spend their time.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 49,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.14352128700011235
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_8901k7z2y5v8fghbhaqefp0g6arq",
+                    "workflow_node_id": null
+                  },
+                  "message": "That's a very clear vision. So, the main purpose is to act as a trusted advisor or coach, helping users understand their priorities, motivations, and goals, from daily activities to life values, to encourage more deliberate choices and time management.\n\nNow, who will the agent primarily be speaking to or helping? Can you describe your target audience a bit more?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 111,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.5350505420001355
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.3972435539999424
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.8322637179999219
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.17181219200028863
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash": {
+                        "input": {
+                          "tokens": 1762,
+                          "price": 0.00026430000000000003
+                        },
+                        "input_cache_read": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 74,
+                          "price": 0.0000444
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "Yeah, just busy professionals who want to better themselves.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 134,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.15033419500014134
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_8901k7z2y5v8fghbhaqefp0g6arq",
+                    "workflow_node_id": null
+                  },
+                  "message": "Understood. So the target audience is busy professionals looking for self-improvement.\n\nNext, how should the agent sound and feel? What kind of tone, personality, and energy should it have?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 142,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.5595564820000618
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.4196789380002883
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.6991504910001822
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.17984219400022994
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash": {
+                        "input": {
+                          "tokens": 1847,
+                          "price": 0.00027705
+                        },
+                        "input_cache_read": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 40,
+                          "price": 0.000024
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "Well, remember, self-improvement isn't just about making themselves better from an operational point of view. It's also about them becoming better at managing their own expectations, emotions, heart situations or even, you know, repetitive self-talk.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 151,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.1954468399999314
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_8901k7z2y5v8fghbhaqefp0g6arq",
+                    "workflow_node_id": null
+                  },
+                  "message": "That's a very important clarification. Thank you. So, the agent should not only focus on operational improvement but also on emotional intelligence, managing expectations, and addressing repetitive self-talk.\n\nConsidering this, how should the agent sound and feel? What kind of tone, personality, and energy...",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 173,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.49997350400008145
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.4031159229998593
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.8351722620000146
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.1374034059999758
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash": {
+                        "input": {
+                          "tokens": 1937,
+                          "price": 0.00029055
+                        },
+                        "input_cache_read": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 71,
+                          "price": 0.0000426
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": true,
+                  "original_message": "That's a very important clarification. Thank you. So, the agent should not only focus on operational improvement but also on emotional intelligence, managing expectations, and addressing repetitive self-talk.\n\nConsidering this, how should the agent sound and feel? What kind of tone, personality, and energy should it have to effectively address these aspects for busy professionals?",
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "It should be approachable, friendly, not judgmental, not too sycophantic, a little bit of hard love every now and then, tough love, but also, you know, giving people the opportunity to remind themselves that they, you know, they have done positive things and those positive things should also be celebrated.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 186,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.12522346900004777
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_8901k7z2y5v8fghbhaqefp0g6arq",
+                    "workflow_node_id": null
+                  },
+                  "message": "That's a wonderfully balanced description. So, the agent should be approachable, friendly, non-judgmental, capable of offering \"tough love\" when appropriate, but also encouraging and celebratory of positive achievements.\n\nMoving on, what kind of conversation style should it have? For example, should it be a structured interview, a more free-flowing discussion, or something else?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 212,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.6848509499995998
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.5500999019996016
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 1.046111916999962
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.1481409100001656
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash": {
+                        "input": {
+                          "tokens": 2062,
+                          "price": 0.00030930000000000004
+                        },
+                        "input_cache_read": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 76,
+                          "price": 0.000045600000000000004
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "Free-flowing. But here's the thing. Free-flying with the fallback for very structured set of things to follow up on each day so that you know things don't fall through the cracks and they do come back to what they said they were going to do.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 233,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.17624541700024565
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_8901k7z2y5v8fghbhaqefp0g6arq",
+                    "workflow_node_id": null
+                  },
+                  "message": "Got it. So, a free-flowing conversational style is preferred, but with a structured follow-up mechanism to ensure accountability and continuity on commitments made by the user.\n\nNext, what specific tasks or data should the agent capture, or actions should it perform during these conversations?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 253,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.6137421049998011
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.5732045929999003
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.7391324810000697
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.11083331899999393
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash": {
+                        "input": {
+                          "tokens": 223,
+                          "price": 0.00003344999999999999
+                        },
+                        "input_cache_read": {
+                          "tokens": 1971,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 56,
+                          "price": 0.000033600000000000004
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "Primarily capture data about the person's goals and everything we said before, and then in terms of actions, just another follow-up email.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 270,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.19380589799993686
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_8901k7z2y5v8fghbhaqefp0g6arq",
+                    "workflow_node_id": null
+                  },
+                  "message": "So, the agent should primarily capture data related to the user's goals, motivations, and priorities as we discussed earlier. And the main action it needs to perform is sending a follow-up email.\n\nAre there any specific webhooks or integrations...",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 286,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.8100430399999823
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.3817731899998762
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.8552184200002557
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.17847121400018295
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash": {
+                        "input": {
+                          "tokens": 314,
+                          "price": 0.0000471
+                        },
+                        "input_cache_read": {
+                          "tokens": 1966,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 65,
+                          "price": 0.000039
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": true,
+                  "original_message": "So, the agent should primarily capture data related to the user's goals, motivations, and priorities as we discussed earlier. And the main action it needs to perform is sending a follow-up email.\n\nAre there any specific webhooks or integrations it should trigger during the conversation, beyond sending that follow-up email?",
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "Mm-hmm.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 298,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.12982268199993996
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_8901k7z2y5v8fghbhaqefp0g6arq",
+                    "workflow_node_id": null
+                  },
+                  "message": "You mentioned sending a follow-up email. Should this trigger any webhooks or integrations during the conversation, perhaps to an email service or a CRM?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 300,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.5753329889998895
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.4174500409999382
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.7725396690002526
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.14122292899992317
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash": {
+                        "input": {
+                          "tokens": 376,
+                          "price": 0.000056399999999999995
+                        },
+                        "input_cache_read": {
+                          "tokens": 1959,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 30,
+                          "price": 0.000018
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "Not right now, but I will set it up later.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 310,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.12724569400006658
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_8901k7z2y5v8fghbhaqefp0g6arq",
+                    "workflow_node_id": null
+                  },
+                  "message": "Understood. So, no webhooks or integrations are needed right now, but you plan to set them up later.\n\nAre there any guardrails or limits to its behavior? For example, compliance, privacy, or legal boundaries it must adhere to?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 318,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.7147714959996847
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.5677706649998981
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.9380031569999119
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.11929080399977465
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash": {
+                        "input": {
+                          "tokens": 424,
+                          "price": 0.0000636
+                        },
+                        "input_cache_read": {
+                          "tokens": 1953,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 51,
+                          "price": 0.0000306
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "No, it's all good.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 330,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.26394543900005374
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_8901k7z2y5v8fghbhaqefp0g6arq",
+                    "workflow_node_id": null
+                  },
+                  "message": "Okay, so there are no specific guardrails or limits to its behavior that you need to mention at this time.\n\nFinally, how should the agent end the conversation? What kind of closing message or next steps should it provide?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 335,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.6560194270000466
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.40600626400009787
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.70599643200012
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.15649121400019794
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash": {
+                        "input": {
+                          "tokens": 488,
+                          "price": 0.0000732
+                        },
+                        "input_cache_read": {
+                          "tokens": 1947,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 46,
+                          "price": 0.000027599999999999997
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "It should be a positive closing.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 348,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.18537398699982077
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_8901k7z2y5v8fghbhaqefp0g6arq",
+                    "workflow_node_id": null
+                  },
+                  "message": "A positive closing,...",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 352,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.6197939540002153
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.4521544160002122
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.7802379710001333
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.12317775599967717
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash": {
+                        "input": {
+                          "tokens": 547,
+                          "price": 0.00008205
+                        },
+                        "input_cache_read": {
+                          "tokens": 1941,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 41,
+                          "price": 0.000024599999999999998
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": true,
+                  "original_message": "A positive closing, got it. Could you elaborate a little on what that positive closing might entail? For example, should it summarize the conversation, offer encouragement, or suggest a time for the next interaction?",
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "With a reminder of the tangible positive things that the person has done in the last few days to make things better for themselves and their loved ones. The ones that they care about.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 353,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.12424219499962419
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_8901k7z2y5v8fghbhaqefp0g6arq",
+                    "workflow_node_id": null
+                  },
+                  "message": "That's a wonderful way to end it. So, the agent should conclude with a positive closing, reminding the user of the tangible positive actions they've taken recently to benefit themselves and their loved ones.\n\nLet me quickly summarize what I've understood so far:\n\nThe agent's main purpose is to act as a trusted advisor/coach for busy professionals seeking self-improvement, helping them understand their priorities, motivations, and goals, including emotional intelligence and managing expectations. It should be approachable, friendly, non-judgmental, capable of offering \"tough love\" but also encouraging and celebratory. The conversation style should be free-flowing with structured follow-ups. It needs to capture data about the user's goals and send a follow-up email, but no immediate webhooks are required. There are no specific guardrails or limits, and it should end with a positive closing, highlighting the user's recent positive actions.\n\nDoes all of that sound accurate to you?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 373,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.5122813070001939
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.3807042910002565
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 1.4763531960002183
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.16967660199998136
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash": {
+                        "input": {
+                          "tokens": 2528,
+                          "price": 0.0003792
+                        },
+                        "input_cache_read": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 200,
+                          "price": 0.00012
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "Yes.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 429,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.19699313499950222
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_8901k7z2y5v8fghbhaqefp0g6arq",
+                    "workflow_node_id": null
+                  },
+                  "message": "Fantastic! I have all the information I need to design your new voice AI agent. Thank you for your time and clear explanations.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 431,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.49025683800027764
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.33999294900058885
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.5595051959999182
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.15482684500057076
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash": {
+                        "input": {
+                          "tokens": 793,
+                          "price": 0.00011894999999999999
+                        },
+                        "input_cache_read": {
+                          "tokens": 1937,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 26,
+                          "price": 0.0000156
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "Thank you!",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 440,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.21047085000009247
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_8901k7z2y5v8fghbhaqefp0g6arq",
+                    "workflow_node_id": null
+                  },
+                  "message": "You're very welcome! I'm glad I could help. If you think of anything else or have more questions down the line,...",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 445,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.4636918779997359
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.4188465229999565
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.6402439800003776
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.11522575999970286
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash": {
+                        "input": {
+                          "tokens": 828,
+                          "price": 0.00012419999999999998
+                        },
+                        "input_cache_read": {
+                          "tokens": 1931,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 34,
+                          "price": 0.000020399999999999998
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": true,
+                  "original_message": "You're very welcome! I'm glad I could help. If you think of anything else or have more questions down the line, feel free to reach out.",
+                  "source_medium": null
+                }
+              ],
+              "metadata": {
+                "start_time_unix_secs": 1761078278,
+                "accepted_time_unix_secs": 1761078278,
+                "call_duration_secs": 450,
+                "cost": 5287,
+                "deletion_settings": {
+                  "deletion_time_unix_secs": null,
+                  "deleted_logs_at_time_unix_secs": null,
+                  "deleted_audio_at_time_unix_secs": null,
+                  "deleted_transcript_at_time_unix_secs": null,
+                  "delete_transcript_and_pii": false,
+                  "delete_audio": false
+                },
+                "feedback": {
+                  "overall_score": null,
+                  "likes": 0,
+                  "dislikes": 0
+                },
+                "authorization_method": "public",
+                "charging": {
+                  "dev_discount": false,
+                  "is_burst": false,
+                  "tier": "enterprise",
+                  "llm_usage": {
+                    "irreversible_generation": {
+                      "model_usage": {
+                        "gemini-2.5-flash": {
+                          "input": {
+                            "tokens": 17142,
+                            "price": 0.0025713000000000003
+                          },
+                          "input_cache_read": {
+                            "tokens": 15605,
+                            "price": 0
+                          },
+                          "input_cache_write": {
+                            "tokens": 0,
+                            "price": 0
+                          },
+                          "output_total": {
+                            "tokens": 933,
+                            "price": 0.0005598
+                          }
+                        }
+                      }
+                    },
+                    "initiated_generation": {
+                      "model_usage": {
+                        "gemini-2.5-flash": {
+                          "input": {
+                            "tokens": 19141,
+                            "price": 0.00287115
+                          },
+                          "input_cache_read": {
+                            "tokens": 15605,
+                            "price": 0
+                          },
+                          "input_cache_write": {
+                            "tokens": 0,
+                            "price": 0
+                          },
+                          "output_total": {
+                            "tokens": 949,
+                            "price": 0.0005694
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "llm_price": 0.0034405499999999997,
+                  "llm_charge": 35,
+                  "call_charge": 5252,
+                  "free_minutes_consumed": 0,
+                  "free_llm_dollars_consumed": 0
+                },
+                "phone_call": null,
+                "batch_call": null,
+                "termination_reason": "Client disconnected: 1005",
+                "error": null,
+                "main_language": "en",
+                "rag_usage": null,
+                "text_only": false,
+                "features_usage": {
+                  "language_detection": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "transfer_to_agent": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "transfer_to_number": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "multivoice": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "dtmf_tones": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "external_mcp_servers": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "pii_zrm_workspace": false,
+                  "pii_zrm_agent": false,
+                  "tool_dynamic_variable_updates": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "is_livekit": false,
+                  "voicemail_detection": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "workflow": {
+                    "enabled": false,
+                    "tool_node": {
+                      "enabled": false,
+                      "used": false
+                    },
+                    "standalone_agent_node": {
+                      "enabled": false,
+                      "used": false
+                    },
+                    "phone_number_node": {
+                      "enabled": false,
+                      "used": false
+                    },
+                    "end_node": {
+                      "enabled": false,
+                      "used": false
+                    }
+                  },
+                  "agent_testing": {
+                    "enabled": false,
+                    "tests_ran_after_last_modification": false,
+                    "tests_ran_in_last_7_days": false
+                  }
+                },
+                "eleven_assistant": {
+                  "is_eleven_assistant": false
+                },
+                "initiator_id": null,
+                "conversation_initiation_source": "widget",
+                "conversation_initiation_source_version": "0.3.0",
+                "timezone": null,
+                "initiation_trigger": {
+                  "trigger_type": "default"
+                },
+                "async_metadata": null,
+                "whatsapp": null,
+                "agent_created_from": "ui",
+                "agent_last_updated_from": "ui"
+              },
+              "analysis": {
+                "evaluation_criteria_results": {},
+                "data_collection_results": {
+                  "email_address": {
+                    "data_collection_id": "email_address",
+                    "value": "b18ats@gmail.com",
+                    "json_schema": {
+                      "type": "string",
+                      "description": "The users email address, properly formatted and validated as an email address of appropriate structure. ",
+                      "enum": null,
+                      "dynamic_variable": "",
+                      "constant_value": ""
+                    },
+                    "rationale": "The user provided their email address, eduardo.aguilarpelaez@gmail.com, in response to the agent's request for it at 2025-10-21T20:25:12+00:00. This email address is properly formatted and validated as an email address of appropriate structure."
+                  }
+                },
+                "call_successful": "success",
+                "transcript_summary": "The AI agent, Architect Voice, gathered requirements from the user to design a voice AI agent. The agent will act as a trusted advisor/coach for busy professionals seeking self-improvement. It will have a friendly, non-judgmental tone, offer \"tough love\" when needed, and celebrate positive actions. The conversation will be free-flowing with structured follow-ups, capturing user goals and sending follow-up emails. The conversation will end with a positive closing, highlighting the user's recent positive actions. The user confirmed the summary was accurate.\n",
+                "call_summary_title": "Voice Agent Design"
+              },
+              "conversation_initiation_client_data": {
+                "conversation_config_override": {
+                  "tts": {
+                    "voice_id": null,
+                    "stability": null,
+                    "speed": null,
+                    "similarity_boost": null
+                  },
+                  "conversation": {
+                    "text_only": null
+                  },
+                  "agent": {
+                    "first_message": null,
+                    "language": "en",
+                    "prompt": {
+                      "prompt": null,
+                      "llm": null,
+                      "native_mcp_server_ids": null
+                    }
+                  }
+                },
+                "custom_llm_extra_body": {},
+                "user_id": null,
+                "source_info": {
+                  "source": "widget",
+                  "version": "0.3.0"
+                },
+                "dynamic_variables": {
+                  "system__agent_id": "agent_8901k7z2y5v8fghbhaqefp0g6arq",
+                  "system__current_agent_id": "agent_8901k7z2y5v8fghbhaqefp0g6arq",
+                  "system__conversation_id": "conv_9501k8473ygfeyyvye6gqpwj08s5",
+                  "system__caller_id": null,
+                  "system__called_number": null,
+                  "system__call_duration_secs": 450,
+                  "system__time_utc": "2025-10-21T20:32:08.852544+00:00",
+                  "system__time": "Tuesday, 20:32 21 October 2025",
+                  "system__timezone": null,
+                  "system__call_sid": null
+                }
+              }
+            }
+          },
+          "webhookUrl": "https://leonard-dev.app.n8n.cloud/webhook/voice_agent_creates_a_voice_agent",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "triggerCount": 0,
+  "meta": null
+}

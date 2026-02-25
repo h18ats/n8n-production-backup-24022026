@@ -1,0 +1,376 @@
+{
+  "name": "ADAPTIVE - Magic Link Verify",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "adaptive-verify",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        240,
+        300
+      ],
+      "webhookId": "adaptive-verify"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract token from query parameters\nconst token = $input.first().json.query?.token;\n\nif (!token) {\n  return [{\n    json: {\n      valid: false,\n      error: 'missing_token',\n      html: `<!DOCTYPE html>\n<html lang=\"en\">\n<head><meta charset=\"UTF-8\"><title>Verification Failed</title>\n<style>body{font-family:Arial,sans-serif;max-width:600px;margin:80px auto;padding:20px;text-align:center}\n.error{color:#dc3545;font-size:48px}.msg{color:#333;font-size:18px;margin:20px 0}</style>\n</head>\n<body>\n<div class=\"error\">&#10007;</div>\n<h1>Verification Failed</h1>\n<p class=\"msg\">The verification link is missing a token. Please check your email and click the correct link.</p>\n<p>If you need a new verification link, reply to your onboarding email.</p>\n</body></html>`\n    }\n  }];\n}\n\nreturn [{ json: { token, valid: true } }];"
+      },
+      "id": "extract-token",
+      "name": "Extract Token",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "check-valid",
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "check-token-present",
+      "name": "Token Present?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        640,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "={{ $vars.ADAPTIVE_AIRTABLE_BASE_ID }}",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "Consultants",
+          "mode": "name"
+        },
+        "filterByFormula": "={Magic Link Token}='{{ $json.token }}'",
+        "returnAll": false,
+        "limit": 1,
+        "options": {}
+      },
+      "id": "lookup-token-airtable",
+      "name": "Lookup Token in Airtable",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2,
+      "position": [
+        840,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Validate token: check record found and not expired\nconst records = $input.all();\n\nif (!records || records.length === 0 || !records[0].json?.id) {\n  return [{\n    json: {\n      valid: false,\n      reason: 'not_found',\n      html: `<!DOCTYPE html>\n<html lang=\"en\">\n<head><meta charset=\"UTF-8\"><title>Verification Failed</title>\n<style>body{font-family:Arial,sans-serif;max-width:600px;margin:80px auto;padding:20px;text-align:center}\n.error{color:#dc3545;font-size:48px}</style></head>\n<body><div class=\"error\">&#10007;</div>\n<h1>Verification Link Not Valid</h1>\n<p>This verification link was not found or has already been used.</p>\n<p>Please reply to your onboarding email to request a new link.</p>\n</body></html>`\n    }\n  }];\n}\n\nconst record = records[0].json;\nconst fields = record.fields || {};\n\n// Check expiry\nconst expiry = fields['Magic Link Expiry'];\nif (expiry) {\n  const expiryDate = new Date(expiry);\n  const now = new Date();\n  if (now > expiryDate) {\n    return [{\n      json: {\n        valid: false,\n        reason: 'expired',\n        record_id: record.id,\n        consultant_name: fields['Name'] || 'Consultant',\n        html: `<!DOCTYPE html>\n<html lang=\"en\">\n<head><meta charset=\"UTF-8\"><title>Link Expired</title>\n<style>body{font-family:Arial,sans-serif;max-width:600px;margin:80px auto;padding:20px;text-align:center}\n.warning{color:#ffc107;font-size:48px}</style></head>\n<body><div class=\"warning\">&#9200;</div>\n<h1>Verification Link Expired</h1>\n<p>This link was valid for 24 hours and has now expired.</p>\n<p>Please reply to your onboarding email to request a new verification link.</p>\n</body></html>`\n      }\n    }];\n  }\n}\n\n// Token is valid\nreturn [{\n  json: {\n    valid: true,\n    record_id: record.id,\n    consultant_name: fields['Name'] || 'Consultant',\n    consultant_email: fields['Email'] || '',\n    current_stage: fields['Current Stage'] || 'Welcome',\n  }\n}];"
+      },
+      "id": "validate-token",
+      "name": "Validate Token & Expiry",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1040,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "check-valid-2",
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "token-valid-check",
+      "name": "Token Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1240,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "={{ $vars.ADAPTIVE_AIRTABLE_BASE_ID }}",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "Consultants",
+          "mode": "name"
+        },
+        "id": "={{ $json.record_id }}",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "Verified",
+              "fieldValue": true
+            },
+            {
+              "fieldId": "Magic Link Token",
+              "fieldValue": ""
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "mark-verified",
+      "name": "Mark Consultant as Verified",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2,
+      "position": [
+        1440,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Generate success HTML page\nconst name = $input.first().json.consultant_name || 'Consultant';\nconst firstName = name.split(' ')[0];\n\nreturn [{\n  json: {\n    html: `<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Identity Verified - Simmons Adaptive</title>\n  <style>\n    body { font-family: Arial, sans-serif; max-width: 600px; margin: 80px auto; padding: 20px; text-align: center; color: #333; }\n    .success { color: #28a745; font-size: 64px; margin-bottom: 20px; }\n    h1 { color: #1a1a2e; margin-bottom: 16px; }\n    .msg { font-size: 18px; line-height: 1.6; color: #555; margin-bottom: 24px; }\n    .footer { font-size: 14px; color: #888; margin-top: 40px; }\n    .brand { font-weight: bold; color: #1a1a2e; }\n  </style>\n</head>\n<body>\n  <div class=\"success\">&#10003;</div>\n  <h1>Identity Verified</h1>\n  <p class=\"msg\">Thank you, ${firstName}. Your identity has been verified successfully.</p>\n  <p class=\"msg\">You can close this window and return to your onboarding emails. We will be in touch shortly with the next steps.</p>\n  <div class=\"footer\">\n    <span class=\"brand\">Simmons Adaptive</span> | Onboarding Assistant<br>\n    This verification was processed securely.\n  </div>\n</body>\n</html>`\n  }\n}];"
+      },
+      "id": "success-html",
+      "name": "Generate Success HTML",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1640,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.html }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/html; charset=utf-8"
+              }
+            ]
+          }
+        }
+      },
+      "id": "respond-success",
+      "name": "Respond Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        1840,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.html }}",
+        "options": {
+          "responseCode": 400,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/html; charset=utf-8"
+              }
+            ]
+          }
+        }
+      },
+      "id": "respond-error",
+      "name": "Respond Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        1440,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.html }}",
+        "options": {
+          "responseCode": 400,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/html; charset=utf-8"
+              }
+            ]
+          }
+        }
+      },
+      "id": "respond-missing-token",
+      "name": "Respond Missing Token",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        840,
+        400
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Extract Token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Token": {
+      "main": [
+        [
+          {
+            "node": "Token Present?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Token Present?": {
+      "main": [
+        [
+          {
+            "node": "Lookup Token in Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Missing Token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lookup Token in Airtable": {
+      "main": [
+        [
+          {
+            "node": "Validate Token & Expiry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Token & Expiry": {
+      "main": [
+        [
+          {
+            "node": "Token Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Token Valid?": {
+      "main": [
+        [
+          {
+            "node": "Mark Consultant as Verified",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark Consultant as Verified": {
+      "main": [
+        [
+          {
+            "node": "Generate Success HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Success HTML": {
+      "main": [
+        [
+          {
+            "node": "Respond Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 0,
+  "meta": null
+}

@@ -1,0 +1,171 @@
+{
+  "name": "HSFK - Shared 02 - Perplexity News Search",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## HSFK - Shared 02 - Perplexity News Search\n\n**Purpose:** Reusable sub-workflow. Search Perplexity API for recent news about a given entity (client, person, or industry). Returns structured results with citations.\n\n**Inputs (from calling workflow via Execute Workflow node):**\n- `entity_name` (string) - Name to search for, e.g. \"Fladgate LLP\"\n- `entity_type` (string) - One of: `client`, `person`, `industry`\n- `date_range` (string) - e.g. `last_7_days`, `last_30_days`, `last_90_days`\n- `max_results` (number, optional) - Default: 10\n\n**Output:**\n```json\n{\n  \"articles\": [\n    {\n      \"headline\": \"string\",\n      \"url\": \"string\",\n      \"source\": \"string\",\n      \"date\": \"ISO 8601 string\",\n      \"relevance_score\": 0.0-1.0,\n      \"summary\": \"string\"\n    }\n  ],\n  \"total_found\": 0,\n  \"query_used\": \"string\",\n  \"searched_at\": \"ISO 8601 string\"\n}\n```\n\n**Credential required:** `Perplexity API` (Header Auth with `Authorization: Bearer {key}`)\n\n**Used by:** UC 1.1, 1.3, 1.5, 1.6, 5.1\n\n**n8n instance:** leonard-dev.app.n8n.cloud",
+        "height": 480,
+        "width": 480,
+        "color": 5
+      },
+      "id": "sticky-note-docs",
+      "name": "Documentation",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        -160
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "trigger-execute-workflow",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build Perplexity query from inputs\nconst entityName = $json.entity_name || 'unknown entity';\nconst entityType = $json.entity_type || 'client'; // client | person | industry\nconst dateRange = $json.date_range || 'last_30_days';\nconst maxResults = $json.max_results || 10;\n\n// Map date_range to Perplexity recency parameter\nconst recencyMap = {\n  'last_7_days': 'week',\n  'last_30_days': 'month',\n  'last_90_days': 'month',\n  'last_year': 'year'\n};\nconst recency = recencyMap[dateRange] || 'month';\n\n// Build entity-type-specific query\nlet queryParts = [];\nif (entityType === 'client') {\n  queryParts = [\n    `\"${entityName}\"`,\n    'law firm OR legal OR litigation OR regulation OR deal OR acquisition OR merger OR settlement'\n  ];\n} else if (entityType === 'person') {\n  queryParts = [\n    `\"${entityName}\"`,\n    'appointment OR promotion OR role OR career OR speech OR interview OR award'\n  ];\n} else if (entityType === 'industry') {\n  queryParts = [\n    entityName,\n    'regulation OR trend OR market OR legislation OR enforcement OR guidance'\n  ];\n}\n\nconst query = queryParts.join(' ');\n\n// Build Perplexity API request body\nconst requestBody = {\n  model: 'sonar',\n  messages: [\n    {\n      role: 'system',\n      content: `You are a legal industry news analyst. Search for recent news about the entity provided. Return a structured JSON array of articles. For each article include: headline, url, source, date (ISO 8601), relevance_score (0.0-1.0 where 1.0 is most relevant to a law firm's business development context), and a 2-sentence summary. Return ONLY valid JSON, no prose. Format: {\"articles\": [...], \"total_found\": N}`\n    },\n    {\n      role: 'user',\n      content: `Find the latest news about: ${entityName} (type: ${entityType}). Focus on items relevant to a law firm doing business with this ${entityType}. Search recency: ${dateRange}. Return up to ${maxResults} results as JSON.`\n    }\n  ],\n  search_recency_filter: recency,\n  return_citations: true,\n  return_related_questions: false,\n  temperature: 0.1\n};\n\nreturn {\n  json: {\n    request_body: requestBody,\n    meta: {\n      entity_name: entityName,\n      entity_type: entityType,\n      date_range: dateRange,\n      max_results: maxResults,\n      recency: recency,\n      query_used: query,\n      built_at: new Date().toISOString()\n    }\n  }\n};"
+      },
+      "id": "build-perplexity-query",
+      "name": "Build Perplexity Query",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.perplexity.ai/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify($json.request_body) }}",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "fullResponse": false,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "http-perplexity-api",
+      "name": "Perplexity API Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        400,
+        240
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "PERPLEXITY_API_CRED",
+          "name": "Perplexity API - Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse Perplexity response and extract structured articles\nconst response = $json;\nconst meta = $('Build Perplexity Query').first().json.meta;\n\nlet articles = [];\nlet totalFound = 0;\nlet rawText = '';\n\ntry {\n  // Extract text from Perplexity response\n  if (response.choices && response.choices[0] && response.choices[0].message) {\n    rawText = response.choices[0].message.content || '';\n  }\n\n  // Try to parse JSON from the response content\n  // Perplexity may wrap JSON in markdown code blocks\n  let jsonText = rawText;\n  const jsonMatch = rawText.match(/```json\\s*([\\s\\S]*?)```/);\n  if (jsonMatch) {\n    jsonText = jsonMatch[1].trim();\n  } else {\n    // Try to find bare JSON object\n    const objectMatch = rawText.match(/\\{[\\s\\S]*\\}/);\n    if (objectMatch) {\n      jsonText = objectMatch[0];\n    }\n  }\n\n  const parsed = JSON.parse(jsonText);\n  articles = parsed.articles || [];\n  totalFound = parsed.total_found || articles.length;\n\n  // Validate and normalise each article\n  articles = articles.map((article, idx) => ({\n    headline: String(article.headline || `Article ${idx + 1}`).trim(),\n    url: String(article.url || '').trim(),\n    source: String(article.source || 'Unknown').trim(),\n    date: String(article.date || new Date().toISOString()).trim(),\n    relevance_score: parseFloat(article.relevance_score) || 0.5,\n    summary: String(article.summary || '').trim()\n  }));\n\n  // Sort by relevance score descending\n  articles.sort((a, b) => b.relevance_score - a.relevance_score);\n\n} catch (err) {\n  // If parsing fails, return empty results with error note\n  console.error('Failed to parse Perplexity response:', err.message);\n  articles = [];\n  totalFound = 0;\n}\n\n// Extract citations from Perplexity response (if available)\nconst citations = response.citations || [];\n\nreturn {\n  json: {\n    articles: articles,\n    total_found: totalFound,\n    citations: citations,\n    query_used: meta.query_used,\n    entity_name: meta.entity_name,\n    entity_type: meta.entity_type,\n    date_range: meta.date_range,\n    searched_at: new Date().toISOString(),\n    perplexity_model: response.model || 'sonar',\n    raw_response_preview: rawText.substring(0, 200)\n  }\n};"
+      },
+      "id": "parse-perplexity-response",
+      "name": "Parse & Structure Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        640,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Final output formatting - return clean structured result\n// This is the output contract for calling workflows\nconst data = $json;\n\nreturn {\n  json: {\n    // Primary output: articles array\n    articles: data.articles || [],\n    total_found: data.total_found || 0,\n    \n    // Search metadata\n    entity_name: data.entity_name,\n    entity_type: data.entity_type,\n    date_range: data.date_range,\n    query_used: data.query_used,\n    searched_at: data.searched_at,\n    \n    // Optional: raw citations from Perplexity\n    citations: data.citations || [],\n    \n    // Status\n    status: data.articles && data.articles.length > 0 ? 'success' : 'no_results',\n    perplexity_model: data.perplexity_model\n  }\n};"
+      },
+      "id": "format-output",
+      "name": "Format Output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        240
+      ]
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Build Perplexity Query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Perplexity Query": {
+      "main": [
+        [
+          {
+            "node": "Perplexity API Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Perplexity API Request": {
+      "main": [
+        [
+          {
+            "node": "Parse & Structure Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse & Structure Response": {
+      "main": [
+        [
+          {
+            "node": "Format Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 0,
+  "meta": null
+}

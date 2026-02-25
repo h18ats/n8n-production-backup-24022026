@@ -1,0 +1,95 @@
+{
+  "name": "Qorusdocs Webhook testing",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        96
+      ],
+      "id": "05ac45e4-5604-454c-8533-390f09de4a1f",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://ps-dev-qc-scu-legalengine-integrations.azurewebsites.net:443/api/ps-dev-qc-scu-legalengine-create-smart-list-matter/triggers/input/invoke?api-version=2022-05-01&sp=%2Ftriggers%2Finput%2Frun&sv=1.0&sig=AbLGVn6hdJ1djH7uBO8ySqNQ8Nk_ZsOBpd8odNAo2Y0",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n    \"MatterName\": \"TEST 123\",\n    \"Logo\": \"https://abc.com.jo/wp-content/uploads/2023/04/ABC-and-MDS.png\",\n    \"ClientName\": \"Wachovia Corporation\",\n    \"ClientIndustries\": \"Finance/Banking\",\n    \"ResponsiblePartner\": \"William Latourneau\",\n    \"DefaultNarrative\": \"$1.83 Billion in IPO and follow-on offerings for lodging REIT Represented a hospitality REIT focused on upper-upscale hotel properties on its $150 million IPO; its $247.6 million follow-on offering; its $260.5 million follow-on offering; its $175 million offering of Series A cumulative redeemable preferred shares; its $138.3 million follow-on offering; its $183 million follow-on offering; and its $100 million at-the-market continuous offering program.\",\n    \"TotalBillingsITD\": \"$96,960\",\n    \"MatterLocation\": \"San Francisco, California - United States\",\n    \"MatterPractice\": \"Securities and Corporate Finance\",\n\t\"UserEmailAddress\": \"jambrose@qorusdocs.com\",\n    \"UserFirstName\": \"James\",\n    \"UserLastName\": \"Ambrose\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "77da26ce-870e-488a-b49d-d0f907dafca8",
+      "name": "QorusDocs CREATE MATTER "
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://ps-dev-qc-scu-legalengine-integrations.azurewebsites.net:443/api/ps-dev-qc-scu-legalengine-generate-proposal/triggers/genprop/invoke?api-version=2022-05-01&sp=%2Ftriggers%2Fgenprop%2Frun&sv=1.0&sig=pcUlVeBCrClBMh7CzCWZYPANXswb_G6ISuR0ibTxN-8",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": " {\n    \"ClientName\":\t\t\"Shrute Levinson\",\n    \"Geography\": \t\t\"San Francisco\",\n    \"PracticeArea\": \t\t\"Securities and Corporate Finance\",\n    \"EmailToAddress\": \t\t\"jambrose@qorusdocs.com\",\n    \"EmailToFirstName\":\t \"James\",\n    \"EmailToLastName\": \t\"Ambrose\"\n   }",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        224,
+        192
+      ],
+      "id": "736f38ab-345c-42f2-95f9-c0e60f7af92e",
+      "name": "QorusDocs GENERATE PITCH"
+    }
+  ],
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "QorusDocs CREATE MATTER ",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "QorusDocs GENERATE PITCH",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 0,
+  "meta": null
+}

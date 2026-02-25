@@ -1,0 +1,298 @@
+{
+  "name": "DEV - Find Outlook Calendar Availability",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.microsoft.com/v1.0/me/calendar/getSchedule",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "microsoftOutlookOAuth2Api",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"Content-Type\": \"application/json\",\n  \"Prefer\": \"outlook.timezone=\\\"GMT Standard Time\\\"\"\n}\n",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"schedules\": [\"andy@legalengine.co.uk\"],\n  \"startTime\": {\n    \"dateTime\": \"{{$now.setZone('Europe/London').toISO({ suppressMilliseconds: true, includeOffset: false })}}\",\n    \"timeZone\": \"GMT Standard Time\"\n  },\n  \"endTime\": {\n    \"dateTime\": \"{{$now.setZone('Europe/London').set({ hour: 9, minute: 30, second: 0, millisecond: 0 }).toISO({ suppressMilliseconds: true, includeOffset: false })}}\",\n    \"timeZone\": \"GMT Standard Time\"\n  },\n  \"availabilityViewInterval\": 15\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        0,
+        224
+      ],
+      "id": "0137868d-221a-44a7-8955-5fbe29a20f65",
+      "name": "Outlook find a time simple request",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "NEL55RMRYkKmOgp4",
+          "name": "Microsoft Outlook - Andy"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "00 07 * * 1-5"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        448
+      ],
+      "id": "a372ec08-939c-4485-89c2-cdc88a1639f2",
+      "name": "Weekdays at 7am",
+      "disabled": true
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        624
+      ],
+      "id": "e4283d9b-e3ac-4569-a338-7dede704f7ff",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "resource": "event",
+        "operation": "create",
+        "calendarId": {
+          "__rl": true,
+          "value": "AQMkAGJmN2M2NGFhAC1hYzI4LTRkNjAtOThmYi1iYzFjODZjNGQwMWQARgAAA-aUj-zNalNOpFa6myt4ADMHAIfTtQvn9StGnIa6__JPK6kAAAIBBgAAAIfTtQvn9StGnIa6__JPK6kAAAJVggAAAA==",
+          "mode": "list",
+          "cachedResultName": "Calendar"
+        },
+        "subject": "=Post Meeting follow up",
+        "startDateTime": "={{ $json.slotStartUTC }}",
+        "endDateTime": "={{ $json.slotEndUTC }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        704,
+        448
+      ],
+      "id": "cdc14808-339e-4358-b3aa-a1612fe70aaa",
+      "name": "Create an event",
+      "webhookId": "6c6edfa8-cbf5-492d-b350-cdc78c68a9d0",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "6M8EKjo0xkpyROgs",
+          "name": "Microsoft Outlook - Lee @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Find first free slot in [windowStart, windowEnd) using scheduleItems from the getSchedule node,\n// rounding start up to the next 15-minute boundary (00/15/30/45).\n\n// CHANGE this to your getSchedule node name\nconst GET_SCHEDULE_NODE = \"Outlook find time in next 60m\";\n\nconst res = $node[GET_SCHEDULE_NODE].json.value?.[0];\nconst items = (res && res.scheduleItems) ? res.scheduleItems : [];\n\nconst zone = 'Europe/London';\nconst now = DateTime.now().setZone(zone);\n\n// Read inputs from prior node (this item). Fallbacks if missing.\nlet windowStart = $json.windowStart\n  ? DateTime.fromISO($json.windowStart, { zone })\n  : now;\nlet windowEnd = $json.windowEnd\n  ? DateTime.fromISO($json.windowEnd, { zone })\n  : windowStart.plus({ minutes: 60 });\n\nconst durationMin = Number.isFinite($json.durationMinutes) ? $json.durationMinutes : 15;\n\n// Helpers\nfunction roundUpToQuarter(dt) {\n  let t = dt.set({ second: 0, millisecond: 0 });\n  const m = t.minute % 15;\n  return m === 0 ? t : t.plus({ minutes: 15 - m });\n}\nfunction fmtLocal(dt) {\n  return dt.toFormat(\"yyyy-LL-dd'T'HH:mm:ss\");\n}\nfunction fmtUTC(dt) {\n  return dt.setZone('UTC').toFormat(\"yyyy-LL-dd'T'HH:mm:ss\");\n}\n\n// Ensure windowStart isn't in the past and is snapped to next quarter\nif (windowStart < now) windowStart = now;\nwindowStart = roundUpToQuarter(windowStart);\n\n// Validate window\nif (windowEnd <= windowStart) {\n  return [{ error: \"Invalid window: end is before or equal to start.\" }];\n}\n\n// Normalize & sort busy items that overlap the window\nconst busy = items\n  .map(i => ({\n    start: DateTime.fromISO(i.start.dateTime, { zone }),\n    end:   DateTime.fromISO(i.end.dateTime,   { zone }),\n  }))\n  .filter(i => i.end > windowStart && i.start < windowEnd)\n  .sort((a, b) => a.start - b.start);\n\n// Scan for the first free gap >= durationMin\nlet cursor = windowStart;\n\nfor (const b of busy) {\n  if (b.start > cursor) {\n    const gapEnd = b.start < windowEnd ? b.start : windowEnd;\n    if (gapEnd.diff(cursor, 'minutes').minutes >= durationMin) {\n      const slotStart = cursor;\n      const slotEnd = slotStart.plus({ minutes: durationMin });\n      return [{\n        slotStart: fmtLocal(slotStart),\n        slotEnd:   fmtLocal(slotEnd),\n        slotStartUTC: fmtUTC(slotStart),\n        slotEndUTC:   fmtUTC(slotEnd)\n      }];\n    }\n  }\n  // Move cursor to just after this busy block, snapped to next quarter\n  if (b.end > cursor) cursor = roundUpToQuarter(b.end);\n\n  if (cursor >= windowEnd) {\n    return [{ error: `No free ${durationMin}-minute slot in the requested window.` }];\n  }\n}\n\n// Tail after last busy block\nif (windowEnd.diff(cursor, 'minutes').minutes >= durationMin) {\n  const slotStart = cursor;\n  const slotEnd = slotStart.plus({ minutes: durationMin });\n  return [{\n    slotStart: fmtLocal(slotStart),\n    slotEnd:   fmtLocal(slotEnd),\n    slotStartUTC: fmtUTC(slotStart),\n    slotEndUTC:   fmtUTC(slotEnd)\n  }];\n}\n\n// Nothing found\nreturn [{ error: `No free ${durationMin}-minute slot in the requested window.` }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        448
+      ],
+      "id": "a03a8117-8022-42b7-b9a0-cd1cc0e24cd2",
+      "name": "Pick Slot on 15m"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.microsoft.com/v1.0/me/calendar/getSchedule",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "microsoftOutlookOAuth2Api",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"Content-Type\": \"application/json\",\n  \"Prefer\": \"outlook.timezone=\\\"GMT Standard Time\\\"\"\n}\n",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"schedules\": [\"andy@legalengine.co.uk\"],\n  \"startTime\": {\n    \"dateTime\": \"{{$now.setZone('Europe/London').toISO({ suppressMilliseconds: true, includeOffset: false })}}\",\n    \"timeZone\": \"GMT Standard Time\"\n  },\n  \"endTime\": {\n    \"dateTime\": \"{{$now.setZone('Europe/London').set({ hour: 9, minute: 30, second: 0, millisecond: 0 }).toISO({ suppressMilliseconds: true, includeOffset: false })}}\",\n    \"timeZone\": \"GMT Standard Time\"\n  },\n  \"availabilityViewInterval\": 15\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        224,
+        768
+      ],
+      "id": "de852b58-a9a4-4df7-9a56-130fce746ebd",
+      "name": "Outlook find a time between now and 9.",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "NEL55RMRYkKmOgp4",
+          "name": "Microsoft Outlook - Andy"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.microsoft.com/v1.0/me/calendar/getSchedule",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "microsoftOutlookOAuth2Api",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"Content-Type\": \"application/json\",\n  \"Prefer\": \"outlook.timezone=\\\"GMT Standard Time\\\"\"\n}\n",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"schedules\": [\"andy@legalengine.co.uk\"],\n  \"startTime\": {\n    \"dateTime\": \"{{$now.setZone('Europe/London').toISO({ suppressMilliseconds: true, includeOffset: false })}}\",\n    \"timeZone\": \"GMT Standard Time\"\n  },\n  \"endTime\": {\n    \"dateTime\": \"{{$now.setZone('Europe/London').plus({ minutes: 60 }).toISO({ suppressMilliseconds: true, includeOffset: false })}}\",\n    \"timeZone\": \"GMT Standard Time\"\n  },\n  \"availabilityViewInterval\": 15\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        224,
+        448
+      ],
+      "id": "452380c1-3fe6-46a7-9250-1ee74fd5032f",
+      "name": "Outlook find time in next 60m",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "6M8EKjo0xkpyROgs",
+          "name": "Microsoft Outlook - Lee @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Uses the getSchedule response to find the first free 15-min slot between now and 09:30 (Europe/London)\nconst res = $node[\"Outlook find time in next 60m\"].json.value[0];\nconst items = (res && res.scheduleItems) ? res.scheduleItems : [];\n\nconst zone = 'Europe/London';\nconst now = DateTime.now().setZone(zone);\nconst windowEnd = now.set({ hour: 9, minute: 30, second: 0, millisecond: 0 });\n\n// If it's already past 09:30, bail out\nif (now >= windowEnd) {\n  return [{ error: \"Past 09:30; no window left today.\" }];\n}\n\n// Normalize & sort busy items\nconst busy = items\n  .map(i => ({\n    start: DateTime.fromISO(i.start.dateTime, { zone }),\n    end:   DateTime.fromISO(i.end.dateTime,   { zone }),\n  }))\n  // keep only overlaps with [now, windowEnd)\n  .filter(i => i.end > now && i.start < windowEnd)\n  .sort((a, b) => a.start - b.start);\n\n// Scan for first free 15-min gap\nlet cursor = now;\nfor (const b of busy) {\n  if (b.start > cursor) {\n    const gapEnd = b.start;\n    if (gapEnd.diff(cursor, 'minutes').minutes >= 15) {\n      const slotStart = cursor;\n      const slotEnd = slotStart.plus({ minutes: 15 });\n      return [{\n        slotStart: slotStart.toFormat(\"yyyy-LL-dd'T'HH:mm:ss\"),\n        slotEnd:   slotEnd.toFormat(\"yyyy-LL-dd'T'HH:mm:ss\")\n      }];\n    }\n  }\n  if (b.end > cursor) cursor = b.end;\n}\n\n// After last busy block\nif (windowEnd.diff(cursor, 'minutes').minutes >= 15) {\n  const slotStart = cursor;\n  const slotEnd = slotStart.plus({ minutes: 15 });\n  return [{\n    slotStart: slotStart.toFormat(\"yyyy-LL-dd'T'HH:mm:ss\"),\n    slotEnd:   slotEnd.toFormat(\"yyyy-LL-dd'T'HH:mm:ss\")\n  }];\n}\n\n// No slot found\nreturn [{ error: \"No free 15-minute slot found before 09:30.\" }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        432,
+        768
+      ],
+      "id": "17994ea2-b82b-41cf-9c0a-3a9b8e3b0099",
+      "name": "Pick Slot before 9.30am",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.elevenlabs.io/v1/convai/twilio/outbound-call",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "={\n  \"xi-api-key\": \"sk_fb475a342401f1e2495de38b2193518f54778f4427ce83de\",\n  \"Content-Type\": \"application/json\"\n}\n",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"agent_id\": \"agent_2501k3v11788e6w908yswfp1w66z\",\n  \"agent_phone_number_id\": \"phnum_01jvx1f76mfg6akt98vk9jqyqh\",\n  \"to_number\": \"+447966543220\",\n  \"conversation_initiation_client_data\": {\n    \"client_name\": \"Acme Ltd\",\n    \"matter_ref\": \"M-2025-001\"\n  }\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1168,
+        448
+      ],
+      "id": "ef2853f1-f9c2-45c4-a43a-0338017df3f9",
+      "name": "HTTP Request",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "resume": "specificTime",
+        "dateTime": "={{ $('Pick Slot on 15m').item.json.slotStart }}"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        960,
+        448
+      ],
+      "id": "87f1f3b0-7ccf-4af6-80ab-0f08dbc9c814",
+      "name": "Wait",
+      "webhookId": "e350f426-9c27-432e-8a02-ba2a6b56f61f"
+    }
+  ],
+  "connections": {
+    "Weekdays at 7am": {
+      "main": [
+        [
+          {
+            "node": "Outlook find time in next 60m",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Outlook find time in next 60m",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pick Slot on 15m": {
+      "main": [
+        [
+          {
+            "node": "Create an event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Outlook find time in next 60m": {
+      "main": [
+        [
+          {
+            "node": "Pick Slot on 15m",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create an event": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 0,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

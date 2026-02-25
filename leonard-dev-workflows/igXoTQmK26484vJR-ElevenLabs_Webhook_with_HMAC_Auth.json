@@ -1,0 +1,256 @@
+{
+  "name": "ElevenLabs Webhook with HMAC Auth",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "elevenlabs-transcript",
+        "responseMode": "responseNode",
+        "options": {
+          "rawBody": true
+        }
+      },
+      "id": "13656ed8-021d-4f7a-8ba4-c0a98617efa6",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [
+        -944,
+        176
+      ],
+      "webhookId": "elevenlabs-transcript"
+    },
+    {
+      "parameters": {
+        "jsCode": "const crypto = require('crypto');\n\n// ============================================\n// Configuration\n// ============================================\n\nconst SHARED_SECRET = \"wsec_aa2e5b40e387679331d358d4dcbbf758d992fa535f9bf3614e14b0c91d02c30c\";\nconst TIMESTAMP_TOLERANCE = 1800;\n\n// ============================================\n// Validation Function (never throws)\n// ============================================\n\nfunction validateHMAC() {\n  try {\n    // Extract signature header\n    const signatureHeader = $json.headers['elevenlabs-signature'];\n\n    if (!signatureHeader) {\n      return {\n        valid: false,\n        statusCode: 401,\n        error: 'missing_signature',\n        message: 'Missing ElevenLabs-Signature header'\n      };\n    }\n\n    // Get raw body from binary data\n    if (!items || !items[0] || !items[0].binary || !items[0].binary.data || !items[0].binary.data.data) {\n      return {\n        valid: false,\n        statusCode: 500,\n        error: 'missing_raw_body',\n        message: 'Missing raw body data'\n      };\n    }\n\n    const base64Data = items[0].binary.data.data;\n    const rawBody = Buffer.from(base64Data, 'base64').toString('utf8');\n\n    // Parse signature header\n    const parts = signatureHeader.split(',');\n    const timestampPart = parts.find(p => p.startsWith('t='));\n    const signaturePart = parts.find(p => p.startsWith('v0='));\n\n    if (!timestampPart || !signaturePart) {\n      return {\n        valid: false,\n        statusCode: 401,\n        error: 'invalid_signature_format',\n        message: 'Invalid signature header format'\n      };\n    }\n\n    const timestamp = timestampPart.substring(2);\n    const receivedSignature = signaturePart.substring(3);\n\n    // Validate timestamp\n    const currentTimestamp = Math.floor(Date.now() / 1000);\n    const webhookTimestamp = parseInt(timestamp, 10);\n\n    if (isNaN(webhookTimestamp)) {\n      return {\n        valid: false,\n        statusCode: 401,\n        error: 'invalid_timestamp',\n        message: 'Invalid timestamp in signature header'\n      };\n    }\n\n    const age = currentTimestamp - webhookTimestamp;\n\n    if (age > TIMESTAMP_TOLERANCE) {\n      return {\n        valid: false,\n        statusCode: 401,\n        error: 'timestamp_too_old',\n        message: `Webhook too old: ${age} seconds (tolerance: ${TIMESTAMP_TOLERANCE}s)`\n      };\n    }\n\n    if (age < -60) {\n      return {\n        valid: false,\n        statusCode: 401,\n        error: 'timestamp_future',\n        message: 'Webhook timestamp is in the future'\n      };\n    }\n\n    // Compute expected signature\n    const messageToSign = `${timestamp}.${rawBody}`;\n    const expectedSignature = crypto\n      .createHmac('sha256', SHARED_SECRET)\n      .update(messageToSign, 'utf8')\n      .digest('hex');\n\n    // Compare signatures (timing-safe)\n    const expectedBuffer = Buffer.from(expectedSignature, 'hex');\n    const receivedBuffer = Buffer.from(receivedSignature, 'hex');\n\n    if (expectedBuffer.length !== receivedBuffer.length) {\n      return {\n        valid: false,\n        statusCode: 401,\n        error: 'signature_length_mismatch',\n        message: 'Signature length mismatch'\n      };\n    }\n\n    if (!crypto.timingSafeEqual(expectedBuffer, receivedBuffer)) {\n      return {\n        valid: false,\n        statusCode: 401,\n        error: 'invalid_signature',\n        message: 'Invalid signature - request not authenticated'\n      };\n    }\n\n    // Success!\n    return {\n      valid: true,\n      statusCode: 200,\n      timestamp: webhookTimestamp,\n      age: age,\n      raw_body_length: rawBody.length\n    };\n\n  } catch (error) {\n    return {\n      valid: false,\n      statusCode: 500,\n      error: 'validation_error',\n      message: `Validation error: ${error.message}`\n    };\n  }\n}\n\n// ============================================\n// Execute Validation and Return Result\n// ============================================\n\nconst result = validateHMAC();\n\n// Log result\nconsole.log(JSON.stringify({\n  event: result.valid ? 'webhook_authenticated' : 'webhook_rejected',\n  timestamp: new Date().toISOString(),\n  ...result\n}));\n\n// ALWAYS return success (never throw)\n// Use an IF node after this to route based on result.valid\nreturn {\n  json: {\n    // Validation result\n    hmac_valid: result.valid,\n    hmac_status_code: result.statusCode,\n    hmac_error: result.error || null,\n    hmac_message: result.message || 'Signature valid',\n\n    // Original webhook data (for success path)\n    ...(result.valid ? $json.body : {}),\n\n    // Metadata (for both paths)\n    timestamp: result.timestamp || null,\n    age: result.age || null\n  }\n};"
+      },
+      "id": "bfee228b-da7d-4bc1-90c8-a796117fe395",
+      "name": "HMAC Validator",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -736,
+        176
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.hmac_valid }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "2b917ac5-0213-4963-b73c-629efddf6700",
+      "name": "Check HMAC Valid",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -512,
+        176
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "success-status",
+              "name": "status",
+              "value": "success",
+              "type": "string"
+            },
+            {
+              "id": "success-message",
+              "name": "message",
+              "value": "Webhook authenticated successfully",
+              "type": "string"
+            },
+            {
+              "id": "success-verified",
+              "name": "verified",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "success-timestamp",
+              "name": "timestamp",
+              "value": "={{ $json.timestamp }}",
+              "type": "number"
+            },
+            {
+              "id": "success-age",
+              "name": "age",
+              "value": "={{ $json.age }}",
+              "type": "number"
+            },
+            {
+              "id": "success-data",
+              "name": "data",
+              "value": "={{ $json }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "2f16b35c-5289-4eb1-acb2-29141cc4bce3",
+      "name": "Set Success Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.3,
+      "position": [
+        -288,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "error-status",
+              "name": "status",
+              "value": "error",
+              "type": "string"
+            },
+            {
+              "id": "error-code",
+              "name": "code",
+              "value": "={{ $json.hmac_error }}",
+              "type": "string"
+            },
+            {
+              "id": "error-message",
+              "name": "message",
+              "value": "={{ $json.hmac_message }}",
+              "type": "string"
+            },
+            {
+              "id": "error-timestamp",
+              "name": "timestamp",
+              "value": "={{ $now }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "32e31a34-f003-494b-9778-a5a57cc30b1b",
+      "name": "Set Error Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.3,
+      "position": [
+        -288,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "f1237239-c82f-4082-b84f-2a4e209bce29",
+      "name": "Respond Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseCode": 401
+        }
+      },
+      "id": "f10f1243-4124-41a2-a0b9-3b7dd3b91418",
+      "name": "Respond Unauthorised",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        272
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HMAC Validator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HMAC Validator": {
+      "main": [
+        [
+          {
+            "node": "Check HMAC Valid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check HMAC Valid": {
+      "main": [
+        [
+          {
+            "node": "Set Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Success Response": {
+      "main": [
+        [
+          {
+            "node": "Respond Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Error Response": {
+      "main": [
+        [
+          {
+            "node": "Respond Unauthorised",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 1,
+  "meta": null
+}

@@ -1,0 +1,615 @@
+{
+  "name": "Pinecone Assistant",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        1072,
+        112
+      ],
+      "id": "1ed1bd75-fd92-46cf-ab2f-7b672692e2a5",
+      "name": "When chat message received",
+      "webhookId": "5d4af093-6fa7-4fae-a655-a192e4389ee5"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        1104,
+        320
+      ],
+      "id": "4fc7e3fe-e4cd-4f5b-9951-92c9bacf0c89",
+      "name": "OpenRouter Chat Model"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Use this to search through the knowledge base",
+        "method": "POST",
+        "url": "https://prod-1-data.ke.pinecone.io/assistant/chat/[PINECONE ASSISTANT NAME]",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Api-Key",
+              "value": "$PINECONE_API_KEY"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": \"{{ $fromAI(\"searchQuery\") }}\"\n    }\n  ],\n  \"stream\": false,\n  \"model\": \"gpt-4.1\",\n  \"include_highlights\": true\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        1296,
+        320
+      ],
+      "id": "bda5e21b-fa69-4452-aa61-01d0fc3f39af",
+      "name": "Pinecone"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        1424,
+        320
+      ],
+      "id": "1e916419-535d-43af-a556-d055db0906bd",
+      "name": "Calculator"
+    },
+    {
+      "parameters": {
+        "formTitle": "Drop in PDF",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "PDF",
+              "fieldType": "file",
+              "multipleFiles": false,
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        2480,
+        256
+      ],
+      "id": "44f0a0b3-da6e-4a63-978c-c4bbef310132",
+      "name": "On form submission",
+      "webhookId": "38efbb20-d74a-4f22-b567-da767c53fa8f"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "earnings",
+          "mode": "list",
+          "cachedResultName": "earnings"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        2800,
+        112
+      ],
+      "id": "fe3a5334-8db4-4eb2-9f2a-1c84c6fc838b",
+      "name": "Pinecone Vector Store"
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        2944,
+        224
+      ],
+      "id": "2d382a66-b550-4e6a-bd84-af9e3bcc845d",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        2784,
+        224
+      ],
+      "id": "2b6d3446-4c14-4c2f-bb0f-8eb935dea232",
+      "name": "Embeddings OpenAI"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=# Overview\nYou are an AI agent specialized in analyzing earnings report data. \n\nUse your Pinecone tool to search through earnings reports from Tesla, Nike, and Nvidia.\n\nWhen answering the user's question, always cite your sources as far as: what document you got it from, what page it was from, what section, and an exact text based quote from the original source"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        3312,
+        144
+      ],
+      "id": "eef8ee1f-dffa-49ef-b74d-9b0e9fcf4432",
+      "name": "Pinecone Vector"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        3184,
+        352
+      ],
+      "id": "1c7bb833-c876-4d32-bb26-5f36067bb06c",
+      "name": "OpenRouter Chat Model1"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Use this to search through the knowledge base",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "earnings",
+          "mode": "list",
+          "cachedResultName": "earnings"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        3328,
+        352
+      ],
+      "id": "55bc9b78-dfb2-4565-9549-04df00c5852e",
+      "name": "Pinecone Store"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        3328,
+        480
+      ],
+      "id": "037a0b5b-f27e-4fb8-8a90-50b6b0559831",
+      "name": "Embeddings OpenAI1"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        3600,
+        352
+      ],
+      "id": "78101247-5d54-4f01-8df8-8b2f4466fdf8",
+      "name": "Calculator1"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        2800,
+        400
+      ],
+      "id": "1c37776a-a6c3-4ea1-bfcd-50feee4a56ae",
+      "name": "Supabase Vector Store"
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        2944,
+        512
+      ],
+      "id": "16572385-5b07-4fbf-a2ce-8c0ab41050c4",
+      "name": "Default Data Loader1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        2784,
+        512
+      ],
+      "id": "c1f487aa-a603-4016-aca7-927a3b3986e3",
+      "name": "Embeddings OpenAI2"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=# Overview\nYou are an AI agent specialized in analyzing earnings report data. \n\nUse your Pinecone tool to search through earnings reports from Tesla, Nike, and Nvidia.\n\nWhen answering the user's question, always cite your sources as far as: what document you got it from, what page it was from, what section, and an exact text based quote from the original source"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        3840,
+        144
+      ],
+      "id": "9756e8cd-268e-4ce1-bc8b-bd5a0375be58",
+      "name": "Supabase Vector"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        3728,
+        352
+      ],
+      "id": "2c21ba60-a5b7-4e44-9f1b-606a7307e769",
+      "name": "OpenRouter Chat Model2"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "knowledge ",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        3856,
+        352
+      ],
+      "id": "b049e629-2346-498b-8cc1-ccebeefd41a4",
+      "name": "Supabase Store"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        3856,
+        480
+      ],
+      "id": "1f95f054-54ad-4bc5-beaf-c9ea6ff60fee",
+      "name": "Embeddings OpenAI3"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        4128,
+        352
+      ],
+      "id": "60730ed6-8305-4e3a-94e7-4c9c052217db",
+      "name": "Calculator2"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=# Overview\nYou are an AI agent specialized in analyzing earnings report data. \n\nUse your Pinecone tool to search through earnings reports from Tesla, Nike, and Nvidia.\n\nWhen answering the user's question, always cite your sources as far as: what document you got it from, what page it was from, what section, and an exact text based quote from the original source"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1232,
+        112
+      ],
+      "id": "1070e4e8-42bb-4e2b-9c87-ee5fbb604ea4",
+      "name": "Pinecone Assistant"
+    },
+    {
+      "parameters": {
+        "content": "# 🛠️ Setup Guide  \n## **Author:** [Nate Herk](https://www.youtube.com/@nateherk)\n\nFollow these steps to set up your Pinecone Assistant workflow inside n8n:\n\n### ✅ Step 1: Create a Pinecone Account  \nGo to [pinecone.io](https://www.pinecone.io/) and sign up for an account.\n\n### ✅ Step 2: Create a Pinecone Assistant  \nInside your Pinecone dashboard, create an assistant and upload the files you want included in your knowledge base.\n\n### ✅ Step 3: Copy the cURL Command  \nAfter setting up your assistant, grab the **cURL version** (not Python) of the API request to interact with your assistant.\n\n### ✅ Step 4: Insert into Pinecone HTTP Request Tool  \nPaste the cURL command into the **Pinecone HTTP Request Tool** and link it to your Pinecone Assistant agent.\n\n### ✅ Step 5: Connect Your Pinecone API Key  \nGrab your API key from the Pinecone dashboard and connect it via the HTTP Request node to authorize your requests.\n\n### ✅ Step 6: Connect Your [OpenRouter](https://openrouter.ai/) API Key (or another model)  \nHook up the chat model you want to use—Claude, GPT-4, Mistral, etc.—through your preferred API key.\n\n### 🧠 Step 7: Refine the System Prompts  \nTailor the assistant’s system prompts to match your **use case** and **knowledge base**.  \n⚠️ The default prompt is trained for analyzing **Tesla, NVIDIA, and Nike earnings reports**, so be sure to adjust accordingly.\n\n### 🧪 Step 8: Run & Test  \nTest the setup and confirm you're getting responses **with source documents**. Tweak body params like:\n- `include_highlights`\n- `model`\n- `temperature`\n\n---\n\n### 🌀 Optional Next Steps  \nExplore other vector store flows:\n- Use the **Ingestion flow** for Pinecone or Supabase\n- Try out the **Pinecone Vector Store** or **Supabase Vector Store** AI agents  \nGreat for comparing the Pinecone Assistant vs traditional chunked retrieval approaches.\n",
+        "height": 1024,
+        "width": 928
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "3560646a-4986-4da8-9296-58a94bd35d9b",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "# Pinecone Assistant Agent\n",
+        "height": 464,
+        "width": 688,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        944,
+        0
+      ],
+      "id": "689661a0-e03a-446e-95a5-c057d28df996",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "# Pinecone Assistant API Settings\n\nHere are the most useful parameters to tweak when working with the Pinecone Assistant API.\n\n📘 **Full docs:** [Pinecone Assistant API Guide](https://docs.pinecone.io/guides/assistant)\n\n## Model Selection\n\nYou can choose which model the assistant uses by setting the `model` parameter in your request body.\n\n**Supported models:**\n- `gpt-4o` (default)\n- `gpt-4-1`\n- `o1-mini-1`\n- `claude-3-5-sonnet`\n- `claude-3-5-sonnet`\n- `gemini-1.5-pro`\n\nUse this to compare quality, speed, or cost depending on your use case.\n\n## Citation Highlights\n\nSet `include_highlights` to `true` to show which exact parts of your documents were used to generate the assistant's response.\n\nThis improves traceability and is helpful when validating or debugging outputs.\n\n## Temperature Control\n\nThe `temperature` parameter adjusts the randomness of the assistant's output:\n\n- **Lower values** (e.g. 0.2) = more focused and consistent responses\n- **Higher values** (e.g. 1.0) = more creative or exploratory responses\n\nUse these settings together to tune your assistant's behavior to fit your specific workflow or user experience.",
+        "height": 896,
+        "width": 688,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1648,
+        0
+      ],
+      "id": "afeb04eb-39d9-4955-b753-156c02b4bb5c",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "# Ingestion flow for Pinecone/Supabase Vector Store",
+        "height": 704,
+        "width": 1936,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2352,
+        0
+      ],
+      "id": "075a9ab6-bca7-43f8-b0c2-68647f38a0f0",
+      "name": "Sticky Note3"
+    }
+  ],
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Pinecone Assistant",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Pinecone Assistant",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone": {
+      "ai_tool": [
+        [
+          {
+            "node": "Pinecone Assistant",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculator": {
+      "ai_tool": [
+        [
+          {
+            "node": "Pinecone Assistant",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Pinecone Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Pinecone Vector",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "Pinecone Vector",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculator1": {
+      "ai_tool": [
+        [
+          {
+            "node": "Pinecone Vector",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader1": {
+      "ai_document": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI2": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Supabase Vector",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "Supabase Vector",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI3": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculator2": {
+      "ai_tool": [
+        [
+          {
+            "node": "Supabase Vector",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 0,
+  "meta": null
+}

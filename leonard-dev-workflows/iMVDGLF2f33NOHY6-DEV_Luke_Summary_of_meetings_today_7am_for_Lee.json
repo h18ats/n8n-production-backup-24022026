@@ -1,0 +1,1306 @@
+{
+  "name": "DEV - Luke - Summary of meetings today - 7am for Lee",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 6,
+              "triggerAtMinute": 50
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -336,
+        -576
+      ],
+      "id": "4bfb904b-da47-4b4c-9955-f5dcafbe23a9",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        -112,
+        -480
+      ],
+      "id": "55b449b1-5955-4d92-8d99-4505b758a367",
+      "name": "Today"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "f2141cf2-1196-4521-b206-00def7b641ff",
+              "leftValue": "",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a09c0fbf-5897-4ec2-9933-5d92361f8ca3",
+      "name": "IF — No meetings today?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        784,
+        -384
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Use the Perplexity Search tool to perform the following task robustly: \n\nResearch this person ahead of a business meeting subject: {{ $json.meetingSubject }}.\n\nAttendee's name is {{ $json.name }}, their email address is {{ $json.email }}. Their Company name is likely to be similar to {{ $json.company }} with company domain: www.{{ $json.domain }}. If the {{ $json.name }} is actually an email address infer what their name would be and use that to search for them based on the company name {{ $json.company }}.\n\nThese details should ensure you can locate them on linkedin, their official company web page or on professional networks or from more public sources.\n\nUse a range of search options to establish a robust bio for the attendee, who is due to meet with Lee Curtis from Legal Engine - https://www.linkedin.com/in/leeacurtis/ www.legalengine.co.uk. You should be robust in finding out their entire professional background.\n\nOnly use the Perplexity Search tool once per person. Focus on LinkedIn as a key source of information and connections of Lee Curtis to help to identify meeting attendees. Use variations of the names of attendees if no information is found as it's highly unlikley that attendees won't have a linkedin proifile. Also search for matches on UK Companies House (https://find-and-update.company-information.service.gov.uk/company/13160418/officers).\n\nIf there is still no record, look for similar names to {{ $json.name }} using a fuzzy search on the name who work at {{ $json.company }} and are related to or work within law or professional services.",
+        "options": {
+          "systemMessage": "You write compact, factual bios for meeting prep in UK English. Avoid speculation. Prefer official pages, LinkedIn, company sites, or major press. Return a compact 4–6 sentence bio (UK English), 2–3 recent items with dates, and 2–3 credible links. Keep it under 150 words per person. ",
+          "returnIntermediateSteps": false
+        }
+      },
+      "id": "09c75947-88db-4e7f-9f84-4d6bd0952670",
+      "name": "Research Attendee (Agent)",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        1456,
+        -384
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Generate a mobile-friendly HTML day briefing from merged calendar data\n// Accepts mixed shapes (either your merged event objects OR ai_event wrappers).\n// Returns ONE item with { html, subject }.\n//\n// It handles:\n// - time: ev.time.{startISO,endISO,display,timeZone,durationMinutes} OR flat startISO/endISO/timeZone\n// - organizer: ev.organizer{name,email} OR organizerName/organizerEmail\n// - attendees: ev.attendeesAll / attendeesInternal / attendeesExternal OR single-attendee fields\n// - external bios: ev.externalAttendeeBios OR attendees with `bio`\n// - location: ev.location (string or {name})\n// - links: ev.meetingLink / ev.webLink\n//\n// Sorts meetings by start time and prints: time range, subject (linked), location/link, organizer,\n// internal & external attendees, and per-external bio (trimmed to ~120 words).\n\n//////////////////// helpers ////////////////////\nfunction clean(s){ return typeof s === 'string' ? s.trim() : ''; }\nfunction lower(s){ return typeof s === 'string' ? s.toLowerCase() : ''; }\nfunction get(o, p, d){\n  var parts = p.split('.'); var cur = o;\n  for (var i=0;i<parts.length;i++){ var k = parts[i]; if (cur && typeof cur==='object' && (k in cur)) cur = cur[k]; else return d; }\n  return cur;\n}\nfunction domainFromEmail(email){ var e = lower(clean(email)); var at = e.indexOf('@'); return at>-1 ? e.slice(at+1) : ''; }\nfunction normalizeIso(s){\n  s = clean(s); if (!s) return null;\n  var t = s.replace(/Z$/,''); var dot = t.indexOf('.'); if (dot>-1) t = t.slice(0, dot);\n  if (t.length >= 19) t = t.slice(0,19); // YYYY-MM-DDTHH:MM:SS\n  return t;\n}\nfunction hhmm(iso){ return (iso && iso.length>=16) ? iso.slice(11,16) : ''; }\nfunction ymd(iso){ return (iso && iso.length>=10) ? iso.slice(0,10) : null; }\nfunction parseUTCDate(iso){ // treat ISO (without Z) as UTC for header formatting\n  if (!iso) return null;\n  try { return new Date(iso + 'Z'); } catch(_) { return null; }\n}\nfunction headerDateString(date){\n  // Friday 30 Aug 2025\n  var DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];\n  var MOS  = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];\n  if (!date) date = new Date();\n  var d = date.getUTCDate();\n  var dow = DAYS[date.getUTCDay()];\n  var mo = MOS[date.getUTCMonth()];\n  var yr = date.getUTCFullYear();\n  return dow + ' ' + String(d).padStart(2,'0') + ' ' + mo + ' ' + yr;\n}\nfunction wordsClamp(text, maxWords){\n  var ws = clean(text).split(/\\s+/).filter(Boolean);\n  if (ws.length <= maxWords) return ws.join(' ');\n  return ws.slice(0, maxWords).join(' ') + '…';\n}\nfunction uniqBy(arr, keyFn){\n  var seen = {}; var out = [];\n  for (var i=0;i<arr.length;i++){\n    var k = keyFn(arr[i]);\n    if (k && !seen[k]){ seen[k] = 1; out.push(arr[i]); }\n    if (!k) out.push(arr[i]);\n  }\n  return out;\n}\n\nfunction deriveTimes(ev){\n  var t = ev.time || {};\n  var startISO = normalizeIso(t.startISO || ev.startISO || get(ev,'start.dateTime', null) || (typeof ev.start === 'string' ? ev.start : null));\n  var endISO   = normalizeIso(t.endISO   || ev.endISO   || get(ev,'end.dateTime',   null) || (typeof ev.end   === 'string' ? ev.end   : null));\n  var tz = t.timeZone || ev.timeZone || get(ev,'start.timeZone','UTC');\n  var display = t.display || (ev.display || (ev.isAllDay ? 'All day' : (hhmm(startISO) + ((startISO && endISO)?'-':'') + hhmm(endISO))));\n  var durationMinutes = (typeof t.durationMinutes === 'number') ? t.durationMinutes : (typeof ev.durationMinutes === 'number' ? ev.durationMinutes : null);\n  return { startISO:startISO, endISO:endISO, display:display, timeZone:tz, durationMinutes:durationMinutes };\n}\nfunction normalizeAttendee(a){\n  a = a || {};\n  var email = clean(a.email || get(a,'emailAddress.address',''));\n  var name  = clean(a.name  || get(a,'emailAddress.name','') || (email ? email.split('@')[0] : ''));\n  var domain = clean(a.domain || domainFromEmail(email));\n  var response = clean(a.response || get(a,'status.response','') || '');\n  var bio = clean(a.bio || a.output || '');\n  return { name:name, email:email, domain:domain, response:response, bio:bio };\n}\nfunction summarizeAttendeeList(list){\n  if (!list || !list.length) return '—';\n  return list.map(function(a){ return clean(a.name || a.email || ''); }).filter(Boolean).join(', ');\n}\nfunction eventKey(ev){\n  var id = ev.id || ev.eventId || '';\n  var s = get(ev,'time.startISO', ev.startISO || '') || '';\n  var subj = clean(ev.subject || ev.Subject || '');\n  return (id ? 'id:'+id : 'k:'+subj+'|'+s);\n}\n\n//////////////////// collect & normalize ////////////////////\nvar rows = $input.all().map(function(i){ return i.json; });\n\n// If upstream produced ai_event wrapper, unwrap to a consistent event shape\nvar events = rows.map(function(x){\n  return x && x.ai_event ? x.ai_event : x;\n});\n\n// Aggregate in case upstream still sends per-attendee items\nvar grouped = {};\nfor (var i=0;i<events.length;i++){\n  var ev = events[i] || {};\n  var key = eventKey(ev);\n  if (!grouped[key]){\n    grouped[key] = {\n      id: ev.id || ev.eventId || null,\n      subject: clean(ev.subject || ev.Subject || '(No subject)'),\n      isAllDay: !!ev.isAllDay,\n      time: deriveTimes(ev),\n      organizer: {\n        name: clean(get(ev,'organizer.name', ev.organizerName || '')),\n        email: clean(get(ev,'organizer.email', ev.organizerEmail || ''))\n      },\n      internalDomain: clean(ev.internalDomain || domainFromEmail(get(ev,'organizer.email', ev.organizerEmail || ''))),\n      location: (get(ev,'location.name', null) || (typeof ev.location==='string' ? ev.location : null)) || '',\n      meetingLink: ev.meetingLink || null,\n      webLink: ev.webLink || null,\n      description: clean(ev.contextHint || ev.description || ev.bodyPreview || ''),\n      attendeesAll: [],\n      externalAttendeeBios: Array.isArray(ev.externalAttendeeBios) ? ev.externalAttendeeBios.slice() : []\n    };\n  }\n  // Merge attendees from any shape\n  if (Array.isArray(ev.attendeesAll) && ev.attendeesAll.length){\n    grouped[key].attendeesAll = grouped[key].attendeesAll.concat(ev.attendeesAll.map(normalizeAttendee));\n  } else if (Array.isArray(ev.attendees) && ev.attendees.length){\n    grouped[key].attendeesAll = grouped[key].attendeesAll.concat(ev.attendees.map(normalizeAttendee));\n  } else if (ev.attendeeEmail || ev.attendeeName){\n    grouped[key].attendeesAll.push(normalizeAttendee({ email: ev.attendeeEmail, name: ev.attendeeName, domain: ev.attendeeDomain, response: ev.attendeeResponse, bio: ev.bio }));\n  }\n  // Merge bios if present on attendeesExternal\n  if (Array.isArray(ev.attendeesExternal)){\n    for (var j=0;j<ev.attendeesExternal.length;j++){\n      var a = normalizeAttendee(ev.attendeesExternal[j]);\n      if (a.bio) grouped[key].externalAttendeeBios.push({ name:a.name||a.email, email:a.email||'', domain:a.domain||'', bio:a.bio });\n    }\n  }\n}\n\n// Deduplicate attendees & bios, split internal/external\nvar meetings = [];\nfor (var k in grouped){\n  var g = grouped[k];\n  g.attendeesAll = uniqBy(g.attendeesAll, function(a){ return lower(a.email); });\n  var internal = []; var external = [];\n  for (var i2=0;i2<g.attendeesAll.length;i2++){\n    var a2 = g.attendeesAll[i2];\n    if (a2.domain && g.internalDomain && lower(a2.domain) === lower(g.internalDomain)) internal.push(a2);\n    else external.push(a2);\n  }\n  // Normalize bios: prefer explicit externalAttendeeBios, else from external attendees\n  var bios = [];\n  if (Array.isArray(g.externalAttendeeBios) && g.externalAttendeeBios.length){\n    for (var b=0;b<g.externalAttendeeBios.length;b++){\n      var eb = g.externalAttendeeBios[b] || {};\n      if (clean(eb.bio)) bios.push({ name: clean(eb.name||eb.email||''), email: clean(eb.email||''), domain: clean(eb.domain||''), bio: clean(eb.bio) });\n    }\n  } else {\n    for (var e=0;e<external.length;e++){\n      var ex = external[e];\n      if (ex.bio) bios.push({ name: ex.name||ex.email||'', email: ex.email||'', domain: ex.domain||'', bio: ex.bio });\n    }\n  }\n  // trim bios to ~120 words\n  for (var bb=0;bb<bios.length;bb++){ bios[bb].bio = wordsClamp(bios[bb].bio, 120); }\n\n  meetings.push({\n    id: g.id, subject: g.subject, isAllDay: g.isAllDay, time: g.time,\n    organizer: g.organizer, internalDomain: g.internalDomain,\n    location: g.location, meetingLink: g.meetingLink, webLink: g.webLink,\n    description: g.description,\n    attendeesInternal: internal, attendeesExternal: external,\n    bios: bios\n  });\n}\n\n// Sort by start time\nmeetings.sort(function(a,b){\n  var as = a.time.startISO || ''; var bs = b.time.startISO || '';\n  return as < bs ? -1 : (as > bs ? 1 : 0);\n});\n\n// Header date from earliest meeting start, fallback to today\nvar headerDate = (meetings[0] && meetings[0].time && meetings[0].time.startISO) ? parseUTCDate(meetings[0].time.startISO) : new Date();\nvar headerText = headerDateString(headerDate);\n\n// Build HTML\nfunction esc(s){\n  return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');\n}\nfunction linkify(label, href){\n  if (!href) return esc(label);\n  return '<a href=\"'+esc(href)+'\" target=\"_blank\" rel=\"noopener noreferrer\">'+esc(label)+'</a>';\n}\n\nvar htmlParts = [];\nhtmlParts.push(\n'<!doctype html><html><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">',\n'<title>Start-of-day Briefing — '+esc(headerText)+'</title>',\n'<style>',\n'body{margin:0;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#111;background:#fafafa;}',\n'.wrap{max-width:720px;margin:0 auto;padding:16px;}',\n'.hdr{position:sticky;top:0;background:#fff;padding:12px 16px;margin:0 -16px 16px;border-bottom:1px solid #eee;z-index:10;}',\n'.hdr h1{font-size:20px;margin:0;}',\n'.mtg{background:#fff;border:1px solid #eee;border-radius:12px;padding:14px 14px 12px;margin:12px 0;box-shadow:0 1px 1px rgba(0,0,0,0.02);}',\n'.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;color:#333;font-size:13px;}',\n'.time{font-weight:600;color:#0b5cff;}',\n'.subj{font-size:16px;font-weight:700;margin:4px 0 6px 0;}',\n'.meta{color:#555;font-size:13px;margin:2px 0 8px 0;}',\n'.pill{display:inline-block;background:#f1f5ff;color:#0b5cff;border-radius:999px;padding:2px 8px;font-size:12px;margin:2px 6px 0 0;}',\n'.bios{border-top:1px solid #f0f0f0;margin-top:10px;padding-top:10px;}',\n'.bio{margin:8px 0;}',\n'.bio .name{font-weight:600;}',\n'a{color:#0b5cff;text-decoration:none} a:hover{text-decoration:underline}',\n'</style></head><body><div class=\"wrap\">',\n'<div class=\"hdr\"><h1>Start-of-day Briefing — '+esc(headerText)+'</h1></div>'\n);\n\nif (!meetings.length){\n  htmlParts.push('<p>No meetings found for this day.</p>');\n} else {\n  for (var i3=0;i3<meetings.length;i3++){\n    var m = meetings[i3];\n    var t = m.time || {};\n    var timeLabel = m.isAllDay ? 'All day' : ((t.display || ((hhmm(t.startISO)||'') + ((t.startISO&&t.endISO)?'-':'') + (hhmm(t.endISO)||''))) + (t.timeZone ? ' '+t.timeZone : ''));\n    var subjectLine = esc(m.subject);\n    var href = m.meetingLink || m.webLink || '';\n    var subjectHtml = href ? linkify(subjectLine, href) : subjectLine;\n    var loc = m.location ? esc(m.location) : '';\n    var org = (m.organizer && (m.organizer.name || m.organizer.email)) ? esc([m.organizer.name, m.organizer.email ? '<'+m.organizer.email+'>' : ''].filter(Boolean).join(' ')) : '';\n    var internalList = summarizeAttendeeList(m.attendeesInternal);\n    var externalList = summarizeAttendeeList(m.attendeesExternal);\n\n    htmlParts.push('<section class=\"mtg\">');\n    htmlParts.push('<div class=\"row\"><span class=\"time\">'+esc(timeLabel)+'</span></div>');\n    htmlParts.push('<div class=\"subj\">'+subjectHtml+'</div>');\n    var metaBits = [];\n    if (loc) metaBits.push('📍 '+loc);\n    if (org) metaBits.push('👤 '+org);\n    if (t.durationMinutes) metaBits.push('⏱ '+t.durationMinutes+' min');\n    if ((m.meetingLink || m.webLink) && !href){\n      var linksLine = [m.meetingLink, m.webLink].filter(Boolean).map(function(u){ return linkify('link', u); }).join(' · ');\n      metaBits.push('🔗 '+linksLine);\n    }\n    if (metaBits.length) htmlParts.push('<div class=\"meta\">'+metaBits.join(' &nbsp;·&nbsp; ')+'</div>');\n\n    htmlParts.push('<div class=\"meta\"><span class=\"pill\">Internal</span> '+esc(internalList)+'</div>');\n    htmlParts.push('<div class=\"meta\"><span class=\"pill\">External</span> '+esc(externalList)+'</div>');\n\n    if (m.bios && m.bios.length){\n      htmlParts.push('<div class=\"bios\"><div class=\"meta\" style=\"margin-bottom:6px;\">Background</div>');\n      for (var b2=0;b2<m.bios.length;b2++){\n        var b = m.bios[b2];\n        var nm = esc(b.name || b.email || '');\n        var email = b.email ? ' &lt;'+esc(b.email)+'&gt;' : '';\n        var dom = b.domain ? ' — '+esc(b.domain) : '';\n        var bioTxt = esc(b.bio);\n        htmlParts.push('<div class=\"bio\"><div class=\"name\">', nm, email, dom, '</div><div class=\"txt\">', bioTxt, '</div></div>');\n      }\n      htmlParts.push('</div>');\n    }\n    htmlParts.push('</section>');\n  }\n}\n\nhtmlParts.push('</div></body></html>');\nvar html = htmlParts.join('');\n\nvar subjOut = 'Start-of-day Briefing — ' + headerText;\nreturn [{ json: { html: html, subject: subjOut, meetingCount: meetings.length } }];\n"
+      },
+      "id": "91c7360b-2973-49f5-9a7d-78cb47010415",
+      "name": "Generate HTML Briefing",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2672,
+        -480
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "keepOnlySet": true,
+        "values": {
+          "string": [
+            {
+              "name": "name",
+              "value": "={{ $json.attendees[0].name }}"
+            },
+            {
+              "name": "email",
+              "value": "={{ $json.attendees[0].email }}"
+            },
+            {
+              "name": "domain",
+              "value": "={{ $json.attendees[1].domain }}"
+            },
+            {
+              "name": "company",
+              "value": "={{ $json.attendees[0].company }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "82ef96f7-cf72-41c1-84ff-d2d3001228eb",
+      "name": "Slim Inputs for Agent",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        1232,
+        -384
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "toRecipients": "andy@legalengine.co.uk",
+        "subject": "=Meeting today",
+        "bodyContent": "={{ $json.output }}",
+        "additionalFields": {
+          "bodyContentType": "html",
+          "saveToSentItems": true
+        }
+      },
+      "id": "c964972d-4ed5-43fa-8bc4-f58d6292e4f8",
+      "name": "Send Briefing (Outlook, HTML)",
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        2960,
+        -624
+      ],
+      "webhookId": "a561f9ca-b930-4791-92c1-2d4f1c068cb1",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "NEL55RMRYkKmOgp4",
+          "name": "Microsoft Outlook - Andy"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.elevenlabs.io/v1/convai/knowledge-base/text",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "xi-api-key",
+              "value": "sk_3eca705a3c2780af4cb1116beb64d3e1d3bfc187a8d565f8"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "name",
+              "value": "=Daily Meeting KB - {{ $json.currentDate }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $('Compiler').item.json.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3408,
+        -288
+      ],
+      "id": "1e5afbdf-00ce-400c-8681-13c48e1907d0",
+      "name": "Create KB"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.elevenlabs.io/v1/convai/agents/create",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "xi-api-key",
+              "value": "sk_3eca705a3c2780af4cb1116beb64d3e1d3bfc187a8d565f8"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"agent_id\": \"agent_1901k43t7g5mfv29nqdmmztah09d\",\n    \"name\": \"TEST: Luke - Pre Meeting Prep n8n created [owner: Andy] - {{ $('Date & Time').item.json.currentDate }}\",\n    \"conversation_config\": {\n        \"asr\": {\n            \"quality\": \"high\",\n            \"provider\": \"elevenlabs\",\n            \"user_input_audio_format\": \"pcm_16000\",\n            \"keywords\": []\n        },\n        \"turn\": {\n            \"turn_timeout\": 10.0,\n            \"silence_end_call_timeout\": -1.0,\n            \"mode\": \"turn\"\n        },\n        \"tts\": {\n            \"model_id\": \"eleven_flash_v2\",\n            \"voice_id\": \"AwP2bjcqrSky0yiDhZSe\",\n            \"supported_voices\": [],\n            \"agent_output_audio_format\": \"pcm_16000\",\n            \"optimize_streaming_latency\": 4,\n            \"stability\": 0.65,\n            \"speed\": 0.99,\n            \"similarity_boost\": 0.45,\n            \"pronunciation_dictionary_locators\": []\n        },\n        \"conversation\": {\n            \"text_only\": false,\n            \"max_duration_seconds\": 3600,\n            \"client_events\": [\n                \"audio\",\n                \"interruption\"\n            ]\n        },\n        \"language_presets\": {},\n        \"agent\": {\n            \"first_message\": \"Hey Andy? Ready for a quick brief on what's planned for today?\",\n            \"language\": \"en\",\n            \"dynamic_variables\": {\n                \"dynamic_variable_placeholders\": {}\n            },\n            \"prompt\": {\n                \"prompt\": \"VOICE AGENT SYSTEM PROMPT — Luke (Pre Meeting Assistant)\\n\\nYou are Luke, an expert legal Business Development assistant.\\nYou are professional yet approachable, and your role is to coach a lawyer immediately after a client meeting.\\nYour job is to take the information in the knowledge base and brief the Sales Development Manager on the various meeting planned. \\n\\nThis should include, dates, times, subject or meeting title, duration, attendees and most importantly the information you have gathered on the bios  of external attendees \\n\",\n                \"llm\": \"gemini-2.5-flash-lite\",\n                \"temperature\": 0.3,\n                \"max_tokens\": -1,\n                \"tool_ids\": [],\n                \"built_in_tools\": {\n                    \"end_call\": {\n                        \"type\": \"system\",\n                        \"name\": \"end_call\",\n                        \"description\": \"\",\n                        \"response_timeout_secs\": 20,\n                        \"disable_interruptions\": false,\n                        \"force_pre_tool_speech\": false,\n                        \"assignments\": [],\n                        \"params\": {\n                            \"system_tool_type\": \"end_call\"\n                        }\n                    },\n                    \"language_detection\": null,\n                    \"transfer_to_agent\": null,\n                    \"transfer_to_number\": null,\n                    \"skip_turn\": null,\n                    \"play_keypad_touch_tone\": null,\n                    \"voicemail_detection\": {\n                        \"type\": \"system\",\n                        \"name\": \"voicemail_detection\",\n                        \"description\": \"\",\n                        \"response_timeout_secs\": 20,\n                        \"disable_interruptions\": false,\n                        \"force_pre_tool_speech\": false,\n                        \"assignments\": [],\n                        \"params\": {\n                            \"system_tool_type\": \"voicemail_detection\",\n                            \"voicemail_message\": \"Hi, this is Luke from Legal Engine, I've just tried to call to give you a quick brief on today's meetings. Speak soon.\"\n                        }\n                    }\n                },\n                \"mcp_server_ids\": [],\n                \"native_mcp_server_ids\": [],\n                \"knowledge_base\": [\n                    {\n                        \"type\": \"text\",\n                        \"name\": \"{{ $json.name }}\",\n                        \"id\": \"{{ $json.id }}\",\n                        \"usage_mode\": \"prompt\"\n                    },\n                    {\n                        \"type\": \"url\",\n                        \"name\": \"GitHub - noslegal/taxonomy: noslegal taxonomy facets and release notes\",\n                        \"id\": \"WTSeALM0hCdp3JOAQkh7\",\n                        \"usage_mode\": \"auto\"\n                    },\n                    {\n                        \"type\": \"url\",\n                        \"name\": \"taxonomy/2025.03 v3 noslegal release/2025.03 guide - noslegal 3.0.pdf at main · noslegal/taxonomy\",\n                        \"id\": \"asdugn4RGhF5gvo638Mz\",\n                        \"usage_mode\": \"auto\"\n                    },\n                    {\n                        \"type\": \"file\",\n                        \"name\": \"MASTER - Legal Engine Agents_security architecture.docx\",\n                        \"id\": \"ppbrfEfQtSZAeubOmOd0\",\n                        \"usage_mode\": \"auto\"\n                    }\n                ],\n                \"custom_llm\": null,\n                \"ignore_default_personality\": false,\n                \"rag\": {\n                    \"enabled\": true,\n                    \"embedding_model\": \"e5_mistral_7b_instruct\",\n                    \"max_vector_distance\": 0.6,\n                    \"max_documents_length\": 50000,\n                    \"max_retrieved_rag_chunks_count\": 20\n                },\n                \"timezone\": null,\n                \"tools\": [\n                    {\n                        \"type\": \"system\",\n                        \"name\": \"end_call\",\n                        \"description\": \"\",\n                        \"response_timeout_secs\": 20,\n                        \"disable_interruptions\": false,\n                        \"force_pre_tool_speech\": false,\n                        \"assignments\": [],\n                        \"params\": {\n                            \"system_tool_type\": \"end_call\"\n                        }\n                    },\n                    {\n                        \"type\": \"system\",\n                        \"name\": \"voicemail_detection\",\n                        \"description\": \"\",\n                        \"response_timeout_secs\": 20,\n                        \"disable_interruptions\": false,\n                        \"force_pre_tool_speech\": false,\n                        \"assignments\": [],\n                        \"params\": {\n                            \"system_tool_type\": \"voicemail_detection\",\n                            \"voicemail_message\": \"Hi, this is Luke from Legal Engine, I've just tried to call to give you a quick brief on today's meetings. Speak soon.\"\n                        }\n                    }\n                ]\n            }\n        }\n    },\n    \"metadata\": {\n        \"created_at_unix_secs\": 1756769796,\n        \"updated_at_unix_secs\": 1756769988\n    },\n    \"platform_settings\": {\n        \"auth\": {\n            \"enable_auth\": false,\n            \"allowlist\": [],\n            \"shareable_token\": null\n        },\n        \"widget\": {\n            \"variant\": \"full\",\n            \"placement\": \"bottom-right\",\n            \"expandable\": \"never\",\n            \"avatar\": {\n                \"type\": \"orb\",\n                \"color_1\": \"#2792dc\",\n                \"color_2\": \"#9ce6e6\"\n            },\n            \"feedback_mode\": \"during\",\n            \"bg_color\": \"#ffffff\",\n            \"text_color\": \"#000000\",\n            \"btn_color\": \"#000000\",\n            \"btn_text_color\": \"#ffffff\",\n            \"border_color\": \"#e1e1e1\",\n            \"focus_color\": \"#000000\",\n            \"border_radius\": null,\n            \"btn_radius\": null,\n            \"action_text\": null,\n            \"start_call_text\": null,\n            \"end_call_text\": null,\n            \"expand_text\": null,\n            \"listening_text\": null,\n            \"speaking_text\": null,\n            \"shareable_page_text\": null,\n            \"shareable_page_show_terms\": false,\n            \"terms_text\": null,\n            \"terms_html\": null,\n            \"terms_key\": null,\n            \"show_avatar_when_collapsed\": false,\n            \"disable_banner\": false,\n            \"override_link\": null,\n            \"mic_muting_enabled\": false,\n            \"transcript_enabled\": false,\n            \"text_input_enabled\": false,\n            \"default_expanded\": false,\n            \"always_expanded\": false,\n            \"text_contents\": {\n                \"main_label\": \"Ready to debrief?\",\n                \"start_call\": \"Chat now\",\n                \"start_chat\": null,\n                \"new_call\": null,\n                \"end_call\": null,\n                \"mute_microphone\": null,\n                \"change_language\": null,\n                \"collapse\": null,\n                \"expand\": null,\n                \"copied\": null,\n                \"accept_terms\": null,\n                \"dismiss_terms\": null,\n                \"listening_status\": null,\n                \"speaking_status\": null,\n                \"connecting_status\": null,\n                \"chatting_status\": null,\n                \"input_label\": null,\n                \"input_placeholder\": null,\n                \"input_placeholder_text_only\": null,\n                \"input_placeholder_new_conversation\": null,\n                \"user_ended_conversation\": null,\n                \"agent_ended_conversation\": null,\n                \"conversation_id\": null,\n                \"error_occurred\": null,\n                \"copy_id\": null\n            },\n            \"styles\": {\n                \"base\": null,\n                \"base_hover\": null,\n                \"base_active\": null,\n                \"base_border\": null,\n                \"base_subtle\": null,\n                \"base_primary\": null,\n                \"base_error\": null,\n                \"accent\": null,\n                \"accent_hover\": null,\n                \"accent_active\": null,\n                \"accent_border\": null,\n                \"accent_subtle\": null,\n                \"accent_primary\": null,\n                \"overlay_padding\": null,\n                \"button_radius\": null,\n                \"input_radius\": null,\n                \"bubble_radius\": null,\n                \"sheet_radius\": null,\n                \"compact_sheet_radius\": null,\n                \"dropdown_sheet_radius\": null\n            },\n            \"language_selector\": false,\n            \"supports_text_only\": false,\n            \"custom_avatar_path\": null,\n            \"language_presets\": {}\n        },\n        \"data_collection\": {},\n        \"overrides\": {\n            \"conversation_config_override\": {\n                \"tts\": {\n                    \"voice_id\": false,\n                    \"stability\": false,\n                    \"speed\": false,\n                    \"similarity_boost\": false\n                },\n                \"conversation\": {\n                    \"text_only\": true\n                },\n                \"agent\": {\n                    \"first_message\": false,\n                    \"language\": false,\n                    \"prompt\": {\n                        \"prompt\": false,\n                        \"native_mcp_server_ids\": false\n                    }\n                }\n            },\n            \"custom_llm_extra_body\": false,\n            \"enable_conversation_initiation_client_data_from_webhook\": false\n        },\n        \"call_limits\": {\n            \"agent_concurrency_limit\": -1,\n            \"daily_limit\": 100000,\n            \"bursting_enabled\": true\n        },\n        \"ban\": null,\n        \"privacy\": {\n            \"record_voice\": true,\n            \"retention_days\": -1,\n            \"delete_transcript_and_pii\": false,\n            \"delete_audio\": false,\n            \"apply_to_existing_conversations\": false,\n            \"zero_retention_mode\": false\n        },\n        \"workspace_overrides\": {\n            \"conversation_initiation_client_data_webhook\": null,\n            \"webhooks\": {\n                \"post_call_webhook_id\": null,\n                \"send_audio\": false\n            }\n        },\n        \"testing\": {\n            \"attached_tests\": [],\n            \"referenced_tests_ids\": []\n        },\n        \"safety\": {\n            \"is_blocked_ivc\": false,\n            \"is_blocked_non_ivc\": false,\n            \"ignore_safety_evaluation\": false\n        }\n    },\n    \"phone_numbers\": [],\n    \"workflow\": {\n        \"edges\": {},\n        \"nodes\": {\n            \"start_node\": {\n                \"type\": \"start\",\n                \"position\": {\n                    \"x\": 0.0,\n                    \"y\": 0.0\n                }\n            }\n        }\n    },\n    \"access_info\": {\n        \"is_creator\": true,\n        \"creator_name\": \"leonard@legalengine.co.uk\",\n        \"creator_email\": \"leonard@legalengine.co.uk\",\n        \"role\": \"admin\"\n    },\n    \"tags\": []\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3856,
+        -288
+      ],
+      "id": "402cfdc1-9212-40cf-a836-d4129d99e079",
+      "name": "Create 11L agent with KB"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.elevenlabs.io/v1/convai/twilio/outbound-call",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "={\n  \"xi-api-key\": \"sk_fb475a342401f1e2495de38b2193518f54778f4427ce83de\",\n  \"Content-Type\": \"application/json\"\n}\n",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"agent_id\": \"agent_2501k3v11788e6w908yswfp1w66z\",\n  \"agent_phone_number_id\": \"phnum_01jvx1f76mfg6akt98vk9jqyqh\",\n  \"to_number\": \"+447966543220\",\n  \"conversation_initiation_client_data\": {\n    \"client_name\": \"Acme Ltd\",\n    \"matter_ref\": \"M-2025-001\"\n  }\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4304,
+        -384
+      ],
+      "id": "8e2d264c-69ff-4bc5-8985-c3553fe175b6",
+      "name": "Outbound call",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "resource": "event",
+        "filters": {
+          "custom": "=start/dateTime ge '{{ $('Today').item.json.currentDate }}' and start/dateTime lt '{{ $json.newDate }}'\n"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        336,
+        -480
+      ],
+      "id": "ee48bd7e-0a93-4c28-88bc-c16d78dea9d3",
+      "name": "Get many events",
+      "webhookId": "cccf9a06-611e-4e61-af6e-df95c22c7bf8",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "6M8EKjo0xkpyROgs",
+          "name": "Microsoft Outlook - Lee @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini-2025-08-07",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini-2025-08-07"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1472,
+        -160
+      ],
+      "id": "e7af469d-0562-4cc2-8636-e3e42d820122",
+      "name": "OpenAI Chat Model4",
+      "credentials": {
+        "openAiApi": {
+          "id": "LldOhLNBReShSMkE",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "sonar-reasoning",
+        "messages": {
+          "message": [
+            {
+              "content": "=You are a research assistant for meeting prep. Task: create a full, factual, concise attendee brief with citations.\nThe meeting organiser is Lee Curtis from Legal engine, linkedin profile  here - https://www.linkedin.com/in/leeacurtis/.\n\nRules:\n- Disambiguate the person first. If uncertain, return top 3 candidates with confidence scores.\n- Base facts on public, professional sources only. No contact details or sensitive personal data.\n- Use UK English.\n- Output JSON ONLY that matches the schema in the user message.\n\n\nUse UK English. Today is {{$now.setZone('Europe/London').toFormat('yyyy-LL-dd')}}.",
+              "role": "system"
+            },
+            {
+              "content": "=Build an attendee brief.\n\nInputs:\n- Name: \"{{$json.name}}\"\n- Email: \"{{ $json.email }}\n- Company Domain (if known): \" {{ $json.domain }}\"\n- Role (if known):\n- Location (if relevant/if known):\n- Time horizon for \"recent\": last 60 months.\n\n\nDeliverable (JSON only):\n{\n  \"disambiguation\": {\n    \"matched_full_name\": \"\",\n    \"confidence\": 0.0,\n    \"alternates\": [\n      {\"name\": \"\", \"why_considered\": \"\", \"confidence\": 0.0}\n    ]\n  },\n  \"profile\": {\n    \"current_role\": \"\",\n    \"company\": \"\",\n    \"one_line_bio\": \"\",\n    \"3_talking_points\": [\"\" , \"\" , \"\"],\n    \"recent_news\": [\n      {\"headline\": \"\", \"date\": \"\", \"source_title\": \"\", \"source_url\": \"\"}\n    ],\n    \"career_highlights\": [\"\"],\n    \"topics_of_interest\": [\"\"],\n    \"potential_red_flags\": [\"\"]\n  },\n  \"sources_note\": \"Populate source_title/source_url ONLY from search_results metadata.\",\n  \"needs_review\": false\n}\n\nInstructions:\n- Keep \"one_line_bio\" ≤ 200 chars.\n- \"recent_news\" items must be within last 12 months.\n- If identity is ambiguous OR conflicting facts appear, set \"needs_review\": true and include up to 3 candidate profiles.\n"
+            }
+          ]
+        },
+        "options": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.perplexityTool",
+      "typeVersion": 1,
+      "position": [
+        1600,
+        -160
+      ],
+      "id": "12230676-65ca-4428-b1d3-9d0170059000",
+      "name": "Perplexity Search",
+      "credentials": {
+        "perplexityApi": {
+          "id": "pOqM7kFIqiYB3qGU",
+          "name": "Perplexity account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalize bios from “Research Attendee (Agent)”\n// Works even if each item only has { output: \"<bio text>\" }.\n// If you also connect Input 1 with “Slim Inputs for Agent” (items with {name,email,domain}),\n// this node will align by index and/or fuzzy name to fill missing emails.\n//\n// Output (one per person):\n//   { emailLower?, email?, name?, domain?, bio, nameKey? }\n//\n// You can merge later by `emailLower` (preferred) and fall back to `nameKey` if email is missing.\n\nfunction clean(s){ return typeof s === 'string' ? s.trim() : ''; }\nfunction lower(s){ return typeof s === 'string' ? s.toLowerCase() : ''; }\n\n// --- regex helpers ---\nvar EMAIL_RE = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/ig;\nvar HOST_RE  = /\\b((?:[a-z0-9-]+\\.)+[a-z]{2,})\\b/ig;\n\n// strip ``` fences and collapse whitespace a bit\nfunction normalizeText(t){\n  var txt = String(t == null ? '' : t);\n  if (txt.indexOf('```') > -1) {\n    txt = txt.replace(/```json/ig,'').replace(/```/g,'');\n  }\n  // trim line ends, collapse >2 newlines to 2\n  txt = txt.split('\\n').map(function(l){ return l.replace(/\\s+$/,''); }).join('\\n');\n  txt = txt.replace(/\\n{3,}/g, '\\n\\n');\n  return txt.trim();\n}\n\n// naive name guess: take leading fragment before \" is \" or first line\nfunction guessNameFromBio(txt){\n  var t = clean(txt);\n  if (!t) return '';\n  var firstLine = t.split('\\n')[0];\n  var beforeIs = firstLine.toString().split(/\\s+is\\s+/i)[0];\n  var cand = clean(beforeIs.length >= 3 ? beforeIs : firstLine);\n  // Keep it reasonable: 2–5 words, title-case-ish\n  var words = cand.split(/\\s+/).filter(Boolean);\n  if (words.length > 6) words = words.slice(0,6);\n  // If it's something like \"Founder and director\", that's not a name; reject if no capital letter start\n  var hasCap = /^[A-Z]/.test(words[0] || '');\n  return hasCap ? words.join(' ') : '';\n}\n\nfunction extractEmailFromText(txt){\n  var m = String(txt||'').match(EMAIL_RE);\n  return (m && m.length) ? m[0] : '';\n}\n\nfunction extractDomainFromText(txt){\n  // pick a plausible company domain; ignore common service hosts\n  var IGNORE = { 'www.google.com':1,'linkedin.com':1,'www.linkedin.com':1,'twitter.com':1,'x.com':1,'facebook.com':1,'instagram.com':1,'youtube.com':1,'outlook.office365.com':1,'microsoft.com':1,'github.com':1,'medium.com':1 };\n  var hosts = []; var h;\n  var text = String(txt||'');\n  while ((h = HOST_RE.exec(text)) !== null){\n    var host = h[1].toLowerCase();\n    if (!IGNORE[host]) hosts.push(host);\n  }\n  // Return the most frequent non-ignored host if any\n  if (hosts.length === 0) return '';\n  var freq = {}; var best = '', bestN = -1;\n  for (var i=0;i<hosts.length;i++){ var k=hosts[i]; freq[k]=(freq[k]||0)+1; if (freq[k]>bestN){ bestN=freq[k]; best=k; } }\n  return best;\n}\n\nfunction domainFromEmail(email){\n  var e = lower(clean(email)); var at = e.indexOf('@'); return at>-1 ? e.slice(at+1) : '';\n}\n\n// --- collect inputs ---\nvar outItems = ($input.all(0) || []).map(function(i){ return i.json; });\nvar hintItems = []; try { hintItems = ($input.all(1) || []).map(function(i){ return i.json; }); } catch(_){}\n\n// Build hint maps (by index, by lower(name), by lower(email))\nvar hintsByIndex = hintItems;\nvar hintsByName  = {};\nvar hintsByEmail = {};\nfor (var hi=0; hi<hintItems.length; hi++){\n  var h = hintItems[hi] || {};\n  var hEmail = clean(h.email || (h.emailAddress && h.emailAddress.address) || '');\n  var hName  = clean(h.name || h.person || h.fullName || h.attendeeName || '');\n  if (hName) hintsByName[lower(hName)] = h;\n  if (hEmail) hintsByEmail[lower(hEmail)] = h;\n}\n\n// Process each research output\nvar results = [];\n\nfor (var i=0; i<outItems.length; i++){\n  var row = outItems[i] || {};\n  var bioRaw = (row.bio !== undefined ? row.bio : (row.output !== undefined ? row.output : (row.text !== undefined ? row.text : row.content)));\n  var bio = normalizeText(bioRaw);\n\n  // Try to resolve identity\n  var email = extractEmailFromText(bio);\n  var name  = '';\n  var domain = '';\n\n  // If no email in text, try to align with hints\n  if (!email && hintsByIndex[i]){\n    var h = hintsByIndex[i];\n    var hEmail = clean(h.email || (h.emailAddress && h.emailAddress.address) || '');\n    if (hEmail) email = hEmail;\n    name = clean(h.name || h.person || h.fullName || h.attendeeName || '');\n    domain = clean(h.domain || '');\n  }\n\n  // If still no email, try name-match from text → hintsByName\n  if (!email){\n    var guessName = guessNameFromBio(bio);\n    if (guessName && hintsByName[lower(guessName)]){\n      var hh = hintsByName[lower(guessName)];\n      email = clean(hh.email || (hh.emailAddress && hh.emailAddress.address) || '');\n      if (!name) name = clean(hh.name || hh.person || hh.fullName || hh.attendeeName || guessName);\n      if (!domain) domain = clean(hh.domain || '');\n    } else if (guessName) {\n      name = name || guessName;\n    }\n  }\n\n  // Derive domain if still missing\n  if (!domain){\n    if (email) domain = domainFromEmail(email);\n    if (!domain){\n      var dTxt = extractDomainFromText(bio);\n      if (dTxt) domain = dTxt;\n    }\n  }\n\n  // Fallback name if still empty\n  if (!name) name = guessNameFromBio(bio);\n\n  var emailLower = lower(email);\n  var nameKey = lower(clean(name));\n\n  results.push({\n    emailLower: emailLower || '',\n    email: email || '',\n    name: name || '',\n    domain: domain || '',\n    nameKey: nameKey || '',\n    bio: bio\n  });\n}\n\n// Deduplicate by emailLower if available; else by nameKey\nvar bestByKey = {};\nfor (var r=0; r<results.length; r++){\n  var it = results[r];\n  var key = it.emailLower || ('name:' + it.nameKey);\n  if (!key) continue;\n  var prev = bestByKey[key];\n  if (!prev || it.bio.length > prev.bio.length){\n    bestByKey[key] = it;\n    // prefer real email if one version had none\n    if (prev && !prev.email && it.email) bestByKey[key].email = it.email;\n    if (prev && !prev.domain && it.domain) bestByKey[key].domain = it.domain;\n  } else {\n    // keep better name if longer\n    if (it.name && (!prev.name || it.name.length > prev.name.length)) bestByKey[key].name = it.name;\n    if (it.domain && !prev.domain) bestByKey[key].domain = it.domain;\n    if (it.email && !prev.email) bestByKey[key].email = it.email;\n  }\n}\n\n// Emit items\nvar out = [];\nfor (var k in bestByKey){\n  out.push({ json: bestByKey[k] });\n}\n\nif (out.length === 0){\n  // Emit diagnostics to help wire Input 1 properly\n  return [{\n    json: {\n      warning: \"No usable bios (no email/name could be resolved). Consider connecting Slim Inputs as Input 1.\",\n      sampleKeys: Object.keys(outItems[0] || {}),\n      note: \"If Agent output only has 'output' text, merge with Slim Inputs by index so we can attach emails.\"\n    }\n  }];\n}\n\nreturn out;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1808,
+        -384
+      ],
+      "id": "532d7d76-b8b9-4247-9890-972b7ffd8827",
+      "name": "Normalize Bios"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {
+          "includeUnpaired": false
+        }
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2032,
+        -480
+      ],
+      "id": "dc4c380f-92bf-4756-a429-e2d303e4c3af",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Grouped-by-meeting attendee summary\n// Output: ONE item per meeting with ALL attendees + details.\n// For each meeting you get:\n// {\n//   meetingId, meetingSubject, startISO, endISO, timeZone,\n//   bodyPreview, jobTitles (from body),\n//   attendees: [\n//     { name, email, domain, company, type, response, respondedAt }\n//   ]\n// }\n//\n// Input: one item per Outlook event (like the sample you posted)\n\nfunction clean(s){ return typeof s === 'string' ? s.trim() : ''; }\nfunction lower(s){ return typeof s === 'string' ? s.toLowerCase() : ''; }\nfunction get(o, path, d){\n  var parts = path.split('.'); var cur = o;\n  for (var i=0;i<parts.length;i++){ var k=parts[i]; if (cur && typeof cur==='object' && (k in cur)) cur = cur[k]; else return d; }\n  return cur;\n}\nfunction domainFromEmail(email){\n  var e = lower(clean(email)); var at = e.indexOf('@'); return at>-1 ? e.slice(at+1) : '';\n}\nfunction normalizeIso(s){\n  s = clean(s); if (!s) return null;\n  var t = s.replace(/Z$/,''); var dot = t.indexOf('.');\n  if (dot>-1) t = t.slice(0,dot);\n  if (t.length>=19) t = t.slice(0,19); // YYYY-MM-DDTHH:MM:SS\n  return t;\n}\nfunction isoFromEpochSec(sec){\n  if (typeof sec !== 'number') return null;\n  var d = new Date(sec*1000);\n  var yyyy = d.getUTCFullYear();\n  var mm = String(d.getUTCMonth()+1).padStart(2,'0');\n  var dd = String(d.getUTCDate()).padStart(2,'0');\n  var hh = String(d.getUTCHours()).padStart(2,'0');\n  var mi = String(d.getUTCMinutes()).padStart(2,'0');\n  var ss = String(d.getUTCSeconds()).padStart(2,'0');\n  return yyyy+'-'+mm+'-'+dd+'T'+hh+':'+mi+':'+ss;\n}\nfunction startISO(ev){\n  var s1 = get(ev,'start.dateTime', null); if (s1) return normalizeIso(String(s1));\n  var s2 = ev.startISO || get(ev,'start', null); if (typeof s2 === 'string') return normalizeIso(s2);\n  var e  = (typeof ev.epoch === 'number') ? ev.epoch : get(ev,'start.epoch', null);\n  if (typeof e === 'number') return normalizeIso(isoFromEpochSec(e));\n  return null;\n}\nfunction endISO(ev){\n  var e1 = get(ev,'end.dateTime', null); if (e1) return normalizeIso(String(e1));\n  var e2 = ev.endISO || get(ev,'end', null); if (typeof e2 === 'string') return normalizeIso(e2);\n  var ee = get(ev,'end.epoch', null);\n  if (typeof ee === 'number') return normalizeIso(isoFromEpochSec(ee));\n  return null;\n}\n\n// Infer a human-friendly company name from a domain (best-effort)\nfunction titleCase(s){\n  return s.split(/\\s+/).filter(Boolean).map(function(w){\n    return w.charAt(0).toUpperCase() + w.slice(1);\n  }).join(' ');\n}\nfunction inferCompanyFromDomain(domain){\n  domain = lower(clean(domain || ''));\n  if (!domain) return '';\n  var IGNORE = {\n    'gmail.com':1,'googlemail.com':1,'yahoo.com':1,'hotmail.com':1,'outlook.com':1,'live.com':1,\n    'msn.com':1,'icloud.com':1,'me.com':1,'proton.me':1,'protonmail.com':1,'gmx.com':1,'aol.com':1\n  };\n  if (IGNORE[domain]) return '';\n  var d = domain.replace(/^(mail|owa|webmail|mx|smtp|imap|app|portal|m|eu|us)\\./, '');\n  var multiTLDs = ['co.uk','com.au','com.br','com.ar','com.mx','co.jp','co.in','com.sg','com.hk','com.tr','com.cn','co.nz'];\n  for (var i=0;i<multiTLDs.length;i++){\n    var tld = multiTLDs[i];\n    if (d.endsWith('.' + tld)){\n      var base = d.slice(0, -(tld.length + 1));\n      var parts = base.split('.');\n      var label = parts[parts.length - 1] || base;\n      return titleCase(label.replace(/-/g,' '));\n    }\n  }\n  var parts2 = d.split('.');\n  if (parts2.length >= 2){\n    var core = parts2[parts2.length - 2];\n    return titleCase(core.replace(/-/g,' '));\n  }\n  return titleCase(d.replace(/-/g,' '));\n}\n\n// Extract likely job titles from the body preview\nfunction extractJobTitles(text){\n  var t = ' ' + clean(text) + ' ';\n  if (!t) return [];\n  var pats = [\n    /\\bChief\\s+[A-Za-z&\\- ]{2,30}\\b/gi,\n    /\\b(CFO|CEO|COO|CTO|CIO|CMO|CPO|CISO|GC)\\b/gi,\n    /\\b(SVP|EVP|VP|Assoc\\.?\\s?VP|Vice\\s+President)\\b/gi,\n    /\\bManaging\\s+Director\\b/gi,\n    /\\bDirector(?:\\s+of\\s+[A-Za-z&\\- ]{2,40})?\\b/gi,\n    /\\bHead\\s+of\\s+[A-Za-z&\\- ]{2,40}\\b/gi,\n    /\\bGlobal\\s+Head\\s+of\\s+[A-Za-z&\\- ]{2,40}\\b/gi,\n    /\\bPartner\\b/gi,\n    /\\b(Associate\\s+Director|Senior\\s+Manager|Manager)\\b/gi,\n    /\\b(Consultant|Principal)\\b/gi,\n    /\\b(General\\s+Counsel|Legal\\s+Counsel|Counsel|Attorney|Solicitor|Barrister)\\b/gi,\n    /\\b(Product|Engineering|Sales|Marketing|Operations|Finance|HR|People|Data|Design)\\s+(Manager|Director|Lead|Head)\\b/gi,\n    /\\b(Account\\s+Executive|Business\\s+Development|Recruiter)\\b/gi\n  ];\n  var found = [];\n  for (var i=0;i<pats.length;i++){\n    var re = pats[i], m;\n    while ((m = re.exec(t)) !== null){\n      var val = clean(m[0]);\n      if (val && found.indexOf(val) === -1) found.push(val);\n    }\n  }\n  return found;\n}\n\n// ------------- main -------------\nvar items = $input.all().map(function(i){ return i.json || {}; });\nvar out = [];\n\nfor (var i=0;i<items.length;i++){\n  var ev = items[i] || {};\n\n  var meetingId = ev.id || ev.eventId || null;\n  var subject = clean(ev.subject || ev.Subject || '(No subject)');\n  var bodyPreview = clean(ev.description || ev.bodyPreview || '');\n  var jobTitles = extractJobTitles(bodyPreview);\n\n  var sISO = startISO(ev);\n  var eISO = endISO(ev);\n  var tz = get(ev,'start.timeZone', get(ev,'time.timeZone', get(ev,'end.timeZone','UTC')));\n\n  var attendeesRaw = Array.isArray(ev.attendees) ? ev.attendees : [];\n  var attendees = [];\n  for (var a=0; a<attendeesRaw.length; a++){\n    var att = attendeesRaw[a] || {};\n    var email = clean(att.email || get(att,'emailAddress.address',''));\n    var name  = clean(att.name || get(att,'emailAddress.name','') || (email ? email.split('@')[0] : ''));\n    var domain = domainFromEmail(email);\n    var company = inferCompanyFromDomain(domain);\n    var type = clean(att.type || '');\n    var response = clean(att.response || get(att,'status.response','') || '');\n    var respondedAt = clean(att.respondedAt || get(att,'status.time','') || '');\n\n    // keep row even if name missing but email present\n    if (!name && !email) continue;\n\n    attendees.push({\n      name: name,\n      email: email,\n      domain: domain,\n      company: company,\n      type: type,\n      response: response,\n      respondedAt: respondedAt\n    });\n  }\n\n  // sort attendees by name then email for tidy output\n  attendees.sort(function(a,b){\n    var n = (a.name||'').localeCompare(b.name||''); return n!==0 ? n : (a.email||'').localeCompare(b.email||'');\n  });\n\n  out.push({\n    json: {\n      meetingId: meetingId,\n      meetingSubject: subject,\n      startISO: sISO,\n      endISO: eISO,\n      timeZone: tz,\n      bodyPreview: bodyPreview,\n      jobTitles: jobTitles,\n      attendees: attendees\n    }\n  });\n}\n\nreturn out.length ? out : [{ json: { warning: 'No meetings found in input' } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        560,
+        -480
+      ],
+      "id": "6bfb359e-3536-4b98-9874-cc6fdb878330",
+      "name": "Clean Calendar Data"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini-2025-08-07",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini-2025-08-07"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        2336,
+        -256
+      ],
+      "id": "436ce0bb-7fa0-4704-86ab-2a9fec733b20",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "LldOhLNBReShSMkE",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Clean Calendar Data → AI-ready payloads (per meeting)\n// Input: items from your “Clean Calendar Data” node. Handles both shapes:\n//   A) flat:  { subject, description, isAllDay, startISO, endISO, epoch?, end:{epoch?}, timeZone?, durationMinutes?, organizer{name,email}, attendees[], attendeesAll[], location{name}, meetingLink, webLink, internalDomain? }\n//   B) nested: { time:{ startISO, endISO, timeZone, durationMinutes }, organizer:{...}, attendeesAll:[...] }\n// Output (per meeting): { ai_event:{...minimal structured JSON...}, ai_text: \"...concise briefing...\" }\n//\n// Notes:\n// - No optional chaining / Intl; friendly to n8n cloud.\n// - Dedupes attendees, splits internal/external, strips noise, truncates long fields.\n\n//////////////////// helpers ////////////////////\nfunction clean(s){ return typeof s === 'string' ? s.trim() : ''; }\nfunction lower(s){ return typeof s === 'string' ? s.toLowerCase() : ''; }\nfunction get(o, p, d){\n  var parts = p.split('.'); var cur = o;\n  for (var i=0;i<parts.length;i++){ var k=parts[i]; if (cur && typeof cur==='object' && (k in cur)) cur = cur[k]; else return d; }\n  return cur;\n}\nfunction domainFromEmail(email){ var e = lower(clean(email)); var i = e.indexOf('@'); return i>-1 ? e.slice(i+1) : ''; }\nfunction normalizeIso(s){\n  s = clean(s); if (!s) return null;\n  var t = s.replace(/Z$/,''); var dot = t.indexOf('.');\n  if (dot>-1) t = t.slice(0, dot);\n  if (t.length>=19) t = t.slice(0,19); // YYYY-MM-DDTHH:MM:SS\n  return t;\n}\nfunction isoFromEpochSec(sec){\n  if (typeof sec !== 'number') return null;\n  var d = new Date(sec*1000);\n  var yyyy=d.getUTCFullYear(), mm=String(d.getUTCMonth()+1).padStart(2,'0'), dd=String(d.getUTCDate()).padStart(2,'0');\n  var hh=String(d.getUTCSeconds()>=30?d.getUTCHours()+Math.floor((d.getUTCMinutes()+1)/60):d.getUTCHours()).padStart(2,'0'); // minor guard\n  var mi=String(d.getUTCMinutes()).padStart(2,'0'); var ss='00';\n  return yyyy+'-'+mm+'-'+dd+'T'+hh+':'+mi+':'+ss;\n}\nfunction hhmm(iso){ return (iso && iso.length>=16) ? iso.slice(11,16) : ''; }\nfunction firstLine(s){ var t = clean(s); var i = t.indexOf('\\n'); return i>-1 ? t.slice(0,i) : t; }\nfunction clipWords(text, maxWords){\n  var ws = clean(text).split(/\\s+/).filter(Boolean);\n  if (ws.length <= maxWords) return ws.join(' ');\n  return ws.slice(0, maxWords).join(' ') + '…';\n}\nfunction prune(obj){\n  if (!obj || typeof obj!=='object') return obj;\n  var out = Array.isArray(obj) ? [] : {};\n  if (Array.isArray(obj)){\n    for (var i=0;i<obj.length;i++){\n      var v = prune(obj[i]);\n      var empty = v==='' || v==null || (typeof v==='object' && Object.keys(v).length===0);\n      if (!empty) out.push(v);\n    }\n  } else {\n    for (var k in obj){\n      var v2 = prune(obj[k]);\n      var empty2 = v2==='' || v2==null || (Array.isArray(v2) && v2.length===0) || (typeof v2==='object' && Object.keys(v2).length===0);\n      if (!empty2) out[k]=v2;\n    }\n  }\n  return out;\n}\nfunction uniqBy(arr, keyFn){\n  var seen = {}; var out = [];\n  for (var i=0;i<arr.length;i++){\n    var k = keyFn(arr[i]);\n    if (k && !seen[k]){ seen[k]=1; out.push(arr[i]); }\n    if (!k) out.push(arr[i]);\n  }\n  return out;\n}\nfunction normAttendee(a){\n  a = a || {};\n  var email = clean(a.email || get(a,'emailAddress.address',''));\n  var name  = clean(a.name  || get(a,'emailAddress.name','') || (email ? email.split('@')[0] : ''));\n  var type  = a.type || 'required';\n  var response = a.response || get(a,'status.response','none') || 'none';\n  var respondedAt = a.respondedAt || get(a,'status.time', null);\n  var domain = domainFromEmail(email);\n  var bio = clean(a.bio || a.output || '');\n  return { name: name, email: email, domain: domain, type: type, response: response, respondedAt: respondedAt, bio: bio };\n}\nfunction deriveTimes(ev){\n  var startISO = normalizeIso(get(ev,'time.startISO', null) || get(ev,'start.dateTime', null) || ev.startISO || (typeof ev.start === 'string' ? ev.start : null) || (typeof ev.epoch==='number' ? isoFromEpochSec(ev.epoch) : null) || (typeof get(ev,'start.epoch',null)==='number' ? isoFromEpochSec(get(ev,'start.epoch',null)) : null));\n  var endISO   = normalizeIso(get(ev,'time.endISO',   null) || get(ev,'end.dateTime',   null) || ev.endISO   || (typeof ev.end === 'string' ? ev.end : null)   || (typeof get(ev,'end.epoch',null)==='number' ? isoFromEpochSec(get(ev,'end.epoch',null)) : null));\n  var tz = get(ev,'time.timeZone', get(ev,'start.timeZone', get(ev,'end.timeZone','UTC')));\n  var display = ev.isAllDay ? 'All day' : (hhmm(startISO) + ((startISO && endISO)?'-':'') + hhmm(endISO));\n  var startEpoch = (typeof ev.epoch==='number') ? ev.epoch : get(ev,'time.startEpoch', get(ev,'start.epoch', null));\n  var endEpoch   = get(ev,'time.endEpoch', get(ev,'end.epoch', null));\n  var duration   = get(ev,'time.durationMinutes', ev.durationMinutes || null);\n  return { startISO:startISO, endISO:endISO, timeZone: tz, display: display, startEpoch: startEpoch, endEpoch: endEpoch, durationMinutes: duration };\n}\nfunction splitAttendees(list, internalDomain){\n  var intern = [], extern = [];\n  for (var i=0;i<list.length;i++){\n    var a = list[i];\n    if (a.domain && internalDomain && a.domain.toLowerCase()===internalDomain.toLowerCase()) intern.push(a);\n    else extern.push(a);\n  }\n  return {internal: intern, external: extern};\n}\nfunction isNoiseAttendee(a){\n  var e = lower(a.email||''); var n = lower(a.name||''); var t = lower(a.type||'');\n  return t==='resource' || n.indexOf('room')>-1 || e.indexOf('resource')>-1 || e.indexOf('calendar')>-1 || e.indexOf('no-reply')===0 || e.indexOf('noreply')===0;\n}\n\n//////////////////// main ////////////////////\nvar items = $input.all().map(function(i){ return i.json || {}; });\nvar out = [];\n\nfor (var i=0;i<items.length;i++){\n  var ev = items[i] || {};\n  var times = deriveTimes(ev);\n\n  var organizer = {\n    name: clean(get(ev,'organizer.name','')),\n    email: clean(get(ev,'organizer.email',''))\n  };\n  var internalDomain = clean(ev.internalDomain || domainFromEmail(organizer.email));\n\n  // Collect attendees from either attendeesAll (preferred) or attendees\n  var rawA = Array.isArray(ev.attendeesAll) ? ev.attendeesAll : (Array.isArray(ev.attendees) ? ev.attendees : []);\n  var att = rawA.map(normAttendee).filter(function(a){ return a.email || a.name; }).filter(function(a){ return !isNoiseAttendee(a); });\n  att = uniqBy(att, function(a){ return lower(a.email); });\n\n  var split = splitAttendees(att, internalDomain);\n\n  // Trim description, use first line as hint\n  var desc = clean(ev.description || ev.bodyPreview || '');\n  var descLine = firstLine(desc);\n  var descTrim = clipWords(desc, 90); // ~90 words max for hint\n\n  var subject = clean(ev.subject || ev.Subject || '(No subject)');\n  var dateISO = times.startISO ? times.startISO.slice(0,10) : null;\n\n  var externalBios = (Array.isArray(ev.externalAttendeeBios) ? ev.externalAttendeeBios : [])\n    .map(function(b){\n      return { name: clean(b.name||''), email: clean(b.email||''), domain: clean(b.domain||''), bio: clipWords(clean(b.bio||''), 120) };\n    });\n\n  var ai_event = prune({\n    id: ev.id || ev.eventId || null,\n    subject: subject,\n    isAllDay: !!ev.isAllDay,\n    date: dateISO,\n    time: {\n      startISO: times.startISO,\n      endISO: times.endISO,\n      timeZone: times.timeZone,\n      display: times.display,\n      startEpoch: times.startEpoch,\n      endEpoch: times.endEpoch,\n      durationMinutes: times.durationMinutes\n    },\n    organizer: organizer,\n    location: (get(ev,'location.name', null) || (typeof ev.location==='string' ? ev.location : null)) || null,\n    meetingLink: ev.meetingLink || null,\n    webLink: ev.webLink || null,\n    contextHint: descTrim || null,\n    attendees: {\n      internal: split.internal.map(function(a){ return { name:a.name, email:a.email, domain:a.domain, response:a.response }; }),\n      external: split.external.map(function(a){ return { name:a.name, email:a.email, domain:a.domain, response:a.response, bio: a.bio ? clipWords(a.bio, 120) : undefined }; })\n    },\n    externalBios: externalBios.length ? externalBios : undefined\n  });\n\n  // Compact text prompt for LLMs that prefer plain text\n  var ai_text = [\n    'Meeting: ' + subject,\n    'Date: ' + (dateISO || 'N/A') + '  Time: ' + (times.display || 'N/A') + ' ' + (times.timeZone || 'UTC'),\n    organizer.name || organizer.email ? ('Organizer: ' + clean([organizer.name, organizer.email ? '<'+organizer.email+'>' : ''].filter(Boolean).join(' '))) : null,\n    ev.location && (get(ev,'location.name',null) || typeof ev.location==='string') ? ('Location: ' + (get(ev,'location.name',null) || ev.location)) : null,\n    (ev.meetingLink || ev.webLink) ? ('Links: ' + [ev.meetingLink, ev.webLink].filter(Boolean).join(' | ')) : null,\n    split.internal.length ? ('Internal: ' + split.internal.map(function(a){ return a.name || a.email; }).join(', ')) : null,\n    split.external.length ? ('External: ' + split.external.map(function(a){ return a.name || a.email; }).join(', ')) : null,\n    externalBios.length ? ('External bios:\\n- ' + externalBios.map(function(b){ return (b.name || b.email) + ' — ' + b.bio; }).join('\\n- ')) : null,\n    descLine ? ('Context: ' + descLine) : null\n  ].filter(Boolean).join('\\n');\n\n  out.push({ json: { ai_event: ai_event, ai_text: ai_text } });\n}\n\nif (out.length === 0){\n  return [{ json: { warning: 'No calendar items to clean. Check upstream node output.' } }];\n}\n\nreturn out;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1808,
+        -640
+      ],
+      "id": "c07d28dc-252e-4bac-9141-76e6130f5b5b",
+      "name": "Normalise Calendar Info"
+    },
+    {
+      "parameters": {
+        "jsCode": "// One OUTPUT PER EXTERNAL ATTENDEE per meeting\n// For each meeting, emit one item per external person:\n// { meetingSubject, startISO, endISO, name, email, domain, company }\n//\n// Edit if needed:\nconst INTERNAL_DOMAINS = [\"legalengine.co.uk\"];\n\n// ---------- helpers ----------\nfunction clean(s){ return (typeof s === 'string' ? s.trim() : (s==null ? '' : String(s).trim())); }\nfunction lower(s){ return typeof s === 'string' ? s.toLowerCase() : ''; }\nfunction get(o, path, d){\n  var parts = path.split('.'); var cur = o;\n  for (var i=0;i<parts.length;i++){ var k=parts[i]; if (cur && typeof cur==='object' && (k in cur)) cur = cur[k]; else return d; }\n  return cur;\n}\nfunction domainFromEmail(email){ var e = lower(clean(email)); var i = e.indexOf('@'); return i>-1 ? e.slice(i+1) : ''; }\nfunction isoFromEpochSec(sec){\n  if (typeof sec !== 'number') return null;\n  var d=new Date(sec*1000), yyyy=d.getUTCFullYear(), mm=String(d.getUTCMonth()+1).padStart(2,'0'), dd=String(d.getUTCDate()).padStart(2,'0'),\n      hh=String(d.getUTCHours()).padStart(2,'0'), mi=String(d.getUTCMinutes()).padStart(2,'0'), ss=String(d.getUTCSeconds()).padStart(2,'0');\n  return `${yyyy}-${mm}-${dd}T${hh}:${mi}:${ss}`;\n}\nfunction normalizeIso(s){\n  s = clean(s); if (!s) return null;\n  var t = s.replace(/Z$/,''); var dot = t.indexOf('.');\n  if (dot>-1) t = t.slice(0,dot);\n  if (t.length>=19) t = t.slice(0,19); // YYYY-MM-DDTHH:MM:SS\n  return t;\n}\nfunction startISOFromEvent(ev){\n  var s1 = get(ev,'start.dateTime',null); if (s1) return normalizeIso(String(s1));\n  var s2 = ev.startISO || get(ev,'start',null); if (typeof s2 === 'string') return normalizeIso(s2);\n  var e  = (typeof ev.epoch === 'number') ? ev.epoch : get(ev,'start.epoch',null);\n  if (typeof e === 'number') return normalizeIso(isoFromEpochSec(e));\n  return null;\n}\nfunction endISOFromEvent(ev){\n  var e1 = get(ev,'end.dateTime',null); if (e1) return normalizeIso(String(e1));\n  var e2 = ev.endISO || get(ev,'end',null); if (typeof e2 === 'string') return normalizeIso(e2);\n  var ee = get(ev,'end.epoch',null);\n  if (typeof ee === 'number') return normalizeIso(isoFromEpochSec(ee));\n  return null;\n}\nfunction titleCase(s){ return String(s||'').split(/\\s+|-/).filter(Boolean).map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' '); }\nfunction inferCompanyFromDomain(domain){\n  domain = lower(clean(domain||'')); if (!domain) return '';\n  const IGNORE={'gmail.com':1,'googlemail.com':1,'yahoo.com':1,'hotmail.com':1,'outlook.com':1,'live.com':1,'msn.com':1,'icloud.com':1,'me.com':1,'proton.me':1,'protonmail.com':1,'gmx.com':1,'aol.com':1};\n  if (IGNORE[domain]) return '';\n  var d = domain.replace(/^(mail|owa|webmail|mx|smtp|imap|app|portal|m|eu|us)\\./,'');\n  var multi=['co.uk','com.au','com.br','com.ar','com.mx','co.jp','co.in','com.sg','com.hk','com.tr','com.cn','co.nz'];\n  for (var i=0;i<multi.length;i++){ var t=multi[i]; if (d.endsWith('.'+t)){ var base=d.slice(0,-(t.length+1)); var p=base.split('.'); return titleCase(p[p.length-1]||base); } }\n  var parts=d.split('.'); if (parts.length>=2) return titleCase(parts[parts.length-2]); return titleCase(d);\n}\nfunction isNoiseAttendee(nameLower, emailLower, typeLower){\n  return typeLower==='resource' || nameLower.indexOf('room')>-1 || emailLower.indexOf('resource')>-1 ||\n         emailLower.indexOf('calendar')>-1 || emailLower.indexOf('no-reply')===0 || emailLower.indexOf('noreply')===0;\n}\nfunction getSubject(ev){\n  var candidates = ['meetingSubject','subject','Subject','title','name','summary'];\n  for (var i=0;i<candidates.length;i++){\n    var v = ev[candidates[i]];\n    if (typeof v === 'string' && clean(v)) return clean(v);\n  }\n  return '(No subject)';\n}\n\n// ---------- inputs & internal domain inference ----------\nvar events = $input.all().map(i=>i.json||{});\n\nvar counts={}; \nfor (var i=0;i<events.length;i++){\n  var org=clean(get(events[i],'organizer.email','')||get(events[i],'organizer.emailAddress.address',''));\n  var d=domainFromEmail(org); if(d) counts[d]=(counts[d]||0)+1;\n}\nvar globalInternal=null,bestN=-1;\nfor (var k in counts){ if(counts[k]>bestN){ bestN=counts[k]; globalInternal=k; } }\nvar INTERNAL = new Set([].concat(INTERNAL_DOMAINS, globalInternal?[globalInternal]:[]).filter(Boolean).map(x=>lower(x)));\n\n// ---------- emit one item per external attendee per meeting ----------\nvar out = [];\n\nfor (var j=0;j<events.length;j++){\n  var ev = events[j] || {};\n  var subject = getSubject(ev);\n  var sISO = startISOFromEvent(ev);\n  var eISO = endISOFromEvent(ev);\n\n  var attendeesRaw = Array.isArray(ev.attendees) ? ev.attendees : [];\n  var seen = {}; // de-dupe by email within this meeting\n\n  for (var a=0;a<attendeesRaw.length;a++){\n    var att = attendeesRaw[a] || {};\n    var emailOrig = clean(att.email || get(att,'emailAddress.address',''));\n    var email = lower(emailOrig);\n    if (!email || email.indexOf('@')===-1) continue;\n\n    var name = clean(att.name || get(att,'emailAddress.name','') || (emailOrig?emailOrig.split('@')[0]:''));\n    var domain = domainFromEmail(emailOrig);\n    var typeLower = lower(String(att.type||'')); var nameLower = lower(name);\n\n    if (isNoiseAttendee(nameLower, email, typeLower)) continue;\n    if (INTERNAL.has(domain)) continue;\n    if (seen[email]) continue; seen[email]=1;\n\n    out.push({ json: {\n      meetingSubject: subject,\n      startISO: sISO,\n      endISO: eISO,\n      name: name,\n      email: emailOrig,\n      domain: domain,\n      company: inferCompanyFromDomain(domain)\n    }});\n  }\n}\n\n// Sort by meeting start time, then subject, then attendee name\nout.sort((a,b)=>{\n  const as=a.json.startISO||'', bs=b.json.startISO||'';\n  if (as!==bs) return as<bs?-1:1;\n  const ms=(a.json.meetingSubject||'').localeCompare(b.json.meetingSubject||'');\n  if (ms!==0) return ms;\n  return (a.json.name||'').localeCompare(b.json.name||'');\n});\n\nreturn out.length ? out : [{ json: { info: 'No external attendees found in input.' } }];\n"
+      },
+      "id": "91c1ccf2-333a-4965-94ad-eb05d01d9c1c",
+      "name": "Extract External Attendees",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1008,
+        -736
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "addToDate",
+        "magnitude": "={{ $json.currentDate }}",
+        "duration": 4,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        112,
+        -480
+      ],
+      "id": "e80e2bdd-435a-491b-bfb9-425cb5af2d95",
+      "name": "Tomorrow +2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You will receive information relating to one or more meetings, decide which information to use for each meeting and cycle through them one by one.\n\nOnly produce an output for meetings with external attendees {{ $('Extract External Attendees').item.json.email }}.\n\nMeeting Name:{{ $('Get many events').item.json.subject }}\nMeeting date and start time:{{ $('Get many events').item.json.start.dateTime }}\nAttendees:{{ $('Get many events').item.json.attendees[0].emailAddress.name }}, {{ $('Get many events').item.json.attendees[1].emailAddress.name }}, {{ $('Get many events').item.json.attendees[3].emailAddress.name }}, {{ $('Get many events').item.json.attendees[4].emailAddress.name }}, {{ $('Get many events').item.json.attendees[5].emailAddress.name }}, {{ $('Get many events').item.json.attendees[6].emailAddress.name }}, {{ $('Get many events').item.json.attendees[7].emailAddress.name }}, {{ $('Get many events').item.json.attendees[8].emailAddress.name }}, {{ $('Get many events').item.json.attendees[9].emailAddress.name }}, {{ $('Get many events').item.json.attendees[10].emailAddress.name }}\nBio for external attendeess:{{ $json.bio }}",
+        "options": {
+          "systemMessage": "You are an expert personal business assistant. For each calendar event, write me a full summary of the event with dates, times, attendees, meeting length and the external bios to allow attendees to prepare for the meetings taking place today.",
+          "returnIntermediateSteps": false
+        }
+      },
+      "id": "8fcf6584-e231-440e-b82b-44491eda1ac4",
+      "name": "Summary Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        2256,
+        -480
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini-2025-08-07",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini-2025-08-07"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        2688,
+        -656
+      ],
+      "id": "ca5fddf5-d506-4c43-b372-11636fe0a3c5",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "LldOhLNBReShSMkE",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You will receive information relating to one or more meetings, decide which information to use for each meeting and cycle through them one by one.\n{{ $json.output }}\n",
+        "options": {
+          "systemMessage": "You are an expert in creating html emails that format calendar details perfectly and create an easy to digest email template to brief a professional on what they have on that day ",
+          "returnIntermediateSteps": false
+        }
+      },
+      "id": "612e1559-01fd-4363-a693-b013668c9a52",
+      "name": "HTML Creator",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        2608,
+        -880
+      ],
+      "alwaysOutputData": true,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        2672,
+        -288
+      ],
+      "id": "966a19ff-3803-4d8e-8ab6-6cc778a51b68",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "resource": "event",
+        "operation": "create",
+        "calendarId": {
+          "__rl": true,
+          "value": "AQMkAGJmN2M2NGFhAC1hYzI4LTRkNjAtOThmYi1iYzFjODZjNGQwMWQARgAAA-aUj-zNalNOpFa6myt4ADMHAIfTtQvn9StGnIa6__JPK6kAAAIBBgAAAIfTtQvn9StGnIa6__JPK6kAAAJVggAAAA==",
+          "mode": "list",
+          "cachedResultName": "Calendar"
+        },
+        "subject": "=Daily Briefing",
+        "startDateTime": "={{ $('Wait 10s').item.json['start-time'] }}",
+        "endDateTime": "={{ $json['end-time'] }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        5200,
+        -192
+      ],
+      "id": "573227fe-ee94-4afa-8192-30c5c83d9817",
+      "name": "Create an event",
+      "webhookId": "6c6edfa8-cbf5-492d-b350-cdc78c68a9d0",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "6M8EKjo0xkpyROgs",
+          "name": "Microsoft Outlook - Lee @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.microsoft.com/v1.0/me/calendar/getSchedule",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "microsoftOutlookOAuth2Api",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"Content-Type\": \"application/json\",\n  \"Prefer\": \"outlook.timezone=\\\"GMT Standard Time\\\"\"\n}\n",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"schedules\": [\"lee@legalengine.co.uk\"],\n  \"startTime\": {\n    \"dateTime\": \"{{$now.setZone('Europe/London').toISO({ suppressMilliseconds: true, includeOffset: false })}}\",\n    \"timeZone\": \"GMT Standard Time\"\n  },\n  \"endTime\": {\n    \"dateTime\": \"{{$now.setZone('Europe/London').plus({ minutes: 60 }).toISO({ suppressMilliseconds: true, includeOffset: false })}}\",\n    \"timeZone\": \"GMT Standard Time\"\n  },\n  \"availabilityViewInterval\": 15\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4304,
+        -192
+      ],
+      "id": "be32ffcb-9b57-4165-89ca-1cbf203e48f6",
+      "name": "Outlook find time in next 60m",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "6M8EKjo0xkpyROgs",
+          "name": "Microsoft Outlook - Lee @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resume": "specificTime",
+        "dateTime": "={{ $json.start.dateTime }}"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        5424,
+        -192
+      ],
+      "id": "509e55ea-0c9f-49a2-a1b3-91d7eec1e285",
+      "name": "Wait2",
+      "webhookId": "e350f426-9c27-432e-8a02-ba2a6b56f61f"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Mode: Run once for all items\nconst items = $input.all().map(i => i.json);\n\n// Choose which field(s) to join\nconst lines = items.map(j =>\n  j.html || j.ai_text || j.text || j.output || j.name || JSON.stringify(j)\n).filter(Boolean);\n\n// Build one string\nconst text = lines.join('\\n\\n---\\n\\n');\n\n// Return ONE item with the string\nreturn [{ json: { text } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2960,
+        -288
+      ],
+      "id": "43701fec-ce10-4b84-b24a-5f0c0d712185",
+      "name": "Compiler"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        3184,
+        -288
+      ],
+      "id": "8ec41252-0158-4fa3-ac63-94de82886254",
+      "name": "Date & Time"
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "=https://api.elevenlabs.io/v1/convai/agents/{{ $('Create 11L agent with KB').item.json.agent_id }}\n",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "xi-api-key",
+              "value": "sk_3eca705a3c2780af4cb1116beb64d3e1d3bfc187a8d565f8"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        6096,
+        -192
+      ],
+      "id": "79fbce6a-86f8-4adc-a5bc-64fb407c711a",
+      "name": "Delete Agent"
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "=https://api.elevenlabs.io/v1/convai/knowledge-base/{{ $('Create KB').item.json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "xi-api-key",
+              "value": "sk_3eca705a3c2780af4cb1116beb64d3e1d3bfc187a8d565f8"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        6544,
+        -192
+      ],
+      "id": "d038ae2b-b52f-45ab-b542-5feb44c567f3",
+      "name": "Delete KB"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.elevenlabs.io/v1/convai/twilio/outbound-call",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "={\n  \"xi-api-key\": \"sk_fb475a342401f1e2495de38b2193518f54778f4427ce83de\",\n  \"Content-Type\": \"application/json\"\n}\n",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"agent_id\": \"{{ $('Create 11L agent with KB').item.json.agent_id }}\",\n  \"agent_phone_number_id\": \"phnum_01jvx1f76mfg6akt98vk9jqyqh\",\n  \"to_number\": \"+447889758119\",\n  \"conversation_initiation_client_data\": {\n    \"client_name\": \"Acme Ltd\",\n    \"matter_ref\": \"M-2025-001\"\n  }\n}\n ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        5648,
+        -192
+      ],
+      "id": "b6c3162f-e41d-4cd8-868c-5a41ee6c0762",
+      "name": "Outbound Call"
+    },
+    {
+      "parameters": {
+        "operation": "addToDate",
+        "magnitude": "={{ $('Date & Time').item.json.currentDate }}",
+        "timeUnit": "minutes",
+        "duration": 30,
+        "outputFieldName": "start-time",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        4528,
+        -192
+      ],
+      "id": "a696f3ae-fee4-4af5-9eae-88e43c1ab51c",
+      "name": "Start Time"
+    },
+    {
+      "parameters": {
+        "operation": "addToDate",
+        "magnitude": "={{ $json['start-time'] }}",
+        "timeUnit": "minutes",
+        "duration": 15,
+        "outputFieldName": "end-time",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        4976,
+        -192
+      ],
+      "id": "17f33486-93c0-4f05-bc1c-9f14b8cfcfac",
+      "name": "End Time"
+    },
+    {
+      "parameters": {
+        "amount": 1,
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        5872,
+        -192
+      ],
+      "id": "038c4884-6c1c-4178-a6ac-22973ebe4051",
+      "name": "Wait Xm until deleting Agent & KB",
+      "webhookId": "1a453b08-53ee-492a-8e35-d37e05b79b29"
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        6320,
+        -192
+      ],
+      "id": "1ad90282-f39c-4f52-9798-0ec3fe40e857",
+      "name": "Wait 10s before deleting KB",
+      "webhookId": "e350f426-9c27-432e-8a02-ba2a6b56f61f"
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        4752,
+        -192
+      ],
+      "id": "27a274b7-bba1-4521-a5a2-26019d17797d",
+      "name": "Wait 10s",
+      "webhookId": "1a453b08-53ee-492a-8e35-d37e05b79b29"
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        4080,
+        -288
+      ],
+      "id": "71d949e3-c77e-4a32-9a56-7d30b36a1daa",
+      "name": "Wait 10s1",
+      "webhookId": "1a453b08-53ee-492a-8e35-d37e05b79b29"
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3632,
+        -288
+      ],
+      "id": "d22bedcd-9350-4175-a54d-737ce0763742",
+      "name": "Wait 10s2",
+      "webhookId": "1a453b08-53ee-492a-8e35-d37e05b79b29"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -336,
+        -384
+      ],
+      "id": "27c9dc33-f0a4-440d-92ae-fd3be226b007",
+      "name": "When clicking ‘Execute workflow’",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "path": "luke-pre-brief",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -336,
+        -736
+      ],
+      "id": "a0787b90-73d9-4862-ae53-2e098b84069d",
+      "name": "Webhook",
+      "webhookId": "28757e8b-529d-4359-980c-1814d56bbc23",
+      "disabled": true
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Today",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Today": {
+      "main": [
+        [
+          {
+            "node": "Tomorrow +2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF — No meetings today?": {
+      "main": [
+        [
+          {
+            "node": "Extract External Attendees",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Research Attendee (Agent)": {
+      "main": [
+        [
+          {
+            "node": "Normalize Bios",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate HTML Briefing": {
+      "main": [
+        [
+          {
+            "node": "Send Briefing (Outlook, HTML)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slim Inputs for Agent": {
+      "main": [
+        [
+          {
+            "node": "Research Attendee (Agent)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Briefing (Outlook, HTML)": {
+      "main": [
+        []
+      ]
+    },
+    "Create KB": {
+      "main": [
+        [
+          {
+            "node": "Wait 10s2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create 11L agent with KB": {
+      "main": [
+        [
+          {
+            "node": "Wait 10s1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many events": {
+      "main": [
+        [
+          {
+            "node": "Clean Calendar Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Research Attendee (Agent)",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Perplexity Search": {
+      "ai_tool": [
+        [
+          {
+            "node": "Research Attendee (Agent)",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Bios": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean Calendar Data": {
+      "main": [
+        [
+          {
+            "node": "IF — No meetings today?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Normalise Calendar Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Summary Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Summary Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalise Calendar Info": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Extract External Attendees": {
+      "main": [
+        [
+          {
+            "node": "Research Attendee (Agent)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tomorrow +2": {
+      "main": [
+        [
+          {
+            "node": "Get many events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summary Agent": {
+      "main": [
+        [
+          {
+            "node": "Generate HTML Briefing",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTML Creator",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "HTML Creator",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML Creator": {
+      "main": [
+        [
+          {
+            "node": "Send Briefing (Outlook, HTML)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Compiler",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create an event": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Outlook find time in next 60m": {
+      "main": [
+        [
+          {
+            "node": "Start Time",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Create an event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait2": {
+      "main": [
+        [
+          {
+            "node": "Outbound Call",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compiler": {
+      "main": [
+        [
+          {
+            "node": "Date & Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Time": {
+      "main": [
+        [
+          {
+            "node": "Create KB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Agent": {
+      "main": [
+        [
+          {
+            "node": "Wait 10s before deleting KB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Outbound Call": {
+      "main": [
+        [
+          {
+            "node": "Wait Xm until deleting Agent & KB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start Time": {
+      "main": [
+        [
+          {
+            "node": "Wait 10s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "End Time": {
+      "main": [
+        [
+          {
+            "node": "Create an event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait Xm until deleting Agent & KB": {
+      "main": [
+        [
+          {
+            "node": "Delete Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 10s before deleting KB": {
+      "main": [
+        [
+          {
+            "node": "Delete KB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 10s": {
+      "main": [
+        [
+          {
+            "node": "End Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 10s1": {
+      "main": [
+        [
+          {
+            "node": "Outbound call",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Outlook find time in next 60m",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 10s2": {
+      "main": [
+        [
+          {
+            "node": "Create 11L agent with KB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Today",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Today",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": {
+    "node:Schedule Trigger": {
+      "recurrenceRules": []
+    }
+  },
+  "pinData": {},
+  "triggerCount": 1,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

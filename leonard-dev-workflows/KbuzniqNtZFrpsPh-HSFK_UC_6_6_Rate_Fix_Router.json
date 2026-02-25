@@ -1,0 +1,400 @@
+{
+  "name": "HSFK UC 6.6 - Rate Fix Router",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "hsfk-uc-6.6",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "989ed076-6c30-4f2f-bec4-b0909fdb222d",
+      "name": "ElevenLabs Post-Call",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "59b8d195-d4be-4258-add7-c8ffd4b8d761"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8aafdb2c-7185-4711-96e7-7f711b181d53",
+              "name": "matterReference",
+              "value": "={{ $json.body.extracted_data.matterReference }}",
+              "type": "string"
+            },
+            {
+              "id": "4b201bc9-6225-4b24-9bef-79b159c8fb07",
+              "name": "issueType",
+              "value": "={{ $json.body.extracted_data.issueType }}",
+              "type": "string"
+            },
+            {
+              "id": "bb847709-e759-4b10-a7e9-8bd140959d2b",
+              "name": "currentRate",
+              "value": "={{ $json.body.extracted_data.currentRate }}",
+              "type": "number"
+            },
+            {
+              "id": "9e5d7fde-5a70-48af-b409-a7fe3872cde2",
+              "name": "expectedRate",
+              "value": "={{ $json.body.extracted_data.expectedRate }}",
+              "type": "number"
+            },
+            {
+              "id": "1574b8a8-ab4f-4597-8b47-f61ce61705fe",
+              "name": "feeEarner",
+              "value": "={{ $json.body.extracted_data.feeEarner }}",
+              "type": "string"
+            },
+            {
+              "id": "2a21a03a-8808-4289-9860-74b7160d6b5c",
+              "name": "urgency",
+              "value": "={{ $json.body.extracted_data.urgency }}",
+              "type": "string"
+            },
+            {
+              "id": "b86bbf9d-5575-4f8a-9a89-59dade38b694",
+              "name": "rateReviewDueDate",
+              "value": "={{ $json.body.extracted_data.rateReviewDueDate }}",
+              "type": "string"
+            },
+            {
+              "id": "9e3d39a0-3b1c-498e-960e-767e859ad71d",
+              "name": "conversation_id",
+              "value": "={{ $json.body.conversation_id }}",
+              "type": "string"
+            },
+            {
+              "id": "57de82f0-919a-49c7-831f-bf4784312e6c",
+              "name": "agent_id",
+              "value": "={{ $json.body.agent_id }}",
+              "type": "string"
+            },
+            {
+              "id": "3090d271-2bd1-46ab-b174-288ede5e66df",
+              "name": "duration_seconds",
+              "value": "={{ $json.body.duration_seconds }}",
+              "type": "string"
+            },
+            {
+              "id": "15f1d0e6-7428-4ac4-82ab-ff57b9467867",
+              "name": "caller_name",
+              "value": "={{ $json.body.metadata?.first_name || 'Unknown' }}",
+              "type": "string"
+            },
+            {
+              "id": "9285a99e-eeda-4529-a215-4c03dc3d77bc",
+              "name": "caller_email",
+              "value": "={{ $json.body.metadata?.email || '' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      },
+      "id": "72b485b6-cd0d-4a6d-80c2-8dcb8a48a0e7",
+      "name": "Extract Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        240,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "combinator": "and"
+          },
+          "conditions": [
+            {
+              "id": "0772b38e-c90e-4035-aedb-285072589d7b",
+              "leftValue": "={{ $json.matterReference }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            },
+            {
+              "id": "0792129f-b4ed-476f-850f-fee5f9a16898",
+              "leftValue": "={{ $json.issueType }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            },
+            {
+              "id": "c8113d86-fc3d-44ee-812d-638d8a763891",
+              "leftValue": "={{ $json.feeEarner }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f01964ee-e349-44a8-88a3-065be18a65d4",
+      "name": "Data Complete?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        480,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "27d09cd3-eab1-49fe-84ce-841e505574c7",
+              "name": "summary",
+              "value": "={{ \"## HSFK UC 6.6 - Rate Fix Router\\n\\n**Caller:** \" + ($json.caller_name || \"Unknown\") + \" (\" + ($json.caller_email || \"no email\") + \")\\n**Duration:** \" + ($json.duration_seconds || \"?\") + \"s\\n**Conversation ID:** \" + ($json.conversation_id || \"?\") + \"\\n\\n### Captured Data\\n\\n- **matterReference**: \" + ($json.matterReference || \"N/A\") + \"\\n- **issueType**: \" + ($json.issueType || \"N/A\") + \"\\n- **currentRate**: \" + ($json.currentRate || \"N/A\") + \"\\n- **expectedRate**: \" + ($json.expectedRate || \"N/A\") + \"\\n- **feeEarner**: \" + ($json.feeEarner || \"N/A\") + \"\\n- **urgency**: \" + ($json.urgency || \"N/A\") + \"\\n- **rateReviewDueDate**: \" + ($json.rateReviewDueDate || \"N/A\") + \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "f8c0a7a5-89b6-4f56-a535-484341cd018a",
+              "name": "ucId",
+              "value": "6.6",
+              "type": "string"
+            },
+            {
+              "id": "5ff2c048-eeae-4579-86fd-e17941b1899a",
+              "name": "agentName",
+              "value": "Rate Fix Router",
+              "type": "string"
+            },
+            {
+              "id": "4e1e8aa0-4252-4211-99c9-cfd794cc1c87",
+              "name": "timestamp",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "28d74387-29d4-43bb-bdc3-ce6b36c3e79d",
+      "name": "Format Summary",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        720,
+        -60
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "app0QZAuhY8Zx4I54",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl8hV2nYEoRS8Gif",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "UC ID": "={{ $json.ucId }}",
+            "Agent Name": "={{ $json.agentName }}",
+            "Caller": "={{ $json.caller_name }}",
+            "Email": "={{ $json.caller_email }}",
+            "Summary": "={{ $json.summary }}",
+            "Conversation ID": "={{ $json.conversation_id }}",
+            "Duration": "={{ parseInt($json.duration_seconds) || 0 }}",
+            "Timestamp": "={{ $json.timestamp }}",
+            "Data Complete": true,
+            "Raw Extracted Data": "={{ JSON.stringify($json) }}"
+          },
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "e0c26826-9c26-4036-9579-23436fc8ddc2",
+      "name": "Log to Airtable",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        960,
+        -60
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "57nd5p5f6kuW4Xs0",
+          "name": "HSFK Airtable"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://slack.com/api/chat.postMessage",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ channel: \"C098F8Z4P1U\", text: \"New voice conversation for UC 6.6 (Rate Fix Router):\\nCaller: \" + ($(\"Format Summary\").item.json.caller_name || \"Unknown\") + \" (\" + ($(\"Format Summary\").item.json.caller_email || \"no email\") + \")\\nDuration: \" + ($(\"Format Summary\").item.json.duration_seconds || \"?\") + \"s\\nConversation: \" + ($(\"Format Summary\").item.json.conversation_id || \"?\") }) }}",
+        "options": {}
+      },
+      "id": "90d93d9e-73a4-4a56-a42d-56a8b92df8d2",
+      "name": "Notify Slack",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1200,
+        -60
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "rYd0mT6IhOLBmosk",
+          "name": "HSFK Slack Bot (Header Auth)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ status: \"ok\", message: \"Data captured and logged\" }) }}",
+        "options": {}
+      },
+      "id": "b1e08982-aceb-4e28-abf4-6753c4b204ea",
+      "name": "Respond OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1440,
+        -60
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ status: \"incomplete\", message: \"Some required fields missing, logged for review\" }) }}",
+        "options": {
+          "responseCode": 202
+        }
+      },
+      "id": "666f9f83-ae37-4d22-8a24-9b25609130e7",
+      "name": "Respond Incomplete",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        720,
+        120
+      ]
+    }
+  ],
+  "connections": {
+    "ElevenLabs Post-Call": {
+      "main": [
+        [
+          {
+            "node": "Extract Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Data": {
+      "main": [
+        [
+          {
+            "node": "Data Complete?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Complete?": {
+      "main": [
+        [
+          {
+            "node": "Format Summary",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Incomplete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Summary": {
+      "main": [
+        [
+          {
+            "node": "Log to Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log to Airtable": {
+      "main": [
+        [
+          {
+            "node": "Notify Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Slack": {
+      "main": [
+        [
+          {
+            "node": "Respond OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 1,
+  "meta": null
+}

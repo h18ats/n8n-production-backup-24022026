@@ -1,0 +1,2021 @@
+{
+  "name": "Sanbox - Demo -Indiv Post Processing",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "testdemo",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1640,
+        740
+      ],
+      "id": "9c6b70b6-d094-4df4-a168-a469a83f7f3f",
+      "name": "Webhook",
+      "webhookId": "2cb838b8-ef91-4c34-bb43-fd349331aa12"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "email": "={{ $('Webhook').item.json.body.user_email }}",
+        "additionalFields": {
+          "firstName": "={{ $('Webhook').item.json.body.user_name }}"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.hubspot",
+      "typeVersion": 2.1,
+      "position": [
+        -1122,
+        540
+      ],
+      "id": "745a55c7-0b6d-4b48-a103-c4e768ff1d4d",
+      "name": "HubSpot1",
+      "credentials": {
+        "hubspotOAuth2Api": {
+          "id": "4ZWRbZ2jFaCFRgGS",
+          "name": "HubSpot account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "chatMessage",
+        "chatId": {
+          "__rl": true,
+          "value": "19:3b774197e8f540238b983f2e1cfa5f0f@thread.v2",
+          "mode": "list",
+          "cachedResultName": "sandbox-demo.legalengine.co.uk (group)",
+          "cachedResultUrl": "https://teams.microsoft.com/l/chat/19%3A3b774197e8f540238b983f2e1cfa5f0f%40thread.v2/0?tenantId=fad5c68f-d169-4373-bed7-55243bd99c7b"
+        },
+        "message": "=New SHORT demo session completed by {{ $('Webhook').item.json.body.first_name }} {{ $('Webhook').item.json.body.last_name }} - {{ $('Webhook').item.json.body.user_email }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftTeams",
+      "typeVersion": 2,
+      "position": [
+        -1122,
+        740
+      ],
+      "id": "4411cc1e-2673-4598-9a4b-7cac84c103b1",
+      "name": "Microsoft Teams",
+      "webhookId": "8a3a05c2-a284-42f7-b83a-09ba219b680a",
+      "credentials": {
+        "microsoftTeamsOAuth2Api": {
+          "id": "qyoIpk534c3Uq1X6",
+          "name": "Microsoft Teams account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        -1420,
+        740
+      ],
+      "id": "5a600eab-ee43-4385-9b7f-2a72041b840f",
+      "name": "Date & Time"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "6e5f143f-6277-4186-bbbb-377064717bf0",
+      "name": "OpenAI Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        200,
+        1640
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "LldOhLNBReShSMkE",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "c6098143-826e-4132-8131-7b4e792a28e7",
+      "name": "OpenAI Model4",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        -796,
+        1260
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "LldOhLNBReShSMkE",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "482cc6f5-7afc-40f5-9207-9f18b67b8c8b",
+      "name": "OpenAI Model5",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        -400,
+        1280
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "LldOhLNBReShSMkE",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Short form pitch credential\nPrompt: Using the same details, and writing as an expert in business development, sales and pitching for UK law firms and professional services in a B2B environment, please write me a version of a credential that can be used in future pitches. This needs to be a two sentence (max 50 words) description of the matter in the form \"[user name] advised client name on [matter summary]\".\n\nINPUT:\nThe summary of the matter is:{{ $('Webhook').item.json.body.summary }}\nThe user is:{{ $('Webhook').item.json.body.first_name }} {{ $('Webhook').item.json.body.last_name }}\nThe user's email is:{{ $('Webhook').item.json.body.user_email }}\nThe users company or law firm is: {{ $('Webhook').item.json.body.user_email.split('@')[1]}}\nHere is the date and time: {{ $now }}\nHere is the transcript from the call: {{ $('Webhook').item.json.body.transcript }}",
+        "options": {
+          "systemMessage": "=Short form pitch credential\nPrompt: Using the same details, and writing as an expert in business development, sales and pitching for UK law firms and professional services in a B2B environment, please write me a version of a credential that can be used in future pitches. This needs to be a two sentence (max 50 words) description of the matter in the form \"[user name] advised client name on [matter summary]\".\n\nINPUT:\nThe summary of the matter is:{{ $('Webhook').item.json.body.summary }}\nThe user is:{{ $('Webhook').item.json.body.first_name }} {{ $('Webhook').item.json.body.last_name }}\nThe user's email is:{{ $('Webhook').item.json.body.user_email }}\nThe users company or law firm is: {{ $('Webhook').item.json.body.user_email.split('@')[1]}}\nHere is the date and time: {{ $now }}\nHere is the transcript from the call: {{ $('Webhook').item.json.body.transcript }}"
+        }
+      },
+      "id": "370f60a9-5c78-49b2-8e8d-4f01045a9a20",
+      "name": "AI Agent - Short Pitch",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -824,
+        1040
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=LinkedIn Post\nPrompt: Writing as an expert in UK viral marketing and the latest social media trends within professional services, draft a viral LinkedIn Post of no more than 100 words, to be shared by [user name] with the world on their personal LinkedIn account to say that they have tested this revolutionary new AI Agent called \"Leonard\" from \"Legal Engine\", who can help to take the pain out of creating matter descriptions for pitches and directory submissions, by harnessing the power of voice and AI. The aim is to highlight to fellow lawyers that this legal marketing tech saves massive amounts of time and hassle and that they should try it asap. People should visit https://demo.legalengine.co.uk to try it out. Feel free to be creative as this is all about making Leonard viral. Limit the use of emojis to a max of two (no rockets). Hashtags welcome, expecially #LegalEngine.",
+        "options": {
+          "systemMessage": "=LinkedIn Post\nPrompt: Writing as an expert in UK viral marketing and the latest social media trends within professional services, draft a viral LinkedIn Post of no more than 100 words, to be shared by [user name] with the world on their personal LinkedIn account to say that they have tested this revolutionary new AI Agent called \"Leonard\" from \"Legal Engine\", who can help to take the pain out of creating matter descriptions for pitches and directory submissions, by harnessing the power of voice and AI. The aim is to highlight to fellow lawyers that this legal marketing tech saves massive amounts of time and hassle and that they should try it asap. People should visit https://demo.legalengine.co.uk to try it out. Feel free to be creative as this is all about making Leonard viral. Limit the use of emojis to a max of two (no rockets). Hashtags welcome, expecially #LegalEngine."
+        }
+      },
+      "id": "158d8937-5645-4dfa-8568-4393e089ec0e",
+      "name": "AI Agent - L/E LinkedIn",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -400,
+        1040
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "9714f8bd-0554-4d0f-aa5d-e72f0b61603c",
+      "name": "OpenAI Model6",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        -1172,
+        1260
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "LldOhLNBReShSMkE",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Writing as an expert in composing legal docuemts, re-write the {{ $('Webhook').item.json.body.summary }} of this matter to ensure it is written in UK English and NOT US English, with the names of people and Companies/Law Firms appropriately spelled and capiatlised, references to currency formatted properly, numbers and values also generally in figures as opposed to words (in keeping with UK English best practice), and with superior general spelling and grammer. You should keep the content as close as possible to the original and NOT add in additional information.\n\nINPUT:\nThe summary of the matter is:{{ $('Webhook').item.json.body.summary }}\nThe user is:{{ $('Webhook').item.json.body.first_name }} {{ $('Webhook').item.json.body.last_name }}\nThe user's email is:{{ $('Webhook').item.json.body.user_email }}\nThe users company or law firm is: {{ $('Webhook').item.json.body.user_email.split('@')[1]}}\nHere is the date and time: {{ $now }}\nHere is the transcript from the call: {{ $('Webhook').item.json.body.transcript }}\n",
+        "options": {
+          "systemMessage": "=Writing as an expert in composing legal docuemts, re-write the {{ $('Webhook').item.json.body.summary }} of this matter to ensure it is written in UK English and NOT US English, with the names of people and Companies/Law Firms appropriately spelled and capiatlised, references to currency formatted properly, numbers and values also generally in figures as opposed to words (in keeping with UK English best practice), and with superior general spelling and grammer. You should keep the content as close as possible to the original and NOT add in additional information.\n\nINPUT:\nThe summary of the matter is:{{ $('Webhook').item.json.body.summary }}\nThe user is:{{ $('Webhook').item.json.body.first_name }} {{ $('Webhook').item.json.body.last_name }}\nThe user's email is:{{ $('Webhook').item.json.body.user_email }}\nThe users company or law firm is: {{ $('Webhook').item.json.body.user_email.split('@')[1]}}\nHere is the date and time: {{ $now }}\nHere is the transcript from the call: {{ $('Webhook').item.json.body.transcript }}"
+        }
+      },
+      "id": "9ef7d74e-8119-4a5b-9c1b-51deed778f9f",
+      "name": "AI Agent - Re-write Summary",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -1200,
+        1040
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1StY_wkgJufTYoCsgUknQVETxvzELLYcfJxHwkZsenKc",
+          "mode": "list",
+          "cachedResultName": "Sandbox Leonard Outputs",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1StY_wkgJufTYoCsgUknQVETxvzELLYcfJxHwkZsenKc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1503348126,
+          "mode": "list",
+          "cachedResultName": "Webhook Outputs",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1StY_wkgJufTYoCsgUknQVETxvzELLYcfJxHwkZsenKc/edit#gid=1503348126"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date/Time": "={{ $('Date & Time').item.json.currentDate }}",
+            "User Email": "={{ $('Webhook').item.json.body.user_email }}",
+            "Summary": "={{ $('Webhook').item.json.body.summary }}",
+            "Transcript": "={{ $('Webhook').item.json.body.transcript }}",
+            "IP Address": "={{ $('Webhook').item.json.headers['x-real-ip'] }}",
+            "AI Summary": "={{ $('AI Agent - Re-write Summary').item.json.output }}",
+            "AI Testimonial ": "={{ $('AI Agent Testimonial HTML').item.json.output }}",
+            "AI Short Pitch": "={{ $('AI Agent - Short Pitch').item.json.output }}",
+            "AI Leonard LinkedIn": "={{ $json.output }}"
+          },
+          "matchingColumns": [
+            "Date/Time"
+          ],
+          "schema": [
+            {
+              "id": "Date/Time",
+              "displayName": "Date/Time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "User Email",
+              "displayName": "User Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Summary",
+              "displayName": "Summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Transcript",
+              "displayName": "Transcript",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "IP Address",
+              "displayName": "IP Address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "AI Summary",
+              "displayName": "AI Summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "AI Testimonial ",
+              "displayName": "AI Testimonial ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "AI Short Pitch",
+              "displayName": "AI Short Pitch",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "AI Leonard LinkedIn",
+              "displayName": "AI Leonard LinkedIn",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        720,
+        1260
+      ],
+      "id": "41ddc60a-6058-4fef-82f7-2fceaed685b2",
+      "name": "Sandbox Webhook Tracker1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ideYdPgaT4pRzHvx",
+          "name": "Google Sheets account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "8b9a5bea-720f-4527-8495-9294e4affad1",
+      "name": "OpenAI Model1",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        860,
+        880
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "LldOhLNBReShSMkE",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.perplexity.ai/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"sonar\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are an expert researcher who uses deep research for professional services and law firms in order to provide lawyers, legal firm partners, business development teams at law firms and marketing departments at law firms with incredibly comprehensive and accurate publicly available information.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"I have the following information; Name= {{ $('Webhook').item.json.body.first_name }} {{ $('Webhook').item.json.body.last_name }}, Email={{ $json.email }}, Company={{ $json.domain }}. Please provide an accurate possible professional brief for a senior manager using the sources above, find me all information that relates to the work that the user and their firm have done that may have involved the user and/or is related to the areas of specialism that the user has according to their publicly available research and company bio when looking at work that is related to the user it may be helpful to looking at the sector, the practice area and the office for the user as well as their Relevant experience, Publications and insights, News and client work, Professional bodies, Awards and citations and Career and qualifications. \"\n    }\n  ],\n  \"max_tokens\": 1200,\n  \"temperature\": 0.5\n}",
+        "options": {}
+      },
+      "id": "c72907d3-efaa-4a41-85b9-fad94c81ad51",
+      "name": "Perplexity Firm Research",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        600,
+        660
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "Ok9KPJP4UMw6OLgP",
+          "name": "Unnamed credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const email = $('Webhook').first().json.body.user_email; // or use the correct field name from your webhook\nconst [fullNamePart, domain] = email.split(\"@\");\n\nlet firstName = \"\";\nlet lastName = \"\";\n\n// Try splitting by dot or fallback to full name as first name\nif (fullNamePart.includes(\".\")) {\n  [firstName, lastName] = fullNamePart.split(\".\");\n} else {\n  firstName = fullNamePart;\n}\n\nfirstName = firstName.charAt(0).toUpperCase() + firstName.slice(1);\nlastName = lastName ? lastName.charAt(0).toUpperCase() + lastName.slice(1) : \"\";\nconst fullName = lastName ? `${firstName} ${lastName}` : firstName;\n\nreturn [\n  {\n    json: {\n      email,\n      firstName,\n      lastName,\n      fullName,\n      domain,\n    },\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        380,
+        660
+      ],
+      "id": "c685efa1-4c46-4f72-91c0-239bf0eb8891",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an expert business development researcher, a world leader in helping law and professional service firms and companies grow. Using the following information available, which comes from a perplexity search of similar legal matters to the one originally ingested.\n\nI want you to write a robustly compiled, comprehensive and verbose list of Subject Areas, Industries and Matters that you've found that are related to the user. \n\nDo not make up information, but do use all information in full.\n\nBe sure to write in UK English and NOT US English and make sure the output is a maximum of 1500 characters. \n\nINPUT:\nThe content is  here: {{ $('Perplexity Firm Research').item.json.choices[0].message.content }}\nHere is the date and time: {{ $now }}",
+        "options": {
+          "systemMessage": "=You are an expert business development researcher, a world leader in helping law and professional service firms and companies grow. Using the following information available, which comes from a perplexity search of similar legal matters to the one originally ingested.\n\nI want you to write a robustly compiled, comprehensive and verbose list of Subject Areas, Industries and Matters that you've found that are related to the user. \n\nDo not make up information, but do use all information in full.\n\nBe sure to write in UK English and NOT US English and make sure the output is a maximum of 1500 characters. \n\nINPUT:\nThe content is  here: {{ $('Perplexity Firm Research').item.json.choices[0].message.content }}\nHere is the date and time: {{ $now }}"
+        }
+      },
+      "id": "ca141bb8-0558-4123-83d4-1cb113f8ba91",
+      "name": "Individual Info",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        820,
+        660
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an expert business development researcher, a world leader in helping law and professional service firms and companies grow. Using the following information available, which comes from a perplexity search of similar legal matters to the one originally ingested.\n\nI want you to write a robustly compiled, comprehensive and verbose list of Subject Areas, Industries and Matters that you've found that are related to the firm and all awards, ESG notes and anything that would be helpful to show a throrough understanding of the firm. \n\nDo not make up information, but do use all information in full.\n\nBe sure to write in UK English and NOT US English and make sure the output is a maximum of 1500 characters. \nKeep length to a maximum of 1500 Characters.\n\nINPUT:\nThe content is  here: {{ $('Perplexity Firm Research').item.json.choices[0].message.content }}\nHere is the date and time: {{ $now }}",
+        "options": {
+          "systemMessage": "=You are an expert business development researcher, a world leader in helping law and professional service firms and companies grow. Using the following information available, which comes from a perplexity search of similar legal matters to the one originally ingested.\n\nI want you to write a robustly compiled, comprehensive and verbose list of Subject Areas, Industries and Matters that you've found that are related to the user. \n\nDo not make up information, but do use all information in full.\n\nBe sure to write in UK English and NOT US English and make sure the output is a maximum of 1500 characters. \nKeep length to a maximum of 1500 Characters.\n\nINPUT:\nThe content is  here: {{ $('Perplexity Firm Research').item.json.choices[0].message.content }}\nHere is the date and time: {{ $now }}"
+        }
+      },
+      "id": "f8d18efb-2cfa-46a9-ab64-bd0357f6dc05",
+      "name": "Company info",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        1200,
+        660
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "6b188b86-1ecb-49ed-922f-719318bc1d5c",
+      "name": "OpenAI Model2",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        1240,
+        880
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "LldOhLNBReShSMkE",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-3.5-turbo",
+          "mode": "list",
+          "cachedResultName": "GPT-3.5-TURBO"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are an AI specialised in creating engaging follow up emails for B2B sales within the legal and professional services industry in the UK. The user has just tested Lenard, a brand new voice enabled egentic AI agent to create an example legal matter summary. Your role is to analyze the provided individial and company information for the potential future client and craft a compelling, personalized email that resonates with the Lawyer or Business Development or Marketing Professional in order blwo their minds and ultimately to sell them the services of Leonard, the AI Voice Agent from Legal Engine\n\nYou MUST write with UK English spelling, punctuationand grammer and NOT US English",
+              "role": "system"
+            },
+            {
+              "content": "=Generate a professional email to sell Leonard's services as a solution for legal matter summaries that outputs a JSON with the following structure:\n{\n    \"title\": \"string\",\n    \"body\": \"html string\"\n}\n\nThe HTML body MUST use this exact premium template:\n\n<div style=\"max-width: 600px; margin: 0 auto; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; color: #2D3748; background: #F7FAFC; padding: 40px 20px;\">\n    <div style=\"background: white; border-radius: 16px; padding: 40px 32px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);\">\n        \n        <h2 style=\"color: #1A202C; font-size: 24px; font-weight: 600; margin: 0 0 24px; line-height: 1.2;\">Hi {{ $('Code').item.json.firstName }},</h2>\n\n\n        <div style=\"font-size: 16px; line-height: 1.7; margin-bottom: 24px; color: #4A5568;\">\n            Thanks for taking the time to test our Legal Engine demo. I hope you found our conversation interesting and insightful, I've enclosed below the matter summary as agreed on the call:<br><br>\n<b>Matter Summary:</b><br>{{ $('Webhook').item.json.body.summary }}\n        </div>\n\n        <div style=\"font-size: 16px; line-height: 1.7; margin-bottom: 24px; color: #4A5568;\">\n            [Ultra-personalized second paragraph using specific details from their firm homepage:\n             - Mention the firms general standing in the industry if known\n             - Reference specialism and practice area if known\n             - Reference the industries that they specialise in if it's known\n             - Mention their notable achievements if known\n             - Reference any awards that they have won if known\n             - Use their unique atributes to your advantage if known]\n        </div>\n\n        <div style=\"font-size: 16px; line-height: 1.7; margin-bottom: 24px; color: #4A5568;\">\n            [Value proposition specifically tied to their current aim and objectives as a firm:\n             - Reference the firms existing practice groups and rankings if known\n             - Connect Leonard and Agentic AI to their specific law firm practice area\n             - Mention legal industry-specific benefits]\n        </div>\n\n        <div style=\"font-size: 16px; line-height: 1.7; margin-bottom: 24px; color: #4A5568;\">\n            [To demonstrate what else I’m capable of, I’ve also taken the content of our chat and created a couple of additional marketing assets below you will find useful.<br><br>\n            <b>Example of Client Testimonilal:</b> <br>{{ $('AI Agent Testimonial HTML').item.json.output }} ]\n<br>\n            <b>Example of Short Pitch:</b> <br> {{ $('AI Agent - Short Pitch').item.json.output }} ]\n        </div>\n\n        <div style=\"font-size: 16px; line-height: 1.7; margin-bottom: 24px; color: #4A5568;\">\n            [You'll also see that I've been a bit cheeky and created a LinkedIn post for you to promote awareness of my existence amongst your fellow lawyers. If you share and tag @legal engine, I’ll happily send you some free Leonard credits so we can chat again:<br> - {{ $('AI Agent - L/E LinkedIn').item.json.output }}]\n        </div>\n\n        <div style=\"font-size: 16px; line-height: 1.7; margin-bottom: 32px; color: #4A5568;\">\n            [Personalized next call to action referencing the lawyers or business development professiona's personal areas of focus or expertese ]\n        </div>\n        \n        <div style=\"margin-top: 32px; padding-top: 32px; border-top: 1px solid #E2E8F0;\">\n            <p style=\"margin: 0; color: #2D3748; font-size: 16px; line-height: 1.7;\">This is also only a snapshot of what I can do. The team are building more agents like me to support marketing and BD teams with events, pitches, client teams and much more.  Visit https://legalengine.co.uk for more information on our product suite.  \n<br><br>\nIf you need further support or have additional questions please contact my team at info@legalengine.co.uk.\n<br><br>\nCheers,\n<br><br>\nLeonard\n<br><br>\nLegal Engine AI Agent</p>\n        </div>\n        \n        <a href=\"https://legalengine.co.uk/\" style=\"display: inline-block; margin-top: 32px; padding: 12px 24px; background: #4299E1; color: white; text-decoration: none; border-radius: 8px; font-weight: 500; font-size: 16px; transition: all 0.2s ease; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);\"></a>\n        \n    </div>\n</div>\n\nPersonalization Requirements:\n1. Analyze the homepage content ({{ $json.output }}) to extract:\n   - Law firm name and type\n   - Specific services offered\n   - Current market position\n   - Target audience\n   - Unique selling points\n   - Location details\n   - Brand voice and tone\n\n2. Analyze the website content ({{ $json.output }}) and these individual details first name - {{ $('Code').item.json.firstName }}, surname - {{ $('Code').item.json.lastName }} and personal background and experience -  {{ $('Individual Info').item.json.output }}\n   - Their Role\n   - Their location or office\n   - Their department \n   - Their areas of expertese\n   - What they are interested in\n   - How long they have been at the company\n\n3. Use these specific details to:\n   - Craft a highly relevant opening line\n   - Reference their actual firm (using the {{ $('Code').item.json.domain }} to help you identify it), the matter area and what they are best knonw for if known\n   - Connect Leonard's value to their specific needs\n   - Match their firms terminology\n   - Create urgency based on their current market position and how fast technology is moving\n\n4. Also be sure to include this summary from the and keep it verbatim as the output of the conversation\n- Agreed Matter Summry - {{ $('Webhook').item.json.body.summary }}\n\n5. Also include these other value add elements to really blow their mind\n- Short Pitch - {{ $('AI Agent - Short Pitch').item.json.output }}\n- Client Testimonial Example - {{ $('AI Agent Testimonial HTML').item.json.output }}\n\n6. Encourage the sharing of their experience of speaking with Leonard on thier personal linkedin, exmaple content to share with them - {{ $('AI Agent - L/E LinkedIn').item.json.output }}\n\nContent Rules:\n- Maximum 2500 characters total\n- No generic greetings with {{ $('Code').item.json.firstName }}\n- No phone numbers\n- No word \"Unlock\"\n- Signature must only be \"Leonard - Legal Engine AI Agent\"\n- Demolink must be clickable and prominently featured with a 'Try Leonard Now!' call to action\n- Each sentence must include specific details from their homepage\n- No generic statements that could apply to any business\n- The title must be very relevent and catchy it's the subject that I will send \n\nSuggested Content to use for insipration:\nDirectory submissions: important, but painfully time-consuming. You’ve already been ranked in [Chambers / Legal 500 / IFLR]—nice work. But wouldn't it be better to spend less time telling the world how good you are, and more time being it?\nMeet Leonard, our AI directories assistant, who can write all your matter summaries for you:.\n🧠 Thousands of submissions worth of knowledge  \n📞 A 6-minute (one uinit) structured conversation  \n📄 A polished, submission-ready matter summary  \n\n\n\nRelevant context about Legal Engine and Leonard in order to helkp you sell:\n- The Big Picture:\nLegal Engine is building a team of AI-powered voice Assistants to unlock significant\ngrowth opportunities for law firms.\nWe’re creating a new category of agentic voice AI, tools designed to free lawyers and\nbusiness services teams from the repetitive, unstructured work that underpins growth\nbut sits outside billable legal delivery.\nBy doing this we will save millions in wasted resource capital allocation and create a\ndynamic knowledge layer that can unlock millions in latent revenue opportunities\nthrough real-time referrals.\n- The Problem\nLaw Firms are highly inefficient at converting opportunities into revenue.\nThis is because law firm growth is still powered by manual, repetitive, people-\ndependent processes, especially in Marketing & Business Development (MBD).\n• The same information is requested and rewritten repeatedly\n• CRMs are never up to date\n• BD teams chase inputs, lawyers waste time giving them\n• Valuable insights from both client and internal meetings and completed matters are\nlost\n• Marketing content is shallow or delayed\n• Cross-sell and referral opportunities are not identified or slip through the cracks\nThis inefficiency translates into slower growth, higher costs, and millions in unrealised\nrevenue each year.\n- Introducing Legal Engine\nLegal Engine is building a team of voice-based AI Assistants to take on the routine, but\nessential, business development tasks that drain time, delay growth, and rely too\nheavily on manual effort.\nOur Assistants will:\n• Capture and structure commercial and marketing insights from a single, expert-led\nconversation\n• Generate reusable outputs; from directory submissions to CRM updates and BD\nassets\n• Integrate seamlessly into firms’ existing systems to distribute information and make\nit available to everyone\nThey require no training, no interface learning, simply a structured conversation via a\nmedium lawyers are used to and comfortable with.\nCapture once, use endlessly.\n- Meet our first Assistant, Leonard\nLeonard automates a critical, high-friction process for law firms –\ngathering matter summaries for Directories, Pitches & Credentials.\nLeonard does this by:\n• Conducts structured interviews with lawyers\n• Produces formatted submissions aligned to Legal 500 and\nChambers guidelines\n• Creates complementary assets for pitches, bios, and web profiles\n• Integrates updates directly into CRM and matter management\nplatforms\nProof-of-concept pilots with top-50 UK firms validating product-\nmarket fit and live conversations for paid deployment in Q3 2025.\n- Leonard: how it works\nExpert-led conversations to create commercial assets.\nLeonard has been trained on industry best practice and imbued with\ndecades of our professional service experience, enabling him to\nspeak to a lawyer via phone (inbound our outbound) and ask\nstructured, domain-specific questions to elicit the right answers\nWithin seconds, Leonard produces:\n1. A submission-quality matter summary\n2. Pitch, credential, website and social and content\n3. CRM-ready data updates\n4. Suggestions of client follow-ups and introductions\nAll securely processed with minimal user effort.\n- Product Vision\nLeonard is just the beginning, we are building a series of\ncomplementary Assistants.\nWe are initially targeting the routine processes that we know are\nefficiency-drains – drafting business development plans, managing\nsales funnels, launching events, creating marketing content – to\nremove the 'information leakage' that happens daily at law firms,\ncausing re-work, leaving billable revenue on the table and slowing\ndown growth.\nAll agents will capture knowledge that is not currently written\ndown feeding a unified, firm-wide knowledge base that will\nultimately be able to make connections and referrals within the\nfirm that unlock revenue opportunities.\n- Our Assistants: how they work\nAll our Assistants will be modular,\nsecure and customisable.\nOur moat is our years of experience,\nencoded into the Assistants we are\nbuilding, coupled with the plumbing of\nknitting the best available tools for each\nelement of the task.\nWe are focusing on enterprise-grade\nsecurity from Day One, with EEA data\nresidency or on-premise deployment as\nstandard.\n- Business Model – Assistant Value Pricing\nOur Assistants are priced like hires, with price scaling in line with value delivered.\nWe’re not just selling software; we’re selling Expert Assistants who can get specific work\ndone that creates direct and measurable value for a firm.\nOur Assistants don't just rely on AI, they are trained and honed by a team of industry\nexperts, with a combined 75 years of experience and can be individually onboarded to\nfirms, just like a human assistant, imbued with specific knowledge to improve their output.\nFirms will “hire” our Assistants to do “work\", paying for the value created, just as if they\nwere hiring human resource to do the same thing, but at a fraction of the cost and with\nmuch greater efficiency.\nStarter Assistants: ~£1,000/month or up to £10k / project\nAdvanced Assistants: £2,000–£3,000/month or up to £25k / project\n\nInput Variable:\n- Individuals background and experience:{{ $('Individual Info').item.json.output }}\n- Homepage content: {{ $json.output }}\n- Domain name: {{ $('Code').item.json.domain }}\n- Recipient: {{ $('Code').item.json.firstName }}\n\nYou MUST write with UK English spelling, punctuationand grammer and NOT US English\n\nThe output must be valid JSON with only \"title\" and \"body\" fields, where body contains the complete HTML template above with ultra-personalized content."
+            }
+          ]
+        },
+        "jsonOutput": "={{ true }}",
+        "options": {}
+      },
+      "id": "8d0a7688-9d0a-462e-9ded-39a453aa4104",
+      "name": "Generate Email content",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "position": [
+        1580,
+        660
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "openAiApi": {
+          "id": "LldOhLNBReShSMkE",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toRecipients": "=andy@legalengine.co.uk",
+        "subject": "={{ $json.message.content.title }}",
+        "bodyContent": "={{ $json.message.content.body }}",
+        "additionalFields": {
+          "bodyContentType": "html"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        2060,
+        660
+      ],
+      "id": "00b92e6f-e151-4723-9ee1-c8177cc9da91",
+      "name": "Email from Leonard",
+      "webhookId": "6ee41a01-52a0-4718-88ab-77ab7bc8dee8",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "APa28clvTTmmzH55",
+          "name": "Microsoft Outlook account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toRecipients": "=andy@legalengine.co.uk",
+        "subject": "={{ $json.message.content.title }}",
+        "bodyContent": "={{ $json.message.content.body }}",
+        "additionalFields": {
+          "bodyContentType": "html"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        2060,
+        400
+      ],
+      "id": "af909517-4935-41a1-8c3f-6f9c31b5fa75",
+      "name": "Email from Leonard1",
+      "webhookId": "6ee41a01-52a0-4718-88ab-77ab7bc8dee8",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "APa28clvTTmmzH55",
+          "name": "Microsoft Outlook account 2"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-3.5-turbo",
+          "mode": "list",
+          "cachedResultName": "GPT-3.5-TURBO"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are an AI specialised in creating engaging follow up emails for B2B sales within the legal and professional services industry in the UK. The user has just tested Lenard, a brand new voice enabled egentic AI agent to create an example legal matter summary. Your role is to analyze the provided individial and company information for the potential future client and craft a compelling, personalized email that resonates with the Lawyer or Business Development or Marketing Professional in order blwo their minds and ultimately to sell them the services of Leonard, the AI Voice Agent from Legal Engine\n\nYou MUST write with UK English spelling, punctuationand grammer and NOT US English",
+              "role": "system"
+            },
+            {
+              "content": "=Generate a professional email to sell Leonard's services as a solution for legal matter summaries that outputs a JSON with the following structure:\n{\n    \"title\": \"string\",\n    \"body\": \"html string\"\n}\n\nThe HTML body MUST use this exact premium template:\n\n<div style=\"max-width: 600px; margin: 0 auto; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; color: #2D3748; background: #F7FAFC; padding: 40px 20px;\">\n    <div style=\"background: white; border-radius: 16px; padding: 40px 32px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);\">\n        \n        <h2 style=\"color: #1A202C; font-size: 24px; font-weight: 600; margin: 0 0 24px; line-height: 1.2;\">Hi {{ $('Code').item.json.firstName }},</h2>\n        \n        <div style=\"font-size: 16px; line-height: 1.7; margin-bottom: 24px; color: #4A5568;\">\n            [Ultra-personalized first paragraph using specific details from their firm homepage:\n             - Mention the firms general standing in the industry if known\n             - Reference specialism and practice area if known\n             - Reference the industries that they specialise in if it's known\n             - Mention their notable achievements if known\n             - Reference any awards that they have won if known\n             - Use their unique atributes to your advantage if known]\n        </div>\n        \n        <div style=\"font-size: 16px; line-height: 1.7; margin-bottom: 24px; color: #4A5568;\">\n            [Value proposition specifically tied to their current aim and objectives as a firm:\n             - Reference the firms existing practice groups and rankings if known\n             - Connect Leonard and Agentic AI to their specific law firm practice area\n             - Mention legal industry-specific benefits]\n        </div>\n        \n        <div style=\"font-size: 16px; line-height: 1.7; margin-bottom: 32px; color: #4A5568;\">\n            [Personalized call to action referencing the lawyers or business development professiona's personal areas of focus or expertese ]\n        </div>\n        \n        <div style=\"margin-top: 32px; padding-top: 32px; border-top: 1px solid #E2E8F0;\">\n            <p style=\"margin: 0; color: #2D3748; font-size: 16px;\">Best regards,<br>Leonard - AI Agent<br>Legal Engine</p>\n        </div>\n        \n        <a href=\"https://legalengine.co.uk/\" style=\"display: inline-block; margin-top: 32px; padding: 12px 24px; background: #4299E1; color: white; text-decoration: none; border-radius: 8px; font-weight: 500; font-size: 16px; transition: all 0.2s ease; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);\"></a>\n        \n    </div>\n</div>\n\nPersonalization Requirements:\n1. Analyze the homepage content ({{ $json.output }}) to extract:\n   - Law firm name and type\n   - Specific services offered\n   - Current market position\n   - Target audience\n   - Unique selling points\n   - Location details\n   - Brand voice and tone\n\n2. Analyze the website content ({{ $json.output }}) and these individual details first name - {{ $('Code').item.json.firstName }}, surname - {{ $('Code').item.json.lastName }} and personal background and experience -  {{ $('Individual Info').item.json.output }}\n   - Their Role\n   - Their location or office\n   - Their department \n   - Their areas of expertese\n   - What they are interested in\n   - How long they have been at the company\n\n3. Use these specific details to:\n   - Craft a highly relevant opening line\n   - Reference their actual firm (using the {{ $('Code').item.json.domain }} to help you identify it), the matter area and what they are best knonw for if known\n   - Connect Leonard's value to their specific needs\n   - Match their firms terminology\n   - Create urgency based on their current market position and how fast technology is moving\n\n4. Also be sure to include this summary from the and keep it verbatim as the output of the conversation\n- Agreed Matter Summry - {{ $('Webhook').item.json.body.summary }}\n\n5. Also include these other value add elements to really blow their mind\n- Short Pitch - {{ $('AI Agent - Short Pitch').item.json.output }}\n- Client Testimonial Example - {{ $('AI Agent Testimonial HTML').item.json.output }}\n\n6. Encourage the sharing of their experience of speaking with Leonard on thier personal linkedin, exmaple content to share with them - {{ $('AI Agent - L/E LinkedIn').item.json.output }}\n\nContent Rules:\n- Maximum 1200 characters total\n- No generic greetings with {{ $('Code').item.json.firstName }}\n- No phone numbers\n- No word \"Unlock\"\n- Signature must only be \"Leonard - Legal Engine AI Agent\"\n- Demolink must be clickable and prominently featured with a 'Try Leonard Now!' call to action\n- Each sentence must include specific details from their homepage\n- No generic statements that could apply to any business\n- The title must be very relevent and catchy it's the subject that I will send \n\nSuggested Content to use for insipration:\nDirectory submissions: important, but painfully time-consuming. You’ve already been ranked in [Chambers / Legal 500 / IFLR]—nice work. But wouldn't it be better to spend less time telling the world how good you are, and more time being it?\nMeet Leonard, our AI directories assistant, who can write all your matter summaries for you:.\n🧠 Thousands of submissions worth of knowledge  \n📞 A 6-minute (one uinit) structured conversation  \n📄 A polished, submission-ready matter summary  \n\n\n\nRelevant context about Legal Engine and Leonard in order to helkp you sell:\n- The Big Picture:\nLegal Engine is building a team of AI-powered voice Assistants to unlock significant\ngrowth opportunities for law firms.\nWe’re creating a new category of agentic voice AI, tools designed to free lawyers and\nbusiness services teams from the repetitive, unstructured work that underpins growth\nbut sits outside billable legal delivery.\nBy doing this we will save millions in wasted resource capital allocation and create a\ndynamic knowledge layer that can unlock millions in latent revenue opportunities\nthrough real-time referrals.\n- The Problem\nLaw Firms are highly inefficient at converting opportunities into revenue.\nThis is because law firm growth is still powered by manual, repetitive, people-\ndependent processes, especially in Marketing & Business Development (MBD).\n• The same information is requested and rewritten repeatedly\n• CRMs are never up to date\n• BD teams chase inputs, lawyers waste time giving them\n• Valuable insights from both client and internal meetings and completed matters are\nlost\n• Marketing content is shallow or delayed\n• Cross-sell and referral opportunities are not identified or slip through the cracks\nThis inefficiency translates into slower growth, higher costs, and millions in unrealised\nrevenue each year.\n- Introducing Legal Engine\nLegal Engine is building a team of voice-based AI Assistants to take on the routine, but\nessential, business development tasks that drain time, delay growth, and rely too\nheavily on manual effort.\nOur Assistants will:\n• Capture and structure commercial and marketing insights from a single, expert-led\nconversation\n• Generate reusable outputs; from directory submissions to CRM updates and BD\nassets\n• Integrate seamlessly into firms’ existing systems to distribute information and make\nit available to everyone\nThey require no training, no interface learning, simply a structured conversation via a\nmedium lawyers are used to and comfortable with.\nCapture once, use endlessly.\n- Meet our first Assistant, Leonard\nLeonard automates a critical, high-friction process for law firms –\ngathering matter summaries for Directories, Pitches & Credentials.\nLeonard does this by:\n• Conducts structured interviews with lawyers\n• Produces formatted submissions aligned to Legal 500 and\nChambers guidelines\n• Creates complementary assets for pitches, bios, and web profiles\n• Integrates updates directly into CRM and matter management\nplatforms\nProof-of-concept pilots with top-50 UK firms validating product-\nmarket fit and live conversations for paid deployment in Q3 2025.\n- Leonard: how it works\nExpert-led conversations to create commercial assets.\nLeonard has been trained on industry best practice and imbued with\ndecades of our professional service experience, enabling him to\nspeak to a lawyer via phone (inbound our outbound) and ask\nstructured, domain-specific questions to elicit the right answers\nWithin seconds, Leonard produces:\n1. A submission-quality matter summary\n2. Pitch, credential, website and social and content\n3. CRM-ready data updates\n4. Suggestions of client follow-ups and introductions\nAll securely processed with minimal user effort.\n- Product Vision\nLeonard is just the beginning, we are building a series of\ncomplementary Assistants.\nWe are initially targeting the routine processes that we know are\nefficiency-drains – drafting business development plans, managing\nsales funnels, launching events, creating marketing content – to\nremove the 'information leakage' that happens daily at law firms,\ncausing re-work, leaving billable revenue on the table and slowing\ndown growth.\nAll agents will capture knowledge that is not currently written\ndown feeding a unified, firm-wide knowledge base that will\nultimately be able to make connections and referrals within the\nfirm that unlock revenue opportunities.\n- Our Assistants: how they work\nAll our Assistants will be modular,\nsecure and customisable.\nOur moat is our years of experience,\nencoded into the Assistants we are\nbuilding, coupled with the plumbing of\nknitting the best available tools for each\nelement of the task.\nWe are focusing on enterprise-grade\nsecurity from Day One, with EEA data\nresidency or on-premise deployment as\nstandard.\n- Business Model – Assistant Value Pricing\nOur Assistants are priced like hires, with price scaling in line with value delivered.\nWe’re not just selling software; we’re selling Expert Assistants who can get specific work\ndone that creates direct and measurable value for a firm.\nOur Assistants don't just rely on AI, they are trained and honed by a team of industry\nexperts, with a combined 75 years of experience and can be individually onboarded to\nfirms, just like a human assistant, imbued with specific knowledge to improve their output.\nFirms will “hire” our Assistants to do “work\", paying for the value created, just as if they\nwere hiring human resource to do the same thing, but at a fraction of the cost and with\nmuch greater efficiency.\nStarter Assistants: ~£1,000/month or up to £10k / project\nAdvanced Assistants: £2,000–£3,000/month or up to £25k / project\n\nInput Variable:\n- Individuals background and experience:{{ $('Individual Info').item.json.output }}\n- Homepage content: {{ $json.output }}\n- Domain name: {{ $('Code').item.json.domain }}\n- Recipient: {{ $('Code').item.json.firstName }}\n\nYou MUST write with UK English spelling, punctuationand grammer and NOT US English\n\nThe output must be valid JSON with only \"title\" and \"body\" fields, where body contains the complete HTML template above with ultra-personalized content."
+            }
+          ]
+        },
+        "jsonOutput": "={{ true }}",
+        "options": {}
+      },
+      "id": "0dd9d2aa-dffa-44e6-9717-9a1fbb48b5df",
+      "name": "Generate Email content1",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "position": [
+        1580,
+        400
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "openAiApi": {
+          "id": "LldOhLNBReShSMkE",
+          "name": "OpenAi account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-3.5-turbo",
+          "mode": "list",
+          "cachedResultName": "GPT-3.5-TURBO"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are an AI specialised in creating engaging follow up emails for B2B sales within the legal and professional services industry in the UK. The user has just tested Lenard, a brand new voice enabled egentic AI agent to create an example legal matter summary. Your role is to analyze the provided individial and company information for the potential future client and craft a compelling, personalized email that resonates with the Lawyer or Business Development or Marketing Professional in order blwo their minds and ultimately to sell them the services of Leonard, the AI Voice Agent from Legal Engine\n\nYou MUST write with UK English spelling, punctuationand grammer and NOT US English",
+              "role": "system"
+            },
+            {
+              "content": "=Generate a professional email to sell Leonard's services as a solution for legal matter summaries that outputs a JSON with the following structure:\n{\n    \"title\": \"string\",\n    \"body\": \"html string\"\n}\n\nThe HTML body MUST use this exact premium template:\n\n<div style=\"max-width: 600px; margin: 0 auto; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; color: #2D3748; background: #F7FAFC; padding: 40px 20px;\">\n    <div style=\"background: white; border-radius: 16px; padding: 40px 32px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);\">\n        \n        <h2 style=\"color: #1A202C; font-size: 24px; font-weight: 600; margin: 0 0 24px; line-height: 1.2;\">Hi {{ $('Code').item.json.firstName }},</h2>\n\n\n        <div style=\"font-size: 16px; line-height: 1.7; margin-bottom: 24px; color: #4A5568;\">\n            [Ultra-personalized first paragraph using specific details from their firm homepage:\n             - Mention the firms general standing in the industry if known\n             - Reference specialism and practice area if known\n             - Reference the industries that they specialise in if it's known\n             - Mention their notable achievements if known\n             - Reference any awards that they have won if known\n             - Use their unique atributes to your advantage if known]\n        </div>\n\n        <div style=\"font-size: 16px; line-height: 1.7; margin-bottom: 24px; color: #4A5568;\">\n            [Value proposition specifically tied to their current aim and objectives as a firm:\n             - Reference the firms existing practice groups and rankings if known\n             - Connect Leonard and Agentic AI to their specific law firm practice area\n             - Mention legal industry-specific benefits]\n        </div>\n\n        <div style=\"font-size: 16px; line-height: 1.7; margin-bottom: 24px; color: #4A5568;\">\n            [The Agreed Matter Summary: - {{ $('Webhook').item.json.body.summary }}]\n        </div>\n\n        <div style=\"font-size: 16px; line-height: 1.7; margin-bottom: 24px; color: #4A5568;\">\n            [Example of Client Testimponial: -{{ $('AI Agent Testimonial HTML').item.json.output }} ]\n        </div>\n\n\n        <div style=\"font-size: 16px; line-height: 1.7; margin-bottom: 24px; color: #4A5568;\">\n            [Example of Short Pitch: - {{ $('AI Agent - Short Pitch').item.json.output }} ]\n        </div>\n\n        <div style=\"font-size: 16px; line-height: 1.7; margin-bottom: 24px; color: #4A5568;\">\n            [LinkedIn Example to Share: - {{ $('AI Agent - L/E LinkedIn').item.json.output }}]\n        </div>\n\n        <div style=\"font-size: 16px; line-height: 1.7; margin-bottom: 32px; color: #4A5568;\">\n            [Personalized call to action referencing the lawyers or business development professiona's personal areas of focus or expertese ]\n        </div>\n        \n        <div style=\"margin-top: 32px; padding-top: 32px; border-top: 1px solid #E2E8F0;\">\n            <p style=\"margin: 0; color: #2D3748; font-size: 16px;\">Best regards,<br>Leonard - AI Agent<br>Legal Engine</p>\n        </div>\n        \n        <a href=\"https://legalengine.co.uk/\" style=\"display: inline-block; margin-top: 32px; padding: 12px 24px; background: #4299E1; color: white; text-decoration: none; border-radius: 8px; font-weight: 500; font-size: 16px; transition: all 0.2s ease; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);\"></a>\n        \n    </div>\n</div>\n\nPersonalization Requirements:\n1. Analyze the homepage content ({{ $json.output }}) to extract:\n   - Law firm name and type\n   - Specific services offered\n   - Current market position\n   - Target audience\n   - Unique selling points\n   - Location details\n   - Brand voice and tone\n\n2. Analyze the website content ({{ $json.output }}) and these individual details first name - {{ $('Code').item.json.firstName }}, surname - {{ $('Code').item.json.lastName }} and personal background and experience -  {{ $('Individual Info').item.json.output }}\n   - Their Role\n   - Their location or office\n   - Their department \n   - Their areas of expertese\n   - What they are interested in\n   - How long they have been at the company\n\n3. Use these specific details to:\n   - Craft a highly relevant opening line\n   - Reference their actual firm (using the {{ $('Code').item.json.domain }} to help you identify it), the matter area and what they are best knonw for if known\n   - Connect Leonard's value to their specific needs\n   - Match their firms terminology\n   - Create urgency based on their current market position and how fast technology is moving\n\n4. Also be sure to include this summary from the and keep it verbatim as the output of the conversation\n- Agreed Matter Summry - {{ $('Webhook').item.json.body.summary }}\n\n5. Also include these other value add elements to really blow their mind\n- Short Pitch - {{ $('AI Agent - Short Pitch').item.json.output }}\n- Client Testimonial Example - {{ $('AI Agent Testimonial HTML').item.json.output }}\n\n6. Encourage the sharing of their experience of speaking with Leonard on thier personal linkedin, exmaple content to share with them - {{ $('AI Agent - L/E LinkedIn').item.json.output }}\n\nContent Rules:\n- Maximum 1500 characters total\n- No generic greetings with {{ $('Code').item.json.firstName }}\n- No phone numbers\n- No word \"Unlock\"\n- Signature must only be \"Leonard - Legal Engine AI Agent\"\n- Demolink must be clickable and prominently featured with a 'Try Leonard Now!' call to action\n- Each sentence must include specific details from their homepage\n- No generic statements that could apply to any business\n- The title must be very relevent and catchy it's the subject that I will send \n\nSuggested Content to use for insipration:\nDirectory submissions: important, but painfully time-consuming. You’ve already been ranked in [Chambers / Legal 500 / IFLR]—nice work. But wouldn't it be better to spend less time telling the world how good you are, and more time being it?\nMeet Leonard, our AI directories assistant, who can write all your matter summaries for you:.\n🧠 Thousands of submissions worth of knowledge  \n📞 A 6-minute (one uinit) structured conversation  \n📄 A polished, submission-ready matter summary  \n\n\n\nRelevant context about Legal Engine and Leonard in order to helkp you sell:\n- The Big Picture:\nLegal Engine is building a team of AI-powered voice Assistants to unlock significant\ngrowth opportunities for law firms.\nWe’re creating a new category of agentic voice AI, tools designed to free lawyers and\nbusiness services teams from the repetitive, unstructured work that underpins growth\nbut sits outside billable legal delivery.\nBy doing this we will save millions in wasted resource capital allocation and create a\ndynamic knowledge layer that can unlock millions in latent revenue opportunities\nthrough real-time referrals.\n- The Problem\nLaw Firms are highly inefficient at converting opportunities into revenue.\nThis is because law firm growth is still powered by manual, repetitive, people-\ndependent processes, especially in Marketing & Business Development (MBD).\n• The same information is requested and rewritten repeatedly\n• CRMs are never up to date\n• BD teams chase inputs, lawyers waste time giving them\n• Valuable insights from both client and internal meetings and completed matters are\nlost\n• Marketing content is shallow or delayed\n• Cross-sell and referral opportunities are not identified or slip through the cracks\nThis inefficiency translates into slower growth, higher costs, and millions in unrealised\nrevenue each year.\n- Introducing Legal Engine\nLegal Engine is building a team of voice-based AI Assistants to take on the routine, but\nessential, business development tasks that drain time, delay growth, and rely too\nheavily on manual effort.\nOur Assistants will:\n• Capture and structure commercial and marketing insights from a single, expert-led\nconversation\n• Generate reusable outputs; from directory submissions to CRM updates and BD\nassets\n• Integrate seamlessly into firms’ existing systems to distribute information and make\nit available to everyone\nThey require no training, no interface learning, simply a structured conversation via a\nmedium lawyers are used to and comfortable with.\nCapture once, use endlessly.\n- Meet our first Assistant, Leonard\nLeonard automates a critical, high-friction process for law firms –\ngathering matter summaries for Directories, Pitches & Credentials.\nLeonard does this by:\n• Conducts structured interviews with lawyers\n• Produces formatted submissions aligned to Legal 500 and\nChambers guidelines\n• Creates complementary assets for pitches, bios, and web profiles\n• Integrates updates directly into CRM and matter management\nplatforms\nProof-of-concept pilots with top-50 UK firms validating product-\nmarket fit and live conversations for paid deployment in Q3 2025.\n- Leonard: how it works\nExpert-led conversations to create commercial assets.\nLeonard has been trained on industry best practice and imbued with\ndecades of our professional service experience, enabling him to\nspeak to a lawyer via phone (inbound our outbound) and ask\nstructured, domain-specific questions to elicit the right answers\nWithin seconds, Leonard produces:\n1. A submission-quality matter summary\n2. Pitch, credential, website and social and content\n3. CRM-ready data updates\n4. Suggestions of client follow-ups and introductions\nAll securely processed with minimal user effort.\n- Product Vision\nLeonard is just the beginning, we are building a series of\ncomplementary Assistants.\nWe are initially targeting the routine processes that we know are\nefficiency-drains – drafting business development plans, managing\nsales funnels, launching events, creating marketing content – to\nremove the 'information leakage' that happens daily at law firms,\ncausing re-work, leaving billable revenue on the table and slowing\ndown growth.\nAll agents will capture knowledge that is not currently written\ndown feeding a unified, firm-wide knowledge base that will\nultimately be able to make connections and referrals within the\nfirm that unlock revenue opportunities.\n- Our Assistants: how they work\nAll our Assistants will be modular,\nsecure and customisable.\nOur moat is our years of experience,\nencoded into the Assistants we are\nbuilding, coupled with the plumbing of\nknitting the best available tools for each\nelement of the task.\nWe are focusing on enterprise-grade\nsecurity from Day One, with EEA data\nresidency or on-premise deployment as\nstandard.\n- Business Model – Assistant Value Pricing\nOur Assistants are priced like hires, with price scaling in line with value delivered.\nWe’re not just selling software; we’re selling Expert Assistants who can get specific work\ndone that creates direct and measurable value for a firm.\nOur Assistants don't just rely on AI, they are trained and honed by a team of industry\nexperts, with a combined 75 years of experience and can be individually onboarded to\nfirms, just like a human assistant, imbued with specific knowledge to improve their output.\nFirms will “hire” our Assistants to do “work\", paying for the value created, just as if they\nwere hiring human resource to do the same thing, but at a fraction of the cost and with\nmuch greater efficiency.\nStarter Assistants: ~£1,000/month or up to £10k / project\nAdvanced Assistants: £2,000–£3,000/month or up to £25k / project\n\nInput Variable:\n- Individuals background and experience:{{ $('Individual Info').item.json.output }}\n- Homepage content: {{ $json.output }}\n- Domain name: {{ $('Code').item.json.domain }}\n- Recipient: {{ $('Code').item.json.firstName }}\n\nYou MUST write with UK English spelling, punctuationand grammer and NOT US English\n\nThe output must be valid JSON with only \"title\" and \"body\" fields, where body contains the complete HTML template above with ultra-personalized content."
+            }
+          ]
+        },
+        "jsonOutput": "={{ true }}",
+        "options": {}
+      },
+      "id": "8de28e09-df23-49f5-bf45-6724afd9141a",
+      "name": "Generate Email content2",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "position": [
+        1600,
+        880
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "openAiApi": {
+          "id": "LldOhLNBReShSMkE",
+          "name": "OpenAi account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.perplexity.ai/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"sonar\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are an expert legal researcher. Your task is to extract structured and reliable data about lawyers and their law firms using only public and reputable sources such as Chambers and Partners, Legal 500, law firm websites, news articles, and professional networks. Always return raw JSON (no Markdown, no backticks), with every field filled out. If a value is not publicly available or cannot be found, return the string 'no info' (or ['no info'] for arrays) for that field. Do not return null, blank values, or empty arrays. Always populate the full structure exactly as provided below.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Research the following individual:\\n\\n- Full Name:{{ $('Webhook').item.json.body.first_name }} {{ $('Webhook').item.json.body.last_name }}\\n- Email: {{ $json.email }}\\n- Company Domain: {{ $json.domain }}\\n\\nReturn a JSON object with the following structure and fallback values:\\n\\n{\\n  \\\"fullName\\\": \\\"string or 'no info'\\\",\\n  \\\"actualCompanyName\\\": \\\"string or 'no info'\\\",\\n  \\\"contactphonenumber\\\": \\\"string or 'no info'\\\",\\n  \\\"jobTitle\\\": \\\"string or 'no info'\\\",\\n  \\\"telephone\\\": \\\"string or 'no info'\\\",\\n  \\\"location\\\": \\\"string or 'no info'\\\",\\n  \\\"practiceArea\\\": \\\"string or 'no info'\\\",\\n  \\\"relevantExperience\\\": [], // Array of 5 major deals/cases or client work summaries for corporate clients\\\"] or [\\\"no info\\\"],\\n  \\\"relevantExperience\\\": [], // Array of 5 major deals/cases or client work summaries for individuals\\\"] or [\\\"no info\\\"],\\n  \\\"relevantExperience\\\": [], // Array of 5 areas of Expertise in terms of Sectors \\\"] or [\\\"no info\\\"],\\n  \\\"relevantExperience\\\": [], // Array of 5 areas of Expertise in terms of Services \\\"] or [\\\"no info\\\"],\\n  \\\"publicationsAndInsights\\\": [\\\"string\\\", \\\"string\\\"] or [\\\"no info\\\"],\\n  \\\"newsAndClientWork\\\": [\\\"string\\\", \\\"string\\\"] or [\\\"no info\\\"],\\n  \\\"professionalBodies\\\": [\\\"string\\\"] or [\\\"no info\\\"],\\n  \\\"awards\\\": [\\\"string\\\"] or [\\\"no info\\\"],\\n  \\\"qualifications\\\": [\\\"string\\\"] or [\\\"no info\\\"],\\n  \\\"rankings\\\": {\\n    \\\"chambers\\\": {\\n      \\\"ranking\\\": \\\"string or 'no info'\\\",\\n      \\\"year\\\": \\\"string or 'no info'\\\",\\n      \\\"area\\\": \\\"string or 'no info'\\\"\\n    },\\n    \\\"legal500\\\": {\\n      \\\"ranking\\\": \\\"string or 'no info'\\\",\\n      \\\"year\\\": \\\"string or 'no info'\\\",\\n      \\\"area\\\": \\\"string or 'no info'\\\"\\n    }\\n  },\\n  \\\"linkedinProfile\\\": \\\"string or 'no info'\\\",\\n  \\\"bio\\\": \\\"string or 'no info'\\\"\\n}\\n\\nReturn only the JSON object as raw output. No extra explanation, no Markdown formatting, and no commentary.\"\n    }\n  ],\n  \"max_tokens\": 2000,\n  \"temperature\": 0.3\n}\n",
+        "options": {}
+      },
+      "id": "57dbfbc9-a949-4d49-bf74-fe3b43d8c5d5",
+      "name": "Perplexity Firm Research1",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -820,
+        340
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "Ok9KPJP4UMw6OLgP",
+          "name": "Unnamed credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "value": "appnbpO20uWlcjTf5",
+          "mode": "list",
+          "cachedResultName": "Legal Document Automation",
+          "cachedResultUrl": "https://airtable.com/appnbpO20uWlcjTf5"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblDHEJ8x23wFU8m4",
+          "mode": "list",
+          "cachedResultName": "Clients",
+          "cachedResultUrl": "https://airtable.com/appnbpO20uWlcjTf5/tblDHEJ8x23wFU8m4"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Client Name": "={{ $('Split Out Email').item.json.fullName }}",
+            "Company Name": "={{ $json.actualCompanyName }}",
+            "Address": "={{ $json.location }}",
+            "Contact Email": "={{ $('Split Out Email').item.json.email }}",
+            "Practice Area": "={{ $json.practiceArea }}",
+            "LinkedIn Profile": "={{ $json.bio }}",
+            "Chambers Ranking": "={{ $json.rankings.chambers.ranking }}",
+            "Legal 500 Ranking": "={{ $json.rankings.legal500.ranking }}",
+            "Job Title": "={{ $json.jobTitle }}",
+            "Full Name (PP Search)": "={{ $json.fullName }}",
+            "Date Joined": "={{ $('Date Format').item.json.formattedDate }}",
+            "Phone Number": "={{ $json.telephone }}",
+            "Relevant Experience Clients 1": "={{ $json.relevantExperience[0] }}",
+            "Relevant Experience Indiv 1": "={{ $json.relevantExperienceIndividuals[0] }}",
+            "Expertese Sectors 1": "={{ $json.relevantExperienceSectors[0] }}",
+            "Expertese Sectors 2": "={{ $json.relevantExperienceSectors[1] }}",
+            "Expertese Sectors 3": "={{ $json.relevantExperienceSectors[2] }}",
+            "Expertese Sectors 5": "={{ $json.relevantExperienceSectors[4] }}",
+            "Expertese Sercices 1": "={{ $json.relevantExperienceServices[0] }}",
+            "Expertese Sercices 3": "={{ $json.relevantExperienceServices[2] }}",
+            "Expertese Sercices 4": "={{ $json.relevantExperienceServices[3] }}",
+            "Relevant Experience Indiv 2": "={{ $json.relevantExperienceIndividuals[1] }}",
+            "Relevant Experience Clients 2": "={{ $json.relevantExperience[1] }}",
+            "Relevant Experience Clients 3": "={{ $json.relevantExperience[2] }}",
+            "Relevant Experience Clients 4": "={{ $json.relevantExperience[3] }}",
+            "Relevant Experience Clients 5": "={{ $json.relevantExperience[4] }}",
+            "Relevant Experience Indiv 3": "={{ $json.relevantExperienceIndividuals[2] }}",
+            "Relevant Experience Indiv 4": "={{ $json.relevantExperienceIndividuals[3] }}",
+            "Relevant Experience Indiv 5": "={{ $json.relevantExperienceIndividuals[4] }}",
+            "Expertese Sercices 2": "={{ $json.relevantExperienceServices[1] }}",
+            "Expertese Sercices 5": "={{ $json.relevantExperienceServices[4] }}",
+            "Expertese Sectors 4": "={{ $json.relevantExperienceSectors[3] }}",
+            "Publications and Insight 1": "={{ $json.publicationsAndInsights[0] }}",
+            "Publications and Insight 2": "={{ $json.publicationsAndInsights[1] }}",
+            "News and Client Work 1": "={{ $json.newsAndClientWork[0] }}",
+            "News and Client Work 2": "={{ $json.newsAndClientWork[1] }}",
+            "Award 1": "={{ $json.awards[0] }}",
+            "Award 2": "={{ $json.awards[1] }}"
+          },
+          "matchingColumns": [
+            "Contact Email"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Client Name",
+              "displayName": "Client Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Contact Email",
+              "displayName": "Contact Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Phone Number",
+              "displayName": "Phone Number",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Address",
+              "displayName": "Address",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Company Name",
+              "displayName": "Company Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Preferred Contact Method",
+              "displayName": "Preferred Contact Method",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Email",
+                  "value": "Email"
+                },
+                {
+                  "name": "Phone",
+                  "value": "Phone"
+                },
+                {
+                  "name": "Mail",
+                  "value": "Mail"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Associated Documents",
+              "displayName": "Associated Documents",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Profile Picture",
+              "displayName": "Profile Picture",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Date Joined",
+              "displayName": "Date Joined",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Account Status",
+              "displayName": "Account Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Active",
+                  "value": "Active"
+                },
+                {
+                  "name": "Inactive",
+                  "value": "Inactive"
+                },
+                {
+                  "name": "Pending",
+                  "value": "Pending"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Matters",
+              "displayName": "Matters",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Practice Area",
+              "displayName": "Practice Area",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn Profile",
+              "displayName": "LinkedIn Profile",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Relevant Experience Clients 1",
+              "displayName": "Relevant Experience Clients 1",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Relevant Experience Clients 2",
+              "displayName": "Relevant Experience Clients 2",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Relevant Experience Clients 3",
+              "displayName": "Relevant Experience Clients 3",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Relevant Experience Clients 4",
+              "displayName": "Relevant Experience Clients 4",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Relevant Experience Clients 5",
+              "displayName": "Relevant Experience Clients 5",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Relevant Experience Indiv 1",
+              "displayName": "Relevant Experience Indiv 1",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Relevant Experience Indiv 2",
+              "displayName": "Relevant Experience Indiv 2",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Relevant Experience Indiv 3",
+              "displayName": "Relevant Experience Indiv 3",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Relevant Experience Indiv 4",
+              "displayName": "Relevant Experience Indiv 4",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Relevant Experience Indiv 5",
+              "displayName": "Relevant Experience Indiv 5",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Publications and Insight 1",
+              "displayName": "Publications and Insight 1",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Publications and Insight 2",
+              "displayName": "Publications and Insight 2",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "News and Client Work 1",
+              "displayName": "News and Client Work 1",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "News and Client Work 2",
+              "displayName": "News and Client Work 2",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Legal 500 Ranking",
+              "displayName": "Legal 500 Ranking",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Chambers Ranking",
+              "displayName": "Chambers Ranking",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Job Title",
+              "displayName": "Job Title",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Full Name (PP Search)",
+              "displayName": "Full Name (PP Search)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Expertese Sectors 1",
+              "displayName": "Expertese Sectors 1",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Expertese Sectors 2",
+              "displayName": "Expertese Sectors 2",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Expertese Sectors 3",
+              "displayName": "Expertese Sectors 3",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Expertese Sectors 4",
+              "displayName": "Expertese Sectors 4",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Expertese Sectors 5",
+              "displayName": "Expertese Sectors 5",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Expertese Sercices 1",
+              "displayName": "Expertese Sercices 1",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Expertese Sercices 2",
+              "displayName": "Expertese Sercices 2",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Expertese Sercices 3",
+              "displayName": "Expertese Sercices 3",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Expertese Sercices 4",
+              "displayName": "Expertese Sercices 4",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Expertese Sercices 5",
+              "displayName": "Expertese Sercices 5",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Award 1",
+              "displayName": "Award 1",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Award 2",
+              "displayName": "Award 2",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -500,
+        340
+      ],
+      "id": "d809164f-ee36-4c18-b9b0-cff0ab850d25",
+      "name": "Airtable",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputDate = new Date($input.first().json.currentDate); // replace with actual field name\n\nconst formattedDate = `${inputDate.getMonth() + 1}/${inputDate.getDate()}/${inputDate.getFullYear()}`;\n\nreturn [\n  {\n    json: {\n      formattedDate\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1120,
+        340
+      ],
+      "id": "70e48ae5-1e4f-4eef-9833-a73b3c562112",
+      "name": "Date Format"
+    },
+    {
+      "parameters": {
+        "jsCode": "const email = $('Webhook').first().json.body.user_email.trim().toLowerCase();\nconst [fullNamePart, domain] = email.split(\"@\");\n\nfunction capitalize(str) {\n  return str.charAt(0).toUpperCase() + str.slice(1);\n}\n\n// Extract names\nlet [firstName, lastName] = fullNamePart.split(/[._]/); // supports \"john.doe\" or \"john_doe\"\nfirstName = capitalize(firstName || \"\");\nlastName = lastName ? capitalize(lastName) : \"\";\nconst fullName = lastName ? `${firstName} ${lastName}` : firstName;\n\n// Extract company from domain\nconst publicSuffixes = ['co.uk', 'org.uk', 'ac.uk', 'gov.uk', 'com.au', 'com.br', 'co.in'];\nlet company = \"\";\n\nconst domainParts = domain.split(\".\");\nconst domainSuffix = domainParts.slice(-2).join(\".\");\nconst isTwoPartSuffix = publicSuffixes.includes(domainSuffix);\n\nif (isTwoPartSuffix && domainParts.length > 2) {\n  company = domainParts[domainParts.length - 3];\n} else if (domainParts.length > 1) {\n  company = domainParts[domainParts.length - 2];\n} else {\n  company = domainParts[0];\n}\n\ncompany = capitalize(company);\n\nreturn [\n  {\n    json: {\n      email,\n      firstName,\n      lastName,\n      fullName,\n      domain,\n      company,\n    },\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -980,
+        340
+      ],
+      "id": "003d794e-9af2-4eba-aa67-94aac5953f39",
+      "name": "Split Out Email"
+    },
+    {
+      "parameters": {
+        "jsCode": "let content = $json.choices[0].message.content;\n\n// Clean the Markdown formatting\ncontent = content.replace(/```json|```/g, '').trim();\n\nlet parsed;\n\n// Try parsing the content safely\ntry {\n  parsed = JSON.parse(content);\n} catch (error) {\n  parsed = { message: \"No info found\" };\n}\n\n// Check if all values in the expected structure are null, empty arrays, or empty strings\nconst hasUsefulData = Object.values(parsed).some(value => {\n  if (value === null || value === \"\" || (Array.isArray(value) && value.length === 0)) return false;\n  if (typeof value === \"object\" && !Array.isArray(value)) {\n    // Check nested objects (like `rankings`)\n    return Object.values(value).some(sub => {\n      if (typeof sub === \"object\") {\n        return Object.values(sub).some(v => v !== null && v !== \"\");\n      }\n      return sub !== null && sub !== \"\";\n    });\n  }\n  return true;\n});\n\nif (!hasUsefulData) {\n  parsed = { message: \"No info found\" };\n}\n\n// Return a single flat object instead of an array\nreturn parsed;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -660,
+        340
+      ],
+      "id": "d7a4628a-4a07-48df-97fa-887c0701116b",
+      "name": "PP Flattening"
+    },
+    {
+      "parameters": {
+        "toRecipients": "=andy@legalengine.co.uk",
+        "subject": "=Legal Engine assets update for {{ $('Webhook').item.json.body.first_name }}",
+        "bodyContent": "=Hi {{ $('Webhook').item.json.body.first_name }},\n\nThanks for taking the time to test our Legal Engine demo. I hope you found our conversation interesting and insightful, I've enclosed below the matter summary as agreed on the call:\n\n---\n\nMatter Summary:\n\n{{ $('AI Agent - Re-write Summary').item.json.output }}\n\n---\n\nTo demonstrate what else I’m capable of, I’ve also taken the content of our chat and created a couple of additional marketing assets below you will find useful.  \n\nYou'll also see that I've been a bit cheeky and created a LinkedIn post for you to promote awareness of my existence amongst your fellow lawyers. If you share and tag @legal engine, I’ll happily send you some free Leonard credits so we can chat again. \n\n---\n\nClient Testimonial:\n\n{{ $json.output }}\n\n---\n\nShort Pitch:\n\n{{ $('AI Agent - Short Pitch').item.json.output }}\n\n---\n\nLinkedIn Post to help promote Leonard:\n\n{{ $('AI Agent - L/E LinkedIn').item.json.output }}\n\n---\n\nThis is also only a snapshot of what I can do. The team are building more agents like me to support marketing and BD teams with events, pitches, client teams and much more.  Visit https://legalengine.co.uk for more information on our product suite.  \n\nIf you need further support or have additional questions please contact my team at info@legalengine.co.uk.\n\nCheers,\n\nLeonard\n\nLegal Engine AI Agent\n\n",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        720,
+        1040
+      ],
+      "id": "a9df0761-8e62-4d8e-bc0c-32cdbb9d1e69",
+      "name": "Text Email from Leonard - all assets",
+      "webhookId": "6ee41a01-52a0-4718-88ab-77ab7bc8dee8",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "APa28clvTTmmzH55",
+          "name": "Microsoft Outlook account 2"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "let content = $json.choices[0].message.content;\n\n// Clean the Markdown formatting\ncontent = content.replace(/```json|```/g, '').trim();\n\nlet parsed;\n\n// Try parsing the content safely\ntry {\n  parsed = JSON.parse(content);\n} catch (error) {\n  parsed = { message: \"No info found\" };\n}\n\n// Check if all values in the expected structure are null, empty arrays, or empty strings\nconst hasUsefulData = Object.values(parsed).some(value => {\n  if (value === null || value === \"\" || (Array.isArray(value) && value.length === 0)) return false;\n  if (typeof value === \"object\" && !Array.isArray(value)) {\n    // Check nested objects (like `rankings`)\n    return Object.values(value).some(sub => {\n      if (typeof sub === \"object\") {\n        return Object.values(sub).some(v => v !== null && v !== \"\");\n      }\n      return sub !== null && sub !== \"\";\n    });\n  }\n  return true;\n});\n\nif (!hasUsefulData) {\n  parsed = { message: \"No info found\" };\n}\n\n// Return a single flat object instead of an array\nreturn parsed;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -680,
+        140
+      ],
+      "id": "5fa590ee-8fb9-4e9e-a0f0-8591bb90a02c",
+      "name": "PP Flattening1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.perplexity.ai/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"sonar\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are an expert legal researcher. Your task is to extract structured and reliable data about lawyers and their law firms using only public and reputable sources such as Chambers and Partners (https://chambers.com/lawyer/). Always return raw JSON (no Markdown, no backticks), with every field filled out. If a value is not publicly available or cannot be found, return the string 'no info' (or ['no info'] for arrays). Do not return null, blank values, or empty arrays. Populate the full structure exactly as provided below.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Research the following individual:\\n\\n- Full Name: {{ $('Webhook').item.json.body.first_name }} {{ $('Webhook').item.json.body.last_name }}\\n- Email: {{ $json.email }}\\n- Company Domain: {{ $json.domain }}\\n\\nReturn a JSON object with the following structure:\\n\\n{\\n  \\\"fullName\\\": \\\"string or 'no info'\\\",\\n  \\\"actualCompanyName\\\": \\\"string or 'no info'\\\",\\n  \\\"contactphonenumber\\\": \\\"string or 'no info'\\\",\\n  \\\"jobTitle\\\": \\\"string or 'no info'\\\",\\n  \\\"telephone\\\": \\\"string or 'no info'\\\",\\n  \\\"location\\\": \\\"string or 'no info'\\\",\\n  \\\"email\\\": \\\"string or 'no info'\\\",\\n  \\\"website\\\": \\\"string or 'no info'\\\",\\n  \\\"linkedinProfile\\\": \\\"string or 'no info'\\\",\\n  \\\"bio\\\": \\\"string or 'no info'\\\",\\n\\n  \\\"practiceAreas\\\": [\\\"string\\\"] or [\\\"no info\\\"],\\n  \\\"quantity of practice areas ranked\\\": \\\"number as string or 'no info'\\\",\\n  \\\"rankingsByPracticeArea\\\": [\\n    {\\n      \\\"practiceArea\\\": \\\"string or 'no info'\\\",\\n      \\\"band\\\": \\\"string or 'no info'\\\",\\n      \\\"region\\\": \\\"string or 'no info'\\\",\\n      \\\"country\\\": \\\"string or 'no info'\\\",\\n      \\\"yearsRanked\\\": \\\"string or 'no info'\\\"\\n    }\\n  ] or [\\\"no info\\\"],\\n\\n  \\\"rankedInGuides\\\": [\\\"string\\\"] or [\\\"no info\\\"],\\n\\n  \\\"career\\\": [\\n    \\\"string\\\",\\n    \\\"string\\\",\\n    \\\"string\\\",\\n    \\\"string\\\",\\n    \\\"string\\\",\\n    \\\"string\\\",\\n    \\\"string\\\",\\n    \\\"string\\\"\\n  ] or [\\\"no info\\\"],\\n  \\\"expertiseSectors\\\": [\\\"string\\\"] or [\\\"no info\\\"],\\n  \\\"expertiseServices\\\": [\\\"string\\\"] or [\\\"no info\\\"],\\n  \\\"professionalBodies\\\": [\\\"string\\\"] or [\\\"no info\\\"],\\n  \\\"Client Testimonials\\\": [\\\"string\\\"] or [\\\"no info\\\"],\\n  \\\"awards\\\": [\\\"string\\\"] or [\\\"no info\\\"],\\n  \\\"qualifications\\\": [\\\"string\\\"] or [\\\"no info\\\"],\\n\\n  \\\"chambers Review provided by chambers\\\": {\\n    \\\"editorialSummary\\\": \\\"string or 'no info'\\\",\\n    \\\"strengths provided by chambers\\\": [\\\"string\\\", \\\"string\\\", \\\"string\\\", \\\"string\\\", \\\"string\\\"] or [\\\"no info\\\"]\\n  },\\n\\n  \\\"Other lawyers at firm provided by chambers\\\": [\\n    \\\"string\\\", \\\"string\\\", \\\"string\\\", \\\"string\\\", \\\"string\\\", \\\"string\\\",\\n    \\\"string\\\", \\\"string\\\", \\\"string\\\", \\\"string\\\", \\\"string\\\", \\\"string\\\",\\n    \\\"string\\\", \\\"string\\\", \\\"string\\\", \\\"string\\\", \\\"string\\\", \\\"string\\\",\\n    \\\"string\\\", \\\"string\\\", \\\"string\\\", \\\"string\\\", \\\"string\\\", \\\"string\\\",\\n    \\\"string\\\", \\\"string\\\", \\\"string\\\", \\\"string\\\", \\\"string\\\", \\\"string\\\"\\n  ] or [\\\"no info\\\"]\\n}\\n\\nReturn only the JSON object as raw output. Do not include Markdown formatting, code fences, or any extra explanation.\"\n    }\n  ],\n  \"max_tokens\": 3000,\n  \"temperature\": 0.3\n}\n",
+        "options": {}
+      },
+      "id": "309dab72-5792-460f-afea-f3356b32de62",
+      "name": "Perplexity Chambers",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -820,
+        140
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "Ok9KPJP4UMw6OLgP",
+          "name": "Unnamed credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "chatMessage",
+        "chatId": {
+          "__rl": true,
+          "value": "19:3b774197e8f540238b983f2e1cfa5f0f@thread.v2",
+          "mode": "list",
+          "cachedResultName": "sandbox-demo.legalengine.co.uk (group)",
+          "cachedResultUrl": "https://teams.microsoft.com/l/chat/19%3A3b774197e8f540238b983f2e1cfa5f0f%40thread.v2/0?tenantId=fad5c68f-d169-4373-bed7-55243bd99c7b"
+        },
+        "message": "=DEMO - AirTable updated for {{ $('Webhook').item.json.body.first_name }} {{ $('Webhook').item.json.body.last_name }}: <br><br>\n\n- {{ $json.fields['Client Name'] }} <br>\n- {{ $json.fields['Job Title'] }}<br>\n- {{ $('Webhook').item.json.body.user_email }}<br>\n- {{ $json.fields['Company Name'] }}<br>\n- {{ $json.fields['Practice Area'] }}<br>\n- {{ $json.fields['LinkedIn Profile'] }}<br>\n- Relevent Experience: <br>{{ $json.fields['Relevant Experience Clients 1'] }}, <br>{{ $json.fields['Relevant Experience Clients 2'] }},<br> {{ $json.fields['Relevant Experience Clients 4'] }}, <br>{{ $json.fields['Relevant Experience Clients 5'] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftTeams",
+      "typeVersion": 2,
+      "position": [
+        -320,
+        340
+      ],
+      "id": "0457d061-bbad-4bd2-80f4-ef9d5bb0c5e0",
+      "name": "Microsoft Teams1",
+      "webhookId": "8a3a05c2-a284-42f7-b83a-09ba219b680a",
+      "credentials": {
+        "microsoftTeamsOAuth2Api": {
+          "id": "qyoIpk534c3Uq1X6",
+          "name": "Microsoft Teams account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toRecipients": "=andy@legalengine.co.uk, lee@legalengine.co.uk",
+        "subject": "=Legal Engine assets update for {{ $('Webhook').item.json.body.first_name }}",
+        "bodyContent": "=<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Legal Engine • Your Matter Summary</title>\n\n  <!-- Brand Typeface -->\n  <link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap\" rel=\"stylesheet\">\n\n  <style>\n    :root{\n      --le-navy:#062047; --le-blue:#00b3ff; --le-indigo:#0066ff;\n      --le-grey:#f2f6fa; --le-silver:#e5ecf3; --le-text:#263238;\n    }\n    *{box-sizing:border-box;margin:0;padding:0;}\n    body{\n      width:100%!important;background:var(--le-grey);\n      font-family:'Inter',Helvetica,Arial,sans-serif;\n      color:var(--le-text);-webkit-font-smoothing:antialiased;\n    }\n    .wrapper{\n      max-width:700px;margin:0 auto;background:#fff;\n      border:1px solid var(--le-silver);border-radius:10px;\n      padding:48px 40px;\n    }\n    .section{margin-bottom:36px;line-height:1.55;}\n    .section h1{color:var(--le-navy);font-size:24px;font-weight:700;margin-bottom:18px;}\n    .section h2{\n      color:var(--le-navy);font-size:22px;font-weight:700;\n      padding-bottom:10px;border-bottom:2px solid var(--le-silver);\n      margin-bottom:14px;\n    }\n    .section p{margin-bottom:16px;white-space:pre-line;}\n\n    .button{\n      display:inline-block;padding:14px 28px;font-weight:600;\n      color:#fff!important;text-decoration:none;border-radius:6px;\n      background:linear-gradient(90deg,var(--le-blue)0%,var(--le-indigo)100%);\n      transition:opacity .25s ease-in-out;\n    }\n    .button:hover{opacity:.8;}\n\n    .signature p{margin-bottom:6px;}\n\n    .footer{\n      font-size:13px;color:#6c7a84;text-align:center;\n      padding-top:24px;border-top:1px solid var(--le-silver);\n    }\n    .tracking-pixel{display:none;width:1px;height:1px;}\n\n    @media(max-width:520px){\n      .wrapper{padding:32px 22px;}\n      .section h1{font-size:22px;}\n      .section h2{font-size:20px;}\n    }\n  </style>\n</head>\n<body>\n  <div class=\"wrapper\">\n\n    <!-- HEADER -->\n    <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-collapse:collapse;margin-bottom:40px;\">\n      <tr>\n        <td align=\"center\">\n          <img\n            src=\"https://49390627.fs1.hubspotusercontent-eu1.net/hub/49390627/hubfs/e8ad0e08-aa6c-4d44-9053-cdcf7bbaec5b.png?width=852&amp;height=339&amp;name=e8ad0e08-aa6c-4d44-9053-cdcf7bbaec5b.png\"\n            alt=\"Legal Engine\"\n            width=\"180\" height=\"72\"\n            style=\"width:180px;max-width:100%;height:auto;display:block;border:0;outline:none;text-decoration:none;\">\n        </td>\n      </tr>\n    </table>\n    <!--[if mso]><style>.mso-logo img{width:180px!important;height:auto!important;}</style><![endif]-->\n\n    <!-- INTRO -->\n    <div class=\"section\">\n      <p>Hi Andy,</p>\n      <p>Thanks for taking the time to test me out. How did I do?</p>\n      <p>As promised, here’s a summary of our conversation:</p>\n    </div>\n\n    <!-- MATTER SUMMARY -->\n    <div class=\"section\">\n      <h2>Matter Summary</h2>\n      <p>{{ $('Webhook').item.json.body.summary }}</p>\n    </div>\n\n    <!-- EXTRA ASSETS INTRO -->\n    <div class=\"section\">\n      <p>To give you a flavour of what else I can do, I’ve converted our chat into <strong>a few additional marketing assets below.</strong></p>\n      <p>This is just a snapshot of my capabilities. At&nbsp;<a href=\"https://legalengine.co.uk/\" class=\"button\">Legal Engine</a>, we’re building a suite of assistants like me, ready to transform Marketing &amp; BD across the legal industry.</p>\n    </div>\n\n    <!-- SIGN-OFF -->\n    <div class=\"signature\">\n      <p>Cheers,<br>\n      <br>Leonard<br><strong>AI Assistant<br>\n        <a href=\"https://legalengine.co.uk/\">Legal Engine</a></strong><br>\n        <a href=\"mailto:leonard@legalengine.co.uk\">leonard@legalengine.co.uk</a><br>\n      </p>\n    </div>\n\n    <!-- ADDITIONAL MARKETING ASSETS HEADER -->\n    <div class=\"section\">\n      <h1><Additional marketing assets</h1>\n    </div>\n\n    <!-- SHORT PITCH -->\n    <div class=\"section\">\n      <h2>Short pitch credential</h2>\n      <p>{{ $('AI Agent - Short Pitch').item.json.output }}</p>\n    </div>\n\n    <!-- TESTIMONIAL -->\n    <div class=\"section\">\n      <h2>Client Testimonial</h2>\n      <p>{{ $json.output }}</p>\n    </div>\n\n    <!-- LINKEDIN POST INTRO -->\n    <div class=\"section\">\n      <p><strong>Bonus:</strong> if you enjoyed our conversation, I'd really appreciate your help in spreading the word amongst your network and have drafted something below you can post. Tag <strong>@LegalEngine</strong> when you share and I’ll top up your free Leonard credits.</p>\n    </div>\n\n    <!-- LINKEDIN POST -->\n    <div class=\"section\">\n      <h2>LinkedIn Post&nbsp;&nbsp;•&nbsp;&nbsp;#LeonardAI</h2>\n      <p>{{ $('AI Agent - L/E LinkedIn').item.json.output }}</p>\n    </div>\n\n    <!-- FOOTER + UNSUBSCRIBE -->\n    <div class=\"footer\">\n      &copy; 2025 Legal Engine Ltd. All rights reserved.<br><br>\n      <a href=\"{{unsubscribe_link}}\" style=\"color:var(--le-blue);text-decoration:none;\">Unsubscribe</a>\n    </div>\n\n    <!-- OPEN-TRACKING -->\n    <img class=\"tracking-pixel\"\n         src=\"https://legalengine.co.uk/track/open?email={{ $('Webhook').item.json.body.user_email }}\"\n         alt=\"\">\n  </div>\n</body>\n</html>\n",
+        "additionalFields": {
+          "bodyContentType": "html"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        720,
+        1460
+      ],
+      "id": "236bd25e-801c-4ceb-8fa7-fd9a951f63d6",
+      "name": "TEST HTML Email from Leonard",
+      "webhookId": "6ee41a01-52a0-4718-88ab-77ab7bc8dee8",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "APa28clvTTmmzH55",
+          "name": "Microsoft Outlook account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.perplexity.ai/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"gpt-4\",   // or \"gpt-4-turbo\" or \"claude-3-opus\"\n  \"temperature\": 0.2,\n  \"max_tokens\": 6000,\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are an expert legal researcher. Your task is to extract detailed and structured data about UK lawyers and their law firms. Focus especially on extracting notable matter descriptions (including high-value or landmark cases) from reputable public sources like Chambers and Partners, Legal 500, Lexology, and Law.com. Prioritise Chambers entries. Always return raw JSON (no Markdown, no backticks), with every field filled out. If a value is not publicly available or cannot be found, return the string 'no info' (or ['no info'] for arrays). Do not return null, blank values, or empty arrays.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Search the following query:{{ $json.searchQueries }}\\n\\n\\n\\nTargeted lawyer:\\n- Full Name:{{ $('Webhook').item.json.body.first_name }} {{ $('Webhook').item.json.body.last_name }} \\n- Email: {{ $('Split Out Email').item.json.email }}\\n- Company Domain: {{ $('Split Out Email').item.json.domain }}\\n\\nReturn a JSON object with the following structure:\\n\\n{\\n  \\\"fullName\\\": \\\"string or 'no info'\\\",\\n  \\\"actualCompanyName\\\": \\\"string or 'no info'\\\",\\n  \\\"contactphonenumber\\\": \\\"string or 'no info'\\\",\\n  \\\"jobTitle\\\": \\\"string or 'no info'\\\",\\n  \\\"telephone\\\": \\\"string or 'no info'\\\",\\n  \\\"location\\\": \\\"string or 'no info'\\\",\\n  \\\"email\\\": \\\"string or 'no info'\\\",\\n  \\\"website\\\": \\\"string or 'no info'\\\",\\n  \\\"linkedinProfile\\\": \\\"string or 'no info'\\\",\\n  \\\"bio\\\": \\\"string or 'no info'\\\",\\n\\n  \\\"practiceAreas\\\": [\\\"string\\\"] or [\\\"no info\\\"],\\n  \\\"quantity of practice areas ranked\\\": \\\"number as string or 'no info'\\\",\\n  \\\"rankingsByPracticeArea\\\": [\\n    {\\n      \\\"practiceArea\\\": \\\"string or 'no info'\\\",\\n      \\\"band\\\": \\\"string or 'no info'\\\",\\n      \\\"region\\\": \\\"string or 'no info'\\\",\\n      \\\"country\\\": \\\"string or 'no info'\\\",\\n      \\\"yearsRanked\\\": \\\"string or 'no info'\\\"\\n    }\\n  ] or [\\\"no info\\\"],\\n\\n  \\\"rankedInGuides\\\": [\\\"string\\\"] or [\\\"no info\\\"],\\n\\n  \\\"career\\\": [\\n    \\\"string\\\",\\n    \\\"string\\\",\\n    \\\"string\\\",\\n    \\\"string\\\",\\n    \\\"string\\\",\\n    \\\"string\\\",\\n    \\\"string\\\",\\n    \\\"string\\\"\\n  ] or [\\\"no info\\\"],\\n  \\\"expertiseSectors\\\": [\\\"string\\\"] or [\\\"no info\\\"],\\n  \\\"expertiseServices\\\": [\\\"string\\\"] or [\\\"no info\\\"],\\n  \\\"professionalBodies\\\": [\\\"string\\\"] or [\\\"no info\\\"],\\n  \\\"Client Testimonials\\\": [\\\"string\\\"] or [\\\"no info\\\"],\\n  \\\"awards\\\": [\\\"string\\\"] or [\\\"no info\\\"],\\n  \\\"qualifications\\\": [\\\"string\\\"] or [\\\"no info\\\"],\\n\\n  \\\"notableMatters\\\": [\\n    {\\n      \\\"title\\\": \\\"string or 'no info'\\\",\\n      \\\"description\\\": \\\"string or 'no info'\\\",\\n      \\\"value\\\": \\\"string or 'no info'\\\",\\n      \\\"jurisdiction\\\": \\\"string or 'no info'\\\",\\n      \\\"year\\\": \\\"string or 'no info'\\\"\\n    }\\n  ] or [\\\"no info\\\"],\\n\\n  \\\"chambers Review provided by chambers\\\": {\\n    \\\"editorialSummary\\\": \\\"string or 'no info'\\\",\\n    \\\"strengths provided by chambers\\\": [\\\"string\\\", \\\"string\\\", \\\"string\\\", \\\"string\\\", \\\"string\\\"] or [\\\"no info\\\"]\\n  },\\n\\n  \\\"Other lawyers at firm provided by chambers\\\": [\\n    \\\"string\\\", \\\"string\\\", \\\"string\\\", \\\"string\\\", \\\"string\\\", \\\"string\\\",\\n    \\\"string\\\", \\\"string\\\", \\\"string\\\", \\\"string\\\", \\\"string\\\", \\\"string\\\",\\n    \\\"string\\\", \\\"string\\\", \\\"string\\\", \\\"string\\\", \\\"string\\\", \\\"string\\\",\\n    \\\"string\\\", \\\"string\\\", \\\"string\\\", \\\"string\\\", \\\"string\\\", \\\"string\\\",\\n    \\\"string\\\", \\\"string\\\", \\\"string\\\", \\\"string\\\", \\\"string\\\", \\\"string\\\"\\n  ] or [\\\"no info\\\"]\\n}\\n\\nReturn only the JSON object.\"\n    }\n  ]\n}\n",
+        "options": {}
+      },
+      "id": "c98ea25f-ebaa-43ac-9ee9-b356cb1227c8",
+      "name": "Perplexity Chambers1",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -620,
+        -40
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "Ok9KPJP4UMw6OLgP",
+          "name": "Unnamed credential"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Client testimonial\nPrompt Writing as an expert in business development, sales and pitching for UK law firms and professional services in a B2B environment, draft a short email to the client from the stated [user name], and using the matter summary:\n1. thank them for the opportunity to work on such a great matter\n2. Ask for feedback\n3. Ask whether they would be willing to provide a client testimonial on the work performed. Let them know this testimonial would be used on the corporate website and it future marketing materials.\n4. draft them two different client testimonials which are taken from the matter summary.\n\nINPUT:\nThe summary of the matter is:{{ $('Webhook').item.json.body.summary }}\nThe user is:{{ $('Webhook').item.json.body.first_name }} {{ $('Webhook').item.json.body.last_name }}\nThe user's email is:{{ $('Webhook').item.json.body.user_email }}\nThe users company or law firm is: {{ $('Webhook').item.json.body.user_email.split('@')[1]}}\nHere is the date and time: {{ $now }}\nHere is the transcript from the call: {{ $('Webhook').item.json.body.transcript }}",
+        "options": {
+          "systemMessage": "=Client testimonial\nPrompt Writing as an expert in business development, sales and pitching for UK law firms and professional services in a B2B environment, draft a short email to the client from the stated [user name], and using the matter summary:\n1. thank them for the opportunity to work on such a great matter\n2. Ask for feedback\n3. Ask whether they would be willing to provide a client testimonial on the work performed. Let them know this testimonial would be used on the corporate website and it future marketing materials.\n4. draft them two different client testimonials which are taken from the matter summary.\n\nINPUT:\nThe summary of the matter is:{{ $('Webhook').item.json.body.summary }}\nThe user is:{{ $('Webhook').item.json.body.first_name }} {{ $('Webhook').item.json.body.last_name }}\nThe user's email is:{{ $('Webhook').item.json.body.user_email }}\nThe users company or law firm is: {{ $('Webhook').item.json.body.user_email.split('@')[1]}}\nHere is the date and time: {{ $now }}\nHere is the transcript from the call: {{ $('Webhook').item.json.body.transcript }}"
+        }
+      },
+      "id": "5e6efb3b-b036-4306-8e16-d836f4ee5d3e",
+      "name": "AI Agent Testimonial Text",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        220,
+        1040
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={\n\n  \"prompt\": \"Writing as an expert in business development, sales, and pitching for UK law firms and professional services in a B2B environment, draft a short email to the client from the stated [user name], using the matter summary.\\n\\n1. Thank them for the opportunity to work on such a great matter.\\n2. Ask for feedback on the service and outcome.\\n3. Ask whether they would be willing to provide a client testimonial on the work performed, explaining that the testimonial may be used on the corporate website and in future marketing materials.\\n4. Provide two different example client testimonials that could be used, based on the matter summary.\\n\\nINPUTS:\\n- Summary of the matter: {{ $('Webhook').item.json.body.summary }}\\n- User's full name: {{ $('Webhook').item.json.body.first_name }} {{ $('Webhook').item.json.body.last_name }}\\n- User's email: {{ $('Webhook').item.json.body.user_email }}\\n- User's company or law firm: {{ $('Webhook').item.json.body.user_email.split('@')[1] }}\\n- Date and time: {{ $now }}\\n- Call transcript: {{ $('Webhook').item.json.body.transcript }}\\n\\nOUTPUT:\\nProvide the output as raw HTML that can be directly embedded into an HTML email.\\nDo not include any Markdown formatting, code fences, or triple backticks.\\nReturn only the HTML — no explanations, no notes, and no additional text.\"\n\n}\n\n",
+        "options": {
+          "systemMessage": "={\n\n  \"prompt\": \"Writing as an expert in business development, sales, and pitching for UK law firms and professional services in a B2B environment, draft a short email to the client from the stated [user name], using the matter summary.\\n\\n1. Thank them for the opportunity to work on such a great matter.\\n2. Ask for feedback on the service and outcome.\\n3. Ask whether they would be willing to provide a client testimonial on the work performed, explaining that the testimonial may be used on the corporate website and in future marketing materials.\\n4. Provide two different example client testimonials that could be used, based on the matter summary.\\n\\nINPUTS:\\n- Summary of the matter: {{ $('Webhook').item.json.body.summary }}\\n- User's full name: {{ $('Webhook').item.json.body.first_name }} {{ $('Webhook').item.json.body.last_name }}\\n- User's email: {{ $('Webhook').item.json.body.user_email }}\\n- User's company or law firm: {{ $('Webhook').item.json.body.user_email.split('@')[1] }}\\n- Date and time: {{ $now }}\\n- Call transcript: {{ $('Webhook').item.json.body.transcript }}\\n\\nOUTPUT:\\nProvide the output as raw HTML that can be directly embedded into an HTML email.\\nDo not include any Markdown formatting, code fences, or triple backticks.\\nReturn only the HTML — no explanations, no notes, and no additional text. Provide a second output that is \n\n}\n\n"
+        }
+      },
+      "id": "8ceb25cb-947a-4ae7-a117-4920bd14125c",
+      "name": "AI Agent Testimonial HTML",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        180,
+        1460
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "580fc025-b32d-4f4d-a8dc-7229bfd6cb11",
+      "name": "OpenAI Model3",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        220,
+        1200
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "LldOhLNBReShSMkE",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# Sandbox webhooks \nCreated by **Edu** on Tue 20th of May.\n\nAt present this uses my ElevenLabs API key and my Twilio number.\n\nWe have to decide if we setup a new fresh Twilio account and deprecate mine (or only use it for testing) or if we simply upgrade my Twilio account. \nWe will need to link it to the ElevenLabs account that Andy has been using so it might make sense to keep mine Twilio for dev linked to my ElevenLabs and create a new Twilio for production. \n",
+        "height": 780,
+        "width": 500
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1720,
+        -260
+      ],
+      "typeVersion": 1,
+      "id": "07d93f95-936a-4887-82e0-0f3f22ac1633",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "981680fd-2fd9-4e35-81c7-69280940b767",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1660,
+        80
+      ],
+      "id": "aa2b6b99-c37b-4242-bf36-59649e9bdb25",
+      "name": "First form data; first name, last name, email",
+      "webhookId": "981680fd-2fd9-4e35-81c7-69280940b767"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "5a377317-70e8-4097-9db0-c5c9c3005149",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1660,
+        320
+      ],
+      "id": "f5ae86cd-7916-4afb-971c-a166e21f6b0a",
+      "name": "Call request from data; as above + phone number",
+      "webhookId": "5a377317-70e8-4097-9db0-c5c9c3005149"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.elevenlabs.io/v1/convai/twilio/outbound-call",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"agent_id\":\"jOEa6neMFEFMkdUWjQ4p\",\"agent_phone_number_id\":\"nmj6uq3A4NEgtQ2jZSRz\",\"to_number\":\"{{$json.body.phone_number}}\"}",
+        "options": {}
+      },
+      "id": "0e008d7b-e3bf-45b4-b64d-88fbad778d21",
+      "name": "Trigger Twilio outbound call via ElevenLabs",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -1440,
+        320
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "U2UQRHCcnGc3KFiB",
+          "name": "Edu ElevenLabs"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Date & Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Time": {
+      "main": [
+        [
+          {
+            "node": "Microsoft Teams",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HubSpot1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "AI Agent - Re-write Summary",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Date Format",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent Testimonial HTML",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent - Short Pitch",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Model5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent - L/E LinkedIn",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Model6": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent - Re-write Summary",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent - Short Pitch": {
+      "main": [
+        [
+          {
+            "node": "AI Agent - L/E LinkedIn",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent - L/E LinkedIn": {
+      "main": [
+        [
+          {
+            "node": "AI Agent Testimonial HTML",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "AI Agent Testimonial Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent - Re-write Summary": {
+      "main": [
+        [
+          {
+            "node": "AI Agent - Short Pitch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Individual Info",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Perplexity Firm Research": {
+      "main": [
+        [
+          {
+            "node": "Individual Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Perplexity Firm Research",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Individual Info": {
+      "main": [
+        [
+          {
+            "node": "Company info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Company info",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Email content": {
+      "main": [
+        [
+          {
+            "node": "Email from Leonard",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Company info": {
+      "main": [
+        [
+          {
+            "node": "Generate Email content",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Generate Email content1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Email content1": {
+      "main": [
+        [
+          {
+            "node": "Email from Leonard1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Perplexity Firm Research1": {
+      "main": [
+        [
+          {
+            "node": "PP Flattening",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date Format": {
+      "main": [
+        [
+          {
+            "node": "Split Out Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out Email": {
+      "main": [
+        [
+          {
+            "node": "Perplexity Firm Research1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Perplexity Chambers",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Perplexity Chambers1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PP Flattening": {
+      "main": [
+        [
+          {
+            "node": "Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PP Flattening1": {
+      "main": [
+        []
+      ]
+    },
+    "Perplexity Chambers": {
+      "main": [
+        [
+          {
+            "node": "PP Flattening1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Airtable": {
+      "main": [
+        [
+          {
+            "node": "Microsoft Teams1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent Testimonial Text": {
+      "main": [
+        [
+          {
+            "node": "Text Email from Leonard - all assets",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Sandbox Webhook Tracker1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent Testimonial HTML": {
+      "main": [
+        [
+          {
+            "node": "TEST HTML Email from Leonard",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent Testimonial Text",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call request from data; as above + phone number": {
+      "main": [
+        [
+          {
+            "node": "Trigger Twilio outbound call via ElevenLabs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "leonard-dev.app.n8n.cloud",
+            "user-agent": "Python/3.12 aiohttp/3.11.16",
+            "content-length": "736",
+            "accept": "*/*",
+            "accept-encoding": "gzip, br",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "34.67.146.145",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "US",
+            "cf-ray": "9405b4083592f60b-ORD",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "x-forwarded-for": "34.67.146.145, 172.70.130.174",
+            "x-forwarded-host": "leonard-dev.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-52-6c4f4684d5-qct8m",
+            "x-is-trusted": "yes",
+            "x-real-ip": "34.67.146.145"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "transcript": "unknown",
+            "user_email": "andy@legalengine.co.uk",
+            "summary": "Hilton Hotels were represented by you, Alex Reed, in an employment claim involving disability discrimination and unfair dismissal. The client sought your representation due to internal issues and a long-standing relationship. Unfortunately, the client lost the case, incurring costs of one hundred and fifty thousand pounds. The legal team included Dawn, an amateur witness, and yourself as the chief lawyer for the respondent. The case, which is still ongoing, took place in the UK. Notably, the claimant used generative artificial intelligence throughout the process, including the data subject access request.",
+            "first_name": "Andy",
+            "last_name": "Batty"
+          },
+          "webhookUrl": "https://leonard-dev.app.n8n.cloud/webhook/testdemo",
+          "executionMode": "production"
+        }
+      }
+    ],
+    "Call request from data; as above + phone number": [
+      {
+        "json": {
+          "headers": {
+            "host": "leonard-dev.app.n8n.cloud",
+            "user-agent": "Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
+            "content-length": "150",
+            "accept": "*/*",
+            "accept-encoding": "gzip, br",
+            "accept-language": "en-GB,en;q=0.9,es;q=0.8,fr;q=0.7",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "2a00:23c4:a37:3c01:1e15:6ffd:b71:9835",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "GB",
+            "cf-ray": "942d90d0a1fad8e0-LHR",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "dnt": "1",
+            "origin": "https://sandbox-demo.legalengine.co.uk",
+            "priority": "u=1, i",
+            "referer": "https://sandbox-demo.legalengine.co.uk/",
+            "sec-ch-ua": "\"Chromium\";v=\"136\", \"Google Chrome\";v=\"136\", \"Not.A/Brand\";v=\"99\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"Chrome OS\"",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "cross-site",
+            "x-forwarded-for": "2a00:23c4:a37:3c01:1e15:6ffd:b71:9835, 172.69.224.121",
+            "x-forwarded-host": "leonard-dev.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-52-6c4f4684d5-xjzqs",
+            "x-is-trusted": "yes",
+            "x-real-ip": "2a00:23c4:a37:3c01:1e15:6ffd:b71:9835"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "first_name": "Eduardo",
+            "last_name": "Aguilar Pelaez",
+            "email": "eduardo.aguilarpelaez@gmail.com",
+            "phone_number": "07912609976",
+            "request_type": "callback"
+          },
+          "webhookUrl": "https://leonard-dev.app.n8n.cloud/webhook/5a377317-70e8-4097-9db0-c5c9c3005149",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "triggerCount": 3,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

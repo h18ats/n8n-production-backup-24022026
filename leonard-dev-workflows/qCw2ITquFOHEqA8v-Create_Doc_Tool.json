@@ -1,0 +1,128 @@
+{
+  "name": "Create Doc Tool",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "title"
+            },
+            {
+              "name": "content"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -128,
+        -192
+      ],
+      "id": "6a50528d-edab-435b-8178-06e523adec6d",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "folderId": "1dgxFHKKunJbtvJl7nDjqSddlG2UROu3E",
+        "title": "={{ $json.title }}"
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        80,
+        -192
+      ],
+      "id": "331e1773-392c-400a-9b21-227ac52c407e",
+      "name": "Create a document"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentURL": "={{ $json.id }}",
+        "actionsUi": {
+          "actionFields": [
+            {
+              "action": "insert",
+              "text": "={{ $('When Executed by Another Workflow').item.json.content }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        288,
+        -192
+      ],
+      "id": "163d4eaf-4fd5-447b-92a4-d51bb2f3b461",
+      "name": "Update a document"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5472c0d3-d715-4bab-bd49-e1b8e7b82750",
+              "name": "response",
+              "value": "=Your {{ $('When Executed by Another Workflow').item.json.title }} document has been created. \n\nHere is the link in Google drive: https://drive.google.com/file/d/{{ $json.documentId }}/view?usp=sharing",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        496,
+        -192
+      ],
+      "id": "bbfcf4cd-91e5-4e0a-a67e-f7c74743ffcb",
+      "name": "Edit Fields"
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Create a document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a document": {
+      "main": [
+        [
+          {
+            "node": "Update a document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a document": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 0,
+  "meta": null
+}

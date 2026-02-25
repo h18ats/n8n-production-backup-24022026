@@ -1,0 +1,1855 @@
+{
+  "name": "LIVE - Simmons consolidate user history - Andy",
+  "nodes": [
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "name": "Google Vertex Chat Model2",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        -2656,
+        288
+      ],
+      "id": "840bb0df-96a1-44ca-84c0-2ada42c689db"
+    },
+    {
+      "parameters": {
+        "base": {
+          "__rl": true,
+          "value": "https://airtable.com/appQYt45MjRLNkvEf/tblxTzllaLuruLHmG/viwImoxUDoxhhVvIx?blocks=hide",
+          "mode": "url"
+        },
+        "table": {
+          "__rl": true,
+          "value": "https://airtable.com/appQYt45MjRLNkvEf/tblxTzllaLuruLHmG/viwImoxUDoxhhVvIx?blocks=hide",
+          "mode": "url"
+        },
+        "id": "={{ $json.id }}",
+        "options": {}
+      },
+      "name": "Get new conversation",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -4064,
+        64
+      ],
+      "id": "62197dea-5d6b-42f0-9e9c-a60ed3936e27"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=New Conversation Transcript: {{ $('Set fields pre agent').item.json[\"New Conversation Call Transcript\"] }}",
+        "options": {
+          "systemMessage": "You are an expert in conversation summaries and creating a version that will act as the knowledge base for a future conversation with an AI voice agent. When producing the output, just provide the comprehensive summary, no introduction, in long prose and containing all pertinent details. Make sure to log all facts. This summary will be written to a knowledge base and further consolidated so make it a more verbose version."
+        }
+      },
+      "name": "Create new single conv summary",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -2720,
+        64
+      ],
+      "id": "94fc6258-9901-4a75-bfc5-67b1179107f8"
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "name": "Google Vertex Chat Model3",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        -2080,
+        32
+      ],
+      "id": "6f91cde5-7d8d-4a08-98bb-5fee432eac78"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Latest Conversation Summary: {{ $('Create new single conv summary').item.json.output }}\nPrior conversation Summaries: {{ $('Set fields pre agent').item.json[\"Prior Conversation History\"] }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You are an expert in taking a series of conversations summaries and consolidating them into a single output which is a consolidated version ready to act as a knowledge base for a voice AI agent. \n\nYou should make sure to use as much detail as possible from each conversation. You should prioritising information from the Latest Call Summary ({{ $('Create new single conv summary').item.json.output }}) and consider this to be more up to date and needed verbatim, whilst looking for links and relevance from the prior call Summaries ({{ $('Search existing records by email ID').item.json['Conversation History'] }}) \n\nThe aim is to ensure the knowledge base has a bias for more up to date information. When producing the single output, just provide the detailed summary, no introduction, in long prose and containing all pertinent details. Make sure to include as much detail as possible, linking relevant points to provide a robust history of the conversation. \n\nKeep the total output to a digestible size for a leading LLM to avoid excess latency. The content will be machine only readable so make it the most effective and accurate source of information charecter for character. "
+        }
+      },
+      "name": "Conv history agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -2144,
+        -192
+      ],
+      "id": "3793ef94-eda9-4e6a-a4a4-9c822e2623b0"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "735de4f1-f56b-44ff-a5ab-66e8fee102dc",
+              "leftValue": "={{ $('On New FG Conversation').item.json.fields[\"Call Length (s)\"] }}",
+              "rightValue": 45,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "name": "45s length",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -3840,
+        64
+      ],
+      "id": "afbc9527-d3ed-47b9-8447-494dc896288d"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "airtableTokenApi",
+        "baseId": {
+          "__rl": true,
+          "value": "https://airtable.com/appQYt45MjRLNkvEf/tblxTzllaLuruLHmG/viwImoxUDoxhhVvIx?blocks=hide",
+          "mode": "url"
+        },
+        "tableId": {
+          "__rl": true,
+          "value": "https://airtable.com/appQYt45MjRLNkvEf/tblxTzllaLuruLHmG/viwImoxUDoxhhVvIx?blocks=hide",
+          "mode": "url"
+        },
+        "triggerField": "Last Modified",
+        "additionalFields": {}
+      },
+      "name": "On New FG Conversation",
+      "type": "n8n-nodes-base.airtableTrigger",
+      "typeVersion": 1,
+      "position": [
+        -4288,
+        64
+      ],
+      "id": "47624c59-74ca-4658-bda6-609b96a1f013"
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "name": "Google Vertex Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        -1504,
+        144
+      ],
+      "id": "aa12a24c-fbb3-46ec-a697-be6cf55f0480"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Converation history: {{ $('Conv history agent').item.json.output }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You are an expert in extracting client names from a series of converations ({{ $('Conv history agent').item.json.output }}) ready to act as a knowledge base for a voice AI agent. \n\nThe aim is to ensure the knowledge base has a comprehensive list of all clients, firms and companies this lawyer has worked for or represented.\n\nThe output should be a very concise list of clients separated by commas in a single short text stream, ranked in a weighted order of relevance with the most relevant first."
+        }
+      },
+      "name": "Client Extraction",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -1568,
+        -96
+      ],
+      "id": "e00a8c4c-7208-4f69-bf0b-6a1e5cf12e68"
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "name": "Google Vertex Chat Model1",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        -928,
+        144
+      ],
+      "id": "61eb0b0a-32f2-4237-af51-bef0f051e6c7"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Converation history: {{ $('Conv history agent').item.json.output }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You are an expert in extracting short and concise matter summaries from a lawyer's converation history ({{ $('Conv history agent').item.json.output }}) ready to act as a knowledge base for a voice AI agent. The matter summaries should each contain the client's name and a brief description of the matter, maximum 50 works per matter and separate each matter with a comma. The output should be ranked in a weighted order of relevance with the most relevant first.\n\nThe aim is to ensure the knowledge base has a comprehensive list of all matters this lawyer has worked on.\n\n"
+        }
+      },
+      "name": "Matter Extraction",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -992,
+        -96
+      ],
+      "id": "0e5402e1-7957-41f1-8a2f-8d6ee1c7d8d3"
+    },
+    {
+      "parameters": {
+        "content": "May use an output parser",
+        "height": 720,
+        "width": 336
+      },
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1632,
+        -448
+      ],
+      "id": "068ed305-e83d-4dcd-b904-88aa232155f0"
+    },
+    {
+      "parameters": {
+        "content": "Added Call counter and duration counter",
+        "height": 304,
+        "width": 336
+      },
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -3072,
+        -80
+      ],
+      "id": "3bc86a22-2c94-410b-b565-addcc0dc7a86"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appQYt45MjRLNkvEf",
+          "mode": "list",
+          "cachedResultName": "Fladgate - Leonard Live Data",
+          "cachedResultUrl": "https://airtable.com/appQYt45MjRLNkvEf"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblHgvbVSqcemMjqr",
+          "mode": "list",
+          "cachedResultName": "FG - Conversation History by lawyer",
+          "cachedResultUrl": "https://airtable.com/appQYt45MjRLNkvEf/tblHgvbVSqcemMjqr"
+        },
+        "filterByFormula": "={Email}='{{ $json.Email }}'",
+        "returnAll": false,
+        "limit": 1,
+        "options": {},
+        "sort": {
+          "property": [
+            {
+              "field": "Email"
+            }
+          ]
+        }
+      },
+      "name": "Search existing records by email ID",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -3392,
+        64
+      ],
+      "id": "902c9737-8507-4560-b6df-e027bbc57cb1"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appQYt45MjRLNkvEf",
+          "mode": "list",
+          "cachedResultName": "Fladgate - Leonard Live Data",
+          "cachedResultUrl": "https://airtable.com/appQYt45MjRLNkvEf"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblxTzllaLuruLHmG",
+          "mode": "list",
+          "cachedResultName": "fladgate_conversation_log",
+          "cachedResultUrl": "https://airtable.com/appQYt45MjRLNkvEf/tblxTzllaLuruLHmG"
+        },
+        "filterByFormula": "={Email}='{{ $json.Email }}'",
+        "returnAll": false,
+        "limit": 1,
+        "options": {
+          "fields": [
+            "Call Transcript",
+            "Email",
+            "Full Name",
+            "First Name",
+            "Last Name",
+            "Date Last Updated",
+            "Call Length (s)",
+            "Conversation ID",
+            "Conversation#"
+          ]
+        },
+        "sort": {
+          "property": [
+            {
+              "field": "Date Last Updated",
+              "direction": "desc"
+            }
+          ]
+        }
+      },
+      "name": "Retrieve details for new conv",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -3616,
+        64
+      ],
+      "id": "cc9f5771-db0f-42fd-842b-7543bc972113"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "156090cc-9c17-4309-89eb-1171f9745d19",
+              "leftValue": "={{ $('Search existing records by email ID').item.json[\"Conversation History\"] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "exists",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "02c9fb25-20ed-4783-9f34-9dd4de44b315",
+              "leftValue": "={{ $json.output }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "name": "If existing record found",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -2368,
+        64
+      ],
+      "id": "9b1ea9ef-b768-42ef-bdda-27a42fccbe44"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appQYt45MjRLNkvEf",
+          "mode": "list",
+          "cachedResultName": "Fladgate - Leonard Live Data",
+          "cachedResultUrl": "https://airtable.com/appQYt45MjRLNkvEf"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblHgvbVSqcemMjqr",
+          "mode": "list",
+          "cachedResultName": "FG - Conversation History by lawyer",
+          "cachedResultUrl": "https://airtable.com/appQYt45MjRLNkvEf/tblHgvbVSqcemMjqr"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Email": "={{ $('Retrieve details for new conv').item.json.Email }}",
+            "Transcript ID": "={{ $('Retrieve details for new conv').item.json.id }}",
+            "First Name": "={{ $('Retrieve details for new conv').item.json[\"First Name\"] }}",
+            "Last Name": "={{ $('Retrieve details for new conv').item.json[\"Last Name\"] }}",
+            "Number of Calls": 1,
+            "Call Length": "={{ $('Retrieve details for new conv').item.json[\"Call Length (s)\"] }}",
+            "Previous Submissions": ".",
+            "Previous Clients": ".",
+            "Previous Matters": ".",
+            "Clients from prior conversations": ".",
+            "Matters from prior conversations": ".",
+            "Prior Conversation History": "{{ $json.output }}",
+            "Number of Matters Uploaded": 0
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Transcript ID",
+              "displayName": "Transcript ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Created",
+              "displayName": "Created",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Last Modified",
+              "displayName": "Last Modified",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Call Length",
+              "displayName": "Call Length",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Number of Calls",
+              "displayName": "Number of Calls",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Number of Matters Uploaded",
+              "displayName": "Number of Matters Uploaded",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Conversation History",
+              "displayName": "Conversation History",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Clients",
+              "displayName": "Clients",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Matters",
+              "displayName": "Matters",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Matters from prior conversations",
+              "displayName": "Matters from prior conversations",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Prior Conversation History",
+              "displayName": "Prior Conversation History",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Clients from prior conversations",
+              "displayName": "Clients from prior conversations",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Previous Matters",
+              "displayName": "Previous Matters",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Previous Clients",
+              "displayName": "Previous Clients",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Previous Submissions",
+              "displayName": "Previous Submissions",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "name": "Create new conv summary in history table",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -2080,
+        208
+      ],
+      "id": "9f292bbd-8150-4fbb-9795-6f87156a3fa4"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3c1a35e5-3edd-41c7-b5c7-1c98abf6d67d",
+              "name": "Total Duration of calls (m)",
+              "value": "={{ $json[\"Call Length\"] }}",
+              "type": "number"
+            },
+            {
+              "id": "3c47496e-e55d-469c-91a4-9976aeba4d75",
+              "name": "Number of Calls",
+              "value": "={{ $json[\"Number of Calls\"] }}",
+              "type": "number"
+            },
+            {
+              "id": "fbb1c077-7bae-4d60-8893-10e6ed5d6a1e",
+              "name": "Last Call Length (m)",
+              "value": "={{ $('Get new conversation').item.json[\"Call Length (m)\"] }}",
+              "type": "number"
+            },
+            {
+              "id": "bc30d8eb-30d2-40f3-a99c-99181926a8a6",
+              "name": "Existing Conversation First Name",
+              "value": "={{ $json[\"First Name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "a14cfb60-8f79-41f5-b3b2-a353ce4aff9d",
+              "name": "Existing Conversation Last Name",
+              "value": "={{ $json[\"Last Name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "c672e734-2d1e-4e13-a160-f172de4d1efe",
+              "name": "Existing Conversation Email",
+              "value": "={{ $json.Email }}",
+              "type": "string"
+            },
+            {
+              "id": "6e91159e-68b1-4e2a-a42a-1c643d275c2e",
+              "name": "Clients from prior conversations",
+              "value": "={{ $json[\"Clients from prior conversations\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "833c25e1-8a5b-425b-84d3-9d367caddde2",
+              "name": "Matters from prior conversations",
+              "value": "={{ $json[\"Matters from prior conversations\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "e4d50d73-239f-498b-8995-ffe8cdfbb6e2",
+              "name": "Prior Conversation History",
+              "value": "={{ $json[\"Prior Conversation History\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "34ae7123-4f0a-478b-a9c0-ab977b9e0d15",
+              "name": "Existing Call Length (s)",
+              "value": "={{ $json[\"Call Length\"] }}",
+              "type": "number"
+            },
+            {
+              "id": "c7b87311-be04-4da0-be02-9b38f713823c",
+              "name": "New Conversation First Name",
+              "value": "={{ $('Retrieve details for new conv').item.json[\"First Name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "f3a4b4ae-9dd6-4120-969c-904bb18414c1",
+              "name": "New Conversation Last Name",
+              "value": "={{ $('Retrieve details for new conv').item.json[\"Last Name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "0ae31aea-31f1-4330-832e-ad8fe06e65c1",
+              "name": "New Conversation Email",
+              "value": "={{ $('Retrieve details for new conv').item.json.Email }}",
+              "type": "string"
+            },
+            {
+              "id": "36895dff-3e77-41ed-a616-c04ed5cd0c0e",
+              "name": "New Conversation Call Transcript",
+              "value": "={{ $('Retrieve details for new conv').item.json[\"Call Transcript\"] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Set fields pre agent",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3168,
+        64
+      ],
+      "id": "e3ebc202-f345-4a68-8db4-da14f93b0062"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2b0483ab-79c3-42f3-9fe0-e96e8e0e1a3f",
+              "name": "fields[\"First Name\"]",
+              "value": "={{ $('Set fields pre agent').item.json.fields[\"First Name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "68e5fd4d-e927-41b8-b991-877a30a82c2e",
+              "name": "fields[\"Last Name\"]",
+              "value": "={{ $('Set fields pre agent').item.json.fields[\"Last Name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "0614cd2c-de73-457d-9cee-f93d703c02d1",
+              "name": "fields.Email",
+              "value": "={{ $('Set fields pre agent').item.json.fields.Email }}",
+              "type": "string"
+            },
+            {
+              "id": "27596fd5-ca72-48da-9eca-02d5edd96208",
+              "name": "fields[\"Call Summary\"]",
+              "value": "={{ $('Set fields pre agent').item.json.fields.Summary }}",
+              "type": "string"
+            },
+            {
+              "id": "3972631b-f76f-4d53-aa2b-25bbd75a5a2f",
+              "name": "fields[\"Call Transcript\"]",
+              "value": "={{ $('Set fields pre agent').item.json.fields[\"Call Transcript\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "847cc40e-5639-407c-a59b-3a6c31ff8732",
+              "name": "Email",
+              "value": "={{ $('Set fields pre agent').item.json.Email }}",
+              "type": "string"
+            },
+            {
+              "id": "eb36d309-5ea8-4da6-9b8e-6a650b4fbf3b",
+              "name": "First Name",
+              "value": "={{ $('Set fields pre agent').item.json[\"First Name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "2ca82292-39b1-43cc-97ca-4b3cee6340bc",
+              "name": "Last Name",
+              "value": "={{ $('Set fields pre agent').item.json[\"Last Name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "da829b54-69a1-47cc-8560-2b31bc533783",
+              "name": "Call Transcript",
+              "value": "={{ $('Set fields pre agent').item.json[\"Call Transcript\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "49e1756f-f074-4c5f-baee-f4ebf553123c",
+              "name": "Total Duration of calls (m)",
+              "value": "={{ $('Call Counter').item.json[\"Total Duration of calls (m)\"] }}",
+              "type": "number"
+            },
+            {
+              "id": "7d267bce-2fd3-4301-8315-d01f88b043b9",
+              "name": "Number of Calls",
+              "value": "={{ $('Call Counter').item.json[\"Number of Calls\"] }}",
+              "type": "number"
+            },
+            {
+              "id": "467e2ed0-9407-4454-9c7c-e9ec61d7f80e",
+              "name": "Last Call Length (m)",
+              "value": "={{ $('Call Counter').item.json[\"Last Call Length (m)\"] }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Edit Fields1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -4288,
+        -416
+      ],
+      "id": "6610f88d-68a0-4b0b-b8a1-63ba216ad31c"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Logs\nconsole.log(\"Incoming JSON:\", $json);\n\n// Read inputs safely\nconst currentCalls = $json[\"Number of Calls\"] ?? 0;\nconst lastCall = $json[\"Last Call Length (m)\"] ?? 0;\nconst previousTotal = $json[\"Total Duration of calls (m)\"] ?? 0;\n\n// Increment call count\nconst nextCalls = currentCalls + 1;\n\n// Update running total\nconst newTotal = previousTotal + lastCall;\n\n// Debug logs\nconsole.log(\"Next Calls:\", nextCalls);\nconsole.log(\"Last Call Length:\", lastCall);\nconsole.log(\"New Total Duration:\", newTotal);\n\n// Return only the three variables\nreturn [\n  {\n    json: {\n      \"Number of Calls\": nextCalls,\n      \"Last Call Length (m)\": lastCall,\n      \"Total Duration of calls (m)\": newTotal\n    },\n    pairedItem: { item: 0 }\n  }\n];\n"
+      },
+      "name": "Call Counter",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2944,
+        64
+      ],
+      "id": "0eb6a7ac-8e61-42da-906f-5304e973dfc8"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "value": "appQYt45MjRLNkvEf",
+          "mode": "list",
+          "cachedResultName": "Fladgate - Leonard Live Data",
+          "cachedResultUrl": "https://airtable.com/appQYt45MjRLNkvEf"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblHgvbVSqcemMjqr",
+          "mode": "list",
+          "cachedResultName": "FG - Conversation History by lawyer",
+          "cachedResultUrl": "https://airtable.com/appQYt45MjRLNkvEf/tblHgvbVSqcemMjqr"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Email": "={{ $('Set fields pre agent').item.json[\"Existing Conversation Email\"] }}",
+            "Matters from prior conversations": "={{ $json.output }}"
+          },
+          "matchingColumns": [
+            "Email"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Transcript ID",
+              "displayName": "Transcript ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Created",
+              "displayName": "Created",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Last Modified",
+              "displayName": "Last Modified",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Call Length",
+              "displayName": "Call Length",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Number of Calls",
+              "displayName": "Number of Calls",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Conversation History",
+              "displayName": "Conversation History",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Clients",
+              "displayName": "Clients",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Matters",
+              "displayName": "Matters",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Matters from prior conversations",
+              "displayName": "Matters from prior conversations",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Prior Conversation History",
+              "displayName": "Prior Conversation History",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Clients from prior conversations",
+              "displayName": "Clients from prior conversations",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Previous Matters",
+              "displayName": "Previous Matters",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Previous Clients",
+              "displayName": "Previous Clients",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Previous Submissions",
+              "displayName": "Previous Submissions",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "name": "Update Conversation Matters",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -640,
+        -96
+      ],
+      "id": "2c31134b-8b4d-450d-8a8e-8cf579be28b4"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "value": "appQYt45MjRLNkvEf",
+          "mode": "list",
+          "cachedResultName": "Fladgate - Leonard Live Data",
+          "cachedResultUrl": "https://airtable.com/appQYt45MjRLNkvEf"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblHgvbVSqcemMjqr",
+          "mode": "list",
+          "cachedResultName": "FG - Conversation History by lawyer",
+          "cachedResultUrl": "https://airtable.com/appQYt45MjRLNkvEf/tblHgvbVSqcemMjqr"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Email": "={{ $('Set fields pre agent').item.json[\"Existing Conversation Email\"] }}",
+            "Clients from prior conversations": "={{ $json.output }}"
+          },
+          "matchingColumns": [
+            "Email"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Transcript ID",
+              "displayName": "Transcript ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Created",
+              "displayName": "Created",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Last Modified",
+              "displayName": "Last Modified",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Call Length",
+              "displayName": "Call Length",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Number of Calls",
+              "displayName": "Number of Calls",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Number of Matters Uploaded",
+              "displayName": "Number of Matters Uploaded",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Conversation History",
+              "displayName": "Conversation History",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Clients",
+              "displayName": "Clients",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Matters",
+              "displayName": "Matters",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Matters from prior conversations",
+              "displayName": "Matters from prior conversations",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Prior Conversation History",
+              "displayName": "Prior Conversation History",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Clients from prior conversations",
+              "displayName": "Clients from prior conversations",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Previous Matters",
+              "displayName": "Previous Matters",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Previous Clients",
+              "displayName": "Previous Clients",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Previous Submissions",
+              "displayName": "Previous Submissions",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "name": "Update Conversation Clients",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -1216,
+        -96
+      ],
+      "id": "31606b1a-d304-4bc3-84ad-dcb29de5f852"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "value": "appQYt45MjRLNkvEf",
+          "mode": "list",
+          "cachedResultName": "Fladgate - Leonard Live Data",
+          "cachedResultUrl": "https://airtable.com/appQYt45MjRLNkvEf"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblHgvbVSqcemMjqr",
+          "mode": "list",
+          "cachedResultName": "FG - Conversation History by lawyer",
+          "cachedResultUrl": "https://airtable.com/appQYt45MjRLNkvEf/tblHgvbVSqcemMjqr"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Email": "={{ $('Retrieve details for new conv').item.json.Email }}",
+            "Call Length": "={{ $('Call Counter').item.json[\"Total Duration of calls (m)\"] }}",
+            "Number of Calls": "={{ $('Call Counter').item.json[\"Number of Calls\"] }}",
+            "Prior Conversation History": "={{ $json.output }}"
+          },
+          "matchingColumns": [
+            "Email"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Transcript ID",
+              "displayName": "Transcript ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Created",
+              "displayName": "Created",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Last Modified",
+              "displayName": "Last Modified",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Call Length",
+              "displayName": "Call Length",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Number of Calls",
+              "displayName": "Number of Calls",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Number of Matters Uploaded",
+              "displayName": "Number of Matters Uploaded",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Conversation History",
+              "displayName": "Conversation History",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Clients",
+              "displayName": "Clients",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Matters",
+              "displayName": "Matters",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Matters from prior conversations",
+              "displayName": "Matters from prior conversations",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Prior Conversation History",
+              "displayName": "Prior Conversation History",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Clients from prior conversations",
+              "displayName": "Clients from prior conversations",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Previous Matters",
+              "displayName": "Previous Matters",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Previous Clients",
+              "displayName": "Previous Clients",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Previous Submissions",
+              "displayName": "Previous Submissions",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "name": "Update Conversation Summary & History",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -1792,
+        -96
+      ],
+      "id": "fa46e387-9fb5-4b83-bfcd-936e4c91a608"
+    }
+  ],
+  "connections": {
+    "Google Vertex Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Create new single conv summary",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get new conversation": {
+      "main": [
+        [
+          {
+            "node": "45s length",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create new single conv summary": {
+      "main": [
+        [
+          {
+            "node": "If existing record found",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Conv history agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Conv history agent": {
+      "main": [
+        [
+          {
+            "node": "Update Conversation Summary & History",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "45s length": {
+      "main": [
+        [
+          {
+            "node": "Retrieve details for new conv",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On New FG Conversation": {
+      "main": [
+        [
+          {
+            "node": "Get new conversation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Client Extraction",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Client Extraction": {
+      "main": [
+        [
+          {
+            "node": "Update Conversation Clients",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Matter Extraction",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Matter Extraction": {
+      "main": [
+        [
+          {
+            "node": "Update Conversation Matters",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search existing records by email ID": {
+      "main": [
+        [
+          {
+            "node": "Set fields pre agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retrieve details for new conv": {
+      "main": [
+        [
+          {
+            "node": "Search existing records by email ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If existing record found": {
+      "main": [
+        [
+          {
+            "node": "Conv history agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create new conv summary in history table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set fields pre agent": {
+      "main": [
+        [
+          {
+            "node": "Call Counter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Counter": {
+      "main": [
+        [
+          {
+            "node": "Create new single conv summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Conversation Clients": {
+      "main": [
+        [
+          {
+            "node": "Matter Extraction",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Conversation Summary & History": {
+      "main": [
+        [
+          {
+            "node": "Client Extraction",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "any",
+    "executionTimeout": 300,
+    "availableInMCP": false,
+    "errorWorkflow": "nSr5syzpgcboR5Da"
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 0,
+  "meta": null
+}

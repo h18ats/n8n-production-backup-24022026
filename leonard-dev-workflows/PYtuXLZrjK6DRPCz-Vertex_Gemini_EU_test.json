@@ -1,0 +1,1724 @@
+{
+  "name": "Vertex - Gemini EU test",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Please convert the bellow summary into bullet points:\n{{ $json.body.data.analysis.transcript_summary }}",
+        "options": {
+          "systemMessage": "="
+        }
+      },
+      "id": "a0016d7a-a4e7-4e91-b7eb-952dfc160e69",
+      "name": "AI Agent - Re-write Summary5",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -96,
+        544
+      ]
+    },
+    {
+      "parameters": {
+        "path": "9aff5b9e-5b79-4a79-bf08-9465f91f6aa3",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -416,
+        544
+      ],
+      "id": "2cccfe6b-55b6-4ce3-a4ac-6b1561b7af00",
+      "name": "Webhook",
+      "webhookId": "9aff5b9e-5b79-4a79-bf08-9465f91f6aa3"
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "modelName": "gemini-2.5-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        -96,
+        784
+      ],
+      "id": "acb99377-4287-4ea2-8a0c-0b17d26e7b84",
+      "name": "Google Vertex Chat Model",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent - Re-write Summary5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent - Re-write Summary5",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "leonard-dev.app.n8n.cloud",
+            "user-agent": "ElevenLabs/1.0",
+            "content-length": "35166",
+            "accept": "*/*",
+            "accept-encoding": "gzip, br",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "34.59.11.47",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "US",
+            "cf-ray": "97904384537c124c-ORD",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "elevenlabs-signature": "t=1756850253,v0=f7154d188334eb8a8d12b6eac06f340fb846ad27e1d9a0ac03ace68534e8b407",
+            "x-forwarded-for": "34.59.11.47, 172.69.17.147",
+            "x-forwarded-host": "leonard-dev.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-52-6c4f4684d5-kmrgc",
+            "x-is-trusted": "yes",
+            "x-real-ip": "34.59.11.47"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "type": "post_call_transcription",
+            "event_timestamp": 1756850253,
+            "data": {
+              "agent_id": "tG9uM0Gz6OeuPuR8BpBI",
+              "conversation_id": "conv_7501k466v1r0ew3r4ycc34sh5mxp",
+              "status": "done",
+              "user_id": null,
+              "transcript": [
+                {
+                  "role": "agent",
+                  "message": "Hi there Andy, I'm Leonard from Legal Engine.\n\nI'm going to show you how, by harnessing the power of voice and AI, I can help to take the pain out of creating matter descriptions that can be used for both directory submissions and other BD activities.\n\nOnce we've completed our conversation I'll send you a matter summary via email.\n\nIf we could start with you sharing who the client was, and in your own words, a brief description of a matter, I can then show you what I'm capable of. \n\nOver to you Andy…",
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 0,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.16506975702941418
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "message": "Yeah, the client was Aldi.",
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 29,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.29144613398239017
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "message": "And can you describe the matter for me, Andy?",
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 33,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.6397581450873986
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.3335146160097793
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.6397342070704326
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.13359298394061625
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": {
+                    "chunks": [
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "LK4qRzfYRPoy0Q1sAGT2",
+                        "vector_distance": 0.19865405559539795
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "u37ZbjapUeK2EHxeh5dd",
+                        "vector_distance": 0.20300769805908203
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "DUEitqNs6atBNzXfuzfC",
+                        "vector_distance": 0.2100580930709839
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "QqPwDNHbjRQ0kAhPi2jU",
+                        "vector_distance": 0.21140289306640625
+                      },
+                      {
+                        "document_id": "WTSeALM0hCdp3JOAQkh7",
+                        "chunk_id": "VuiGkEcCaprsIkxMbBbD",
+                        "vector_distance": 0.21214044094085693
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "QiAhtqFxtGWQiFLxwKhI",
+                        "vector_distance": 0.21375763416290283
+                      },
+                      {
+                        "document_id": "asdugn4RGhF5gvo638Mz",
+                        "chunk_id": "HKnroSF0VeEpMbPw82w6",
+                        "vector_distance": 0.22143453359603882
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "wqVPw0p8D0LetxCXNVld",
+                        "vector_distance": 0.24373281002044678
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "WLGCpDK5Hq5jPCYvnwiG",
+                        "vector_distance": 0.2508673667907715
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "0mq7fPYorrgq2HFPmHYZ",
+                        "vector_distance": 0.25904035568237305
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "qShJRd9yNY4JtxSGvKGG",
+                        "vector_distance": 0.26765120029449463
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "ByNyQOqqaMT9sSuX9C1O",
+                        "vector_distance": 0.27096718549728394
+                      }
+                    ],
+                    "embedding_model": "e5_mistral_7b_instruct",
+                    "retrieval_query": "What is the matter description for the Aldi case?",
+                    "rag_latency_secs": 0.19348049501422793
+                  },
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 7410,
+                          "price": 0.000741
+                        },
+                        "input_cache_read": {
+                          "tokens": 4943,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 11,
+                          "price": 0.0000044
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "message": "Yeah, they were in talks to restructure and buy boots, the chemist.",
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 36,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.246307281893678
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "message": "Okay, and why did Aldi come to you for this matter, and what was the outcome for them?",
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 46,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.7163252260070294
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.29838629998266697
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.7163042180472985
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.1421596349682659
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": {
+                    "chunks": [
+                      {
+                        "document_id": "WTSeALM0hCdp3JOAQkh7",
+                        "chunk_id": "VuiGkEcCaprsIkxMbBbD",
+                        "vector_distance": 0.1994839310646057
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "QiAhtqFxtGWQiFLxwKhI",
+                        "vector_distance": 0.2044081687927246
+                      },
+                      {
+                        "document_id": "asdugn4RGhF5gvo638Mz",
+                        "chunk_id": "HKnroSF0VeEpMbPw82w6",
+                        "vector_distance": 0.20589792728424072
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "LK4qRzfYRPoy0Q1sAGT2",
+                        "vector_distance": 0.21752095222473145
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "u37ZbjapUeK2EHxeh5dd",
+                        "vector_distance": 0.22119784355163574
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "DUEitqNs6atBNzXfuzfC",
+                        "vector_distance": 0.22273790836334229
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "QqPwDNHbjRQ0kAhPi2jU",
+                        "vector_distance": 0.23233753442764282
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "wqVPw0p8D0LetxCXNVld",
+                        "vector_distance": 0.23880505561828613
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "WLGCpDK5Hq5jPCYvnwiG",
+                        "vector_distance": 0.24573135375976562
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "0mq7fPYorrgq2HFPmHYZ",
+                        "vector_distance": 0.2480466365814209
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "qShJRd9yNY4JtxSGvKGG",
+                        "vector_distance": 0.26002824306488037
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "ByNyQOqqaMT9sSuX9C1O",
+                        "vector_distance": 0.2608751058578491
+                      }
+                    ],
+                    "embedding_model": "e5_mistral_7b_instruct",
+                    "retrieval_query": "What is the matter description for Aldi's restructuring and purchase of Boots?",
+                    "rag_latency_secs": 0.20660402905195951
+                  },
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 8427,
+                          "price": 0.0008427
+                        },
+                        "input_cache_read": {
+                          "tokens": 3952,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 21,
+                          "price": 0.000008400000000000001
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "message": "They came to win the case and they came to me because I'd worked with them for the past five years.",
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 53,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.25294959999155253
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "message": "And what was the outcome for Aldi?",
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 61,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.5476931680459529
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.2778508380288258
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.5476694860262796
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.17283656494691968
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": {
+                    "chunks": [
+                      {
+                        "document_id": "asdugn4RGhF5gvo638Mz",
+                        "chunk_id": "HKnroSF0VeEpMbPw82w6",
+                        "vector_distance": 0.21870648860931396
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "QiAhtqFxtGWQiFLxwKhI",
+                        "vector_distance": 0.21922117471694946
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "LK4qRzfYRPoy0Q1sAGT2",
+                        "vector_distance": 0.21933388710021973
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "DUEitqNs6atBNzXfuzfC",
+                        "vector_distance": 0.22233593463897705
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "u37ZbjapUeK2EHxeh5dd",
+                        "vector_distance": 0.22526085376739502
+                      },
+                      {
+                        "document_id": "WTSeALM0hCdp3JOAQkh7",
+                        "chunk_id": "VuiGkEcCaprsIkxMbBbD",
+                        "vector_distance": 0.22607696056365967
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "wqVPw0p8D0LetxCXNVld",
+                        "vector_distance": 0.23348283767700195
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "QqPwDNHbjRQ0kAhPi2jU",
+                        "vector_distance": 0.2342197299003601
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "0mq7fPYorrgq2HFPmHYZ",
+                        "vector_distance": 0.24081051349639893
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "qShJRd9yNY4JtxSGvKGG",
+                        "vector_distance": 0.24507629871368408
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "WLGCpDK5Hq5jPCYvnwiG",
+                        "vector_distance": 0.2465500831604004
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "ByNyQOqqaMT9sSuX9C1O",
+                        "vector_distance": 0.25150609016418457
+                      }
+                    ],
+                    "embedding_model": "e5_mistral_7b_instruct",
+                    "retrieval_query": "What was the reason Aldi approached you for the matter and what was the outcome?",
+                    "rag_latency_secs": 0.32679932203609496
+                  },
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 12424,
+                          "price": 0.0012424
+                        },
+                        "input_cache_read": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 8,
+                          "price": 0.0000032000000000000003
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "message": "They bought boots.",
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 63,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.13355655095074326
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "message": "That's great. So, what were the financial and reputational implications for Aldi relating to this matter? Was there any notable cost saved or revenue generated?",
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 68,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.5606859549880028
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.3921555259730667
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.7003479970153421
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.09354575094766915
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": {
+                    "chunks": [
+                      {
+                        "document_id": "asdugn4RGhF5gvo638Mz",
+                        "chunk_id": "HKnroSF0VeEpMbPw82w6",
+                        "vector_distance": 0.23901629447937012
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "QiAhtqFxtGWQiFLxwKhI",
+                        "vector_distance": 0.23958438634872437
+                      },
+                      {
+                        "document_id": "WTSeALM0hCdp3JOAQkh7",
+                        "chunk_id": "VuiGkEcCaprsIkxMbBbD",
+                        "vector_distance": 0.24379068613052368
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "wqVPw0p8D0LetxCXNVld",
+                        "vector_distance": 0.2721518874168396
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "LK4qRzfYRPoy0Q1sAGT2",
+                        "vector_distance": 0.2728472352027893
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "DUEitqNs6atBNzXfuzfC",
+                        "vector_distance": 0.27295631170272827
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "0mq7fPYorrgq2HFPmHYZ",
+                        "vector_distance": 0.2741149663925171
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "u37ZbjapUeK2EHxeh5dd",
+                        "vector_distance": 0.2750244140625
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "qShJRd9yNY4JtxSGvKGG",
+                        "vector_distance": 0.277718186378479
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "WLGCpDK5Hq5jPCYvnwiG",
+                        "vector_distance": 0.28156614303588867
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "ByNyQOqqaMT9sSuX9C1O",
+                        "vector_distance": 0.28276264667510986
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "QqPwDNHbjRQ0kAhPi2jU",
+                        "vector_distance": 0.28444600105285645
+                      }
+                    ],
+                    "embedding_model": "e5_mistral_7b_instruct",
+                    "retrieval_query": "What was the outcome of Aldi's acquisition of Boots?",
+                    "rag_latency_secs": 0.1896135569550097
+                  },
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 12436,
+                          "price": 0.0012436
+                        },
+                        "input_cache_read": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 32,
+                          "price": 0.000012800000000000001
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "message": "No. No.",
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 77,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.31401654495857656
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "message": "Okay. And what role did you play, who were the other key team members, and what were their roles? Also, could you let me know which jurisdictions this matter involved?",
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 79,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.4696060220012441
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.29896375199314207
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.7493847860023379
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.098656295100227
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": {
+                    "chunks": [
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "QiAhtqFxtGWQiFLxwKhI",
+                        "vector_distance": 0.20184701681137085
+                      },
+                      {
+                        "document_id": "WTSeALM0hCdp3JOAQkh7",
+                        "chunk_id": "VuiGkEcCaprsIkxMbBbD",
+                        "vector_distance": 0.20893150568008423
+                      },
+                      {
+                        "document_id": "asdugn4RGhF5gvo638Mz",
+                        "chunk_id": "HKnroSF0VeEpMbPw82w6",
+                        "vector_distance": 0.20998281240463257
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "wqVPw0p8D0LetxCXNVld",
+                        "vector_distance": 0.23536133766174316
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "DUEitqNs6atBNzXfuzfC",
+                        "vector_distance": 0.23551368713378906
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "0mq7fPYorrgq2HFPmHYZ",
+                        "vector_distance": 0.2365812063217163
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "LK4qRzfYRPoy0Q1sAGT2",
+                        "vector_distance": 0.23660355806350708
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "u37ZbjapUeK2EHxeh5dd",
+                        "vector_distance": 0.23784077167510986
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "WLGCpDK5Hq5jPCYvnwiG",
+                        "vector_distance": 0.24182212352752686
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "qShJRd9yNY4JtxSGvKGG",
+                        "vector_distance": 0.247353196144104
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "QqPwDNHbjRQ0kAhPi2jU",
+                        "vector_distance": 0.2483576536178589
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "ByNyQOqqaMT9sSuX9C1O",
+                        "vector_distance": 0.2497241497039795
+                      }
+                    ],
+                    "embedding_model": "e5_mistral_7b_instruct",
+                    "retrieval_query": "What were the financial and reputational implications for Aldi from buying boots?",
+                    "rag_latency_secs": 0.2104218469467014
+                  },
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 12472,
+                          "price": 0.0012472
+                        },
+                        "input_cache_read": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 36,
+                          "price": 0.000014400000000000001
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "message": "Yeah, it was just the UK and I was the only lawyer. I was their external counsel.",
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 87,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.29526441800408065
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "message": "And was there anything noteworthy about this matter? Perhaps something innovative, precedent-setting, or...",
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 93,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.47680900897830725
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.30315170297399163
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.6159996129572392
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.14264501095749438
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": {
+                    "chunks": [
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "QiAhtqFxtGWQiFLxwKhI",
+                        "vector_distance": 0.15742743015289307
+                      },
+                      {
+                        "document_id": "WTSeALM0hCdp3JOAQkh7",
+                        "chunk_id": "VuiGkEcCaprsIkxMbBbD",
+                        "vector_distance": 0.16638731956481934
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "wqVPw0p8D0LetxCXNVld",
+                        "vector_distance": 0.18524223566055298
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "LK4qRzfYRPoy0Q1sAGT2",
+                        "vector_distance": 0.18943196535110474
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "WLGCpDK5Hq5jPCYvnwiG",
+                        "vector_distance": 0.1938995122909546
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "u37ZbjapUeK2EHxeh5dd",
+                        "vector_distance": 0.1941431760787964
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "DUEitqNs6atBNzXfuzfC",
+                        "vector_distance": 0.1944240927696228
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "0mq7fPYorrgq2HFPmHYZ",
+                        "vector_distance": 0.19500458240509033
+                      },
+                      {
+                        "document_id": "asdugn4RGhF5gvo638Mz",
+                        "chunk_id": "HKnroSF0VeEpMbPw82w6",
+                        "vector_distance": 0.19680416584014893
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "ByNyQOqqaMT9sSuX9C1O",
+                        "vector_distance": 0.20183396339416504
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "qShJRd9yNY4JtxSGvKGG",
+                        "vector_distance": 0.20331072807312012
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "QqPwDNHbjRQ0kAhPi2jU",
+                        "vector_distance": 0.20353907346725464
+                      }
+                    ],
+                    "embedding_model": "e5_mistral_7b_instruct",
+                    "retrieval_query": "What was the financial and reputational impact of Aldi buying Boots, and what was the role of the lawyer and jurisdictions involved?",
+                    "rag_latency_secs": 0.26313617906998843
+                  },
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 12528,
+                          "price": 0.0012528
+                        },
+                        "input_cache_read": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 25,
+                          "price": 0.00001
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": true,
+                  "original_message": "And was there anything noteworthy about this matter? Perhaps something innovative, precedent-setting, or something that impacted regulations or ESG?",
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "message": "No. Nope.",
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 97,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.34249305503908545
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "message": "Okay. And what is the current status of this matter? If completed, when did it finish?",
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 98,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.5117011440452188
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.3504707550164312
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.6546686140354723
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.13346475805155933
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": {
+                    "chunks": [
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "QiAhtqFxtGWQiFLxwKhI",
+                        "vector_distance": 0.17661350965499878
+                      },
+                      {
+                        "document_id": "WTSeALM0hCdp3JOAQkh7",
+                        "chunk_id": "VuiGkEcCaprsIkxMbBbD",
+                        "vector_distance": 0.18388980627059937
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "wqVPw0p8D0LetxCXNVld",
+                        "vector_distance": 0.1978791356086731
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "LK4qRzfYRPoy0Q1sAGT2",
+                        "vector_distance": 0.19810998439788818
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "u37ZbjapUeK2EHxeh5dd",
+                        "vector_distance": 0.20489192008972168
+                      },
+                      {
+                        "document_id": "asdugn4RGhF5gvo638Mz",
+                        "chunk_id": "HKnroSF0VeEpMbPw82w6",
+                        "vector_distance": 0.2055341601371765
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "0mq7fPYorrgq2HFPmHYZ",
+                        "vector_distance": 0.2070412039756775
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "DUEitqNs6atBNzXfuzfC",
+                        "vector_distance": 0.20712506771087646
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "WLGCpDK5Hq5jPCYvnwiG",
+                        "vector_distance": 0.20984947681427002
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "QqPwDNHbjRQ0kAhPi2jU",
+                        "vector_distance": 0.21251344680786133
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "ByNyQOqqaMT9sSuX9C1O",
+                        "vector_distance": 0.21482670307159424
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "qShJRd9yNY4JtxSGvKGG",
+                        "vector_distance": 0.2164301872253418
+                      }
+                    ],
+                    "embedding_model": "e5_mistral_7b_instruct",
+                    "retrieval_query": "What was the financial and reputational impact of Aldi buying Boots, and what was the role of the lawyer in this matter?",
+                    "rag_latency_secs": 0.26087327394634485
+                  },
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 8612,
+                          "price": 0.0008612
+                        },
+                        "input_cache_read": {
+                          "tokens": 3939,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 20,
+                          "price": 0.000008
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "message": "On go",
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 104,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.8127413089387119
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "message": "I'm sorry, could you repeat that?",
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 106,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.557470562052913
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.38901404303032905
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.557448017061688
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.10981392709072679
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": {
+                    "chunks": [
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "QiAhtqFxtGWQiFLxwKhI",
+                        "vector_distance": 0.21076959371566772
+                      },
+                      {
+                        "document_id": "WTSeALM0hCdp3JOAQkh7",
+                        "chunk_id": "VuiGkEcCaprsIkxMbBbD",
+                        "vector_distance": 0.21199309825897217
+                      },
+                      {
+                        "document_id": "asdugn4RGhF5gvo638Mz",
+                        "chunk_id": "HKnroSF0VeEpMbPw82w6",
+                        "vector_distance": 0.21671760082244873
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "LK4qRzfYRPoy0Q1sAGT2",
+                        "vector_distance": 0.23839980363845825
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "DUEitqNs6atBNzXfuzfC",
+                        "vector_distance": 0.23924148082733154
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "u37ZbjapUeK2EHxeh5dd",
+                        "vector_distance": 0.24183881282806396
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "wqVPw0p8D0LetxCXNVld",
+                        "vector_distance": 0.24339205026626587
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "WLGCpDK5Hq5jPCYvnwiG",
+                        "vector_distance": 0.24500763416290283
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "0mq7fPYorrgq2HFPmHYZ",
+                        "vector_distance": 0.24890398979187012
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "QqPwDNHbjRQ0kAhPi2jU",
+                        "vector_distance": 0.24983173608779907
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "qShJRd9yNY4JtxSGvKGG",
+                        "vector_distance": 0.2567075490951538
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "ByNyQOqqaMT9sSuX9C1O",
+                        "vector_distance": 0.2575254440307617
+                      }
+                    ],
+                    "embedding_model": "e5_mistral_7b_instruct",
+                    "retrieval_query": "What is the current status of the matter involving Aldi restructuring and buying Boots, and when did it finish?",
+                    "rag_latency_secs": 0.24209264502860606
+                  },
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 12573,
+                          "price": 0.0012573000000000003
+                        },
+                        "input_cache_read": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 10,
+                          "price": 0.000004
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "message": "On going .",
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 108,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.32236265600658953
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "message": "Okay, and was there any press coverage or awards related to...",
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 110,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.42204466403927654
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.2442341740243137
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.42202298110350966
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.15404436097014695
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": {
+                    "chunks": [
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "QiAhtqFxtGWQiFLxwKhI",
+                        "vector_distance": 0.22851186990737915
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "LK4qRzfYRPoy0Q1sAGT2",
+                        "vector_distance": 0.2379191517829895
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "u37ZbjapUeK2EHxeh5dd",
+                        "vector_distance": 0.23825067281723022
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "DUEitqNs6atBNzXfuzfC",
+                        "vector_distance": 0.2390221357345581
+                      },
+                      {
+                        "document_id": "WTSeALM0hCdp3JOAQkh7",
+                        "chunk_id": "VuiGkEcCaprsIkxMbBbD",
+                        "vector_distance": 0.23973846435546875
+                      },
+                      {
+                        "document_id": "asdugn4RGhF5gvo638Mz",
+                        "chunk_id": "HKnroSF0VeEpMbPw82w6",
+                        "vector_distance": 0.2415473461151123
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "QqPwDNHbjRQ0kAhPi2jU",
+                        "vector_distance": 0.2476680874824524
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "wqVPw0p8D0LetxCXNVld",
+                        "vector_distance": 0.2589988708496094
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "WLGCpDK5Hq5jPCYvnwiG",
+                        "vector_distance": 0.2637864947319031
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "0mq7fPYorrgq2HFPmHYZ",
+                        "vector_distance": 0.26885801553726196
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "qShJRd9yNY4JtxSGvKGG",
+                        "vector_distance": 0.27772754430770874
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "ByNyQOqqaMT9sSuX9C1O",
+                        "vector_distance": 0.2817983031272888
+                      }
+                    ],
+                    "embedding_model": "e5_mistral_7b_instruct",
+                    "retrieval_query": "What is the current status of the matter?",
+                    "rag_latency_secs": 0.15726783801801503
+                  },
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 12586,
+                          "price": 0.0012586000000000001
+                        },
+                        "input_cache_read": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 15,
+                          "price": 0.000006
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": true,
+                  "original_message": "Okay, and was there any press coverage or awards related to this matter?",
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "message": "No",
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 112,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.3049407840007916
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "message": "Thank you for sharing those details. Here's a summary of the matter as I understand it — please let  me...",
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 114,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.5061453590169549
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.30704385903663933
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 1.3078070121118799
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.10918893106281757
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": {
+                    "chunks": [
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "QiAhtqFxtGWQiFLxwKhI",
+                        "vector_distance": 0.22571265697479248
+                      },
+                      {
+                        "document_id": "asdugn4RGhF5gvo638Mz",
+                        "chunk_id": "HKnroSF0VeEpMbPw82w6",
+                        "vector_distance": 0.23112761974334717
+                      },
+                      {
+                        "document_id": "WTSeALM0hCdp3JOAQkh7",
+                        "chunk_id": "VuiGkEcCaprsIkxMbBbD",
+                        "vector_distance": 0.23247218132019043
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "DUEitqNs6atBNzXfuzfC",
+                        "vector_distance": 0.2529493570327759
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "LK4qRzfYRPoy0Q1sAGT2",
+                        "vector_distance": 0.2541523575782776
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "u37ZbjapUeK2EHxeh5dd",
+                        "vector_distance": 0.254791796207428
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "wqVPw0p8D0LetxCXNVld",
+                        "vector_distance": 0.2591315507888794
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "QqPwDNHbjRQ0kAhPi2jU",
+                        "vector_distance": 0.26422548294067383
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "WLGCpDK5Hq5jPCYvnwiG",
+                        "vector_distance": 0.2644168734550476
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "0mq7fPYorrgq2HFPmHYZ",
+                        "vector_distance": 0.26485610008239746
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "ByNyQOqqaMT9sSuX9C1O",
+                        "vector_distance": 0.27292656898498535
+                      },
+                      {
+                        "document_id": "Y47AunKPNxeDkf6ZXHrA",
+                        "chunk_id": "qShJRd9yNY4JtxSGvKGG",
+                        "vector_distance": 0.27522993087768555
+                      }
+                    ],
+                    "embedding_model": "e5_mistral_7b_instruct",
+                    "retrieval_query": "What is the current status of the matter involving Aldi buying Boots?",
+                    "rag_latency_secs": 0.18214272009208798
+                  },
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 12600,
+                          "price": 0.00126
+                        },
+                        "input_cache_read": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 139,
+                          "price": 0.0000556
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": true,
+                  "original_message": "Thank you for sharing those details. Here's a summary of the matter as I understand it — please let me know if I've captured it accurately:\n\nAldi was involved in restructuring and purchasing Boots. They came to you for representation because of your prior work with them over the past five years. The outcome was successful, with Aldi acquiring Boots. The matter was conducted solely within the UK, with you serving as their external counsel. There were no significant financial or reputational implications, nor any notable cost savings or revenue generation. The matter is currently ongoing, and there was no press coverage or awards received.\n\nDoes that summary sound accurate, or would you like to correct anything?",
+                  "source_medium": null
+                }
+              ],
+              "metadata": {
+                "start_time_unix_secs": 1756850128,
+                "accepted_time_unix_secs": 1756850128,
+                "call_duration_secs": 119,
+                "cost": 974,
+                "deletion_settings": {
+                  "deletion_time_unix_secs": 1819922252,
+                  "deleted_logs_at_time_unix_secs": null,
+                  "deleted_audio_at_time_unix_secs": null,
+                  "deleted_transcript_at_time_unix_secs": null,
+                  "delete_transcript_and_pii": true,
+                  "delete_audio": true
+                },
+                "feedback": {
+                  "overall_score": null,
+                  "likes": 0,
+                  "dislikes": 0
+                },
+                "authorization_method": "public",
+                "charging": {
+                  "dev_discount": false,
+                  "is_burst": false,
+                  "tier": "pro",
+                  "llm_usage": {
+                    "irreversible_generation": {
+                      "model_usage": {
+                        "gemini-2.5-flash-lite": {
+                          "input": {
+                            "tokens": 112068,
+                            "price": 0.011206800000000001
+                          },
+                          "input_cache_read": {
+                            "tokens": 12834,
+                            "price": 0
+                          },
+                          "input_cache_write": {
+                            "tokens": 0,
+                            "price": 0
+                          },
+                          "output_total": {
+                            "tokens": 317,
+                            "price": 0.00012680000000000002
+                          }
+                        }
+                      }
+                    },
+                    "initiated_generation": {
+                      "model_usage": {
+                        "gemini-2.5-flash-lite": {
+                          "input": {
+                            "tokens": 146787,
+                            "price": 0.014678700000000001
+                          },
+                          "input_cache_read": {
+                            "tokens": 12834,
+                            "price": 0
+                          },
+                          "input_cache_write": {
+                            "tokens": 0,
+                            "price": 0
+                          },
+                          "output_total": {
+                            "tokens": 333,
+                            "price": 0.0001332
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "llm_price": 0.014811900000000001,
+                  "llm_charge": 75,
+                  "call_charge": 899
+                },
+                "phone_call": null,
+                "batch_call": null,
+                "termination_reason": "Client disconnected: 1005",
+                "error": null,
+                "main_language": "en",
+                "rag_usage": {
+                  "usage_count": 10,
+                  "embedding_model": "e5_mistral_7b_instruct"
+                },
+                "text_only": false,
+                "features_usage": {
+                  "language_detection": {
+                    "enabled": true,
+                    "used": false
+                  },
+                  "transfer_to_agent": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "transfer_to_number": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "multivoice": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "dtmf_tones": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "external_mcp_servers": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "pii_zrm_workspace": false,
+                  "pii_zrm_agent": false,
+                  "tool_dynamic_variable_updates": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "is_livekit": false,
+                  "voicemail_detection": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "workflow": {
+                    "enabled": false,
+                    "tool_node": {
+                      "enabled": false,
+                      "used": false
+                    }
+                  },
+                  "agent_testing": {
+                    "enabled": false,
+                    "tests_ran_after_last_modification": false,
+                    "tests_ran_in_last_7_days": false
+                  }
+                },
+                "eleven_assistant": {
+                  "is_eleven_assistant": false
+                },
+                "initiator_id": null,
+                "conversation_initiation_source": "unknown",
+                "conversation_initiation_source_version": null,
+                "timezone": null
+              },
+              "analysis": {
+                "evaluation_criteria_results": {
+                  "send_summary": {
+                    "criteria_id": "send_summary",
+                    "result": "unknown",
+                    "rationale": "The conversation ends abruptly after the agent states it will provide a summary. There is no indication if the 'send_summary' webhook was triggered or not."
+                  }
+                },
+                "data_collection_results": {},
+                "call_successful": "unknown",
+                "transcript_summary": "Leonard from Legal Engine is demonstrating how AI can help Andy create matter descriptions. Andy provided details about Aldi's ongoing acquisition of Boots, where he served as the sole external counsel in the UK. There were no notable financial implications, innovations, or press coverage. Leonard is about to provide a summary.\n",
+                "call_summary_title": "Matter description generation"
+              },
+              "conversation_initiation_client_data": {
+                "conversation_config_override": {
+                  "tts": null,
+                  "conversation": null,
+                  "agent": null
+                },
+                "custom_llm_extra_body": {},
+                "user_id": null,
+                "source_info": {
+                  "source": null,
+                  "version": null
+                },
+                "dynamic_variables": {
+                  "platform": "web",
+                  "first_name": "Andy",
+                  "last_name": "Batty",
+                  "user_email": "b18ats@gmail.com",
+                  "system__agent_id": "tG9uM0Gz6OeuPuR8BpBI",
+                  "system__current_agent_id": "tG9uM0Gz6OeuPuR8BpBI",
+                  "system__conversation_id": "conv_7501k466v1r0ew3r4ycc34sh5mxp",
+                  "system__caller_id": null,
+                  "system__called_number": null,
+                  "system__call_duration_secs": 118,
+                  "system__time_utc": "2025-09-02T21:57:27.481799+00:00",
+                  "system__time": "Tuesday, 21:57 02 September 2025",
+                  "system__timezone": null,
+                  "system__call_sid": null
+                }
+              }
+            }
+          },
+          "webhookUrl": "https://leonard-dev.app.n8n.cloud/webhook/eeaf38eb-37e4-4b89-bd48-8110080ccc69",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "triggerCount": 0,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

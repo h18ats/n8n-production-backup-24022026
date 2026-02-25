@@ -1,0 +1,381 @@
+{
+  "name": "DEV - FF Luke 4 - Outbound Call with FF",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -672,
+        -80
+      ],
+      "id": "b363bc50-1cfc-4bb9-8193-5890550468aa",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "tyqmzwMTbsV5IHsn",
+          "mode": "list",
+          "cachedResultName": "DEV - FF Luke 5 - Delete Agent & KB with FF"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        448,
+        -80
+      ],
+      "id": "1489960b-adcb-4496-8b3d-f6f9ec5e2574",
+      "name": "Execute Workflow"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a7518b23-e670-4c5b-b688-be09a1e6a1ec",
+              "name": "agent_id",
+              "value": "={{ $json.agent_id }}",
+              "type": "string"
+            },
+            {
+              "id": "d0497ea3-1b22-4b93-bd85-c71f56cf8442",
+              "name": "org_fullname",
+              "value": "={{ $json.org_fullname }}",
+              "type": "string"
+            },
+            {
+              "id": "b1911457-47fe-4e5c-9fab-0a8f247495fd",
+              "name": "org_firstname",
+              "value": "={{ $json.org_firstname }}",
+              "type": "string"
+            },
+            {
+              "id": "8fefcb8f-fa15-473b-8577-5a7f609b1d56",
+              "name": "org_biz",
+              "value": "={{ $json.org_biz }}",
+              "type": "string"
+            },
+            {
+              "id": "919c9553-a624-4186-9599-d816881563d8",
+              "name": "org_email",
+              "value": "={{ $json.org_email }}",
+              "type": "string"
+            },
+            {
+              "id": "b7f7bc87-e2da-4749-9b5b-989979b56478",
+              "name": "id1",
+              "value": "={{ $json.id1 }}",
+              "type": "string"
+            },
+            {
+              "id": "b2550e02-01f5-4fab-b82e-9e75e8dec402",
+              "name": "id2",
+              "value": "={{ $json.id2 }}",
+              "type": "string"
+            },
+            {
+              "id": "aee891f0-662b-41db-82c5-5fa6adef2507",
+              "name": "id3",
+              "value": "={{ $json.id3 }}",
+              "type": "string"
+            },
+            {
+              "id": "63dc8b61-3597-4159-bafa-fa8902c54850",
+              "name": "data[2].data.summary.action_items",
+              "value": "={{ $json.data[2].data.summary.action_items }}",
+              "type": "string"
+            },
+            {
+              "id": "0c5f2d6a-c691-4829-9c98-92a3f6d3eee5",
+              "name": "data[2].data.summary.shorthand_bullet",
+              "value": "={{ $json.data[2].data.summary.shorthand_bullet }}",
+              "type": "string"
+            },
+            {
+              "id": "f34a9e96-8420-4b6e-85ba-e181635c9335",
+              "name": "data[2].data.summary.overview",
+              "value": "={{ $json.data[2].data.summary.overview }}",
+              "type": "string"
+            },
+            {
+              "id": "7cd133e9-554d-45a2-b08f-e9e49399f76d",
+              "name": "data[2].data.summary.bullet_gist",
+              "value": "={{ $json.data[2].data.summary.bullet_gist }}",
+              "type": "string"
+            },
+            {
+              "id": "c1ffc859-405b-4237-8db1-7ea3f6bb8375",
+              "name": "data[2].data.summary.gist",
+              "value": "={{ $json.data[2].data.summary.gist }}",
+              "type": "string"
+            },
+            {
+              "id": "8070c288-dd34-483a-9883-db4ec52428eb",
+              "name": "data[2].data.summary.short_summary",
+              "value": "={{ $json.data[2].data.summary.short_summary }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -448,
+        -80
+      ],
+      "id": "2a47a207-164c-46c4-84d4-d00e6a3da51b",
+      "name": "Set Nodes to pass"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a7518b23-e670-4c5b-b688-be09a1e6a1ec",
+              "name": "agent_id",
+              "value": "={{ $('Set Nodes to pass').item.json.agent_id }}",
+              "type": "string"
+            },
+            {
+              "id": "560d4da2-5842-4c16-a2cc-0696c57bbb2d",
+              "name": "org_firstname",
+              "value": "={{ $('When Executed by Another Workflow').item.json.org_firstname }}",
+              "type": "string"
+            },
+            {
+              "id": "aaab8506-e9e4-4044-acb3-8b390c4eeed1",
+              "name": "org_fullname",
+              "value": "={{ $('When Executed by Another Workflow').item.json.org_fullname }}",
+              "type": "string"
+            },
+            {
+              "id": "980b63fc-4a34-46da-805a-9ceee314b51e",
+              "name": "org_biz",
+              "value": "={{ $('When Executed by Another Workflow').item.json.org_biz }}",
+              "type": "string"
+            },
+            {
+              "id": "a5c4f63e-1f3c-49a4-b0b9-35c798bf45f7",
+              "name": "org_email",
+              "value": "={{ $('When Executed by Another Workflow').item.json.org_email }}",
+              "type": "string"
+            },
+            {
+              "id": "0a50b9cb-6440-485c-b9f7-375955be223e",
+              "name": "id1",
+              "value": "={{ $('Set Nodes to pass').item.json.id1 }}",
+              "type": "string"
+            },
+            {
+              "id": "29a58db0-cfa4-4290-990e-fbfdd5cb5f54",
+              "name": "id2",
+              "value": "={{ $('Set Nodes to pass').item.json.id2 }}",
+              "type": "string"
+            },
+            {
+              "id": "3f3c246e-a2dd-45e3-97cd-62e5858d9a37",
+              "name": "id3",
+              "value": "={{ $('Set Nodes to pass').item.json.id3 }}",
+              "type": "string"
+            },
+            {
+              "id": "76f8b3bd-5b92-4cc2-a9c5-e028781fbd4c",
+              "name": "data[2].data.summary.action_items",
+              "value": "={{ $('Set Nodes to pass').item.json.data[2].data.summary.action_items }}",
+              "type": "string"
+            },
+            {
+              "id": "b2c1a22f-1895-4335-85fb-4ffc38234d81",
+              "name": "data[2].data.summary.shorthand_bullet",
+              "value": "={{ $('Set Nodes to pass').item.json.data[2].data.summary.shorthand_bullet }}",
+              "type": "string"
+            },
+            {
+              "id": "79e27151-3df5-4f92-b8b9-bd151e15b3e7",
+              "name": "data[2].data.summary.overview",
+              "value": "={{ $('Set Nodes to pass').item.json.data[2].data.summary.overview }}",
+              "type": "string"
+            },
+            {
+              "id": "62c3e0b0-5785-4827-80f7-1acf0cc570d4",
+              "name": "data[2].data.summary.bullet_gist",
+              "value": "={{ $('Set Nodes to pass').item.json.data[2].data.summary.bullet_gist }}",
+              "type": "string"
+            },
+            {
+              "id": "334e619e-ec9a-42db-a6d9-8130883b56e1",
+              "name": "data[2].data.summary.gist",
+              "value": "={{ $('Set Nodes to pass').item.json.data[2].data.summary.gist }}",
+              "type": "string"
+            },
+            {
+              "id": "21348080-2e59-4306-847f-faeb1db94770",
+              "name": "data[2].data.summary.short_summary",
+              "value": "={{ $('Set Nodes to pass').item.json.data[2].data.summary.short_summary }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        224,
+        -80
+      ],
+      "id": "7d70ee9d-b34f-4635-9a82-48f463cab866",
+      "name": "Set Nodes to pass1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.elevenlabs.io/v1/convai/twilio/outbound-call",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "={\n  \"xi-api-key\": \"sk_fb475a342401f1e2495de38b2193518f54778f4427ce83de\",\n  \"Content-Type\": \"application/json\"\n}\n",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n\"agent_id\": \"{{ $json.agent_id }}\",\n  \"agent_phone_number_id\": \"phnum_01jvx1f76mfg6akt98vk9jqyqh\",\n  \"to_number\": \"+447966543220\",\n  \"conversation_initiation_client_data\": {\n    \"client_name\": \"Legal Engine Ltd\",\n    \"matter_ref\": \"M-2025-001\"\n  }\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -224,
+        -80
+      ],
+      "id": "0a03e167-53fc-4437-9aed-b67f25ab21c7",
+      "name": "Outbound Call - 07966543220"
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        -80
+      ],
+      "id": "3d04ebd1-e2e9-4dcd-ab80-2ef5fc4116c7",
+      "name": "Wait 10s",
+      "webhookId": "7bb5de37-6897-42b4-b01c-dd01c963fee9"
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Set Nodes to pass",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Nodes to pass": {
+      "main": [
+        [
+          {
+            "node": "Outbound Call - 07966543220",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Nodes to pass1": {
+      "main": [
+        [
+          {
+            "node": "Execute Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Outbound Call - 07966543220": {
+      "main": [
+        [
+          {
+            "node": "Wait 10s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 10s": {
+      "main": [
+        [
+          {
+            "node": "Set Nodes to pass1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": {
+    "node:Schedule Trigger": {
+      "recurrenceRules": []
+    }
+  },
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "agent_id": "agent_7701k4tbxgjvenxba82mvf3x4kj4",
+          "org_fullname": "Lee Curtis",
+          "org_firstname": "Lee",
+          "org_biz": "Legalengine",
+          "org_email": "lee@legalengine.co.uk",
+          "id1": "yHhVNMdMCxmbMVVZnP8H",
+          "id2": "YUwX5Hvm09dUC72RioRZ",
+          "id3": "8qRFJw59nbcd6fyc7ODD",
+          "data": [
+            null,
+            null,
+            {
+              "data": {
+                "summary": {
+                  "action_items": "\n**Andy Batty**\nComplete building Ghost Core Luke agent with prior meeting context integration (09:07)\nStrip back diary call flow and pass meeting organizer information to 11Labs agent for contextual greetings (10:32)\nShare S2-S5 parent/child workflows with Eduardo for N8N access (14:01)\nCoordinate with Lee on final demo requirements for Monday presentation (12:23)\nContinue ChatGPT voice API evaluation when time permits (18:33)\n\n**Eduardo Aguilar Pelaez**\nResearch and implement Single Sign-On solution using Microsoft credentials (15:37)\nFollow up on AirTable integration status with Heather (18:03)\nContinue monitoring OpenAI voice API developments for competitive analysis (19:51)\n\n**Unassigned**\nFinalize MVP requirements definition for Simmons demo (11:40)\nPlan agent migration to EU infrastructure (17:29)\n",
+                  "shorthand_bullet": "🔧 **Technical Progress & Workflow Development** (01:52 - 05:40)\nSuccessfully implemented Luke to outbound call Lee workflow with on-demand triggering.\nResolved Outlook calendar credential issue where calendar selection resets when changing email credentials, requiring manual reselection from dropdown.\nCompleted all sub-workflow integrations using multiple set nodes as variable reset mechanisms to pass data between parent and child workflows.\nDeveloped sequential workflow structure (S1, S2, S3) with bottom-up configuration where parent workflows know which child workflows to trigger.\nCreated knowledge base transmission system between multiple workflows using set nodes to capture and pass variables forward.\n🛠️ **Workflow Cloning & Architecture Challenges** (06:35 - 09:07)\nIdentified cloning limitations where parent workflows maintain connections to original child workflows, requiring child workflows to be cloned and renamed first.\nDiscovered hidden webhook connections in cloned 11Labs agents that weren't visible in the interface but continued calling Luke's webhooks.\nResolved issue by creating clean agent clone using Postman to extract exact JSON code and copying knowledge base configurations.\n🤖 **AI Agent Development & Context Integration** (09:07 - 11:20)\nStarted building Ghost Core Luke agent with prior meeting context using diary call functionality.\nImplemented calendar integration that filters external meeting invites and identifies most recent meetings for contextual greetings.\nPlanned enhancement to include meeting organizer information and external domain lookup for personalized agent interactions.\n📊 **Product Development Strategy** (11:20 - 12:23)\nClarified MVP requirements for Simmons demo with three tiers: MVP, MVP Plus, and higher levels requiring resource and time assessment.\nEmphasized need for reusable component development and prioritization based on biggest impact potential.\n🔒 **Technical Challenges & Access Issues** (13:24 - 16:20)\nSingle Sign-On (SSO) integration remains unsolved for using Microsoft credentials throughout entire workflow.\nN8N access permissions need resolution - Eduardo missing S2-S5 parent/child workflows despite having S1 and other Luke-related workflows.\nCurrent workaround involves hard-coding credentials or creating individual agents per person.\n🌍 **11Labs Implementation & Infrastructure** (16:36 - 17:45)\nAchieved rapid internal adoption with 5-minute agent deployment impressing internal teams.\nConfirmed EU domain compliance with delivery instance showing EU flag and domain structure.\nIdentified need for agent migration to EU infrastructure as discussed previously.\n🔗 **Integration Status & Future Considerations** (17:46 - 20:02)\nAirTable integration pending with no response from Heather yet.\nChatGPT Voice API evaluation shows usability challenges requiring more coding but provides business risk mitigation against 11Labs pricing changes.\nOpenAI voice model offers multi-agent handoff capabilities and competitive de-risking with 50% probability of widespread voice integration across major websites within six months.\nIdentified competitive threat where direct diary API integration could replicate current functionality.\n",
+                  "overview": "- Successfully implemented the outbound call workflow from Luke to Lee, enabling on-demand triggering for enhanced functionality.\n- Resolved the Outlook calendar credential issue, which previously required manual reselection due to credential changes.\n- Completed all sub-workflow integrations, establishing variable reset mechanisms to efficiently pass data between parent and child workflows.\n- Developed a sequential workflow structure with parent-child functionality for streamlined execution of multiple workflows.\n- Identified cloning limitations where parent workflows retain original connections, necessitating cloning and renaming of child workflows first.\n- Resolved hidden webhook connections in cloned 11Labs agents by extracting JSON via Postman to ensure clean migrations.\n- Initiated the development of the Ghost Core Luke agent, incorporating prior meeting context for enhanced personalization.\n- Clarified MVP requirements for Simmons demo, establishing tiered levels while emphasizing reusable component development for maximum impact.\n- Encountered ongoing challenges with Single Sign-On integration for Microsoft credentials and N8N access permissions for certain workflows.\n- Achieved rapid internal adoption of agent deployment in 5 minutes and confirmed EU compliance with delivery instances.",
+                  "bullet_gist": "📞 Outbound Call Workflow: Successfully implemented a new outbound call workflow to enhance functionality.\n🔑 Credential Issues Resolved: Fixed Outlook calendar credential problems, eliminating manual reselection.\n🔄 Sub-Workflow Integrations: Completed integrations with mechanisms for efficient data transfer.\n⚙️ Sequential Workflow Structure: Developed a new structure for streamlined execution of workflows.\n✅ Rapid Deployment: Achieved internal adoption of agent deployment in just 5 minutes.",
+                  "gist": "The meeting focused on workflow improvements, integration issues, and agent development for enhanced functionality and compliance.",
+                  "short_summary": "Significant progress was made in implementing an outbound call workflow from Luke to Lee, which allows for on-demand triggering to enhance functionality. The team resolved the Outlook calendar credential issue that required manual reselection, and completed all sub-workflow integrations, establishing efficient variable reset mechanisms for data transfer between workflows. A sequential workflow structure with parent-child functionality was developed for streamlined execution. Challenges with cloning limitations were identified, requiring the renaming of child workflows to retain connections. Hidden webhook connections in cloned 11Labs agents were resolved, and the development of the Ghost Core Luke agent was initiated for improved personalization. MVP requirements for the Simmons demo were clarified to emphasize reusable components, while ongoing challenges with Single Sign-On integration and access permissions were noted. Notably, the internal agent deployment achieved rapid adoption within 5 minutes and confirmed compliance with EU regulations."
+                }
+              }
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "triggerCount": 1,
+  "meta": null
+}

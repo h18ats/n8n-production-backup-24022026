@@ -1,0 +1,2281 @@
+{
+  "name": "BACKUP - 231125 - Fladgate consolodate user history - Andy",
+  "nodes": [
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "156090cc-9c17-4309-89eb-1171f9745d19",
+              "leftValue": "={{ $('Search existing records').item.json[\"Conversation History\"] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "exists",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "02c9fb25-20ed-4783-9f34-9dd4de44b315",
+              "leftValue": "={{ $json.output }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -2368,
+        80
+      ],
+      "id": "571a7162-9304-4833-b54f-2aaa3154576f",
+      "name": "If",
+      "alwaysOutputData": false,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        -2656,
+        304
+      ],
+      "id": "5bb603a6-0f29-4195-9629-a11164bdc3d0",
+      "name": "Google Vertex Chat Model2",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "base": {
+          "__rl": true,
+          "value": "https://airtable.com/appUvJyzSky12m4HA/tbl9NJsjg5hJRqpPx/viwImoxUDoxhhVvIx?blocks=hide",
+          "mode": "url"
+        },
+        "table": {
+          "__rl": true,
+          "value": "https://airtable.com/appUvJyzSky12m4HA/tbl9NJsjg5hJRqpPx/viwImoxUDoxhhVvIx?blocks=hide",
+          "mode": "url"
+        },
+        "id": "={{ $json.id }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -4064,
+        80
+      ],
+      "id": "886d39ab-3ee3-4562-8db4-85cef3b71c2c",
+      "name": "Get new conversation",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appUvJyzSky12m4HA",
+          "mode": "list",
+          "cachedResultName": "Fladgate - Leonard Live Data",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl9NJsjg5hJRqpPx",
+          "mode": "list",
+          "cachedResultName": "fladgate_conversation_log",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA/tbl9NJsjg5hJRqpPx"
+        },
+        "filterByFormula": "={Email}='{{ $json.Email }}'",
+        "returnAll": false,
+        "limit": 1,
+        "options": {
+          "fields": [
+            "Call Transcript",
+            "Email",
+            "Full Name",
+            "First Name",
+            "Last Name",
+            "Date Last Updated",
+            "Call Length (s)",
+            "Conversation ID",
+            "Conversation#"
+          ]
+        },
+        "sort": {
+          "property": [
+            {
+              "field": "Date Last Updated"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -3616,
+        80
+      ],
+      "id": "43a339c6-112b-41a7-b9fa-3d5f14c6d0bf",
+      "name": "Search for new conv",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      },
+      "disabled": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appUvJyzSky12m4HA",
+          "mode": "list",
+          "cachedResultName": "Fladgate - Leonard Live Data",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl3ADT2yOV8EJCnZ",
+          "mode": "list",
+          "cachedResultName": "FG - Conversation History by lawyer",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA/tbl3ADT2yOV8EJCnZ"
+        },
+        "filterByFormula": "={Email}='{{ $json.Email }}'",
+        "returnAll": false,
+        "limit": 1,
+        "options": {},
+        "sort": {
+          "property": [
+            {
+              "field": "Email"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -3392,
+        80
+      ],
+      "id": "1c5e1c5f-7ab7-4143-9e3d-957347335a92",
+      "name": "Search existing records",
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      },
+      "disabled": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=New Conversation Transcript: {{ $('Get new conversation').item.json['Call Transcript'] }}",
+        "options": {
+          "systemMessage": "You are an expert in conversation summaries and creating a version that will act as the knowledge base for a future conversation with an AI voice agent. When producing the output, just provide the summary, no introduction, in long prose and containing all pertinent details. Make sure to log all facts. This summary will be written to a knowledge base and further consolodated so make it a more verbose version."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -2720,
+        80
+      ],
+      "id": "a595cc96-de1d-4cd6-970e-d28f28f9e6e3",
+      "name": "Create new single conv summary",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appUvJyzSky12m4HA",
+          "mode": "list",
+          "cachedResultName": "Fladgate - Leonard Live Data",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl3ADT2yOV8EJCnZ",
+          "mode": "list",
+          "cachedResultName": "FG - Conversation History by lawyer",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA/tbl3ADT2yOV8EJCnZ"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Email": "={{ $('Search for new conv').item.json.Email }}",
+            "Transcript ID": "={{ $('Search for new conv').item.json.id }}",
+            "First Name": "={{ $('Search for new conv').item.json[\"First Name\"] }}",
+            "Last Name": "={{ $('Search for new conv').item.json[\"Last Name\"] }}",
+            "Number of Calls": 1,
+            "Call Length": "={{ $('Search for new conv').item.json[\"Call Length (s)\"] }}",
+            "Conversation History": "=",
+            "Previous Submissions": ".",
+            "Previous Clients": ".",
+            "Previous Matters": ".",
+            "Clients from prior conversations": ".",
+            "Matters from prior conversations": ".",
+            "Prior Conversation History": "{{ $json.output }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Transcript ID",
+              "displayName": "Transcript ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Created",
+              "displayName": "Created",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Last Modified",
+              "displayName": "Last Modified",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Call Length",
+              "displayName": "Call Length",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Number of Calls",
+              "displayName": "Number of Calls",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Conversation History",
+              "displayName": "Conversation History",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Clients",
+              "displayName": "Clients",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Matters",
+              "displayName": "Matters",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Matters from prior conversations",
+              "displayName": "Matters from prior conversations",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Prior Conversation History",
+              "displayName": "Prior Conversation History",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Clients from prior conversations",
+              "displayName": "Clients from prior conversations",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Previous Matters",
+              "displayName": "Previous Matters",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Previous Clients",
+              "displayName": "Previous Clients",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Previous Submissions",
+              "displayName": "Previous Submissions",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -2144,
+        176
+      ],
+      "id": "bd1dd5dd-d9ba-4e22-978f-0fd3bafa97de",
+      "name": "Create new conv summary",
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        -1856,
+        208
+      ],
+      "id": "7136386c-db5c-46a6-9255-e03dd55d2d7e",
+      "name": "Google Vertex Chat Model3",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Latest Call Summary: {{ $('Create new single conv summary').item.json.output }}\nPrior call Summaries: {{ $('Search existing records').item.json[\"Conversation History\"] }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You are an expert in taking a series of conversations summaries and consolidating them into a single output which is a consolidated version ready to act as a knowledge base for a voice AI agent. \n\nYou should make sure to use as much detail as possible from each conversation. You should prioritising information from the Latest Call Summary ({{ $('Create new single conv summary').item.json.output }}) and consider this to be needed verbatom, whilst looking for links and relevance from the prior call Summaries ({{ $('Search existing records').item.json['Conversation History'] }}) \n\nThe aim is to ensure the knowledge base has a bias for more up to date information. When producing the single output, just provide the detailed summary, no introduction, in long prose and containing all pertinent details. Make sure to include as much detail as possible, linking relevant points to provide a robust history of the conversation. \n\nKeep the total output to a digestible size for a leading LLM to avoid excess latency. The content will be machine only readable so make it the most effective and accurate source of information charecter for character. "
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -1920,
+        -16
+      ],
+      "id": "5aa1d887-04d4-4cb6-9ca8-926e1bb72c52",
+      "name": "Conv history agent",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "735de4f1-f56b-44ff-a5ab-66e8fee102dc",
+              "leftValue": "={{ $('On New FG Conversation').item.json.fields[\"Call Length (s)\"] }}",
+              "rightValue": 45,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -3840,
+        80
+      ],
+      "id": "5bd5ae2c-21f4-4e3f-9786-031ded021b0a",
+      "name": "45s length",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2b0483ab-79c3-42f3-9fe0-e96e8e0e1a3f",
+              "name": "fields[\"First Name\"]",
+              "value": "={{ $('Edit Fields1').item.json.fields[\"First Name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "68e5fd4d-e927-41b8-b991-877a30a82c2e",
+              "name": "fields[\"Last Name\"]",
+              "value": "={{ $('Edit Fields1').item.json.fields[\"Last Name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "0614cd2c-de73-457d-9cee-f93d703c02d1",
+              "name": "fields.Email",
+              "value": "={{ $('Edit Fields1').item.json.fields.Email }}",
+              "type": "string"
+            },
+            {
+              "id": "27596fd5-ca72-48da-9eca-02d5edd96208",
+              "name": "fields[\"Call Summary\"]",
+              "value": "={{ $('Edit Fields1').item.json.fields.Summary }}",
+              "type": "string"
+            },
+            {
+              "id": "3972631b-f76f-4d53-aa2b-25bbd75a5a2f",
+              "name": "fields[\"Call Transcript\"]",
+              "value": "={{ $('Edit Fields1').item.json.fields[\"Call Transcript\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "847cc40e-5639-407c-a59b-3a6c31ff8732",
+              "name": "Email",
+              "value": "={{ $('Edit Fields1').item.json.Email }}",
+              "type": "string"
+            },
+            {
+              "id": "eb36d309-5ea8-4da6-9b8e-6a650b4fbf3b",
+              "name": "First Name",
+              "value": "={{ $('Edit Fields1').item.json[\"First Name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "2ca82292-39b1-43cc-97ca-4b3cee6340bc",
+              "name": "Last Name",
+              "value": "={{ $('Edit Fields1').item.json[\"Last Name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "da829b54-69a1-47cc-8560-2b31bc533783",
+              "name": "Call Transcript",
+              "value": "={{ $('Edit Fields1').item.json[\"Call Transcript\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "49e1756f-f074-4c5f-baee-f4ebf553123c",
+              "name": "Total Duration of calls (m)",
+              "value": "={{ $('Code in JavaScript1').item.json[\"Total Duration of calls (m)\"] }}",
+              "type": "number"
+            },
+            {
+              "id": "7d267bce-2fd3-4301-8315-d01f88b043b9",
+              "name": "Number of Calls",
+              "value": "={{ $('Code in JavaScript1').item.json[\"Number of Calls\"] }}",
+              "type": "number"
+            },
+            {
+              "id": "467e2ed0-9407-4454-9c7c-e9ec61d7f80e",
+              "name": "Last Call Length (m)",
+              "value": "={{ $('Code in JavaScript1').item.json[\"Last Call Length (m)\"] }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -2144,
+        -16
+      ],
+      "id": "34825026-d1c5-4938-9b2f-0db2061d7995",
+      "name": "Edit Fields",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f6a9374e-c2c2-48fc-9c23-5c15367ddaa2",
+              "name": "fields[\"First Name\"]",
+              "value": "={{ $('Get new conversation').item.json[\"First Name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "8613186a-e478-4d48-b7f6-c824b481ab0b",
+              "name": "fields[\"Last Name\"]",
+              "value": "={{ $('Get new conversation').item.json[\"Last Name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "9fd3ae64-b126-4683-9528-a7844cecc464",
+              "name": "fields.Email",
+              "value": "={{ $('Get new conversation').item.json.Email }}",
+              "type": "string"
+            },
+            {
+              "id": "6be5813a-dc58-447a-b9ff-e19c28ae1798",
+              "name": "fields[\"Call Transcript\"]",
+              "value": "={{ $('Get new conversation').item.json[\"Call Transcript\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "fac072bc-3a1b-4c03-80e4-d068b36ec5c2",
+              "name": "Email",
+              "value": "={{ $('Search for new conv').item.json.Email }}",
+              "type": "string"
+            },
+            {
+              "id": "abeb6ada-a847-4ccb-b987-37e4ae4877ea",
+              "name": "First Name",
+              "value": "={{ $('Search for new conv').item.json[\"First Name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "7b3e5846-8258-41ed-97c3-bd46740e71a2",
+              "name": "Last Name",
+              "value": "={{ $('Search for new conv').item.json[\"Last Name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "d7b394a3-d0b2-4913-b4a3-9e1cc63c05a3",
+              "name": "Call Transcript",
+              "value": "={{ $('Search for new conv').item.json[\"Call Transcript\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "b415463c-6efd-4641-81d4-a6b1c73b75eb",
+              "name": "fields[\"Summary\"]",
+              "value": "={{ $('Get new conversation').item.json[\"Call Summary\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "3c1a35e5-3edd-41c7-b5c7-1c98abf6d67d",
+              "name": "Total Duration of calls (m)",
+              "value": "={{ $json[\"Call Length\"] }}",
+              "type": "number"
+            },
+            {
+              "id": "3c47496e-e55d-469c-91a4-9976aeba4d75",
+              "name": "Number of Calls",
+              "value": "={{ $json[\"Number of Calls\"] }}",
+              "type": "number"
+            },
+            {
+              "id": "fbb1c077-7bae-4d60-8893-10e6ed5d6a1e",
+              "name": "Last Call Length (m)",
+              "value": "={{ $('Get new conversation').item.json[\"Call Length (m)\"] }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3168,
+        80
+      ],
+      "id": "210a4535-1ba6-4b3e-9c7c-c62d961753a7",
+      "name": "Edit Fields1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "airtableTokenApi",
+        "baseId": {
+          "__rl": true,
+          "value": "https://airtable.com/appUvJyzSky12m4HA/tbl9NJsjg5hJRqpPx/viwImoxUDoxhhVvIx?blocks=hide",
+          "mode": "url"
+        },
+        "tableId": {
+          "__rl": true,
+          "value": "https://airtable.com/appUvJyzSky12m4HA/tbl9NJsjg5hJRqpPx/viwImoxUDoxhhVvIx?blocks=hide",
+          "mode": "url"
+        },
+        "triggerField": "Created time",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.airtableTrigger",
+      "typeVersion": 1,
+      "position": [
+        -4288,
+        80
+      ],
+      "id": "a982c0e7-e5ce-429a-885a-c52f273c2f76",
+      "name": "On New FG Conversation",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        -1232,
+        -96
+      ],
+      "id": "8a5e9ae1-930a-43e8-94c9-15e2f165e6e6",
+      "name": "Google Vertex Chat Model",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Converation history: {{ $('Conv history agent').item.json.output }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You are an expert in extracting client names from a series of converations ({{ $('Conv history agent').item.json.output }}) ready to act as a knowledge base for a voice AI agent. \n\nThe aim is to ensure the knowledge base has a comprehensive list of all clients, firms and companies this lawyer has worked for or represented.\n\nThe output should be a very concise list of clients separated by commas in a single short text stream, ranked in a weighted order of relevance with the most relevant first."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -1200,
+        -320
+      ],
+      "id": "519d0bbc-86f0-48b5-b9d9-2b0359896fbd",
+      "name": "Client Extraction",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        -528,
+        -128
+      ],
+      "id": "c28648b1-8322-4a88-855e-d77a9f98ae4a",
+      "name": "Google Vertex Chat Model1",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "value": "appUvJyzSky12m4HA",
+          "mode": "list",
+          "cachedResultName": "Fladgate - Leonard Live Data",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl3ADT2yOV8EJCnZ",
+          "mode": "list",
+          "cachedResultName": "FG - Conversation History by lawyer",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA/tbl3ADT2yOV8EJCnZ"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Email": "={{ $('Edit Fields').item.json.fields.Email }}",
+            "Matters from prior conversations": "={{ $json.output }}"
+          },
+          "matchingColumns": [
+            "Email"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Transcript ID",
+              "displayName": "Transcript ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Created",
+              "displayName": "Created",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Last Modified",
+              "displayName": "Last Modified",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Call Length",
+              "displayName": "Call Length",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Number of Calls",
+              "displayName": "Number of Calls",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Conversation History",
+              "displayName": "Conversation History",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Clients",
+              "displayName": "Clients",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Matters",
+              "displayName": "Matters",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Matters from prior conversations",
+              "displayName": "Matters from prior conversations",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Prior Conversation History",
+              "displayName": "Prior Conversation History",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Clients from prior conversations",
+              "displayName": "Clients from prior conversations",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Previous Matters",
+              "displayName": "Previous Matters",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Previous Clients",
+              "displayName": "Previous Clients",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Previous Submissions",
+              "displayName": "Previous Submissions",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -160,
+        -320
+      ],
+      "id": "bb8bf09c-3e5b-488d-b913-baf57e65b829",
+      "name": "Create new conv summary3",
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Converation history: {{ $('Conv history agent').item.json.output }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You are an expert in extracting short and concise matter summaries from a lawyer's converation history ({{ $('Conv history agent').item.json.output }}) ready to act as a knowledge base for a voice AI agent. \n\nThe aim is to ensure the knowledge base has a comprehensive list of all matters this lawyer has worked on.\n\nThe output should be a very concise list of matters separated by commas in a single short text stream, ranked in a weighted order of relevance with the most relevant first."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -512,
+        -320
+      ],
+      "id": "34d47e95-5daf-4e39-b183-fdf6eceea28c",
+      "name": "Matter Extraction",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "May use an output parser",
+        "height": 720,
+        "width": 336
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1280,
+        -576
+      ],
+      "typeVersion": 1,
+      "id": "e9a4c695-33a1-4af2-ab95-fc03b2df1805",
+      "name": "Sticky Note",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Converation history: {{ $('Conv history agent').item.json.output }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You are an expert in extracting client names from a series of converations ({{ $('Conv history agent').item.json.output }}) ready to act as a knowledge base for a voice AI agent. \n\nThe aim is to ensure the knowledge base has a comprehensive list of all clients, firms and companies this lawyer has worked for or represented.\n\nThe output should be a very concise list of clients ranked in a weighted order of relevance with the most relevant first."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -1344,
+        192
+      ],
+      "id": "862a1534-f1c5-4b98-92ef-9ad8422ddbe8",
+      "name": "Client Extraction1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        -1344,
+        416
+      ],
+      "id": "a4bee381-cd08-44e7-a09a-514de36490e6",
+      "name": "Google Vertex Chat Model4",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {
+          "numberOfItems": -1,
+          "separator": "\\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserItemList",
+      "typeVersion": 1,
+      "position": [
+        -1216,
+        416
+      ],
+      "id": "2fedd091-82f2-4e2a-908c-7d93b5f70858",
+      "name": "Item List Output Parser",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Logs\nconsole.log(\"Incoming JSON:\", $json);\n\n// Read inputs safely\nconst currentCalls = $json[\"Number of Calls\"] ?? 0;\nconst lastCall = $json[\"Last Call Length (m)\"] ?? 0;\nconst previousTotal = $json[\"Total Duration of calls (m)\"] ?? 0;\n\n// Increment call count\nconst nextCalls = currentCalls + 1;\n\n// Update running total\nconst newTotal = previousTotal + lastCall;\n\n// Debug logs\nconsole.log(\"Next Calls:\", nextCalls);\nconsole.log(\"Last Call Length:\", lastCall);\nconsole.log(\"New Total Duration:\", newTotal);\n\n// Return only the three variables\nreturn [\n  {\n    json: {\n      \"Number of Calls\": nextCalls,\n      \"Last Call Length (m)\": lastCall,\n      \"Total Duration of calls (m)\": newTotal\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2944,
+        80
+      ],
+      "id": "b4742a1d-82b4-4e33-b59a-14cef2a8aa77",
+      "name": "Code in JavaScript1",
+      "disabled": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "content": "Added Call counter and duration counter",
+        "height": 304,
+        "width": 336
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -3072,
+        -64
+      ],
+      "typeVersion": 1,
+      "id": "15f99049-90da-4cf9-b5d8-4a2486571126",
+      "name": "Sticky Note2",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "value": "appUvJyzSky12m4HA",
+          "mode": "list",
+          "cachedResultName": "Fladgate - Leonard Live Data",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl3ADT2yOV8EJCnZ",
+          "mode": "list",
+          "cachedResultName": "FG - Conversation History by lawyer",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA/tbl3ADT2yOV8EJCnZ"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Email": "={{ $('Edit Fields').item.json.fields.Email }}",
+            "Clients from prior conversations": "={{ $json.output }}"
+          },
+          "matchingColumns": [
+            "Email"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Transcript ID",
+              "displayName": "Transcript ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Created",
+              "displayName": "Created",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Last Modified",
+              "displayName": "Last Modified",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Call Length",
+              "displayName": "Call Length",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Number of Calls",
+              "displayName": "Number of Calls",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Number of Matters Uploaded",
+              "displayName": "Number of Matters Uploaded",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Conversation History",
+              "displayName": "Conversation History",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Clients",
+              "displayName": "Clients",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Matters",
+              "displayName": "Matters",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Matters from prior conversations",
+              "displayName": "Matters from prior conversations",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Prior Conversation History",
+              "displayName": "Prior Conversation History",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Clients from prior conversations",
+              "displayName": "Clients from prior conversations",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Previous Matters",
+              "displayName": "Previous Matters",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Previous Clients",
+              "displayName": "Previous Clients",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Previous Submissions",
+              "displayName": "Previous Submissions",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -736,
+        -320
+      ],
+      "id": "964138b4-93ff-4d92-882a-0438014a2e8d",
+      "name": "Add Clients",
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "value": "appUvJyzSky12m4HA",
+          "mode": "list",
+          "cachedResultName": "Fladgate - Leonard Live Data",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl3ADT2yOV8EJCnZ",
+          "mode": "list",
+          "cachedResultName": "FG - Conversation History by lawyer",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA/tbl3ADT2yOV8EJCnZ"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Email": "={{ $('Search for new conv').item.json.Email }}",
+            "Call Length": "={{ $('Edit Fields').item.json[\"Total Duration of calls (m)\"] }}",
+            "Number of Calls": "={{ $('Edit Fields').item.json[\"Number of Calls\"] }}",
+            "Prior Conversation History": "={{ $json.output }}"
+          },
+          "matchingColumns": [
+            "Email"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Transcript ID",
+              "displayName": "Transcript ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Created",
+              "displayName": "Created",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Last Modified",
+              "displayName": "Last Modified",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Call Length",
+              "displayName": "Call Length",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Number of Calls",
+              "displayName": "Number of Calls",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Number of Matters Uploaded",
+              "displayName": "Number of Matters Uploaded",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Conversation History",
+              "displayName": "Conversation History",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Clients",
+              "displayName": "Clients",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Matters",
+              "displayName": "Matters",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Matters from prior conversations",
+              "displayName": "Matters from prior conversations",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Prior Conversation History",
+              "displayName": "Prior Conversation History",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Clients from prior conversations",
+              "displayName": "Clients from prior conversations",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Previous Matters",
+              "displayName": "Previous Matters",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Previous Clients",
+              "displayName": "Previous Clients",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Previous Submissions",
+              "displayName": "Previous Submissions",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -1568,
+        -224
+      ],
+      "id": "45ad845b-fe90-4288-9f75-7dc788b19b64",
+      "name": "Create new summary for new conv",
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      },
+      "disabled": true
+    }
+  ],
+  "connections": {
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create new conv summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Create new single conv summary",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get new conversation": {
+      "main": [
+        [
+          {
+            "node": "45s length",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search for new conv": {
+      "main": [
+        [
+          {
+            "node": "Search existing records",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search existing records": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create new single conv summary": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Conv history agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Conv history agent": {
+      "main": [
+        [
+          {
+            "node": "Client Extraction1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Create new summary for new conv",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "45s length": {
+      "main": [
+        [
+          {
+            "node": "Search for new conv",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Conv history agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On New FG Conversation": {
+      "main": [
+        [
+          {
+            "node": "Get new conversation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Client Extraction",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Client Extraction": {
+      "main": [
+        [
+          {
+            "node": "Add Clients",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Matter Extraction",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Matter Extraction": {
+      "main": [
+        [
+          {
+            "node": "Create new conv summary3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Client Extraction1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Item List Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Client Extraction1",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Create new single conv summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Clients": {
+      "main": [
+        [
+          {
+            "node": "Matter Extraction",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create new summary for new conv": {
+      "main": [
+        [
+          {
+            "node": "Client Extraction",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "any",
+    "executionTimeout": 300,
+    "availableInMCP": false,
+    "errorWorkflow": "nSr5syzpgcboR5Da"
+  },
+  "staticData": {
+    "node:On New FG Conversation": {
+      "lastTimeChecked": "2025-11-23T00:44:57Z"
+    }
+  },
+  "pinData": {
+    "On New FG Conversation": [
+      {
+        "json": {
+          "id": "recwev9YXHF6ISbe7",
+          "createdTime": "2025-11-23T00:02:05.000Z",
+          "fields": {
+            "Full Name": "Andy Batty",
+            "Last Name": "Batty",
+            "First Name": "Andy",
+            "Email": "andy@legalengine.co.uk",
+            "Conversation Date": "2025-11-23T00:01:53.003518+00:00",
+            "Call Transcript": "# unknown\n\n\n\n## Metadata\n| Key | Value |\n|---|---|\n| Type | unknown |\n| Status | unknown |\n| Event (epoch) |  |\n| Event (ISO) |  |\n| Conversation ID | unknown |\n| Agent ID |  |\n| Agent turns | 0 |\n| User turns | 0 |\n| Last reported call secs | 0 |\n\n## Jurisdictions (detected)\n- Not clearly stated\n\n## Amounts (detected)\n- None detected\n\n## Participants (possible)\n- Not extracted\n\n## Transcript (turn-by-turn table)\n| # | Speaker | Message |\n|---:|---|---|\n| 1 | - | _No transcript entries found_ |\n\n## Transcript (expanded)\n_No transcript entries found_\n\n\n---\n\n## Raw (truncated)\n\n<details>\n<summary>Headers</summary>\n\n```json\n{}\n```\n</details>\n\n<details>\n<summary>Query</summary>\n\n```json\n{}\n```\n</details>\n\n<details>\n<summary>Params</summary>\n\n```json\n{}\n```\n</details>\n\n<details>\n<summary>Body</summary>\n\n```json\n{\n  \"id\": \"recwev9YXHF6ISbe7\",\n  \"createdTime\": \"2025-11-23T00:02:05.000Z\",\n  \"fields\": {\n    \"Full Name\": \"Andy Batty\",\n    \"Last Name\": \"Batty\",\n    \"First Name\": \"Andy\",\n    \"Email\": \"andy@legalengine.co.uk\",\n    \"Conversation Date\": \"2025-11-23T00:01:53.003518+00:00\",\n    \"Call Length (s)\": 230,\n    \"Agent ID\": \"agent_8501k9tnf6nhf4sbg1mw6z8q4ax5\",\n    \"Conversation ID\": \"conv_1601kaq01ppzedk8bgk04kpmm5hn\",\n    \"Call Summary\": \"The AI agent initiated a conversation with Andy to capture matter information, focusing on existing matters. After some confusion regarding the specific matter, Andy selected the \\\"Barclays Bank\\\" rebranding initiative. The agent confirmed details such as publishable status and client name. The conversation then shifted to updating the matter description and the department's role, specifically regarding intellectual property. The agent reiterated the work completed in the past twelve months, but the conversation was cut short.\\n\",\n    \"Call Status 11L\": \"done\",\n    \"Call Cost\": 2803,\n    \"LLM Charge\": 119,\n    \"Call Charge\": 2684,\n    \"Termination Reason\": \"Client disconnected: 1005\",\n    \"Call Successful 11L?\": \"success\",\n    \"Date Last Updated\": \"2025-11-23T00:02:05.000Z\",\n    \"SSO Source\": \"microsoft\",\n    \"Webhook Called\": \"https://leonard-dev.app.n8n.cloud/webhook/fladgate-transcript-prod\",\n    \"Call Summary Title\": \"Updating Barclays Rebranding Matter\",\n    \"D1 - Client Name\": \"D1_client_name\",\n    \"D2 - Formatted Output\": \"D2_formatted_output\",\n    \"D3 - Matter Value\": \"D3_matter_value\",\n    \"D4 - Cross Border\": \"D4_is_cross_border\",\n    \"D5 - Lead Lawyer Practice Group\": \"D5_lead_lawyer_practice_group\",\n    \"D6 - Other Team Members\": \"D6_other_team_members_list\",\n    \"D7 - Other Firms\": \"D7_other_firms\",\n    \"D8 - Completed\": \"D8_completed\",\n    \"D9 - Other Information\": \"D9_other_information\",\n    \"D2 - Why Important\": \"D2_why_important\",\n    \"D0 - Confidential\": \"D0_confidential\",\n    \"D5 - Lead Lawyer Office\": \"D5_lead_lawyer_office\",\n    \"D5 - Lead Lawyer Name\": \"D5_lead_lawyer_name\",\n    \"D4 - Jurisdictions\": \"D4_jurisdictions\",\n    \"D2 - Department Role\": \"D2_department_role\",\n    \"D9 - Press Coverage\": \"D9_press_coverage_links\",\n    \"D3 - Matter Value Currency\": \"D3_matter_value_currency\",\n    \"D2 - Work Done Last 12m\": \"D2_work_done_last_12_months\",\n    \"D8 - Start Date\": \"D8_start_date\",\n    \"D2 - Matter Description\": \"D2_matter_description\",\n    \"D0 - Confidential Rationale\": \"The agent asks \\\"To start, is this matter confidential or publishable? I have it as publishable, but please let me know if that's incorrect.\\\" and the user responds \\\"No, it's definitely publishable.\\\". Therefore, the matter is not confidential, so the value is FALSE.\",\n    \"D1 - Client Name Value\": \"Barclays Bank\",\n    \"D1 - Client Name Rationale\": \"The client name for the Barclays Bank matter is 'Barclays Bank', as confirmed by the user at 2025-11-23T00:00:32+00:00.\",\n    \"D2 - Formatted Output Value\": \"Work over the past 12 months included managing the rebrand process, conducting due diligence, ensuring Pantone awareness, identifying relevant URLs, and performing extensive research and consumer testing to prevent brand leakage, particularly concerning the notable shift from their historical blue color scheme to a new green.\",\n    \"D2 - Formatted Output Rationale\": \"The prompt asks for a summary of the work done in the past 12 months, context about the matter/client, and why it's important. The agent provides a summary of the work done in the past 12 months for Barclays Bank's rebranding initiative, which included managing the rebrand process, conducting due diligence, ensuring Pantone awareness, identifying relevant URLs, and performing extensive research and consumer testing to prevent brand leakage, particularly concerning the notable shift from their historical blue color scheme to a new green. This information is extracted from the tool result.\",\n    \"D2 - Matter Description Value\": \"The Barclays Bank rebranding initiative aimed to transition Barclays from their traditional lion logo to a more AI-friendly design, reflecting their aspiration to be a digital-first challenger bank. \",\n    \"D2 - Matter Description Rationale\": \"The matter being discussed is the Barclays Bank rebranding initiative. The importance of this matter lies in Barclays' aspiration to transition from their traditional lion logo to a more AI-friendly design, reflecting their ambition to be a digital-first challenger bank. This is extracted from the agent's description of the matter at 2025-11-22T23:59:55+00:00 and 2025-11-23T00:00:33+00:00.\",\n    \"D2 - Why Important Rationale\": \"I am unable to extract the importance of the matter for the client, the law firm, and the legal industry from the conversation. The conversation focuses on confirming details of the Barclays Bank rebranding initiative, but does not delve into the broader significance or impact of the work.\",\n    \"D2 - Department Role Value\": \"We were very much involved in the rebrands intellectual property\",\n    \"D2 - Department Role Rationale\": \"The user states \\\"We were very much involved in the rebrands intellectual property\\\". This describes the role of the department in the matter.\",\n    \"D2 - Work Done Last 12m Value\": \"managing the rebrand process, conducting due diligence, ensuring Pantone awareness, identifying relevant URLs, and performing extensive research and consumer testing to prevent brand leakage, particularly concerning the notable shift from their historical blue color scheme to a new green\",\n    \"D2 - Work Done Last 12m Rationale\": \"The agent states: \\\"Now, regarding the matter description, I have that the work over the past twelve months included managing the rebrand process, conducting due diligence, ensuring Pantone awareness, identifying relevant URLs, and performing extensive research and consumer testing to prevent brand leakage, particularly concerning the notable shift from their historical blue color scheme to a new green.\\\" This is a description of the work done on the matter in the past 12 months.\",\n    \"D3 - Matter Value Value\": \"£130,000\",\n    \"D3 - Matter Value Rationale\": \"The conversation mentions the value of the Barclays Bank rebranding initiative as '150,000 Euros (approximately \\\\u00a3130,000)'. Therefore, the matter value is \\\\u00a3130,000.\",\n    \"D3 - Matter Value Currency Value\": \"€\",\n    \"D3 - Matter Value Currency Rationale\": \"The conversation mentions the matter value for Barclays Bank as '150,000 Euros (approximately £130,000)'. Therefore, the currency of the matter value is both Euros and Pounds Sterling. Since the schema only allows for one currency, I will extract the first one mentioned, which is Euros.\",\n    \"D4 - Cross Border Rationale\": \"The 'Barclays Bank' matter is described as a 'domestic UK matter' in the tool result at 2025-11-22T23:59:54+00:00. Therefore, it is not a cross-border case.\",\n    \"D4 - Jurisdictions Value\": \"Domestic matter in the UK\",\n    \"D4 - Jurisdictions Rationale\": \"The 'Barclays Bank' matter is described as a 'domestic UK matter'. Therefore, the jurisdiction is the UK.\",\n    \"D5 - Lead Lawyer Name Rationale\": \"The lead lawyer for the Barclays Bank matter is mentioned in the tool result from the existing_matter tool call at 2025-11-22T23:59:54+00:00. It states: \\\"The lead lawyer for this matter is based in London and specializes in Intellectual Property (IP) within a practice group focusing on IP aspects related to shapes, colours, Pantones, taglines, and imagery.\\\". However, the name of the lead lawyer is not explicitly provided in the conversation. Therefore, I cannot extract the name of the lead lawyer.\",\n    \"D5 - Lead Lawyer Practice Group Value\": \"Intellectual Property\",\n    \"D5 - Lead Lawyer Practice Group Rationale\": \"The transcript mentions that the lead lawyer for the Barclays Bank matter specializes in Intellectual Property (IP) within a practice group focusing on IP aspects related to shapes, colours, Pantones, taglines, and imagery. Therefore, the practice group of the lead lawyer is Intellectual Property.\",\n    \"D5 - Lead Lawyer Office Rationale\": \"I cannot extract the office of the lead lawyer from the conversation. The conversation mentions the lead lawyer for the Barclays Bank matter is based in London and specializes in Intellectual Property (IP), but it does not specify the office location within London or the name of the office.\",\n    \"D6 - Other Team Members Value\": \"Lucy Batty (Camberley office, tax expertise), Lee Curtis (Data Protection, Durban), Boris Hernikoff (Employment Legal, Frankfurt), Barry White (Data Protection, Dubai), Lee Curtis (HR, Dublin), Charles Dickens (Data Protection, Netherlands), Sam Stamp (HR, Hamburg), Eduardo (Singapore office, Market Intelligence), Hetty Gleave (London, Matrimonial Finance), Patrick Buck (London), Sarah Johnson (Manchester, Finance), Isabel McGregor (London)\",\n    \"D6 - Other Team Members Rationale\": \"The conversation mentions 'Hetty Gleave, based in Fladgate's London office within the Matrimonial Finance practice group, is the lead lawyer, a detail that was confirmed as unchanged. The Fladgate team also includes Patrick Buck and Sarah Johnson (Manchester office, Finance), and Isabel McGregor, all based in London.' for the 'Wife' matter, and 'Lucy Batty (Camberley office, tax expertise), Lee Curtis (Data Protection, Durban, who replaced Simon Martin who was previously in Dublin for Transactional Due Diligence), Boris Hernikoff (Employment Legal, Frankfurt), and Barry White (Data Protection, Dubai).' for the 'Brewdog' matter, and 'Lee Curtis (HR, Dublin, a different role and location from his Data Protection specialization for Brewdog), Charles Dickens (Data Protection, Netherlands), and Sam Stamp (HR, Hamburg).' for the 'Just Eat Takeaway.com' matter, and 'Support was provided by Eduardo from the Singapore office, specializing in Market Intelligence.' for the 'Barclays Bank' matter. I have extracted the team members with their names, office and practice group.\",\n    \"D7 - Other Firms Rationale\": \"There is no mention of other firms involved in the conversation. Therefore, it is not possible to extract the requested data.\",\n    \"D8 - Completed Rationale\": \"The conversation discusses an existing matter for Barclays Bank. The tool result mentions that 'Specific start date, completion status, or press coverage details for this matter were not explicitly provided'. Therefore, it is not possible to determine if the matter has been completed or closed, so the value is null.\",\n    \"D8 - Start Date Value\": \"January 1, 2025\",\n    \"D8 - Start Date Value Rationale\": \"The tool result for 'existing_matter_e00fb1aa77ad4cf7b645432b2a35b388' contains the following information: 'One of the significant matters is a strictly confidential, cross-border divorce case for a \\\\\\\"Wife and hotelier client.\\\\\\\" This ongoing matter commenced on January 1, 2025, with the final hearing anticipated in September 2025.' Therefore, \n\n---\n*…truncated (1178 chars omitted)…*\n---\nd or update regarding the matter description, and the user responds 'No'. Therefore, there is no other information about the matter that is not covered in the other variables.\",\n    \"Date Modified by\": {\n      \"id\": \"usr5IyyKTeTSJZ7db\",\n      \"email\": \"leonard@legalengine.co.uk\",\n      \"name\": \"Leonard\"\n    },\n    \"Created by\": {\n      \"id\": \"usr5IyyKTeTSJZ7db\",\n      \"email\": \"leonard@legalengine.co.uk\",\n      \"name\": \"Leonard\"\n    },\n    \"Created time\": \"2025-11-23T00:02:05.000Z\",\n    \"Call Length (m)\": 3.8333333333333335,\n    \"MD - Is Confidential\": {\n      \"state\": \"empty\",\n      \"value\": null,\n      \"isStale\": true\n    },\n    \"MD - Matter Value\": 0,\n    \"Last Modified\": \"2025-11-23T00:02:05.000Z\",\n    \"conversation_id\": \"conv_1601kaq01ppzedk8bgk04kpmm5hn\",\n    \"Conversation#\": 0\n  }\n}\n```\n</details>\n",
+            "Call Length (s)": 230,
+            "Agent ID": "agent_8501k9tnf6nhf4sbg1mw6z8q4ax5",
+            "Conversation ID": "conv_1601kaq01ppzedk8bgk04kpmm5hn",
+            "Call Summary": "The AI agent initiated a conversation with Andy to capture matter information, focusing on existing matters. After some confusion regarding the specific matter, Andy selected the \"Barclays Bank\" rebranding initiative. The agent confirmed details such as publishable status and client name. The conversation then shifted to updating the matter description and the department's role, specifically regarding intellectual property. The agent reiterated the work completed in the past twelve months, but the conversation was cut short.\n",
+            "Call Status 11L": "done",
+            "Call Cost": 2803,
+            "LLM Charge": 119,
+            "Call Charge": 2684,
+            "Termination Reason": "Client disconnected: 1005",
+            "Call Successful 11L?": "success",
+            "Date Last Updated": "2025-11-23T00:02:09.000Z",
+            "SSO Source": "microsoft",
+            "Webhook Called": "https://leonard-dev.app.n8n.cloud/webhook/fladgate-transcript-prod",
+            "Call Summary Title": "Updating Barclays Rebranding Matter",
+            "D1 - Client Name": "D1_client_name",
+            "D2 - Formatted Output": "D2_formatted_output",
+            "D3 - Matter Value": "D3_matter_value",
+            "D4 - Cross Border": "D4_is_cross_border",
+            "D5 - Lead Lawyer Practice Group": "D5_lead_lawyer_practice_group",
+            "D6 - Other Team Members": "D6_other_team_members_list",
+            "D7 - Other Firms": "D7_other_firms",
+            "D8 - Completed": "D8_completed",
+            "D9 - Other Information": "D9_other_information",
+            "D2 - Why Important": "D2_why_important",
+            "D0 - Confidential": "D0_confidential",
+            "D5 - Lead Lawyer Office": "D5_lead_lawyer_office",
+            "D5 - Lead Lawyer Name": "D5_lead_lawyer_name",
+            "D4 - Jurisdictions": "D4_jurisdictions",
+            "D2 - Department Role": "D2_department_role",
+            "D9 - Press Coverage": "D9_press_coverage_links",
+            "D3 - Matter Value Currency": "D3_matter_value_currency",
+            "D2 - Work Done Last 12m": "D2_work_done_last_12_months",
+            "D8 - Start Date": "D8_start_date",
+            "D2 - Matter Description": "D2_matter_description",
+            "D0 - Confidential Rationale": "The agent asks \"To start, is this matter confidential or publishable? I have it as publishable, but please let me know if that's incorrect.\" and the user responds \"No, it's definitely publishable.\". Therefore, the matter is not confidential, so the value is FALSE.",
+            "D1 - Client Name Value": "Barclays Bank",
+            "D1 - Client Name Rationale": "The client name for the Barclays Bank matter is 'Barclays Bank', as confirmed by the user at 2025-11-23T00:00:32+00:00.",
+            "D2 - Formatted Output Value": "Work over the past 12 months included managing the rebrand process, conducting due diligence, ensuring Pantone awareness, identifying relevant URLs, and performing extensive research and consumer testing to prevent brand leakage, particularly concerning the notable shift from their historical blue color scheme to a new green.",
+            "D2 - Formatted Output Rationale": "The prompt asks for a summary of the work done in the past 12 months, context about the matter/client, and why it's important. The agent provides a summary of the work done in the past 12 months for Barclays Bank's rebranding initiative, which included managing the rebrand process, conducting due diligence, ensuring Pantone awareness, identifying relevant URLs, and performing extensive research and consumer testing to prevent brand leakage, particularly concerning the notable shift from their historical blue color scheme to a new green. This information is extracted from the tool result.",
+            "D2 - Matter Description Value": "The Barclays Bank rebranding initiative aimed to transition Barclays from their traditional lion logo to a more AI-friendly design, reflecting their aspiration to be a digital-first challenger bank. ",
+            "D2 - Matter Description Rationale": "The matter being discussed is the Barclays Bank rebranding initiative. The importance of this matter lies in Barclays' aspiration to transition from their traditional lion logo to a more AI-friendly design, reflecting their ambition to be a digital-first challenger bank. This is extracted from the agent's description of the matter at 2025-11-22T23:59:55+00:00 and 2025-11-23T00:00:33+00:00.",
+            "D2 - Why Important Rationale": "I am unable to extract the importance of the matter for the client, the law firm, and the legal industry from the conversation. The conversation focuses on confirming details of the Barclays Bank rebranding initiative, but does not delve into the broader significance or impact of the work.",
+            "D2 - Department Role Value": "We were very much involved in the rebrands intellectual property",
+            "D2 - Department Role Rationale": "The user states \"We were very much involved in the rebrands intellectual property\". This describes the role of the department in the matter.",
+            "D2 - Work Done Last 12m Value": "managing the rebrand process, conducting due diligence, ensuring Pantone awareness, identifying relevant URLs, and performing extensive research and consumer testing to prevent brand leakage, particularly concerning the notable shift from their historical blue color scheme to a new green",
+            "D2 - Work Done Last 12m Rationale": "The agent states: \"Now, regarding the matter description, I have that the work over the past twelve months included managing the rebrand process, conducting due diligence, ensuring Pantone awareness, identifying relevant URLs, and performing extensive research and consumer testing to prevent brand leakage, particularly concerning the notable shift from their historical blue color scheme to a new green.\" This is a description of the work done on the matter in the past 12 months.",
+            "D3 - Matter Value Value": "£130,000",
+            "D3 - Matter Value Rationale": "The conversation mentions the value of the Barclays Bank rebranding initiative as '150,000 Euros (approximately \\u00a3130,000)'. Therefore, the matter value is \\u00a3130,000.",
+            "D3 - Matter Value Currency Value": "€",
+            "D3 - Matter Value Currency Rationale": "The conversation mentions the matter value for Barclays Bank as '150,000 Euros (approximately £130,000)'. Therefore, the currency of the matter value is both Euros and Pounds Sterling. Since the schema only allows for one currency, I will extract the first one mentioned, which is Euros.",
+            "D4 - Cross Border Rationale": "The 'Barclays Bank' matter is described as a 'domestic UK matter' in the tool result at 2025-11-22T23:59:54+00:00. Therefore, it is not a cross-border case.",
+            "D4 - Jurisdictions Value": "Domestic matter in the UK",
+            "D4 - Jurisdictions Rationale": "The 'Barclays Bank' matter is described as a 'domestic UK matter'. Therefore, the jurisdiction is the UK.",
+            "D5 - Lead Lawyer Name Rationale": "The lead lawyer for the Barclays Bank matter is mentioned in the tool result from the existing_matter tool call at 2025-11-22T23:59:54+00:00. It states: \"The lead lawyer for this matter is based in London and specializes in Intellectual Property (IP) within a practice group focusing on IP aspects related to shapes, colours, Pantones, taglines, and imagery.\". However, the name of the lead lawyer is not explicitly provided in the conversation. Therefore, I cannot extract the name of the lead lawyer.",
+            "D5 - Lead Lawyer Practice Group Value": "Intellectual Property",
+            "D5 - Lead Lawyer Practice Group Rationale": "The transcript mentions that the lead lawyer for the Barclays Bank matter specializes in Intellectual Property (IP) within a practice group focusing on IP aspects related to shapes, colours, Pantones, taglines, and imagery. Therefore, the practice group of the lead lawyer is Intellectual Property.",
+            "D5 - Lead Lawyer Office Rationale": "I cannot extract the office of the lead lawyer from the conversation. The conversation mentions the lead lawyer for the Barclays Bank matter is based in London and specializes in Intellectual Property (IP), but it does not specify the office location within London or the name of the office.",
+            "D6 - Other Team Members Value": "Lucy Batty (Camberley office, tax expertise), Lee Curtis (Data Protection, Durban), Boris Hernikoff (Employment Legal, Frankfurt), Barry White (Data Protection, Dubai), Lee Curtis (HR, Dublin), Charles Dickens (Data Protection, Netherlands), Sam Stamp (HR, Hamburg), Eduardo (Singapore office, Market Intelligence), Hetty Gleave (London, Matrimonial Finance), Patrick Buck (London), Sarah Johnson (Manchester, Finance), Isabel McGregor (London)",
+            "D6 - Other Team Members Rationale": "The conversation mentions 'Hetty Gleave, based in Fladgate's London office within the Matrimonial Finance practice group, is the lead lawyer, a detail that was confirmed as unchanged. The Fladgate team also includes Patrick Buck and Sarah Johnson (Manchester office, Finance), and Isabel McGregor, all based in London.' for the 'Wife' matter, and 'Lucy Batty (Camberley office, tax expertise), Lee Curtis (Data Protection, Durban, who replaced Simon Martin who was previously in Dublin for Transactional Due Diligence), Boris Hernikoff (Employment Legal, Frankfurt), and Barry White (Data Protection, Dubai).' for the 'Brewdog' matter, and 'Lee Curtis (HR, Dublin, a different role and location from his Data Protection specialization for Brewdog), Charles Dickens (Data Protection, Netherlands), and Sam Stamp (HR, Hamburg).' for the 'Just Eat Takeaway.com' matter, and 'Support was provided by Eduardo from the Singapore office, specializing in Market Intelligence.' for the 'Barclays Bank' matter. I have extracted the team members with their names, office and practice group.",
+            "D7 - Other Firms Rationale": "There is no mention of other firms involved in the conversation. Therefore, it is not possible to extract the requested data.",
+            "D8 - Completed Rationale": "The conversation discusses an existing matter for Barclays Bank. The tool result mentions that 'Specific start date, completion status, or press coverage details for this matter were not explicitly provided'. Therefore, it is not possible to determine if the matter has been completed or closed, so the value is null.",
+            "D8 - Start Date Value": "January 1, 2025",
+            "D8 - Start Date Value Rationale": "The tool result for 'existing_matter_e00fb1aa77ad4cf7b645432b2a35b388' contains the following information: 'One of the significant matters is a strictly confidential, cross-border divorce case for a \\\"Wife and hotelier client.\\\" This ongoing matter commenced on January 1, 2025, with the final hearing anticipated in September 2025.' Therefore, the start date of the matter is January 1, 2025.",
+            "D9 - Press Coverage Rationale": "The user did not provide any URLs or items of press coverage in the conversation. Therefore, the value is null.",
+            "D9 - Other Information Rationale": "The user and agent are discussing the Barclays Bank rebranding initiative. The agent asks if there is any additional information to add or update regarding the matter description, and the user responds 'No'. Therefore, there is no other information about the matter that is not covered in the other variables.",
+            "Date Modified by": {
+              "id": "usr5IyyKTeTSJZ7db",
+              "email": "leonard@legalengine.co.uk",
+              "name": "Leonard"
+            },
+            "Created by": {
+              "id": "usr5IyyKTeTSJZ7db",
+              "email": "leonard@legalengine.co.uk",
+              "name": "Leonard"
+            },
+            "Created time": "2025-11-23T00:02:05.000Z",
+            "Call Length (m)": 3.8333333333333335,
+            "MD - Is Confidential": {
+              "state": "empty",
+              "value": null,
+              "isStale": true
+            },
+            "MD - Matter Value": 0,
+            "Last Modified": "2025-11-23T00:02:09.000Z",
+            "conversation_id": "conv_1601kaq01ppzedk8bgk04kpmm5hn",
+            "Conversation#": 0
+          }
+        }
+      }
+    ],
+    "Search existing records": [
+      {
+        "json": {
+          "id": "rechXSS3y8M2hsgjK",
+          "createdTime": "2025-11-09T13:28:13.000Z",
+          "Email": "andy@legalengine.co.uk",
+          "Transcript ID": "conv_3391k80bvx8oikllkmdw394praz",
+          "First Name": "Andy",
+          "Last Name": "Batty",
+          "Full Name": "Andy Batty",
+          "Created": "2025-11-09T13:28:13.000Z",
+          "Last Modified": "2025-11-22T20:40:30.000Z",
+          "Conversation History": {
+            "state": "generated",
+            "value": "Andy Batty (andy@legalengine.co.uk) is a lead lawyer engaged in his department's AI agent development. He operates from two primary locations, splitting his time between the Hamburg office for Brewdog-related matters and the London office for Just Eat matters. On November 22, 2025, at 12:20:09 UTC, Andy interacted with an AI agent for 223 seconds, incurring a cost of 2796 units, to update matter details, authenticating via Microsoft SSO before the call concluded due to a client disconnection after he selected the \"Brewdog HR/employment advice\" case. A day prior, on November 21, 2025, Andy experienced technical issues with an AI agent and was presented with a list of generic matters before disconnecting without selection.\n\nOne of the significant matters is a strictly confidential, cross-border divorce case for a \"Wife and hotelier client.\" This ongoing matter commenced on January 1, 2025, with the final hearing anticipated in September 2025. The core of the matter involves complex financial proceedings where the husband underwent gender transition, raising a novel point of law regarding whether marital assets could fund his transition to female property, which is cited as a precedent-setting element. The department has acted comprehensively for the wife, addressing multi-jurisdictional assets, contested interim maintenance, legal expenses, asset disclosure, and freezing orders. The financial value of this matter was recently confirmed and updated to £4 million sterling, having previously been stated within a range of £3-4 million. The case spans multiple jurisdictions, including the UK, Italy, USA, Switzerland, Germany, Argentina, and Morocco, where a hotel business is located. Hetty Gleave, based in Fladgate's London office within the Matrimonial Finance practice group, is the lead lawyer, a detail that was confirmed as unchanged. The Fladgate team also includes Patrick Buck and Isabel McGregor, both based in London. Other firms involved are Keystone Law, acting as adverse counsel, and B and M Law, providing Italian legal advice. Additionally, barristers from 29 Bedford Row were involved, though the name of a King's Counsel (KC) was not provided due to confidentiality. Work over the last 12 months has brought the matter closer to its conclusion, with the final hearing approaching. This work included managing divorce and financial proceedings, responding to the husband's non-compliance with maintenance orders, attempts to drain finances, non-disclosure, enforcement proceedings, freezing order applications/defense, and navigating challenges from the Moroccan earthquake. Due to its confidential nature, there is no press coverage for this matter. The most recent interaction regarding this matter occurred on 2025-11-22T18:14:06.000Z, lasting 508 seconds and costing 6103 units (172 LLM, 5931 call).\n\nAndy also leads the \"Brewdog HR/employment advice\" matter, which is not confidential, is publishable, and remains ongoing since its commencement in January 2020. This domestic UK matter for client Brewdog recently saw its financial value increase from £700,000 to £1 million Sterling. Andy Batty leads this case from the Hamburg office, operating within the Microscopic Law Technology practice group. Over the past 12 months, work has primarily focused on tax efficiency and improving Brewdog's profitability within a private equity deal, specifically by closing real estate locations and concentrating on high-visibility iconic sites like Waterloo. Previously reported work included protecting Brewdog's business, providing ongoing leadership support, conducting in-depth analysis for business optimization, and navigating the UK media landscape in the context of a private equity investment. The team includes Lucy Batty (Camberley office, tax expertise), Lee Curtis (Data Protection, Durban, who replaced Simon Martin who was previously in Dublin for Transactional Due Diligence), Boris Hernikoff (Employment Legal, Frankfurt), and Barry White (Data Protection, Dubai). No other law firms are involved. Press coverage has been noted in BBC Online, the Financial Times, and the Daily Mail.\n\nFurthermore, Andy leads the \"Just Eat Takeaway.com acquisition by iFood\" matter, which began on February 1, 2020, for client Just Eat Takeaway.com. This ongoing, publishable, and non-confidential cross-border M&A transaction has seen its value increase from £2.75 million to £3 million Sterling. Considered precedent-setting, it involves a Brazilian company acquiring a European business, reflecting a global trend of transition from European-focused startups to larger conglomerates. Andy is based in London for this matter. His work in the last 12 months involved active collaboration with iFood to integrate their technology platforms into a single corporate technology stack, including extensive consultation on the legal implications of operating such a unified stack across South America and Europe, specifically addressing European jurisdictional perceptions of a \"one-size-fits-all\" technological approach. A particular focus was placed on generative AI application, leveraging Andy's involvement in AI agent development. Earlier work facilitated the transition from Just Eat, understanding acquired assets, and planning future collaboration. The transaction required compliance with FCA rules and engagement with the European Commission, and involved banks such as Avian Amro, Royal Bank of Brazil, and Royal Bank of Ireland. Ultimately, Just Eat Takeaway sold its stake in iFood to Prosus due to activist stakeholder pressure. The diverse jurisdictions involved include the UK, Italy, Poland, Portugal, Germany, Austria, the Czech Republic, the Netherlands, Brazil, and the newly added Rwanda, with Greece no longer included. His supporting team for this matter includes Lee Curtis (HR, Dublin, a different role and location from his Data Protection specialization for Brewdog), Charles Dickens (Data Protection, Netherlands), and Sam Stamp (HR, Hamburg). No other law firms were involved. Press coverage for this matter includes www.nbc.com, the Financial Times, BBC Online, and The Grocer, with the Financial Times and BBC Online being common outlets shared with the Brewdog matter.\n\nFinally, Andy is also associated with a publishable, domestic UK matter for Barclays Bank concerning a comprehensive rebranding initiative. Valued at 150,000 Euros (approximately £130,000), this initiative aimed to transition Barclays from their traditional lion logo to a more AI-friendly design, reflecting their aspiration to be a digital-first challenger bank. Work over the past 12 months included managing the rebrand process, conducting due diligence, ensuring Pantone awareness, identifying relevant URLs, and performing extensive research and consumer testing to prevent brand leakage, particularly concerning the notable shift from their historical blue color scheme to a new green. The lead lawyer for this matter is based in London and specializes in Intellectual Property (IP) within a practice group focusing on IP aspects related to shapes, colours, Pantones, taglines, and imagery. Support was provided by Eduardo from the Singapore office, specializing in Market Intelligence. No other law firms were involved. Specific start date, completion status, or press coverage details for this matter were not explicitly provided.",
+            "isStale": true
+          },
+          "Call Length": 163.20000000000002,
+          "Number of Calls": 28,
+          "Clients": {
+            "state": "generated",
+            "value": "REGEX_REPLACE(CONCATENATE(IF(AND({Brown Square Limited}!=\".\",{Brown Square Limited}!=BLANK()),{Brown Square Limited}&\", \",\"\"),IF(AND({Fladgateand Brewdog}!=\".\",{Fladgateand Brewdog}!=BLANK()),{Fladgateand Brewdog}&\", \",\"\"),IF(AND({Just Eat Takeaway.com}!=\".\",{Just Eat Takeaway.com}!=BLANK()),{Just Eat Takeaway.com}&\", \",\"\"),IF(AND({Barclays Bank}!=\".\",{Barclays Bank}!=BLANK()),{Barclays Bank}&\", \",\"\"),IF(AND({Legalengine}!=\".\",{Legalengine}!=BLANK()),{Legalengine}&\", \",\"\"),IF(AND({Microscopic Law Technology}!=\".\",{Microscopic Law Technology}!=BLANK()),{Microscopic Law Technology}&\", \",\"\")),\", $\",\"\")",
+            "isStale": false
+          },
+          "Matters": {
+            "state": "generated",
+            "value": "Brown Square: Advised on a landmark £35m/year City HQ lease with ESG commitments and cross-border elements, Brewdog: Provided HR and employment law advice, Just Eat Takeaway.com: Advised on acquisition by iFood, Barclays Bank: Advised on a rebranding initiative, Wife: Represented in divorce proceedings against a hotelier (Chambers submission)",
+            "isStale": false
+          },
+          "Previous Matters": "Advised Brown Square on landmark £35m/year City HQ lease (ESG, cross-border)",
+          "Previous Clients": "Brown Square Limited, Fladgate",
+          "Previous Submissions": "**Matter Details**\n\n*   **Reference:** PAM007\n*   **Publishable Matter:** 10 – Alan Karsberg\n*   **Client:** Brown Square Limited\n*   **Lead Lawyer:** Alan Karsberg\n\n**Matter Summary and Department Role**\nFladgate advised Brown Square Limited on the relocation of their European corporate headquarters. Fladgate was instructed due to a long-term relationship and the client’s need for expansion after outgrowing their previous space. An agreement for lease was signed in April [2025?] for new offices in the City of London, with anticipated occupation in 2028. The deal involves an annual rent of £35 million on a fifteen-year lease, with an option to extend. This transaction is noteworthy because the building will meet the highest environmental and ESG standards, and it represented the most significant occupier transaction in London last year, marking a landmark move for the client.\n\n**Matter Value**\nAnnual rent of £35 million on a 15-year lease.\n\n**Cross-Border Information**\n*   **Is Cross-Border:** Yes\n*   **Jurisdictions Involved:**\n    *   UK (main jurisdiction)\n    *   Cayman Islands (client’s parent company guarantee)\n    *   Gibraltar (counterparty)\n\n**Team Members**\n*   Alan Karsberg (Lead Lawyer)\n*   Fiona Smith (Property)\n*   Joe Kelly (Construction)\n*   James Ashwin (Construction)\n*   Kirsty Corcombe (Rights of Light)\n*   Neal Todd (Tax)\n\n**Other Firms and Roles**\n*   Clifford Chance (advised developer and landlord)\n\n**Status and Key Dates**\n*   **Status:** ONGOING\n*   **Agreement for Lease Exchanged:** April [2025?]\n*   **Completion Anticipated:** 2028\n\n**Additional Information**\nExtensive coverage in React News and other property publications.",
+          "Clients from prior conversations": "Brewdog, Just Eat Takeaway.com, Barclays Bank, Legalengine, Microscopic Law Technology",
+          "Matters from prior conversations": "Brewdog HR/employment advice, Just Eat Takeaway.com acquisition by iFood, Barclays Bank rebranding initiative, Wife and hotelier divorce (Chambers submission)",
+          "Prior Conversation History": "A new, strictly confidential, cross-border legal matter has been detailed by Andy Batty (andy@legalengine.co.uk) for a Chambers submission. This matter involves a wife and hotelier client whose divorce and financial proceedings became uniquely complex when her husband underwent gender transition, requiring judicial intervention to determine if marital assets could fund his transition to female property, establishing a novel point of law. The department acted comprehensively for the wife, managing multi-jurisdictional assets, addressing contested interim maintenance and legal expenses, handling asset disclosure, and dealing with freezing orders, in addition to the gender transition funding issue. Over the past 12 months, work included managing these divorce and financial proceedings and responding to the husband's non-compliance with maintenance orders, attempts to drain finances, and non-disclosure, necessitating enforcement proceedings, freezing order applications/defense, and navigating challenges from the Moroccan earthquake. The case involves multiple jurisdictions: UK, Italy, USA, Switzerland, Germany, Argentina, and Morocco, where a hotel business is located. The financial value is estimated at £4 million sterling, derived from a stated range of £3-4 million. Hetty Gleave, based in Fladgate's London office within the Matrimonial Finance practice group, is the lead lawyer. Fladgate team members include Patrick Buck (Associate, London) and Isabel McGregor (Trainee, London). Keystone Law acted as adverse counsel, with Alexis Campbell Casey, Simon Kalheim, Laura Heaton, and Michelle Minato from 29 Bedford Row also involved. B and M Law provided Italian legal advice. The matter commenced on January 1, 2025, is ongoing, and has no associated press coverage.\n\nAndy Batty, email andy@legalengine.co.uk, is a lead lawyer involved in his department's AI agent development. He splits his time between the Hamburg office for Brewdog matters and London for Just Eat matters. On November 22, 2025, at 12:20:09 UTC, he interacted with an AI agent in a 223-second call (costing 2796 units) initiated by the agent to update matter details, authenticating via Microsoft SSO before concluding due to client disconnection. During this call, he selected the \"Brewdog HR/employment advice\" case for update. A prior brief call on November 21, 2025, saw Andy encounter technical issues with an AI agent, then presented with a list of generic matters (acquisition of a renewable energy company, a commercial litigation case, and a real estate transaction) before disconnecting without selection.\n\nThe \"Brewdog HR/employment advice\" matter, confirmed as not confidential and publishable, is for client Brewdog. It commenced in January 2020 and remains ongoing, operating under domestic UK jurisdiction. Andy Batty leads this case from the Hamburg office within the Microscopic Law Technology practice group. Its financial value recently increased from £700,000 to £1 million Sterling. Work over the past 12 months focused on tax efficiency and solving for profitability within a private equity deal, specifically improving Brewdog's profitability by closing real estate locations and concentrating on key iconic sites like Waterloo, which has high public visibility. Previously reported work included protecting Brewdog's business, providing ongoing leadership support, conducting in-depth analysis for business optimization, and navigating the UK media landscape within the private equity investment case. Lucy Batty from the Camberley office provides tax expertise. Supporting Andy are Lee Curtis (Data Protection, Durban, who replaced Simon Martin, previously in Dublin for Transactional Due Diligence), Boris Hernikoff (Employment Legal, Frankfurt), and Barry White (Data Protection, Dubai). No other law firms are involved. While no specific press coverage URLs were provided in the latest call, prior records indicate coverage in BBC Online, the Financial Times, and the Daily Mail.\n\nAndy also leads the \"Just Eat Takeaway.com acquisition by iFood\" matter, which started on February 1st, 2020, with Just Eat Takeaway.com as the client. This ongoing, cross-border M&A transaction is publishable and not confidential. Its value recently increased from £2.75 million to £3 million Sterling. It is considered a precedent-setting transaction involving a Brazilian company acquiring a European business, reflecting a global trend of transition from European-focused startups to larger conglomerates. For this matter, Andy is based in London. His work over the past 12 months involved active collaboration with iFood to integrate their technology platforms into a single corporate technology stack, including extensive consultation on the legal implications of operating such a unified stack across South America and Europe, specifically addressing European jurisdictional perceptions of a \"one-size-fits-all\" technological approach. A particular focus was placed on generative AI application, relevant to Andy's AI agent development involvement. Earlier work facilitated the transition from Just Eat, understanding acquired assets, and planning future collaboration. The transaction required compliance with FCA rules and engagement with the European Commission, and involved banks such as Avian Amro, Royal Bank of Brazil, and Royal Bank of Ireland. Ultimately, Just Eat Takeaway sold its stake in iFood to Prosus due to activist stakeholder pressure. The diverse jurisdictions involved include the UK, Italy, Poland, Portugal, Germany, Austria, the Czech Republic, the Netherlands, Brazil, and the newly added Rwanda, with Greece no longer included. His supporting team for this matter includes Lee Curtis (HR, Dublin, a different role and location from his Data Protection specialization for Brewdog), Charles Dickens (Data Protection, Netherlands), and Sam Stamp (HR, Hamburg). No other law firms were involved. Press coverage for this matter includes www.nbc.com, the Financial Times, BBC Online, and The Grocer, with the Financial Times and BBC Online being common outlets for both Brewdog and Just Eat.\n\nAdditionally, Andy is associated with a publishable, domestic UK matter for Barclays Bank concerning a comprehensive rebranding initiative, valued at 150,000 Euros (approximately £130,000). This initiative aimed to transition Barclays from their traditional lion logo to a more AI-friendly design, reflecting their aspiration to be a digital-first challenger bank. Over the past 12 months, work included managing the rebrand process, conducting due diligence, ensuring Pantone awareness, identifying relevant URLs, and performing extensive research and consumer testing to prevent brand leakage, particularly concerning the notable shift from their historical blue color scheme to a new green. The lead lawyer for this matter, based in London, specialized in IP (Intellectual Property) within a practice group focusing on IP aspects related to shapes, colours, Pantones, taglines, and imagery. Support was provided by Eduardo from the Singapore office, specializing in Market Intelligence. No other law firms were involved, and its start date, completion status, or press coverage details were not explicitly provided.",
+          "Number of Matters Uploaded": 0
+        }
+      }
+    ],
+    "Get new conversation": [
+      {
+        "json": {
+          "id": "recfWidfYrYojB5Op",
+          "createdTime": "2025-11-15T12:50:05.000Z",
+          "Full Name": "Andy Batty",
+          "Last Name": "Batty",
+          "First Name": "Andy",
+          "Email": "andy@legalengine.co.uk",
+          "Conversation Date": "2025-11-15T12:49:57.128947+00:00",
+          "Call Transcript": "# unknown\n\n\n\n## Metadata\n| Key | Value |\n|---|---|\n| Type | unknown |\n| Status | unknown |\n| Event (epoch) |  |\n| Event (ISO) |  |\n| Conversation ID | unknown |\n| Agent ID |  |\n| Agent turns | 0 |\n| User turns | 0 |\n| Last reported call secs | 0 |\n\n## Jurisdictions (detected)\n- Not clearly stated\n\n## Amounts (detected)\n- None detected\n\n## Participants (possible)\n- Not extracted\n\n## Transcript (turn-by-turn table)\n| # | Speaker | Message |\n|---:|---|---|\n| 1 | - | _No transcript entries found_ |\n\n## Transcript (expanded)\n_No transcript entries found_\n\n\n---\n\n## Raw (truncated)\n\n<details>\n<summary>Headers</summary>\n\n```json\n{}\n```\n</details>\n\n<details>\n<summary>Query</summary>\n\n```json\n{}\n```\n</details>\n\n<details>\n<summary>Params</summary>\n\n```json\n{}\n```\n</details>\n\n<details>\n<summary>Body</summary>\n\n```json\n{\n  \"id\": \"recfWidfYrYojB5Op\",\n  \"createdTime\": \"2025-11-15T12:50:05.000Z\",\n  \"fields\": {\n    \"Full Name\": \"Andy Batty\",\n    \"Last Name\": \"Batty\",\n    \"First Name\": \"Andy\",\n    \"Email\": \"andy@legalengine.co.uk\",\n    \"Conversation Date\": \"2025-11-15T12:49:57.128947+00:00\",\n    \"Call Length (s)\": 119,\n    \"Agent ID\": \"agent_8501k9tnf6nhf4sbg1mw6z8q4ax5\",\n    \"Conversation ID\": \"conv_5501ka3rxpbcecnrn26jeqxr7dnb\",\n    \"Call Summary\": \"Andy inquired about an existing matter for Mars Chocolate related to restructuring. The matter had reopened, and its value was updated to 500,000 euros. Andy highlighted the success of the restructuring in avoiding union litigation, particularly in France, which was added to the matter details. The call concluded after the update.\\n\",\n    \"Call Status 11L\": \"done\",\n    \"Call Cost\": 1444,\n    \"LLM Charge\": 46,\n    \"Call Charge\": 1398,\n    \"Termination Reason\": \"end_call tool was called.\",\n    \"Call Successful 11L?\": \"success\",\n    \"Date Last Updated\": \"2025-11-15T12:50:05.000Z\",\n    \"Webhook Called\": \"https://leonard-dev.app.n8n.cloud/webhook/fladgate-transcript\",\n    \"Call Summary Title\": \"Update Mars Restructuring Matter\",\n    \"D1 - Client Name\": \"D1_client_name\",\n    \"D2 - Formatted Output\": \"D2_formatted_output\",\n    \"D3 - Matter Value\": \"D3_matter_value\",\n    \"D4 - Cross Border\": \"D4_is_cross_border\",\n    \"D5 - Lead Lawyer Practice Group\": \"D5_lead_lawyer_practice_group\",\n    \"D6 - Other Team Members\": \"D6_other_team_members_list\",\n    \"D7 - Other Firms\": \"D7_other_firms\",\n    \"D8 - Completed\": \"D8_completed\",\n    \"D9 - Other Information\": \"D9_other_information\",\n    \"D2 - Why Important\": \"D2_why_important\",\n    \"D0 - Confidential\": \"D0_confidential\",\n    \"D5 - Lead Lawyer Office\": \"D5_lead_lawyer_office\",\n    \"D5 - Lead Lawyer Name\": \"D5_lead_lawyer_name\",\n    \"D4 - Jurisdictions\": \"D4_jurisdictions\",\n    \"D2 - Department Role\": \"D2_department_role\",\n    \"D9 - Press Coverage\": \"D9_press_coverage_links\",\n    \"D3 - Matter Value Currency\": \"D3_matter_value_currency\",\n    \"D2 - Work Done Last 12m\": \"D2_work_done_last_12_months\",\n    \"D8 - Start Date\": \"D8_start_date\",\n    \"D2 - Matter Description\": \"D2_matter_description\",\n    \"D0 - Confidential Rationale\": \"The conversation does not contain any explicit questions or statements regarding the confidentiality of the matter. Therefore, it is not possible to determine whether the matter is confidential or not based on the provided transcript.\",\n    \"D1 - Client Name Value\": \"Mars Chocolate\",\n    \"D1 - Client Name Rationale\": \"The client name is mentioned in the conversation between the user and the agent. The user states 'Yeah, it's Mars Chocolate and it was related to restructuring.'\",\n    \"D2 - Formatted Output Rationale\": \"The conversation does not contain a summary of work done in the past 12 months or context about a matter/client. Therefore, it is not possible to extract the requested information.\",\n    \"D2 - Matter Description Value\": \"The Mars Chocolate restructuring project was successful in terms of avoiding litigation from unions, particularly in France. This was important because it highlights a positive outcome of the restructuring process.\",\n    \"D2 - Matter Description Rationale\": \"The user and agent discussed the Mars Chocolate restructuring project. The user mentioned that the success of the restructuring in terms of avoiding litigation from unions, particularly in France, was a noteworthy piece. This is important because it highlights a positive outcome of the restructuring process.\",\n    \"D2 - Why Important Value\": \"The restructuring project for Mars Chocolates was successful in terms of not ending up with any litigation from unions, particularly in France.\",\n    \"D2 - Why Important Rationale\": \"The user mentions that the restructuring project for Mars Chocolates was successful in terms of not ending up with any litigation from unions, particularly in France. This is a noteworthy piece of information that highlights the importance of the matter for the client and the law firm.\",\n    \"D2 - Department Role Value\": \"within the M&A environment, specifically handling transactions involving reviewing warranty checks 18 years post-merger, a role also observed in connection with the Mars Wrigley acquisition\",\n    \"D2 - Department Role Rationale\": \"The tool result in the conversation provides the following information: \\\"Andy Batty (email: andy@legalengine.co.uk) has been involved in a diverse range of legal matters, with his departmental role, as per internal records, being within the M&A environment, specifically handling transactions involving reviewing warranty checks 18 years post-merger, a role also observed in connection with the Mars Wrigley acquisition.\\\". Therefore, the user's department's role is within the M&A environment, specifically handling transactions involving reviewing warranty checks 18 years post-merger, a role also observed in connection with the Mars Wrigley acquisition.\",\n    \"D2 - Work Done Last 12m Value\": \"\\\"Cumulus\\\\\\\" IP (Mars Chocolate), \\\\\\\"sausagefactory.com / Cumberland sausage brigade\\\\\\\", \\\\\\\"The Sandwich Shop dot com\\\\\\\" / MG Diligence on Island Expansion, Mars Chocolates restructuring, HMRC (Argos Limited), Mars Wrigley acquisition, Brewdog HR/employment advice, Royal Mail restructuring deal, Coca-Cola promotion campaign, Britvic fizzy drinks scandal, Brown Square Limited (cancelled).\",\n    \"D2 - Work Done Last 12m Rationale\": \"The tool result provides a summary of Andy Batty's work over the past 12 months. This includes details of the matters he has worked on, the clients he has worked for, and the outcomes of his work. This information is extracted from the tool result and used as the value for the 'Description of the work done on this matter in the past 12 months.' field.\",\n    \"D3 - Matter Value Value\": \"EUR 500,000\",\n    \"D3 - Matter Value Rationale\": \"The user mentions that the value of the Mars Chocolate restructuring project was rounded up to 500,000 euros. This can be extracted as a matter value.\",\n    \"D3 - Matter Value Currency Value\": \"£\",\n    \"D3 - Matter Value Currency Rationale\": \"The conversation mentions multiple currencies: Pound Sterling (£), USD, and Euros. I will extract Pound Sterling (£) as it is the most common currency observed across Andy's matters.\",\n    \"D4 - Cross Border Value\": true,\n    \"D4 - Cross Border Rationale\": \"The conversation discusses a restructuring project for Mars Chocolates involving Germany, the Netherlands, Poland, the United Kingdom, and France. Since the project involves multiple countries, it is a cross-border case. Therefore, the value should be TRUE.\",\n    \"D4 - Jurisdictions Value\": \"Cross-border matter involving Germany, the Netherlands, Poland, the UK, and France\",\n    \"D4 - Jurisdictions Rationale\": \"The conversation discusses a restructuring project for Mars Chocolates that involved internal HR teams across Germany, the Netherlands, Poland, the UK, and France. Therefore, the jurisdictions applicable to the matter are Germany, the Netherlands, Poland, the UK, and France.\",\n    \"D5 - Lead Lawyer Name Value\": \"Lee Curtis\",\n    \"D5 - Lead Lawyer Name Rationale\": \"The lead lawyer for the Mars Chocolate restructuring project was Lee Curtis, as stated in the tool result: \\\"Lee Curtis (lead lawyer, HR practice group, Paris) led this, supported by Pierre Belviad (HR, Berlin) and Jurgen Klinsmann (HR, Amsterdam)\\\".\",\n    \"D5 - Lead Lawyer Practice Group Value\": \"HR practice group\",\n    \"D5 - Lead Lawyer Practice Group Rationale\": \"The lead lawyer for the Mars Chocolate restructuring project was Lee Curtis, who is from the HR practice group, according to the tool result.\",\n    \"D5 - Lead Lawyer Office Rationale\": \"I am unable to extract the office of the lead lawyer from the conversation. The lead lawyers and their offices are mentioned in the tool results, but there is no single office that applies to all lead lawyers.\",\n    \"D6 - Other Team Members Value\": \"Lee Curtis (Paris, HR), Pierre Belviad (Berlin, HR), Jurgen Klinsmann (Amsterdam, HR)\",\n    \"D6 - Other Team Members Rationale\": \"The tool result for call ID existing_matter_ed644032 contains information about the Mars Chocolate restructuring project. It mentions that Lee Curtis (lead lawyer, HR practice group, Paris) led this, supported by Pierre Belviad (HR, Berlin) and Jurgen Klinsmann (HR, Amsterdam).\",\n    \"D7 - Other Firms Rationale\": \"Throughout the conversation, there is no mention of other firms involved in the matters discussed. The tool results also confirm that no other law firms were involved in the Mars Chocolate restructuring project or the Cumulus IP matter. Therefore, it is not possible to extract the requested data.\",\n    \"D8 - Completed Rationale\": \"The conversation discusses the 'Mars Chocolates restructuring project'. Initially, the agent states that the project 'concluded on July twelfth of this year'. However, the user then states 'Actually, the matter reopened'. This indicates that the matter is not completed or closed. Later, the tool result states that the 'Cumulus IP matter' was 'officially closed and was completed on November 11, 2025'. Since the question is about the Mars Chocolates restructuring project, and that matter is still ongoing, the answer is FALSE.\",\n    \"D8 - Start Date Value\": \"March 2024\",\n    \"D8 - Start Date Value Rationale\": \"The conversation discusses a restructuring project for Mars Chocolates. The agent mentions that the project commenced in March 2024. Therefore, the start date of the matter is March 2024.\",\n    \"D9 - Press Coverage Rationale\": \"The user did not provide any URLs for press coverage in the conversation. However, the tool result for 'existing_matter_7dfc0b19' mentions \\\"Extensive press coverage exists for this acquisition in publications such as Food Dive, Family Business Magazine, FoodBev Media, Courthouse News Service, PR Newswire, and SEC filings.\\\" for the Mars Wrigley acquisition. Since the user did not explicitly provide these URLs, I will return null.\",\n    \"D9 - Other Information Value\": \"the element of that it was successful in terms of not ending up with any litigation from unions, in particular in France. So maybe add that as the noteworthy piece.\",\n    \"D9 - Other Information Rationale\": \"The user mentioned that the restructuring was successful in terms of not ending up with any litigation from unions, in particular in France. This information is captured as additional information about the matter.\",\n    \"Date Modified by\": {\n      \"id\": \"usr5IyyKTeTSJZ7db\",\n      \"email\": \"leonard@legalengine.co.uk\",\n      \"name\": \"Leonard\"\n    },\n    \"Created by\": {\n      \"id\": \"usr5IyyKTeTSJZ7db\",\n      \"email\": \"leonard@legalengine.co.uk\",\n      \"name\": \"Leonard\"\n    },\n    \"Created time\": \"2025-11-15T12:50:05.000Z\",\n    \"Call Length (m)\": 1.9833333333333334,\n    \"MD - Is Confidential\": {\n      \"state\": \"empty\",\n      \"value\": null,\n      \"isStale\": true\n    },\n    \"MD - Matter Value\": 0,\n    \"Last Modified\": \"2025-11-15T12:50:05.000Z\",\n    \"conversation_id\": \"conv_5501ka3rxpbcecnrn26jeqxr7dnb\"\n  }\n}\n```\n</details>\n",
+          "Call Length (s)": 119,
+          "Agent ID": "agent_8501k9tnf6nhf4sbg1mw6z8q4ax5",
+          "Conversation ID": "conv_5501ka3rxpbcecnrn26jeqxr7dnb",
+          "Call Summary": "Andy inquired about an existing matter for Mars Chocolate related to restructuring. The matter had reopened, and its value was updated to 500,000 euros. Andy highlighted the success of the restructuring in avoiding union litigation, particularly in France, which was added to the matter details. The call concluded after the update.\n",
+          "Call Status 11L": "done",
+          "Call Cost": 1444,
+          "LLM Charge": 46,
+          "Call Charge": 1398,
+          "Termination Reason": "end_call tool was called.",
+          "Call Successful 11L?": "success",
+          "Date Last Updated": "2025-11-15T12:50:09.000Z",
+          "Webhook Called": "https://leonard-dev.app.n8n.cloud/webhook/fladgate-transcript",
+          "Call Summary Title": "Update Mars Restructuring Matter",
+          "D1 - Client Name": "D1_client_name",
+          "D2 - Formatted Output": "D2_formatted_output",
+          "D3 - Matter Value": "D3_matter_value",
+          "D4 - Cross Border": "D4_is_cross_border",
+          "D5 - Lead Lawyer Practice Group": "D5_lead_lawyer_practice_group",
+          "D6 - Other Team Members": "D6_other_team_members_list",
+          "D7 - Other Firms": "D7_other_firms",
+          "D8 - Completed": "D8_completed",
+          "D9 - Other Information": "D9_other_information",
+          "D2 - Why Important": "D2_why_important",
+          "D0 - Confidential": "D0_confidential",
+          "D5 - Lead Lawyer Office": "D5_lead_lawyer_office",
+          "D5 - Lead Lawyer Name": "D5_lead_lawyer_name",
+          "D4 - Jurisdictions": "D4_jurisdictions",
+          "D2 - Department Role": "D2_department_role",
+          "D9 - Press Coverage": "D9_press_coverage_links",
+          "D3 - Matter Value Currency": "D3_matter_value_currency",
+          "D2 - Work Done Last 12m": "D2_work_done_last_12_months",
+          "D8 - Start Date": "D8_start_date",
+          "D2 - Matter Description": "D2_matter_description",
+          "D0 - Confidential Rationale": "The conversation does not contain any explicit questions or statements regarding the confidentiality of the matter. Therefore, it is not possible to determine whether the matter is confidential or not based on the provided transcript.",
+          "D1 - Client Name Value": "Mars Chocolate",
+          "D1 - Client Name Rationale": "The client name is mentioned in the conversation between the user and the agent. The user states 'Yeah, it's Mars Chocolate and it was related to restructuring.'",
+          "D2 - Formatted Output Rationale": "The conversation does not contain a summary of work done in the past 12 months or context about a matter/client. Therefore, it is not possible to extract the requested information.",
+          "D2 - Matter Description Value": "The Mars Chocolate restructuring project was successful in terms of avoiding litigation from unions, particularly in France. This was important because it highlights a positive outcome of the restructuring process.",
+          "D2 - Matter Description Rationale": "The user and agent discussed the Mars Chocolate restructuring project. The user mentioned that the success of the restructuring in terms of avoiding litigation from unions, particularly in France, was a noteworthy piece. This is important because it highlights a positive outcome of the restructuring process.",
+          "D2 - Why Important Value": "The restructuring project for Mars Chocolates was successful in terms of not ending up with any litigation from unions, particularly in France.",
+          "D2 - Why Important Rationale": "The user mentions that the restructuring project for Mars Chocolates was successful in terms of not ending up with any litigation from unions, particularly in France. This is a noteworthy piece of information that highlights the importance of the matter for the client and the law firm.",
+          "D2 - Department Role Value": "within the M&A environment, specifically handling transactions involving reviewing warranty checks 18 years post-merger, a role also observed in connection with the Mars Wrigley acquisition",
+          "D2 - Department Role Rationale": "The tool result in the conversation provides the following information: \"Andy Batty (email: andy@legalengine.co.uk) has been involved in a diverse range of legal matters, with his departmental role, as per internal records, being within the M&A environment, specifically handling transactions involving reviewing warranty checks 18 years post-merger, a role also observed in connection with the Mars Wrigley acquisition.\". Therefore, the user's department's role is within the M&A environment, specifically handling transactions involving reviewing warranty checks 18 years post-merger, a role also observed in connection with the Mars Wrigley acquisition.",
+          "D2 - Work Done Last 12m Value": "\"Cumulus\\\" IP (Mars Chocolate), \\\"sausagefactory.com / Cumberland sausage brigade\\\", \\\"The Sandwich Shop dot com\\\" / MG Diligence on Island Expansion, Mars Chocolates restructuring, HMRC (Argos Limited), Mars Wrigley acquisition, Brewdog HR/employment advice, Royal Mail restructuring deal, Coca-Cola promotion campaign, Britvic fizzy drinks scandal, Brown Square Limited (cancelled).",
+          "D2 - Work Done Last 12m Rationale": "The tool result provides a summary of Andy Batty's work over the past 12 months. This includes details of the matters he has worked on, the clients he has worked for, and the outcomes of his work. This information is extracted from the tool result and used as the value for the 'Description of the work done on this matter in the past 12 months.' field.",
+          "D3 - Matter Value Value": "EUR 500,000",
+          "D3 - Matter Value Rationale": "The user mentions that the value of the Mars Chocolate restructuring project was rounded up to 500,000 euros. This can be extracted as a matter value.",
+          "D3 - Matter Value Currency Value": "£",
+          "D3 - Matter Value Currency Rationale": "The conversation mentions multiple currencies: Pound Sterling (£), USD, and Euros. I will extract Pound Sterling (£) as it is the most common currency observed across Andy's matters.",
+          "D4 - Cross Border Value": true,
+          "D4 - Cross Border Rationale": "The conversation discusses a restructuring project for Mars Chocolates involving Germany, the Netherlands, Poland, the United Kingdom, and France. Since the project involves multiple countries, it is a cross-border case. Therefore, the value should be TRUE.",
+          "D4 - Jurisdictions Value": "Cross-border matter involving Germany, the Netherlands, Poland, the UK, and France",
+          "D4 - Jurisdictions Rationale": "The conversation discusses a restructuring project for Mars Chocolates that involved internal HR teams across Germany, the Netherlands, Poland, the UK, and France. Therefore, the jurisdictions applicable to the matter are Germany, the Netherlands, Poland, the UK, and France.",
+          "D5 - Lead Lawyer Name Value": "Lee Curtis",
+          "D5 - Lead Lawyer Name Rationale": "The lead lawyer for the Mars Chocolate restructuring project was Lee Curtis, as stated in the tool result: \"Lee Curtis (lead lawyer, HR practice group, Paris) led this, supported by Pierre Belviad (HR, Berlin) and Jurgen Klinsmann (HR, Amsterdam)\".",
+          "D5 - Lead Lawyer Practice Group Value": "HR practice group",
+          "D5 - Lead Lawyer Practice Group Rationale": "The lead lawyer for the Mars Chocolate restructuring project was Lee Curtis, who is from the HR practice group, according to the tool result.",
+          "D5 - Lead Lawyer Office Rationale": "I am unable to extract the office of the lead lawyer from the conversation. The lead lawyers and their offices are mentioned in the tool results, but there is no single office that applies to all lead lawyers.",
+          "D6 - Other Team Members Value": "Lee Curtis (Paris, HR), Pierre Belviad (Berlin, HR), Jurgen Klinsmann (Amsterdam, HR)",
+          "D6 - Other Team Members Rationale": "The tool result for call ID existing_matter_ed644032 contains information about the Mars Chocolate restructuring project. It mentions that Lee Curtis (lead lawyer, HR practice group, Paris) led this, supported by Pierre Belviad (HR, Berlin) and Jurgen Klinsmann (HR, Amsterdam).",
+          "D7 - Other Firms Rationale": "Throughout the conversation, there is no mention of other firms involved in the matters discussed. The tool results also confirm that no other law firms were involved in the Mars Chocolate restructuring project or the Cumulus IP matter. Therefore, it is not possible to extract the requested data.",
+          "D8 - Completed Rationale": "The conversation discusses the 'Mars Chocolates restructuring project'. Initially, the agent states that the project 'concluded on July twelfth of this year'. However, the user then states 'Actually, the matter reopened'. This indicates that the matter is not completed or closed. Later, the tool result states that the 'Cumulus IP matter' was 'officially closed and was completed on November 11, 2025'. Since the question is about the Mars Chocolates restructuring project, and that matter is still ongoing, the answer is FALSE.",
+          "D8 - Start Date Value": "March 2024",
+          "D8 - Start Date Value Rationale": "The conversation discusses a restructuring project for Mars Chocolates. The agent mentions that the project commenced in March 2024. Therefore, the start date of the matter is March 2024.",
+          "D9 - Press Coverage Rationale": "The user did not provide any URLs for press coverage in the conversation. However, the tool result for 'existing_matter_7dfc0b19' mentions \"Extensive press coverage exists for this acquisition in publications such as Food Dive, Family Business Magazine, FoodBev Media, Courthouse News Service, PR Newswire, and SEC filings.\" for the Mars Wrigley acquisition. Since the user did not explicitly provide these URLs, I will return null.",
+          "D9 - Other Information Value": "the element of that it was successful in terms of not ending up with any litigation from unions, in particular in France. So maybe add that as the noteworthy piece.",
+          "D9 - Other Information Rationale": "The user mentioned that the restructuring was successful in terms of not ending up with any litigation from unions, in particular in France. This information is captured as additional information about the matter.",
+          "Date Modified by": {
+            "id": "usr5IyyKTeTSJZ7db",
+            "email": "leonard@legalengine.co.uk",
+            "name": "Leonard"
+          },
+          "Created by": {
+            "id": "usr5IyyKTeTSJZ7db",
+            "email": "leonard@legalengine.co.uk",
+            "name": "Leonard"
+          },
+          "Created time": "2025-11-15T12:50:05.000Z",
+          "Call Length (m)": 1.9833333333333334,
+          "MD - Is Confidential": {
+            "state": "empty",
+            "value": null,
+            "isStale": true
+          },
+          "MD - Matter Value": 0,
+          "Last Modified": "2025-11-15T12:50:09.000Z",
+          "conversation_id": "conv_5501ka3rxpbcecnrn26jeqxr7dnb"
+        }
+      }
+    ]
+  },
+  "triggerCount": 1,
+  "meta": null
+}

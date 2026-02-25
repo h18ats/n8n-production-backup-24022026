@@ -1,0 +1,1573 @@
+{
+  "name": "LIVE - Lee Oz Webinar Attendee Search - Owner Andy",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "ae0012a3-ced0-4e86-a971-664d09cd6c85",
+      "name": "When clicking Test workflow1",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1808,
+        1264
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "9532c603-8820-4677-94e1-a7954492b476",
+      "name": "Loop Over Emails",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -896,
+        1264
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputDate = new Date($input.first().json.currentDate); // replace with actual field name\n\nconst formattedDate = `${inputDate.getMonth() + 1}/${inputDate.getDate()}/${inputDate.getFullYear()}`;\n\nreturn [\n  {\n    json: {\n      formattedDate\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1440,
+        1264
+      ],
+      "id": "121e45ca-d162-4f4f-a0b2-35c5f81a24b0",
+      "name": "Date Format1"
+    },
+    {
+      "parameters": {
+        "jsCode": "let content = $json.choices[0].message.content;\n\n// Clean the Markdown formatting\ncontent = content.replace(/```json|```/g, '').trim();\n\nlet parsed;\n\n// Try parsing the content safely\ntry {\n  parsed = JSON.parse(content);\n} catch (error) {\n  parsed = { message: \"No info found\" };\n}\n\n// Check if all values in the expected structure are null, empty arrays, or empty strings\nconst hasUsefulData = Object.values(parsed).some(value => {\n  if (value === null || value === \"\" || (Array.isArray(value) && value.length === 0)) return false;\n  if (typeof value === \"object\" && !Array.isArray(value)) {\n    // Check nested objects (like `rankings`)\n    return Object.values(value).some(sub => {\n      if (typeof sub === \"object\") {\n        return Object.values(sub).some(v => v !== null && v !== \"\");\n      }\n      return sub !== null && sub !== \"\";\n    });\n  }\n  return true;\n});\n\nif (!hasUsefulData) {\n  parsed = { message: \"No info found\" };\n}\n\n// Return a single flat object instead of an array\nreturn parsed;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        144,
+        1312
+      ],
+      "id": "43b4efb7-f179-4500-98b1-73a7047dfb35",
+      "name": "PP Flattening2",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        -1600,
+        1264
+      ],
+      "id": "702c9859-0afd-4efd-8e0a-9569d93fafce",
+      "name": "Date & Time"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appclnlBFOaFM6ZTW",
+          "mode": "list",
+          "cachedResultName": "Legal Engine Internal",
+          "cachedResultUrl": "https://airtable.com/appclnlBFOaFM6ZTW"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblPNVxBXRgkMQ7hb",
+          "mode": "list",
+          "cachedResultName": "Imported table",
+          "cachedResultUrl": "https://airtable.com/appclnlBFOaFM6ZTW/tblPNVxBXRgkMQ7hb"
+        },
+        "options": {},
+        "sort": {
+          "property": [
+            {
+              "field": "Email"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -1200,
+        1264
+      ],
+      "id": "598d9d50-634a-41d1-8d80-9ff183480116",
+      "name": "Airtable Source",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "value": "https://airtable.com/appnbpO20uWlcjTf5/tbl0FYAZn2gLFuD4F/viwUXIUqswTOTz16b?blocks=hide",
+          "mode": "url"
+        },
+        "table": {
+          "__rl": true,
+          "value": "https://airtable.com/appnbpO20uWlcjTf5/tbl0FYAZn2gLFuD4F/viwUXIUqswTOTz16b?blocks=hide",
+          "mode": "url"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [
+            "Company Name"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Company Name",
+              "displayName": "Company Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Company Domain",
+              "displayName": "Company Domain",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Company Website PP",
+              "displayName": "Company Website PP",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "CMO",
+              "displayName": "CMO",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Head of Busniess Development",
+              "displayName": "Head of Busniess Development",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "COO",
+              "displayName": "COO",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        304,
+        1312
+      ],
+      "id": "6005ebd8-d078-4e78-8acc-a7dbea611f31",
+      "name": "Airtable Write",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "69676b6c-2bf4-4312-b916-4316c66421a8",
+              "leftValue": "={{ $json.error.message }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -336,
+        1008
+      ],
+      "id": "aad1a1a6-17a5-4a50-96c3-88a8db7b5f49",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "jsCode": "let content = $json.choices?.[0]?.message?.content ?? \"\";\n\n// Remove Markdown fences and trim\ncontent = content.replace(/```(?:json)?/g, \"\").trim();\n\nlet parsed;\ntry {\n  parsed = JSON.parse(content);\n} catch {\n  parsed = { message: \"No info found\" };\n}\n\n// Useful data check\nfunction hasUsefulData(obj) {\n  if (obj == null || obj === \"\" || (Array.isArray(obj) && obj.length === 0)) return false;\n  if (typeof obj === \"object\" && !Array.isArray(obj)) {\n    return Object.values(obj).some(v => hasUsefulData(v));\n  }\n  return true;\n}\nif (!hasUsefulData(parsed)) parsed = { message: \"No info found\" };\n\n// If array, take first\nif (Array.isArray(parsed)) parsed = parsed[0] ?? { message: \"No info found\" };\n\n// Deep flatten into dot paths and snake paths\nfunction toSnake(s) {\n  return s\n    .replace(/[^a-zA-Z0-9]+/g, \"_\")\n    .replace(/_+/g, \"_\")\n    .replace(/^_|_$/g, \"\")\n    .toLowerCase();\n}\n\nfunction flatten(obj, prefix = \"\", out = {}) {\n  if (obj == null) {\n    out[prefix] = obj;\n    return out;\n  }\n  if (typeof obj !== \"object\" || obj instanceof Date) {\n    if (prefix) out[prefix] = obj;\n    return out;\n  }\n  if (Array.isArray(obj)) {\n    // Represent arrays as JSON strings to keep primitives\n    if (prefix) out[prefix] = JSON.stringify(obj);\n    return out;\n  }\n  for (const [k, v] of Object.entries(obj)) {\n    const dotKey = prefix ? `${prefix}.${k}` : k;\n    flatten(v, dotKey, out);\n  }\n  return out;\n}\n\n// Coercion helpers\nfunction toISODateString(x) {\n  const d = new Date(x);\n  return isNaN(d.getTime()) ? null : d.toISOString().slice(0, 10);\n}\n\nfunction coercePrimitive(val) {\n  if (val == null) return \"\";\n  if (typeof val === \"string\") return val.trim();\n  if (typeof val === \"number\" || typeof val === \"boolean\") return val;\n  if (val instanceof Date) return toISODateString(val) ?? val.toISOString();\n  // objects and arrays become JSON\n  return JSON.stringify(val);\n}\n\n// Normalise known fields on the original object first\nif (parsed.lastUpdated != null) {\n  const iso = toISODateString(parsed.lastUpdated);\n  parsed.lastUpdated = iso ?? String(parsed.lastUpdated).trim();\n}\nif (parsed.website != null) {\n  let w = String(parsed.website).trim();\n  w = w.replace(/^https?:\\/\\//i, \"\").replace(/\\/+$/g, \"\");\n  parsed.website = w;\n}\n\n// Coerce all top-level props to primitives\nfor (const k of Object.keys(parsed)) {\n  parsed[k] = coercePrimitive(parsed[k]);\n}\n\n// Build flattened maps\nconst flatDot = flatten(parsed);\nconst flatSnake = {};\nfor (const [k, v] of Object.entries(flatDot)) {\n  flatSnake[toSnake(k)] = v;\n}\n\n// Coerce all flattened values to primitives\nfor (const k of Object.keys(flatDot)) {\n  flatDot[k] = coercePrimitive(flatDot[k]);\n}\nfor (const k of Object.keys(flatSnake)) {\n  flatSnake[k] = coercePrimitive(flatSnake[k]);\n}\n\n// Provide stable aliases for common merge keys\nconst aliases = {\n  fullName: parsed.fullName ?? flatDot[\"fullName\"] ?? \"\",\n  actualCompanyName: parsed.actualCompanyName ?? flatDot[\"actualCompanyName\"] ?? \"\",\n  website: parsed.website ?? flatDot[\"website\"] ?? \"\",\n  lastUpdated: parsed.lastUpdated ?? flatDot[\"lastUpdated\"] ?? \"\"\n};\n\n// Build a composite merge key\nconst __mergeKey = [aliases.fullName, aliases.actualCompanyName, aliases.website]\n  .map(x => String(x || \"\").toLowerCase().trim())\n  .join(\"|\");\n\n// Final payload\nconst out = {\n  ...parsed,\n  ...flatDot,\n  ...flatSnake,\n  ...aliases,\n  __mergeKey\n};\n\n// Ensure strings for all merge candidates\nfor (const k of [\"fullName\", \"actualCompanyName\", \"website\", \"lastUpdated\", \"__mergeKey\"]) {\n  if (k in out) out[k] = coercePrimitive(out[k]);\n}\n\n// De-duplicate keys case-insensitively\n// Keeps the first occurrence (from parsed), drops later duplicates (from flatSnake etc.)\nconst seenLower = new Set();\nfor (const key of Object.keys(out)) {\n  const lower = key.toLowerCase();\n  if (seenLower.has(lower)) {\n    delete out[key];\n  } else {\n    seenLower.add(lower);\n  }\n}\n\n// Return n8n-compatible single item\nreturn [\n  {\n    json: out\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        144,
+        1008
+      ],
+      "id": "d5ad383a-6c77-4861-8d18-c47626e458fb",
+      "name": "PP Flattening"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "value": "appclnlBFOaFM6ZTW",
+          "mode": "list",
+          "cachedResultName": "Legal Engine Internal",
+          "cachedResultUrl": "https://airtable.com/appclnlBFOaFM6ZTW"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblPNVxBXRgkMQ7hb",
+          "mode": "list",
+          "cachedResultName": "Imported table",
+          "cachedResultUrl": "https://airtable.com/appclnlBFOaFM6ZTW/tblPNVxBXRgkMQ7hb"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Full Name": "={{ $json.fullName }}",
+            "Name": "={{ $json.fullName }}",
+            "Org": "={{ $json.organisation }}",
+            "LinkedIN": "={{ $json.linkedin }}",
+            "Location": "={{ $json.currentLocation }}",
+            "Background": "={{ $json.background300Words }}",
+            "Legal Tech Interest": "={{ $json.legalTechInterest50Words }}",
+            "verification": "={{ $json.verification }}",
+            "Role": "={{ $json.role }}"
+          },
+          "matchingColumns": [
+            "Name"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Firm",
+              "displayName": "Firm",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "MinterEllison",
+                  "value": "MinterEllison"
+                },
+                {
+                  "name": "Ashurst",
+                  "value": "Ashurst"
+                },
+                {
+                  "name": "Hall & Wilcox",
+                  "value": "Hall & Wilcox"
+                },
+                {
+                  "name": "Gilbert + Tobin",
+                  "value": "Gilbert + Tobin"
+                },
+                {
+                  "name": "KWM",
+                  "value": "KWM"
+                },
+                {
+                  "name": "Cowell Clarke",
+                  "value": "Cowell Clarke"
+                },
+                {
+                  "name": "HopgoodGanim",
+                  "value": "HopgoodGanim"
+                },
+                {
+                  "name": "Russell McVeagh",
+                  "value": "Russell McVeagh"
+                },
+                {
+                  "name": "Gilchrist Connell",
+                  "value": "Gilchrist Connell"
+                },
+                {
+                  "name": "JWS",
+                  "value": "JWS"
+                },
+                {
+                  "name": "Maddocks",
+                  "value": "Maddocks"
+                },
+                {
+                  "name": "Chapman Tripp",
+                  "value": "Chapman Tripp"
+                },
+                {
+                  "name": "Simpson Grierson",
+                  "value": "Simpson Grierson"
+                },
+                {
+                  "name": "McInnes Wilson",
+                  "value": "McInnes Wilson"
+                },
+                {
+                  "name": "Seyfarth",
+                  "value": "Seyfarth"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "LinkedIn Search Query",
+              "displayName": "LinkedIn Search Query",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Likely Role",
+              "displayName": "Likely Role",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Seniority",
+              "displayName": "Seniority",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Senior",
+                  "value": "Senior"
+                },
+                {
+                  "name": "Mid-Senior",
+                  "value": "Mid-Senior"
+                },
+                {
+                  "name": "Mid",
+                  "value": "Mid"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Relevance",
+              "displayName": "Relevance",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "High",
+                  "value": "High"
+                },
+                {
+                  "name": "Medium",
+                  "value": "Medium"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "LinkedIn profile",
+              "displayName": "LinkedIn profile",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Role",
+              "displayName": "Role",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Org",
+              "displayName": "Org",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "LinkedIN",
+              "displayName": "LinkedIN",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Location",
+              "displayName": "Location",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "verification",
+              "displayName": "verification",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Background",
+              "displayName": "Background",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Legal Tech Interest",
+              "displayName": "Legal Tech Interest",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        304,
+        1008
+      ],
+      "id": "03444c7f-7156-47bf-b228-459ecf8b138c",
+      "name": "Airtable Write1",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "value": "appnbpO20uWlcjTf5",
+          "mode": "list",
+          "cachedResultName": "Legal Document Automation",
+          "cachedResultUrl": "https://airtable.com/appnbpO20uWlcjTf5"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblSST6CxAGR7PBlw",
+          "mode": "list",
+          "cachedResultName": "TEST - Clients from Ch Scrape",
+          "cachedResultUrl": "https://airtable.com/appnbpO20uWlcjTf5/tblSST6CxAGR7PBlw"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Client Name": "={{ $('Airtable Source').item.json[\"Client Name\"] }}",
+            "Company Name": "={{ $json.actualCompanyName }}",
+            "Address": "={{ $json.location }}",
+            "Practice Area": "={{ $('Airtable Source').item.json[\"Practice Area\"] }}",
+            "LinkedIn Profile": "={{ $json.bio }}",
+            "Chambers Ranking": "={{ $json.rankings.chambers.ranking }}",
+            "Legal 500 Ranking": "={{ $json.rankings.legal500.ranking }}",
+            "Job Title": "={{ $json.jobTitle }}",
+            "Full Name (PP Search)": "={{ $json.fullName }}",
+            "Date Joined": "={{ $('Date Format1').item.json.formattedDate }}",
+            "Phone Number": "={{ $json.telephone }}",
+            "Relevant Experience Clients 1": "={{ $json.expertiseClients[0] }}",
+            "Relevant Experience Indiv 1": "={{ $json.expertiseIndividuals[0] }}",
+            "Relevant Experience Indiv 2": "={{ $json.expertiseIndividuals[1] }}",
+            "Relevant Experience Clients 2": "={{ $json.expertiseClients[1] }}",
+            "Relevant Experience Clients 3": "={{ $json.expertiseClients[2] }}",
+            "Relevant Experience Clients 4": "={{ $json.expertiseClients[3] }}",
+            "Relevant Experience Clients 5": "={{ $json.expertiseClients[4] }}",
+            "Relevant Experience Indiv 3": "={{ $json.expertiseIndividuals[2] }}",
+            "Relevant Experience Indiv 4": "={{ $json.expertiseIndividuals[3] }}",
+            "Relevant Experience Indiv 5": "={{ $json.expertiseIndividuals[4] }}",
+            "Publications and Insight 1": "={{ $json.publicationsAndInsights[0] }}",
+            "Publications and Insight 2": "={{ $json.publicationsAndInsights[1] }}",
+            "News and Client Work 1": "={{ $json.newsAndClientWork[0] }}",
+            "News and Client Work 2": "={{ $json.newsAndClientWork[1] }}",
+            "Award 1": "={{ $json.awards[0] }}",
+            "Award 2": "={{ $json.awards[1] }}",
+            "Contact Email": "={{ $json.email }}",
+            "id": "={{ $('Airtable Source').item.json.id }}",
+            "Practice Area 2": "={{ $json.practiceAreas[1] }}",
+            "Practice Area 3": "={{ $json.practiceAreas[2] }}",
+            "Practice Area 4": "={{ $json.practiceAreas[3] }}",
+            "Practice Area 1": "={{ $json.practiceAreas[0] }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Client Name",
+              "displayName": "Client Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Contact Email",
+              "displayName": "Contact Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Phone Number",
+              "displayName": "Phone Number",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Address",
+              "displayName": "Address",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Company Name",
+              "displayName": "Company Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Preferred Contact Method",
+              "displayName": "Preferred Contact Method",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Email",
+                  "value": "Email"
+                },
+                {
+                  "name": "Phone",
+                  "value": "Phone"
+                },
+                {
+                  "name": "Mail",
+                  "value": "Mail"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Associated Documents",
+              "displayName": "Associated Documents",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Profile Picture",
+              "displayName": "Profile Picture",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Date Joined",
+              "displayName": "Date Joined",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Account Status",
+              "displayName": "Account Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Active",
+                  "value": "Active"
+                },
+                {
+                  "name": "Inactive",
+                  "value": "Inactive"
+                },
+                {
+                  "name": "Pending",
+                  "value": "Pending"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Matters",
+              "displayName": "Matters",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Practice Area",
+              "displayName": "Practice Area",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Practice Area 1",
+              "displayName": "Practice Area 1",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Practice Area 2",
+              "displayName": "Practice Area 2",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Practice Area 3",
+              "displayName": "Practice Area 3",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Practice Area 4",
+              "displayName": "Practice Area 4",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn Profile",
+              "displayName": "LinkedIn Profile",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Relevant Experience Clients 1",
+              "displayName": "Relevant Experience Clients 1",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Relevant Experience Clients 2",
+              "displayName": "Relevant Experience Clients 2",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Relevant Experience Clients 3",
+              "displayName": "Relevant Experience Clients 3",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Relevant Experience Clients 4",
+              "displayName": "Relevant Experience Clients 4",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Relevant Experience Clients 5",
+              "displayName": "Relevant Experience Clients 5",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Relevant Experience Indiv 1",
+              "displayName": "Relevant Experience Indiv 1",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Relevant Experience Indiv 2",
+              "displayName": "Relevant Experience Indiv 2",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Relevant Experience Indiv 3",
+              "displayName": "Relevant Experience Indiv 3",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Relevant Experience Indiv 4",
+              "displayName": "Relevant Experience Indiv 4",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Relevant Experience Indiv 5",
+              "displayName": "Relevant Experience Indiv 5",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Publications and Insight 1",
+              "displayName": "Publications and Insight 1",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Publications and Insight 2",
+              "displayName": "Publications and Insight 2",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "News and Client Work 1",
+              "displayName": "News and Client Work 1",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "News and Client Work 2",
+              "displayName": "News and Client Work 2",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Legal 500 Ranking",
+              "displayName": "Legal 500 Ranking",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Chambers Ranking",
+              "displayName": "Chambers Ranking",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Job Title",
+              "displayName": "Job Title",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Full Name (PP Search)",
+              "displayName": "Full Name (PP Search)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Expertise Sectors 1",
+              "displayName": "Expertise Sectors 1",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Expertise Sectors 2",
+              "displayName": "Expertise Sectors 2",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Expertise Sectors 3",
+              "displayName": "Expertise Sectors 3",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Expertise Sectors 4",
+              "displayName": "Expertise Sectors 4",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Expertise Sectors 5",
+              "displayName": "Expertise Sectors 5",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Expertise Services 1",
+              "displayName": "Expertise Services 1",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Expertise Services 2",
+              "displayName": "Expertise Services 2",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Expertise Services 3",
+              "displayName": "Expertise Services 3",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Expertise Services 4",
+              "displayName": "Expertise Services 4",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Expertise Services 5",
+              "displayName": "Expertise Services 5",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Award 1",
+              "displayName": "Award 1",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Award 2",
+              "displayName": "Award 2",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Chambers Band",
+              "displayName": "Chambers Band",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Chambers Link",
+              "displayName": "Chambers Link",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Company Domain",
+              "displayName": "Company Domain",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        336,
+        736
+      ],
+      "id": "e74b2092-1026-4123-af2b-598c2c0e9b69",
+      "name": "Airtable Write2",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.perplexity.ai/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"sonar\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Act as an elite business intelligence analyst covering the UK professional services sector. Your task is to research a named attendee a legal and professional services Webinar event and produce a thorough and accurate professional background. Write in UK English. Avoid conjecture. Prioritise recent and reputable sources. Cross check titles and employment against at least two independent references where possible. Prefer the person's current employer website, LinkedIn, and recent press. If a detail cannot be verified, omit it from narrative rather than inventing it.\\n\\nOutput requirements. Return exactly the JSON object described in the user message. Do not include markdown. Do not include commentary. Do not include extra fields. The background section must be at least 300 words. The legalTechInterest section must be 50 words. Keep tone factual, concise, and professional.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Research this attendee and produce a rigorous background profile and targeted interest note.\\n\\nInputs.\\n- Full Name.{{ $json.Name }} \\n- Email. {{ $json.Email }}\\n- LinkedIn Profile. {{ $json['LinkedIn profile'] }}\\n- Role. {{ $json['Likely Role'] }}\\n- Organisation or Firm. {{ $json.Firm }}\\n\\n Research protocol.\\n1) Prefer LinkedIn profile as the main source of information and then employer website bio pages, reputable press and trade publications, legal and marketing industry outlets. Provide a 50 word paragraph on how this attendee may be interested in legal technology and Legal Engine, grounded in their role and responsibilities. Focus on business development, marketing operations, experience capture, knowledge reuse, proposal automation, and client development where relevant.\\n\\nReturn only this JSON object.\\n{\\n  \\\"fullName\\\": \\\"\\\",\\n  \\\"role\\\": \\\"\\\",\\n  \\\"organisation\\\": \\\"\\\",\\n  \\\"linkedin\\\": \\\"string or 'no info'\\\",\\n  \\\"currentofficeLocation\\\": \\\"string or 'no info'\\\",\\n  \\\"verification\\\": {\\n    \\\"isCurrentRoleVerified\\\": true,\\n    \\\"verifiedOn\\\": \\\"ISO date\\\",\\n    \\\"sources\\\": [\\\"primary source URL\\\", \\\"secondary source URL\\\"]\\n  },\\n  \\\"background300Words\\\": \\\"300+ word narrative profile of background and experience. factual and sourced. no bullet points.\\\",\\n  \\\"legalTechInterest50Words\\\": \\\"50 word paragraph on likely interest in legal tech and Legal Engine based on responsibilities\\\"\\n}\"\n    }\n  ],\n  \"max_tokens\": 2200,\n  \"temperature\": 0.2,\n  \"top_p\": 0.9,\n  \"presence_penalty\": 0,\n  \"frequency_penalty\": 0,\n  \"search_recency_filter\": \"year\",\n  \"search_domain_filter\": [\n    \"linkedin.com\",\n    \"thelawyer.com\",\n    \"law.com\",\n    \"legalbusiness.co.uk\",\n    \"lawgazette.co.uk\",\n    \"psmg.co.uk\",\n    \"netlawmedia.com\",\n    \"pressreleases.responsesource.com\",\n    \"prnewswire.com\",\n    \"businesswire.com\",\n    \"globenewswire.com\",\n    \"eventbrite.co.uk\",\n    \"companieshouse.gov.uk\",\n    \"chambers.com\",\n    \"legal500.com\",\n    \"globallegalpost.com\",\n    \"rollonfriday.com\",\n    \"legalcheek.com\",\n    \"slideshare.net\",\n    \"youtube.com\"\n  ]\n}\n",
+        "options": {}
+      },
+      "id": "4105f41c-36ac-445c-93ef-3e9d03705463",
+      "name": "Perplexity LinkedIn",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -608,
+        992
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "Ok9KPJP4UMw6OLgP",
+          "name": "Unnamed credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "69676b6c-2bf4-4312-b916-4316c66421a8",
+              "leftValue": "={{ $json.error.message }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -336,
+        1280
+      ],
+      "id": "976db000-4131-47e5-baac-f4fb7b5282d4",
+      "name": "If1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.perplexity.ai/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"sonar\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Act as an elite business intelligence analyst specializing in the UK legal industry. Your job: Identify the single most senior operations leader at the law firm provided. This is typically the Chief Operating Officer (COO), Head of Operations, Director of Business Services, or equivalent role responsible for firm infrastructure, business operations, administration, and support functions. Use all available, reputable open sources, and cross-check multiple databases for recency and accuracy. Return the ONE most relevant and senior operations leader. Strictly follow output fields and fallback logic—never omit required fields or return partial objects.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Research the following law firm to identify the TOP operations leader—the single most senior person responsible for business operations, firm administration, infrastructure, or business services. Use every professional and open online source possible (see below). WIDEN your search and match on broader or alternative job titles if direct matches are not found. Return the #1 ranked operations leader only.\\n\\nInput:\\n- Company Name: {{ $('Airtable Source').item.json['Company Name'] }}\\n- Company Website: {{ $('Airtable Source').item.json['Company Website PP'] }}\\n- Company Domain: {{ $('Airtable Source').item.json['Company Domain'] }}\\n\\nSOURCES TO SEARCH (must use all available):\\n- LinkedIn (firm page, People tab, individual executive profiles, search for operations roles)\\n- Legal directories: Legal 500, Chambers UK, LawCareers.Net (business services, non-lawyer leadership)\\n- Companies House (officers, directors)\\n- Industry databases: RocketReach, ZoomInfo, Apollo, BoardEx, Hunter.io\\n- Law firm website: Leadership, Team, People, About, Management Team, Business Services pages\\n- Event sites: PSMG, Law Society, legal management conferences, speaking/attendee lists\\n- Press releases, trade publications, legal press (appointments, promotions)\\n- Professional associations: Association of Legal Administrators (ALA), Law Society, Legal Business\\n\\nTITLE PRIORITY for Operations Leader (search in this order, select the most senior match):\\n1. HIGHEST PRIORITY: Chief Operating Officer (COO), Chief Administrative Officer (CAO)\\n2. HIGH PRIORITY: Director of Operations, Head of Operations, Operations Director, Director of Business Services, Head of Business Services\\n3. MEDIUM PRIORITY: Managing Director (Operations), Director of Administration, Head of Firm Operations, Director of Business Operations, General Manager\\n4. LOWER PRIORITY: Director of Business Development (if also handles operations), Head of Client Services (if operational role), Operations Manager (if most senior operations role at firm)\\n5. FALLBACK: Managing Partner (if also handles operations at smaller firm), Senior Partner with operational responsibilities\\n\\nFor the contact found:\\n- Verify they are currently employed at the firm (check recency of sources within last 3 months)\\n- Select the most senior operations-focused role\\n- For email: Only use if publicly available or reliably inferred from confirmed firm email pattern (need at least one published example from the firm)\\n- For LinkedIn: Only use official LinkedIn profile URLs\\n\\nJSON output — Return ONE operations leader (the most senior/relevant found). All fields must be populated. If absolutely no operations leader found after exhausting all sources, return all fields as 'no info':\\n\\n{\\n  \\\"fullName\\\": \\\"string or 'no info'\\\",\\n  \\\"actualCompanyName\\\": \\\"string or 'no info'\\\",\\n  \\\"website\\\": \\\"string or 'no info'\\\",\\n  \\\"lastUpdated\\\": \\\"ISO date or 'no info'\\\",\\n  \\\"operationsLeader\\\": {\\n    \\\"name\\\": \\\"string or 'no info'\\\",\\n    \\\"title\\\": \\\"string or 'no info'\\\",\\n    \\\"email\\\": \\\"string or 'no info'\\\",\\n    \\\"linkedin\\\": \\\"string or 'no info'\\\",\\n    \\\"source\\\": \\\"source URL or platform or 'no info'\\\",\\n    \\\"relevanceReason\\\": \\\"Brief explanation of their operational responsibilities or 'no info'\\\"\\n  }\\n}\\n\\nIMPORTANT RULES:\\n- Return only ONE operations leader (the most senior and relevant)\\n- Prioritize actual operations roles over business development or marketing\\n- Every field must be present and populated\\n- Return ONLY the JSON object, never Markdown, code blocks, or explanatory text\\n- NEVER omit fields, return null, or return partial objects\\n\\nReturn ONLY the raw JSON object as specified above.\"\n    }\n  ],\n  \"max_tokens\": 2500,\n  \"temperature\": 0.15,\n  \"search_domain_filter\": [\n    \"linkedin.com\",\n    \"legal500.com\",\n    \"chambers.com\",\n    \"lawcareers.net\",\n    \"rocketreach.co\",\n    \"zoominfo.com\",\n    \"companieshouse.gov.uk\",\n    \"psmg.co.uk\",\n    \"lawsociety.org.uk\",\n    \"legalbusiness.co.uk\",\n    \"apollow.io\",\n    \"boardex.com\",\n    \"hunter.io\"\n  ],\n  \"search_recency_filter\": \"year\",\n  \"top_p\": 0.95,\n  \"presence_penalty\": 0,\n  \"frequency_penalty\": 1\n}\n",
+        "options": {}
+      },
+      "id": "34429c30-0897-4e7b-a1ad-f47dbaaf3767",
+      "name": "Perplexity Research Sonar Pro",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -608,
+        1280
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "Ok9KPJP4UMw6OLgP",
+          "name": "Unnamed credential"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.perplexity.ai/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"sonar\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Act as an elite business intelligence analyst specializing in the UK legal industry. Your job: Identify up to 5 senior decision-makers who influence or control legal technology, digital transformation, innovation, IT, operations, business development, and marketing decisions at the law firm provided. Rank them by relevance to legal technology purchasing and implementation. Use all available, reputable open sources, and cross-check multiple databases for recency and accuracy. You MUST always maximize the chance of results for each contact. Strictly follow output fields and fallback logic—never omit required fields or return partial objects.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Research the following law firm to identify UP TO 5 key decision makers who influence legal technology, digital strategy, innovation, operations, or business decisions. Prioritize legal tech, IT, and innovation roles first, then operations, business development, and marketing. Use every professional and open online source possible (see below). WIDEN your search and match on broader or alternative job titles if direct matches are not found. Return between 1 and 5 contacts (whichever you can find with confidence), ranked by relevance to legal technology decisions.\\n\\nInput:\\n- Company Name: {{ $('Airtable Source').item.json['Company Name'] }}\\n- Implied Official Firm Name: {{ $('Airtable Source').item.json['Implied Firm Name'] }}\\n- Company Website: {{ $('Airtable Source').item.json['Company Website PP'] }}\\n- Company Domain: {{ $('Airtable Source').item.json['Company Domain'] }}\\n\\nSOURCES TO SEARCH (must use all available):\\n- LinkedIn (firm page, People tab, individual executive profiles, job histories)\\n- Legal directories: Legal 500, Chambers UK, LawCareers.Net (partners, directors, business services)\\n- Companies House (officers, PSCs, directors)\\n- Industry databases: RocketReach, ZoomInfo, Apollo, BoardEx, Hunter.io\\n- Law firm website: Leadership, Team, People, About, News/Press, Blog, Insights, Case Studies\\n- Event sites: LawTech events, PSMG, Legal Geek, ILTA Europe, Law Society, speaking/faculty/attendee lists\\n- Press releases, trade publications, business newswires, legal tech publications\\n- Professional associations: ILTA, Law Society, UK Legal IT Association, Association of Legal Administrators\\n- Twitter/X, conference speaker bios, webinar hosts, podcast appearances\\n\\nTITLE PRIORITY (search in this order, broaden if needed):\\n1. HIGHEST PRIORITY - Legal Tech/IT/Innovation: CTO, CIO, Chief Digital Officer, Chief Innovation Officer, Director/Head of Legal Technology, Director/Head of Innovation, Director/Head of Digital Transformation, IT Director, Director of Knowledge Management, Head of Legal Operations\\n2. HIGH PRIORITY - Operations/Strategy: COO, Chief Operating Officer, Operations Director, Director of Business Services, Chief Administrative Officer, Director of Change, Director of Projects, Managing Partner (Operations), General Counsel (if involved in tech decisions)\\n3. MEDIUM PRIORITY - Business Development/Growth: Chief Business Development Officer, Director of Business Development, Head of Client Services, Growth Director, Director of Strategic Initiatives\\n4. LOWER PRIORITY - Marketing/Communications: CMO, Chief Marketing Officer, Director of Marketing, Head of Marketing, Director of Client Development, Director of Communications\\n5. FALLBACK - Senior Management: Managing Partner, Senior Partner, CEO (if small/mid-sized firm), Finance Director (if involved in tech procurement)\\n\\nFor each contact found:\\n- Verify they are currently employed at the firm (check recency of sources)\\n- Prioritize contacts with public evidence of tech/innovation involvement (e.g., speaking at legal tech events, quoted in tech articles, LinkedIn posts about legal tech)\\n- For email: Only use if publicly available or reliably inferred from confirmed firm email pattern (need at least one example)\\n- For LinkedIn: Only use official LinkedIn profile URLs\\n\\nJSON output — Return an array of 1-5 contacts, ordered by relevance to legal technology decisions (most relevant first). Each contact must have all fields populated. If fewer than 5 contacts can be found with confidence, return only those found (minimum 1). If absolutely no contacts found after exhausting all sources, return an array with one object where all fields are 'no info':\\n\\n{\\n  \\\"fullName\\\": \\\"string or 'no info'\\\",\\n  \\\"actualCompanyName\\\": \\\"string or 'no info'\\\",\\n  \\\"website\\\": \\\"string or 'no info'\\\",\\n  \\\"lastUpdated\\\": \\\"ISO date or 'no info'\\\",\\n  \\\"decisionMakers\\\": [\\n    {\\n      \\\"rank\\\": 1,\\n      \\\"name\\\": \\\"string or 'no info'\\\",\\n      \\\"title\\\": \\\"string or 'no info'\\\",\\n      \\\"area\\\": \\\"One of ['Legal Tech/IT', 'Innovation', 'Digital Transformation', 'Operations', 'Business Development', 'Marketing', 'Senior Management', 'Other'] or 'no info'\\\",\\n      \\\"email\\\": \\\"string or 'no info'\\\",\\n      \\\"linkedin\\\": \\\"string or 'no info'\\\",\\n      \\\"source\\\": \\\"source URL or platform or 'no info'\\\",\\n      \\\"relevanceReason\\\": \\\"Brief explanation why this person is relevant for legal tech decisions or 'no info'\\\"\\n    },\\n    {\\n      \\\"rank\\\": 2,\\n      \\\"name\\\": \\\"string or 'no info'\\\",\\n      \\\"title\\\": \\\"string or 'no info'\\\",\\n      \\\"area\\\": \\\"One of ['Legal Tech/IT', 'Innovation', 'Digital Transformation', 'Operations', 'Business Development', 'Marketing', 'Senior Management', 'Other'] or 'no info'\\\",\\n      \\\"email\\\": \\\"string or 'no info'\\\",\\n      \\\"linkedin\\\": \\\"string or 'no info'\\\",\\n      \\\"source\\\": \\\"source URL or platform or 'no info'\\\",\\n      \\\"relevanceReason\\\": \\\"Brief explanation why this person is relevant for legal tech decisions or 'no info'\\\"\\n    },\\n    {\\n      \\\"rank\\\": 3,\\n      \\\"name\\\": \\\"string or 'no info'\\\",\\n      \\\"title\\\": \\\"string or 'no info'\\\",\\n      \\\"area\\\": \\\"One of ['Legal Tech/IT', 'Innovation', 'Digital Transformation', 'Operations', 'Business Development', 'Marketing', 'Senior Management', 'Other'] or 'no info'\\\",\\n      \\\"email\\\": \\\"string or 'no info'\\\",\\n      \\\"linkedin\\\": \\\"string or 'no info'\\\",\\n      \\\"source\\\": \\\"source URL or platform or 'no info'\\\",\\n      \\\"relevanceReason\\\": \\\"Brief explanation why this person is relevant for legal tech decisions or 'no info'\\\"\\n    },\\n    {\\n      \\\"rank\\\": 4,\\n      \\\"name\\\": \\\"string or 'no info'\\\",\\n      \\\"title\\\": \\\"string or 'no info'\\\",\\n      \\\"area\\\": \\\"One of ['Legal Tech/IT', 'Innovation', 'Digital Transformation', 'Operations', 'Business Development', 'Marketing', 'Senior Management', 'Other'] or 'no info'\\\",\\n      \\\"email\\\": \\\"string or 'no info'\\\",\\n      \\\"linkedin\\\": \\\"string or 'no info'\\\",\\n      \\\"source\\\": \\\"source URL or platform or 'no info'\\\",\\n      \\\"relevanceReason\\\": \\\"Brief explanation why this person is relevant for legal tech decisions or 'no info'\\\"\\n    },\\n    {\\n      \\\"rank\\\": 5,\\n      \\\"name\\\": \\\"string or 'no info'\\\",\\n      \\\"title\\\": \\\"string or 'no info'\\\",\\n      \\\"area\\\": \\\"One of ['Legal Tech/IT', 'Innovation', 'Digital Transformation', 'Operations', 'Business Development', 'Marketing', 'Senior Management', 'Other'] or 'no info'\\\",\\n      \\\"email\\\": \\\"string or 'no info'\\\",\\n      \\\"linkedin\\\": \\\"string or 'no info'\\\",\\n      \\\"source\\\": \\\"source URL or platform or 'no info'\\\",\\n      \\\"relevanceReason\\\": \\\"Brief explanation why this person is relevant for legal tech decisions or 'no info'\\\"\\n    }\\n  ]\\n}\\n\\nIMPORTANT RULES:\\n- Return between 1 and 5 contacts (as many as you can confidently find)\\n- Order by relevance to legal tech decisions (rank 1 = most relevant)\\n- Include 'relevanceReason' for each contact explaining their decision-making influence\\n- Every field must be present in every contact object\\n- If you find fewer than 5, only include those you found (do not pad with empty objects)\\n- Return ONLY the JSON object, never Markdown, code blocks, or explanatory text\\n- NEVER omit fields, return null, or return partial objects\\n\\nReturn ONLY the raw JSON object as specified above.\"\n    }\n  ],\n  \"max_tokens\": 4000,\n  \"temperature\": 0.15,\n  \"search_domain_filter\": [\n    \"linkedin.com\",\n    \"legal500.com\",\n    \"chambers.com\",\n    \"lawcareers.net\",\n    \"rocketreach.co\",\n    \"zoominfo.com\",\n    \"companieshouse.gov.uk\",\n    \"psmg.co.uk\",\n    \"lawsociety.org.uk\",\n    \"legalgeek.co\",\n    \"iltanet.org\",\n    \"apollow.io\",\n    \"boardex.com\",\n    \"hunter.io\"\n  ],\n  \"search_recency_filter\": \"year\",\n  \"top_p\": 0.95,\n  \"presence_penalty\": 0,\n  \"frequency_penalty\": 1\n}\n",
+        "options": {}
+      },
+      "id": "56336a9a-f044-4eaf-a67b-06b903375f57",
+      "name": "Perplexity LinkedIn1",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -608,
+        816
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "Ok9KPJP4UMw6OLgP",
+          "name": "Unnamed credential"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "let content = $json.choices[0].message.content;\n\n// Clean the Markdown formatting\ncontent = content.replace(/```json|```/g, '').trim();\n\nlet parsed;\n\n// Try parsing the content safely\ntry {\n  parsed = JSON.parse(content);\n} catch (error) {\n  parsed = { message: \"No info found\" };\n}\n\n// Check if all values in the expected structure are null, empty arrays, or empty strings\nconst hasUsefulData = Object.values(parsed).some(value => {\n  if (value === null || value === \"\" || (Array.isArray(value) && value.length === 0)) return false;\n  if (typeof value === \"object\" && !Array.isArray(value)) {\n    // Check nested objects (like `rankings`)\n    return Object.values(value).some(sub => {\n      if (typeof sub === \"object\") {\n        return Object.values(sub).some(v => v !== null && v !== \"\");\n      }\n      return sub !== null && sub !== \"\";\n    });\n  }\n  return true;\n});\n\nif (!hasUsefulData) {\n  parsed = { message: \"No info found\" };\n}\n\n// Return a single flat object instead of an array\nreturn parsed;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        128,
+        736
+      ],
+      "id": "8a092653-108f-4e2f-a56d-298d49412eaa",
+      "name": "PP Flattening1",
+      "disabled": true
+    }
+  ],
+  "connections": {
+    "When clicking Test workflow1": {
+      "main": [
+        [
+          {
+            "node": "Date & Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Emails": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Perplexity LinkedIn",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Perplexity Research Sonar Pro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date Format1": {
+      "main": [
+        [
+          {
+            "node": "Airtable Source",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PP Flattening2": {
+      "main": [
+        [
+          {
+            "node": "Airtable Write",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Time": {
+      "main": [
+        [
+          {
+            "node": "Date Format1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Airtable Source": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Emails",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Airtable Write": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Emails",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Emails",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "PP Flattening",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PP Flattening": {
+      "main": [
+        [
+          {
+            "node": "Airtable Write1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Airtable Write1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Emails",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Perplexity LinkedIn": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Emails",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "PP Flattening2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Perplexity Research Sonar Pro": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 0,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

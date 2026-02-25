@@ -1,0 +1,668 @@
+{
+  "name": "HSFK UC 3.1 - Newsletter Coordination Pipeline",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## HSFK UC 3.1 - Newsletter Coordination Pipeline\n\n**Purpose:** Receive newsletter section submissions via webhook, polish the prose using the LLM, store both raw and polished versions in Airtable, update the newsletter tracker with status 'awaiting_approval', post a Slack notification, and return the polished text in the webhook response.\n\n**Trigger:** Webhook POST `/webhook/hsfk-newsletter-submit`\n\n**Flow:**\n1. Webhook receives POST with newsletter submission\n2. Extract + validate: edition name, section name, author email, raw content text\n3. Call shared-04 (LLM - Gemini Flash) to polish prose, check tone consistency, suggest edits\n4. Store raw + polished text in `HSFK - Newsletter Content` (Airtable)\n5. Create/upsert section record in `HSFK - Newsletter Tracker` with status `awaiting_approval`\n6. Post Slack notification to `#hsfk-newsletter` channel\n7. Return polished text + edit notes in webhook response (synchronous)\n8. Audit log via shared-05\n\n**Expected webhook payload:**\n```json\n{\n  \"edition_name\": \"Q1 2026\",\n  \"section_name\": \"Dispute Resolution Update\",\n  \"author_email\": \"j.smith@hsfk.com\",\n  \"author_name\": \"Jane Smith\",\n  \"raw_content\": \"The paragraph text goes here...\"\n}\n```\n\n**Sub-workflow IDs:**\n- shared-04 (Vertex AI LLM): `AI3InmjY6gmJwdXg`\n- shared-05 (Airtable Audit): `zjwCkfCuH3GnW2qT`\n\n**Airtable base:** `app0QZAuhY8Zx4I54`\n- Newsletter Content: `tbl88OFab3RlsJ7D6`\n- Newsletter Tracker: `tblE8UDbS5BGugsgE`\n\n**n8n instance:** leonard-dev.app.n8n.cloud",
+        "height": 600,
+        "width": 520,
+        "color": 4
+      },
+      "id": "sticky-note-docs",
+      "name": "Documentation",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -580,
+        -220
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "hsfk-newsletter-submit",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook: POST /hsfk-newsletter-submit",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -80,
+        240
+      ],
+      "webhookId": "hsfk-newsletter-submit"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract and validate the newsletter submission payload\nconst startTime = Date.now();\nconst body = $json.body || $json;\n\nconst editionName = String(body.edition_name || '').trim();\nconst sectionName = String(body.section_name || '').trim();\nconst authorEmail = String(body.author_email || '').trim();\nconst authorName = String(body.author_name || '').trim();\nconst rawContent = String(body.raw_content || '').trim();\n\n// Validate required fields\nconst errors = [];\nif (!editionName) errors.push('edition_name is required');\nif (!sectionName) errors.push('section_name is required');\nif (!rawContent || rawContent.length < 20) errors.push('raw_content is required (minimum 20 characters)');\n\nif (errors.length > 0) {\n  throw new Error(`Validation failed: ${errors.join(', ')}`);\n}\n\nconst executionId = `hsfk-newsletter-${Date.now()}`;\nconst submittedAt = new Date().toISOString();\n\n// Build the edition code (slug version of edition name)\nconst editionCode = editionName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');\n\nreturn {\n  json: {\n    execution_id: executionId,\n    start_time: startTime,\n    submitted_at: submittedAt,\n    edition_name: editionName,\n    edition_code: editionCode,\n    section_name: sectionName,\n    author_email: authorEmail,\n    author_name: authorName || authorEmail,\n    raw_content: rawContent,\n    word_count_raw: rawContent.split(/\\s+/).filter(w => w.length > 0).length\n  }\n};"
+      },
+      "id": "extract-validate-submission",
+      "name": "Extract & Validate Submission",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build the LLM prompt for newsletter prose polishing\n// Uses Gemini Flash (default) - newsletter polishing does not require Claude Opus\n\nconst data = $json;\n\nconst systemPrompt = `You are an expert legal communications editor for a top-tier international law firm. You specialise in polishing newsletter content to be clear, authoritative, and engaging for a professional audience of clients, referrers, and peers.\n\nYour editing principles:\n- Preserve the author's substance and key points exactly. Never invent or add new facts.\n- Improve clarity, flow, and sentence structure without over-editing.\n- Remove unnecessary jargon, hedging language, and repetition.\n- Ensure British English throughout (spelling and idiom).\n- Never use em dashes. Use commas, full stops, or 'however' instead.\n- Aim for a confident, professional tone suitable for external client communications.\n- Flag any passages that appear incomplete, inconsistent, or potentially inaccurate.\n\nYour output MUST be valid JSON in this exact format:\n{\n  \"polished_text\": \"The fully polished section text\",\n  \"edit_summary\": \"2-3 sentence summary of the main changes made\",\n  \"flags\": [\"Any concerns or incomplete passages - empty array if none\"],\n  \"tone_score\": 0.0,\n  \"readability_score\": 0.0\n}\n\nWhere tone_score is 0.0-1.0 (1.0 = excellent professional tone) and readability_score is 0.0-1.0 (1.0 = very clear and readable).`;\n\nconst userPrompt = `Please polish the following newsletter section for the HSFK newsletter edition \"${data.edition_name}\", section: \"${data.section_name}\".\n\nAuthor: ${data.author_name}\n\nRaw content to polish:\n---\n${data.raw_content}\n---\n\nReturn only the JSON response as specified. Do not add commentary outside the JSON.`;\n\nreturn {\n  json: {\n    system_prompt: systemPrompt,\n    user_prompt: userPrompt,\n    model: 'gemini-2.5-flash',\n    temperature: 0.3,\n    response_format: 'json',\n    max_tokens: 4096,\n    submission_data: data\n  }\n};"
+      },
+      "id": "build-llm-prompt",
+      "name": "Build LLM Polish Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        400,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "AI3InmjY6gmJwdXg"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "system_prompt": "={{ $json.system_prompt }}",
+            "user_prompt": "={{ $json.user_prompt }}",
+            "model": "={{ $json.model }}",
+            "temperature": "={{ $json.temperature }}",
+            "response_format": "={{ $json.response_format }}",
+            "max_tokens": "={{ $json.max_tokens }}"
+          },
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "call-llm-shared-04",
+      "name": "Call shared-04 (LLM - Polish Prose)",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        640,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Process the LLM response and extract polished text + metadata\n\nconst llmResult = $json;\nconst submissionData = $('Build LLM Polish Prompt').first().json.submission_data;\n\n// The LLM returns parsed_json if JSON was valid\nlet polishedText = '';\nlet editSummary = '';\nlet flags = [];\nlet toneScore = 0.0;\nlet readabilityScore = 0.0;\n\nif (llmResult.json_valid && llmResult.parsed_json) {\n  const parsed = llmResult.parsed_json;\n  polishedText = (parsed.polished_text || '').trim();\n  editSummary = (parsed.edit_summary || '').trim();\n  flags = Array.isArray(parsed.flags) ? parsed.flags : [];\n  toneScore = parseFloat(parsed.tone_score) || 0.0;\n  readabilityScore = parseFloat(parsed.readability_score) || 0.0;\n} else {\n  // Fallback: use raw text if JSON parsing failed\n  polishedText = (llmResult.text || submissionData.raw_content).trim();\n  editSummary = 'LLM response could not be fully parsed; raw output used.';\n}\n\n// If polishing produced nothing, fall back to original\nif (!polishedText) {\n  polishedText = submissionData.raw_content;\n  editSummary = 'No polished output returned; original content preserved.';\n}\n\nconst wordCountPolished = polishedText.split(/\\s+/).filter(w => w.length > 0).length;\n\nreturn {\n  json: {\n    execution_id: submissionData.execution_id,\n    start_time: submissionData.start_time,\n    submitted_at: submissionData.submitted_at,\n    edition_name: submissionData.edition_name,\n    edition_code: submissionData.edition_code,\n    section_name: submissionData.section_name,\n    author_email: submissionData.author_email,\n    author_name: submissionData.author_name,\n    raw_content: submissionData.raw_content,\n    polished_text: polishedText,\n    edit_summary: editSummary,\n    flags: flags,\n    ai_flags_text: flags.length > 0 ? flags.join(' | ') : '',\n    tone_score: toneScore,\n    readability_score: readabilityScore,\n    word_count_raw: submissionData.word_count_raw,\n    word_count_polished: wordCountPolished,\n    llm_tokens_used: (llmResult.input_tokens || 0) + (llmResult.output_tokens || 0),\n    model_used: llmResult.model_used || 'gemini-2.5-flash'\n  }\n};"
+      },
+      "id": "process-llm-response",
+      "name": "Process LLM Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "app0QZAuhY8Zx4I54"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tbl88OFab3RlsJ7D6"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Raw Text": "={{ $json.raw_content }}",
+            "Polished Text": "={{ $json.polished_text }}",
+            "AI Flags": "={{ $json.ai_flags_text }}",
+            "Approval Status": "awaiting_approval",
+            "Word Count": "={{ $json.word_count_polished }}",
+            "Submitted Via": "webhook",
+            "Workflow Execution ID": "={{ $json.execution_id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Raw Text",
+              "displayName": "Raw Text",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Polished Text",
+              "displayName": "Polished Text",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "AI Flags",
+              "displayName": "AI Flags",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Approval Status",
+              "displayName": "Approval Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "awaiting_approval",
+                  "value": "awaiting_approval"
+                },
+                {
+                  "name": "approved",
+                  "value": "approved"
+                },
+                {
+                  "name": "rejected",
+                  "value": "rejected"
+                },
+                {
+                  "name": "needs_revision",
+                  "value": "needs_revision"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Word Count",
+              "displayName": "Word Count",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Submitted Via",
+              "displayName": "Submitted Via",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Workflow Execution ID",
+              "displayName": "Workflow Execution ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "store-newsletter-content",
+      "name": "Store in Newsletter Content (Airtable)",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1120,
+        240
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "AIRTABLE_TOKEN_CRED",
+          "name": "Airtable - Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Capture the content record ID then pass everything forward for tracker record creation\n\nconst airtableResponse = $json;\nconst llmData = $('Process LLM Response').first().json;\n\nconst contentRecordId = airtableResponse.id;\n\nreturn {\n  json: {\n    content_record_id: contentRecordId,\n    execution_id: llmData.execution_id,\n    start_time: llmData.start_time,\n    submitted_at: llmData.submitted_at,\n    edition_name: llmData.edition_name,\n    edition_code: llmData.edition_code,\n    section_name: llmData.section_name,\n    author_email: llmData.author_email,\n    author_name: llmData.author_name,\n    polished_text: llmData.polished_text,\n    edit_summary: llmData.edit_summary,\n    flags: llmData.flags,\n    word_count_polished: llmData.word_count_polished,\n    llm_tokens_used: llmData.llm_tokens_used,\n    model_used: llmData.model_used\n  }\n};"
+      },
+      "id": "capture-content-record-id",
+      "name": "Capture Content Record ID",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1360,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "app0QZAuhY8Zx4I54"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tblE8UDbS5BGugsgE"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Edition Code": "={{ $json.edition_code }}",
+            "Newsletter Name": "={{ $json.edition_name }}",
+            "Section Name": "={{ $json.section_name }}",
+            "Author": "={{ $json.author_name }}",
+            "Author Email": "={{ $json.author_email }}",
+            "Status": "awaiting_approval",
+            "Submitted Date": "={{ $json.submitted_at }}",
+            "HSFK - Newsletter Content": "={{ $json.content_record_id ? [$json.content_record_id] : [] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Edition Code",
+              "displayName": "Edition Code",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Newsletter Name",
+              "displayName": "Newsletter Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Section Name",
+              "displayName": "Section Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Author",
+              "displayName": "Author",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Author Email",
+              "displayName": "Author Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "awaiting_approval",
+                  "value": "awaiting_approval"
+                },
+                {
+                  "name": "approved",
+                  "value": "approved"
+                },
+                {
+                  "name": "rejected",
+                  "value": "rejected"
+                },
+                {
+                  "name": "needs_revision",
+                  "value": "needs_revision"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Submitted Date",
+              "displayName": "Submitted Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "HSFK - Newsletter Content",
+              "displayName": "HSFK - Newsletter Content",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "create-tracker-record",
+      "name": "Create Tracker Record (Newsletter Tracker)",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1600,
+        240
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "AIRTABLE_TOKEN_CRED",
+          "name": "Airtable - Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Capture tracker record ID and build Slack notification message\n\nconst airtableResponse = $json;\nconst captureData = $('Capture Content Record ID').first().json;\n\nconst trackerRecordId = airtableResponse.id;\n\nconst flagNote = captureData.flags && captureData.flags.length > 0\n  ? `\\n:warning: *AI flags:* ${captureData.flags.join(' | ')}`\n  : '';\n\nconst slackMessage = `:newspaper: *Newsletter draft received*\\n\\n*Edition:* ${captureData.edition_name}\\n*Section:* ${captureData.section_name}\\n*Author:* ${captureData.author_name}${captureData.author_email ? ' (' + captureData.author_email + ')' : ''}\\n*Word count (polished):* ${captureData.word_count_polished}\\n*Status:* awaiting_approval${flagNote}\\n\\n*Edit summary:* ${captureData.edit_summary}\\n\\nPolished version is ready for review in Airtable.`;\n\nreturn {\n  json: {\n    tracker_record_id: trackerRecordId,\n    content_record_id: captureData.content_record_id,\n    execution_id: captureData.execution_id,\n    start_time: captureData.start_time,\n    edition_name: captureData.edition_name,\n    section_name: captureData.section_name,\n    author_name: captureData.author_name,\n    polished_text: captureData.polished_text,\n    edit_summary: captureData.edit_summary,\n    flags: captureData.flags,\n    word_count_polished: captureData.word_count_polished,\n    llm_tokens_used: captureData.llm_tokens_used,\n    model_used: captureData.model_used,\n    slack_message: slackMessage\n  }\n};"
+      },
+      "id": "build-slack-message",
+      "name": "Build Slack Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1840,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://slack.com/api/chat.postMessage",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({ channel: 'hsfk-newsletter', text: $json.slack_message, unfurl_links: false }) }}",
+        "options": {
+          "timeout": 10000,
+          "response": {
+            "response": {
+              "fullResponse": false,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "slack-notify",
+      "name": "Slack: Notify Newsletter Draft Received",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2080,
+        240
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "SLACK_BOT_CRED",
+          "name": "Slack Bot - Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build the final webhook response payload\n\nconst slackData = $('Build Slack Message').first().json;\nconst durationMs = Date.now() - slackData.start_time;\n\nconst response = {\n  status: 'success',\n  execution_id: slackData.execution_id,\n  edition_name: slackData.edition_name,\n  section_name: slackData.section_name,\n  polished_text: slackData.polished_text,\n  edit_summary: slackData.edit_summary,\n  word_count_polished: slackData.word_count_polished,\n  airtable: {\n    content_record_id: slackData.content_record_id,\n    tracker_record_id: slackData.tracker_record_id\n  },\n  duration_ms: durationMs\n};\n\nif (slackData.flags && slackData.flags.length > 0) {\n  response.flags = slackData.flags;\n}\n\nreturn {\n  json: {\n    response,\n    duration_ms: durationMs,\n    execution_id: slackData.execution_id,\n    edition_name: slackData.edition_name,\n    section_name: slackData.section_name,\n    word_count_polished: slackData.word_count_polished,\n    llm_tokens_used: slackData.llm_tokens_used\n  }\n};"
+      },
+      "id": "build-webhook-response",
+      "name": "Build Webhook Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2320,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json.response) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "respond-200",
+      "name": "Respond 200 with Polished Text",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2560,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "zjwCkfCuH3GnW2qT"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "workflow_name": "HSFK UC 3.1 - Newsletter Coordination Pipeline",
+            "use_case_id": "3.1",
+            "trigger_type": "webhook",
+            "input_summary": "={{ 'Edition: ' + $('Build Webhook Response').first().json.edition_name + ' | Section: ' + $('Build Webhook Response').first().json.section_name }}",
+            "output_summary": "={{ 'Polished text stored. Content record: ' + $('Build Slack Message').first().json.content_record_id + ' | Tracker record: ' + $('Build Slack Message').first().json.tracker_record_id + ' | Words: ' + $('Build Webhook Response').first().json.word_count_polished + ' | Tokens: ' + $('Build Webhook Response').first().json.llm_tokens_used }}",
+            "status": "success",
+            "duration_ms": "={{ $('Build Webhook Response').first().json.duration_ms || 0 }}"
+          },
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "call-audit-shared-05",
+      "name": "Call shared-05 (Audit Log)",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        2560,
+        400
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook: POST /hsfk-newsletter-submit": {
+      "main": [
+        [
+          {
+            "node": "Extract & Validate Submission",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract & Validate Submission": {
+      "main": [
+        [
+          {
+            "node": "Build LLM Polish Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build LLM Polish Prompt": {
+      "main": [
+        [
+          {
+            "node": "Call shared-04 (LLM - Polish Prose)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call shared-04 (LLM - Polish Prose)": {
+      "main": [
+        [
+          {
+            "node": "Process LLM Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process LLM Response": {
+      "main": [
+        [
+          {
+            "node": "Store in Newsletter Content (Airtable)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store in Newsletter Content (Airtable)": {
+      "main": [
+        [
+          {
+            "node": "Capture Content Record ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Capture Content Record ID": {
+      "main": [
+        [
+          {
+            "node": "Create Tracker Record (Newsletter Tracker)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Tracker Record (Newsletter Tracker)": {
+      "main": [
+        [
+          {
+            "node": "Build Slack Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Slack Message": {
+      "main": [
+        [
+          {
+            "node": "Slack: Notify Newsletter Draft Received",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack: Notify Newsletter Draft Received": {
+      "main": [
+        [
+          {
+            "node": "Build Webhook Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Webhook Response": {
+      "main": [
+        [
+          {
+            "node": "Respond 200 with Polished Text",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Call shared-05 (Audit Log)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 1,
+  "meta": null
+}

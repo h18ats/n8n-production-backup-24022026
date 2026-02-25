@@ -1,0 +1,1238 @@
+{
+  "name": "Smart Email Outreach Sequence – AI-Powered & Customizable copy",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "f0a10fdf-d3b9-4f3a-8a02-bbec89497aaa",
+      "name": "When clicking Test workflow1",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1160,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "amount": "={{ $json.delay }}"
+      },
+      "id": "e1eec7b3-fa9c-4bad-9906-e386ca39db49",
+      "name": "Wait",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2240,
+        60
+      ],
+      "webhookId": "247196cd-ae97-403c-a6e5-c5c54d938c59"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Initialiser le message\nmsg = {};\n\n// Ajouter un délai aléatoire entre 0 et 7 minutes\nconst randomDelay = Math.floor(Math.random() * 7) ;\n\n// Calculer le délai total\nconst totalDelay = randomDelay;\n\n// Ajouter le délai au message\nmsg.delay = totalDelay;\n\n// Retourner le message\nreturn msg;"
+      },
+      "id": "e388e5c7-662b-4277-aad2-6d12a42fbc9f",
+      "name": "Code",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1920,
+        -20
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 1,
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -360,
+        400
+      ],
+      "id": "1d94c077-f422-40d1-9a11-16f4570d2770",
+      "name": "Wait1",
+      "webhookId": "dc1cbcad-8986-4b95-bdf2-b0a8f9db45b6"
+    },
+    {
+      "parameters": {
+        "amount": "={{ $json.delay }}"
+      },
+      "id": "d16fdc39-62d3-4699-84b7-9f17a238497e",
+      "name": "Wait2",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2220,
+        520
+      ],
+      "webhookId": "720f45ef-51f9-4a7b-bca3-6b8860a4c166"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Initialiser le message\nmsg = {};\n\n// Ajouter un délai aléatoire entre 0 et 7 minutes\nconst randomDelay = Math.floor(Math.random() * 7) ;\n\n// Calculer le délai total\nconst totalDelay = randomDelay;\n\n// Ajouter le délai au message\nmsg.delay = totalDelay;\n\n// Retourner le message\nreturn msg;"
+      },
+      "id": "a92be604-c2b3-45c3-803a-284473e44619",
+      "name": "Code1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1940,
+        460
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 1,
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -380,
+        1080
+      ],
+      "id": "631cd989-7c48-4e2d-8c55-0fa744c9940c",
+      "name": "Wait3",
+      "webhookId": "232451be-c6d2-4434-9400-48a25760c4a9"
+    },
+    {
+      "parameters": {
+        "amount": "={{ $json.delay }}",
+        "unit": "minutes"
+      },
+      "id": "8ff52d72-2b42-4c49-8bbc-e85f619c6a2b",
+      "name": "Wait4",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2180,
+        1200
+      ],
+      "webhookId": "f37cc2d1-3d79-44bb-a6e6-8975e2d89bd6"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "69676b6c-2bf4-4312-b916-4316c66421a8",
+              "leftValue": "={{ $json.error.message }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        380,
+        -60
+      ],
+      "id": "fe53cacd-a638-4393-ab7a-5d7bb0ae0072",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-3.5-turbo",
+          "mode": "list",
+          "cachedResultName": "GPT-3.5-TURBO"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are \"Leonard\", the outbound email copywriter for Legal Engine.\n\nGOAL\nWrite a single cold-email ice-breaker that convinces a time-poor, sceptical\nUK M&A partner ranked Tier 2 in Legal 500 to book a short demo of Leonard,\nthe AI voice assistant that drafts submission-ready matter summaries.\n\nHARD CONSTRAINTS\n- Length: max 150 words (target 100-120).\n- UK English spelling, grammar and punctuation.\n- Personalise: use {{firstName}} and mention \"Tier 2 in Legal 500 M&A\".\n- Exactly one hyperlink: {{demoLink}} (anchor text max 5 words).\n- Subject line max 8 words.\n- Sign-off: \"Cheers,\\nLee\".\n\nMESSAGING PRIORITIES\n1. Ego and ambition - one tier from the top.\n2. Pain - directory summaries consume unbillable six-minute units.\n3. Relief - one 6-minute call produces a polished summary.\n4. Proof - UK-hosted on Azure, end-to-end encrypted.\n5. Urgency - directory season is approaching.\n\nTONE AND STYLE\nProfessional, concise, confident. Short sentences, strong verbs,\nconcrete numbers. No hype or buzzwords.\n\nOUTPUT FORMAT\nSubject: <subject line>\n\nHi {{firstName}},\n\n<body text here>\n\nCheers,\nLee\n",
+              "role": "system"
+            },
+            {
+              "content": "=You are \"Leonard\", the outbound email copywriter for Legal Engine.\n\nGOAL\nWrite a single cold-email ice-breaker that convinces a time-poor, sceptical\nUK M&A partner ranked Tier 2 in Legal 500 to book a short demo of Leonard,\nthe AI voice assistant that drafts submission-ready matter summaries.\n\nHARD CONSTRAINTS\n- Length: max 150 words (target 100-120).\n- UK English spelling, grammar and punctuation.\n- Personalise: use {{firstName}} and mention \"Tier 2 in Legal 500 M&A\".\n- Exactly one hyperlink: {{demoLink}} (anchor text max 5 words).\n- Subject line max 8 words.\n- Sign-off: \"Cheers,\\nLee\".\n\nMESSAGING PRIORITIES\n1. Ego and ambition - one tier from the top.\n2. Pain - directory summaries consume unbillable six-minute units.\n3. Relief - one 6-minute call produces a polished summary.\n4. Proof - UK-hosted on Azure, end-to-end encrypted.\n5. Urgency - directory season is approaching.\n\nTONE AND STYLE\nProfessional, concise, confident. Short sentences, strong verbs,\nconcrete numbers. No hype or buzzwords.\n\nOUTPUT FORMAT\nSubject: <subject line>\n\nHi {{firstName}},\n\n<body text here>\n\nCheers,\nLee\n"
+            }
+          ]
+        },
+        "jsonOutput": "={{ true }}",
+        "options": {}
+      },
+      "id": "dd0295c6-1cc4-41f4-addb-584c05fec4bc",
+      "name": "Generate Email content",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "position": [
+        1080,
+        -40
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "openAiApi": {
+          "id": "LldOhLNBReShSMkE",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Is it an Email ?').item.json.Email }}",
+        "subject": "={{ $json.message.content.title }}",
+        "message": "={{ $json.message.content.body }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "76b71194-d3f4-4a65-bd0d-127deefcfd5e",
+      "name": "Gmail1",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1680,
+        560
+      ],
+      "webhookId": "4dc01835-35aa-47e3-93df-2141bcf5f804",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "69676b6c-2bf4-4312-b916-4316c66421a8",
+              "leftValue": "={{ $json.error.message }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        540,
+        420
+      ],
+      "id": "66f39705-2ed6-4a7a-a77a-3e0a928e39c3",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Obtenir le texte Markdown à partir des données d'entrée\nconst markdownText = $input.first().json.data;\n\n// Limiter à 2000 caractères\nconst limitedText = markdownText.slice(0, 2000);\n\n// Ajouter une indication si le texte a été tronqué\nif (markdownText.length > 2000) {\n  return [\n    {\n      json: {\n        limitedMarkdown: limitedText + \"\\n\\n*Texte tronqué à 2000 caractères.*\",\n        originalLength: markdownText.length,\n      },\n    },\n  ];\n} else {\n  return [\n    {\n      json: {\n        limitedMarkdown: limitedText,\n        originalLength: markdownText.length,\n      },\n    },\n  ];\n}\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        820,
+        440
+      ],
+      "id": "48f0b2e0-0517-42f5-a473-3810d274b2b8",
+      "name": "Limit Markdown1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Initialiser le message\nmsg = {};\n\n// Ajouter un délai aléatoire entre 0 et 7 minutes\nconst randomDelay = Math.floor(Math.random() * 7) ;\n\n// Calculer le délai total\nconst totalDelay = randomDelay;\n\n// Ajouter le délai au message\nmsg.delay = totalDelay;\n\n// Retourner le message\nreturn msg;"
+      },
+      "id": "f6f43aba-cf20-4d0f-84f8-ed08466fad47",
+      "name": "Code2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1900,
+        1140
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Is it an Email ?').item.json.Email }}",
+        "subject": "={{ $json.message.content.title }}",
+        "message": "={{ $json.message.content.body }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "ee7aac18-1e0f-448f-86c9-8efffceab9de",
+      "name": "Gmail2",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1620,
+        1200
+      ],
+      "webhookId": "47c93972-f360-452f-ba94-68d909706ad3",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "7D8AIRVL8Y8Ycgo9",
+          "name": "Gmail account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "69676b6c-2bf4-4312-b916-4316c66421a8",
+              "leftValue": "={{ $json.error.message }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        620,
+        1100
+      ],
+      "id": "5d281b53-f532-4270-85a2-68f8b36afff3",
+      "name": "If3"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Obtenir le texte Markdown à partir des données d'entrée\nconst markdownText = $input.first().json.data;\n\n// Limiter à 2000 caractères\nconst limitedText = markdownText.slice(0, 2000);\n\n// Ajouter une indication si le texte a été tronqué\nif (markdownText.length > 2000) {\n  return [\n    {\n      json: {\n        limitedMarkdown: limitedText + \"\\n\\n*Texte tronqué à 2000 caractères.*\",\n        originalLength: markdownText.length,\n      },\n    },\n  ];\n} else {\n  return [\n    {\n      json: {\n        limitedMarkdown: limitedText,\n        originalLength: markdownText.length,\n      },\n    },\n  ];\n}\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        840,
+        1120
+      ],
+      "id": "f5f9be1b-2394-4462-9466-6d8582e745f9",
+      "name": "Limit Markdown2"
+    },
+    {
+      "parameters": {
+        "content": "## You should Personalize Product and prompt",
+        "height": 420,
+        "width": 580,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        820,
+        -220
+      ],
+      "typeVersion": 1,
+      "id": "3655de76-950c-4a52-bd8b-9536724d253f",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## You should Personalize Product and prompt",
+        "height": 320,
+        "width": 560,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1060,
+        380
+      ],
+      "typeVersion": 1,
+      "id": "69741522-5b5c-449a-9e33-1deb873f5ce4",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## You should Personalize Product and prompt",
+        "height": 340,
+        "width": 580,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1000,
+        1000
+      ],
+      "typeVersion": 1,
+      "id": "3b4baf07-2fd9-4805-9730-43868d7a343b",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "sheetId": "1jHbr4pU69R9Dcqc-d62fuNPxhzmWostiTKCXQOQuXfU",
+        "range": "L:P",
+        "options": {}
+      },
+      "id": "235a4d40-c978-4d89-9f9a-eed20febe411",
+      "name": "Read List of Leads",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 2,
+      "position": [
+        -960,
+        -80
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ideYdPgaT4pRzHvx",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c6609bda-ba69-4fba-b2e7-98cb627cb30c",
+              "leftValue": "={{ $json['LE Test Email'].isEmail() }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "98c5f8cf-8ebf-4964-b42c-1fa98cc8c5f1",
+      "name": "Is it an Email ?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -780,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "eaafd959-708b-4c58-b18f-4207054486d4",
+      "name": "Loop Over Emails",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -360,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "09b8662a-d57e-472f-bf00-af72f2bd4c6a",
+      "name": "Loop Over Emails1",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -160,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "bbe44f19-bc25-4743-9c9f-98fc9650eb82",
+      "name": "Loop Over Emails2",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -180,
+        1080
+      ]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-3.5-turbo",
+          "mode": "list",
+          "cachedResultName": "GPT-3.5-TURBO"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are an outbound email specialist hunting for new leads for a company that has just launched a new product for the legal and professional services industry in the UK. Your role is to analyze the provided website homepage for a potential future client and craft a compelling, personalized ice breaker that resonates with the Lawyer in order to sell them the services of Leonard, the AI Voice Agent from Legal Engine.\n \nThe tone must be professional but not pompous. The email recipient will understand the concept of matter descriptions and directories submissions and will likely have felt pain in completing them previously. Your primary goal is to capitalise on this pain and encourage a trial of the AI agent (Leonard) we have built to reduce the pain.\n \nYour recipient audience will be UK based senior lawyers and law firm partners. They are sceptical, non-trusting and painfully slow to adopt new technology. They will be very wary of anything AI related and will need to have a clear understanding of the benefits of engaging in a demo of Leonard before they proceed. Another characteristic to use in your sales pitch is their egos. They LOVE legal directories rankings from Chambers and Legal 500 and put a disproportionate amount of importance to therse rankings. As a group, they are also incredibly time poor. They bill in six minute units so will not have time to read a lengthy email. Absolute maximum content should be 150 words, preferably shorter.\n \nYou MUST write with UK English spelling, punctuationand grammer and NOT US English",
+              "role": "system"
+            },
+            {
+              "content": "=You are an outbound email specialist hunting for new leads for a company that has just launched a new product for the legal and professional services industry in the UK. Your role is to analyze the provided website homepage for a potential future client and craft a compelling, personalized ice breaker that resonates with the Lawyer in order to sell them the services of Leonard, the AI Voice Agent from Legal Engine.\n \nThe tone must be professional but not pompous. The email recipient will understand the concept of matter descriptions and directories submissions and will likely have felt pain in completing them previously. Your primary goal is to capitalise on this pain and encourage a trial of the AI agent (Leonard) we have built to reduce the pain.\n \nYour recipient audience will be UK based senior lawyers and law firm partners. They are sceptical, non-trusting and painfully slow to adopt new technology. They will be very wary of anything AI related and will need to have a clear understanding of the benefits of engaging in a demo of Leonard before they proceed. Another characteristic to use in your sales pitch is their egos. They LOVE legal directories rankings from Chambers and Legal 500 and put a disproportionate amount of importance to therse rankings. As a group, they are also incredibly time poor. They bill in six minute units so will not have time to read a lengthy email. Absolute maximum content should be 150 words, preferably shorter.\n \nYou MUST write with UK English spelling, punctuationand grammer and NOT US English"
+            }
+          ]
+        },
+        "jsonOutput": "={{ true }}",
+        "options": {}
+      },
+      "id": "3f2d3aa8-2772-4461-a134-ebe3a5038d4e",
+      "name": "Generate Email Follow-up 1",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "position": [
+        1300,
+        440
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "openAiApi": {
+          "id": "LldOhLNBReShSMkE",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-3.5-turbo",
+          "mode": "list",
+          "cachedResultName": "GPT-3.5-TURBO"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are an AI specialised in creating engaging cold outreach emails for B2B sales within the legal and professional services industry in the UK. Your role is to analyze the provided website homepage for a potnetial future client and craft a compelling, personalized final closing email of three that resonates with the Lawyer or Business Development or Marketing Professional in order to finally get them to test the services of Leonard, the AI Voice Agent from Legal Engine\n\nYou MUST write with UK English spelling, punctuationand grammer and NOT US English\n",
+              "role": "system"
+            },
+            {
+              "content": "=Generate a final follow up professional email to sell Leonard's services as a solution for legal matter summaries that outputs a JSON with the following structure:\n\n{\n    \"title\": \"string\",\n    \"body\": \"html string\"\n}\nThe HTML body MUST use this exact premium template:\n<div style=\"max-width: 600px; margin: 0 auto; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; color: #2D3748; background: #F7FAFC; padding: 40px 20px;\">\n    <div style=\"background: white; border-radius: 16px; padding: 40px 32px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);\">\n        \n        <h2 style=\"color: #1A202C; font-size: 24px; font-weight: 600; margin: 0 0 24px; line-height: 1.2;\">Hi there,</h2>\n        \n        <div style=\"font-size: 16px; line-height: 1.7; margin-bottom: 24px; color: #4A5568;\">\n            [Brief context of previous contact + Industry-specific insight:\n             - Reference market development or trend\n             - Connect to their business or professional evolution\n        </div>\n        \n        <div style=\"font-size: 16px; line-height: 1.7; margin-bottom: 24px; color: #4A5568;\">\n            [Final value proposition:\n             - Share competitive insight\n             - Reference time saving \n             - Share testimonial from competitor/use of Leaonard (if available)\n             - Highlight missed opportunity cost\n             - Focus on long-term strategic value]\n        </div>\n        \n        <div style=\"font-size: 16px; line-height: 1.7; margin-bottom: 32px; color: #4A5568;\">\n            [Final call to action with clear next step + closing timeline]\n        </div>\n        \n        <div style=\"margin-top: 32px; padding-top: 32px; border-top: 1px solid #E2E8F0;\">\n            <p style=\"margin: 0; color: #2D3748; font-size: 16px;\">Best regards,<br>Leonard - AI Agent<br>Legal Engine</p>\n        </div>\n        \n        <a href=\"https://legalengine.co.uk/\" style=\"display: inline-block; margin-top: 32px; padding: 12px 24px; background: #4299E1; color: white; text-decoration: none; border-radius: 8px; font-weight: 500; font-size: 16px; transition: all 0.2s ease; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);\"></a>\n        \n    </div>\n</div>\n\nPersonalization Requirements:\n1. Research industry trends to reference:\n   - Recent developments in Legal Tech\n   - Competitor usgae of AI\n   - Industry innovations\n   - Future growth indicators\n2. Use these insights to:\n   - Create urgency without pressure\n   - Highlight strategic value\n   - Show market understanding\n   - Present final compelling case\n\nContent Rules:\n- Maximum 700 characters\n- Must be final message tone\n- No desperate or pushy language\n- Include clear timeline for response\n- Signature must only be \"Leonard - Legal Engine AI Agent\"\n- Each point must include strategic insights\n- Must present new market-based perspective\n- The title must be final while maintaining professionalism\n\nSuggested Content to use for insipration:\nEmail 1 - Subject: “Hate directory season?”  \nSave up to 50% of your time with:  \n1. A 6-minute call  \n2. An auto-drafted matter summary  \n3. Zero stress  \nTry it now: [demo.legalengine.co.uk]\nEmail 2 – Three steps. Zero faff.  \n[Note: sent 5 business days after recipient is sent Email 1 and has not responded]\nSubject: “Three steps. That’s all.”  \n✅ No forms  \n✅ No admin  \n✅ No drama  \nJust results: [demo.legalengine.co.uk]\nEmail 3 – More than directories  \n[Note: sent 5 business days after recipient is sent Email 2 and has not responded]\nSubject: “Need a matter summary for a pitch?”  \nLeonard doesn’t just help with submissions. He can also:  \n- Draft matter descriptions for proposals  \n- Create pitch credentials  \n- Build LinkedIn posts and marketing content  \nGive him a go today: [demo.legalengine.co.uk]\n\nRelevant context about Legal Engine and Leonard in order to helkp you sell:\n- The Big Picture:\nLegal Engine is building a team of AI-powered voice Assistants to unlock significant\ngrowth opportunities for law firms.\nWe’re creating a new category of agentic voice AI, tools designed to free lawyers and\nbusiness services teams from the repetitive, unstructured work that underpins growth\nbut sits outside billable legal delivery.\nBy doing this we will save millions in wasted resource capital allocation and create a\ndynamic knowledge layer that can unlock millions in latent revenue opportunities\nthrough real-time referrals.\n- The Problem\nLaw Firms are highly inefficient at converting opportunities into revenue.\nThis is because law firm growth is still powered by manual, repetitive, people-\ndependent processes, especially in Marketing & Business Development (MBD).\n• The same information is requested and rewritten repeatedly\n• CRMs are never up to date\n• BD teams chase inputs, lawyers waste time giving them\n• Valuable insights from both client and internal meetings and completed matters are\nlost\n• Marketing content is shallow or delayed\n• Cross-sell and referral opportunities are not identified or slip through the cracks\nThis inefficiency translates into slower growth, higher costs, and millions in unrealised\nrevenue each year.\n- Introducing Legal Engine\nLegal Engine is building a team of voice-based AI Assistants to take on the routine, but\nessential, business development tasks that drain time, delay growth, and rely too\nheavily on manual effort.\nOur Assistants will:\n• Capture and structure commercial and marketing insights from a single, expert-led\nconversation\n• Generate reusable outputs; from directory submissions to CRM updates and BD\nassets\n• Integrate seamlessly into firms’ existing systems to distribute information and make\nit available to everyone\nThey require no training, no interface learning, simply a structured conversation via a\nmedium lawyers are used to and comfortable with.\nCapture once, use endlessly.\n- Meet our first Assistant, Leonard\nLeonard automates a critical, high-friction process for law firms –\ngathering matter summaries for Directories, Pitches & Credentials.\nLeonard does this by:\n• Conducts structured interviews with lawyers\n• Produces formatted submissions aligned to Legal 500 and\nChambers guidelines\n• Creates complementary assets for pitches, bios, and web profiles\n• Integrates updates directly into CRM and matter management\nplatforms\nProof-of-concept pilots with top-50 UK firms validating product-\nmarket fit and live conversations for paid deployment in Q3 2025.\n- Leonard: how it works\nExpert-led conversations to create commercial assets.\nLeonard has been trained on industry best practice and imbued with\ndecades of our professional service experience, enabling him to\nspeak to a lawyer via phone (inbound our outbound) and ask\nstructured, domain-specific questions to elicit the right answers\nWithin seconds, Leonard produces:\n1. A submission-quality matter summary\n2. Pitch, credential, website and social and content\n3. CRM-ready data updates\n4. Suggestions of client follow-ups and introductions\nAll securely processed with minimal user effort.\n- Product Vision\nLeonard is just the beginning, we are building a series of\ncomplementary Assistants.\nWe are initially targeting the routine processes that we know are\nefficiency-drains – drafting business development plans, managing\nsales funnels, launching events, creating marketing content – to\nremove the 'information leakage' that happens daily at law firms,\ncausing re-work, leaving billable revenue on the table and slowing\ndown growth.\nAll agents will capture knowledge that is not currently written\ndown feeding a unified, firm-wide knowledge base that will\nultimately be able to make connections and referrals within the\nfirm that unlock revenue opportunities.\n- Our Assistants: how they work\nAll our Assistants will be modular,\nsecure and customisable.\nOur moat is our years of experience,\nencoded into the Assistants we are\nbuilding, coupled with the plumbing of\nknitting the best available tools for each\nelement of the task.\nWe are focusing on enterprise-grade\nsecurity from Day One, with EEA data\nresidency or on-premise deployment as\nstandard.\n- Business Model – Assistant Value Pricing\nOur Assistants are priced like hires, with price scaling in line with value delivered.\nWe’re not just selling software; we’re selling Expert Assistants who can get specific work\ndone that creates direct and measurable value for a firm.\nOur Assistants don't just rely on AI, they are trained and honed by a team of industry\nexperts, with a combined 75 years of experience and can be individually onboarded to\nfirms, just like a human assistant, imbued with specific knowledge to improve their output.\nFirms will “hire” our Assistants to do “work\", paying for the value created, just as if they\nwere hiring human resource to do the same thing, but at a fraction of the cost and with\nmuch greater efficiency.\nStarter Assistants: ~£1,000/month or up to £10k / project\nAdvanced Assistants: £2,000–£3,000/month or up to £25k / project\n\nYou MUST write with UK English spelling, punctuationand grammer and NOT US English\n\nInput Variable:\n- Homepage content: {{ $('Limit Markdown').item.json.limitedMarkdown }}\n- Domain name: {{ $('Set Users Company Domain').item.json.domain }}\n- Demolink: {{ $('Set Legal Engine Demolinik').item.json.demolink }}\n- Recipient: {{ $('Read List of Leads').item.json['First Name'] }}\n- Previous contact dates: {{ $json.previousEmailDates }}"
+            }
+          ]
+        },
+        "jsonOutput": "={{ true }}",
+        "options": {}
+      },
+      "id": "2079dc66-cb32-4134-88b9-55da70db390d",
+      "name": "Generate Email Final Follow-up",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "position": [
+        1260,
+        1080
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "openAiApi": {
+          "id": "LldOhLNBReShSMkE",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toRecipients": "=andy@legalengine.co.uk",
+        "subject": "={{ $json.message.content.Subject }}",
+        "bodyContent": "={{ $json.message.content.Body }}",
+        "additionalFields": {
+          "bodyContentType": "html"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        1560,
+        -40
+      ],
+      "id": "55654132-10aa-430a-afaf-977483b999f9",
+      "name": "Email from Leonard",
+      "webhookId": "c264ad7b-0a45-4bb1-872a-4c7b0cbfe4ed",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "APa28clvTTmmzH55",
+          "name": "Microsoft Outlook account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n   \"domain\": \"legalengine.co.uk\",\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1100,
+        440
+      ],
+      "id": "6a8bb746-62fb-4a83-810b-199fb4cc6805",
+      "name": "Product link2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const domain = \"https://www.slaughterandmay.com/\"\nreturn { domain };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        20,
+        420
+      ],
+      "id": "4a3c36e5-c0be-4e7e-8384-a8279395edc4",
+      "name": "Set Users Company Domain1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const demolink = \"https://demo.legalengine.co.uk/\"\nreturn { demolink };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        180,
+        420
+      ],
+      "id": "48efd138-3f46-48c5-87c8-7ce88022ec11",
+      "name": "Set Legal Engine Demolinik1"
+    },
+    {
+      "parameters": {
+        "url": "=https://r.jina.ai/{{ $json.domain }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        360,
+        420
+      ],
+      "id": "27e6700c-618c-4b30-b3cd-be2461782ab2",
+      "name": "get users company info with Jina.ai1",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "toRecipients": "=andy@legalengine.co.uk",
+        "subject": "={{ $json.message.content.title }}",
+        "bodyContent": "={{ $json.message.content.body }}",
+        "additionalFields": {
+          "bodyContentType": "html"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        1680,
+        280
+      ],
+      "id": "768ab2d7-890f-40f7-88c5-c1fe94e08924",
+      "name": "Email from Leonard1",
+      "webhookId": "3481754a-237c-4270-a1b3-f8f61dc8c535",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "APa28clvTTmmzH55",
+          "name": "Microsoft Outlook account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const domain = \"https://www.slaughterandmay.com/\"\nreturn { domain };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        40,
+        1100
+      ],
+      "id": "017a550f-379d-4773-902f-2e3206b1a601",
+      "name": "Set Users Company Domain2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const demolink = \"https://demo.legalengine.co.uk/\"\nreturn { demolink };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        200,
+        1100
+      ],
+      "id": "432905a6-b67d-4bef-a613-56ab2ecfdb18",
+      "name": "Set Legal Engine Demolinik2"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n   \"domain\": \"legalengine.co.uk\",\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1040,
+        1080
+      ],
+      "id": "df21c613-19a0-4030-8ee5-ff5da6a7b12a",
+      "name": "Product link3"
+    },
+    {
+      "parameters": {
+        "toRecipients": "=andy@legalengine.co.uk",
+        "subject": "={{ $json.message.content.title }}",
+        "bodyContent": "={{ $json.message.content.body }}",
+        "additionalFields": {
+          "bodyContentType": "html"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        1640,
+        960
+      ],
+      "id": "4a6fa429-0c9a-4783-9159-f0eee375b9fd",
+      "name": "Email from Leonard2",
+      "webhookId": "9b56f404-7d09-4da7-b7f1-f86dee7f6638",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "APa28clvTTmmzH55",
+          "name": "Microsoft Outlook account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://r.jina.ai/{{ $json.domain }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        400,
+        1100
+      ],
+      "id": "e522aaf1-3148-40b0-b9b3-a7d69f17d01a",
+      "name": "get users company info with Jina.ai2",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-3.5-turbo",
+          "mode": "list",
+          "cachedResultName": "GPT-3.5-TURBO"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are an outbound email specialist hunting for new leads for a company that has just launched a new product for the legal and professional services industry in the UK. Your role is to sell the benefits to the fuiture client and craft a compelling, personalized ice breaker that resonates with the Lawyer in order to sell them the services of Leonard, the AI Voice Agent from Legal Engine.\n \nThe tone must be professional but not pompous. The email recipient will understand the concept of matter descriptions and directories submissions and will likely have felt pain in completing them previously. Your primary goal is to capitalise on this pain and encourage a trial of the AI agent (Leonard) we have built to reduce the pain.\n \nYour recipient audience will be UK based senior lawyers and law firm partners. They are sceptical, non-trusting and painfully slow to adopt new technology. They will be very wary of anything AI related and will need to have a clear understanding of the benefits of engaging in a demo of Leonard before they proceed. Another characteristic to use in your sales pitch is their egos. They LOVE legal directories rankings from Chambers and Legal 500 and put a disproportionate amount of importance to therse rankings. As a group, they are also incredibly time poor. They bill in six minute units so will not have time to read a lengthy email. Absolute maximum content should be 150 words, preferably shorter.\n\nThe recipents are ranked second out of six rankings in the UK Legal 500 rankings. They are just one off the best ranking. Make sure to reference that with Leonards help they could be ranked in the top tier. \n \nYou MUST write with UK English spelling, punctuationand grammer and NOT US English.\nYou should use the templates in the knowledge base as an 80% guide, only changing 20% of the content to make it more appeaking and personal. \n\nYour knowledge base is here, you should refer to this at every stage: \nSubject lines: \n- \"Band 1 in Chambers? Leonard’s here to help you stay there.\" \n- \"Another top tier ranking. Let’s make it easier next time.\" \n\nHi [First Name], \n \nDirectory submissions: important, but painfully time-consuming. You’ve already been ranked in [Chambers / Legal 500 / IFLR], nice work. But wouldn't it be better to spend less time telling the world how good you are, and more time being it? \n \nMeet Leonard, our AI directories assistant, who can write all your matter summaries for you:. \n \n🧠 Thousands of submissions worth of knowledge   \n📞 A 6-minute (one uinit) structured conversation   \n📄 A polished, submission-ready matter summary   \n \nGive Leonard a try here: [demo.legalengine.co.uk] \n \nCheers,   \nLee \n\nVersion B – Tier 3–5 or unranked lawyers \n\nSubject lines: \n- \"Want to climb the directory rankings?\" \n- \"Tier 3 today. Tier 1 tomorrow?\" \n\nHi [First Name], \n \nDirectory submissions are a chance to stand out—but most lawyers don’t have the time required to dedicate to them. \n \nWe built Leonard to change that. He’s an AI directories assistant who:   \n🧠 Knows what matters   \n📞 Asks the right questions in 6 minutes   \n📄 Creates a clean, accurate matter summary   \n \nTry the demo: [demo.legalengine.co.uk]   \n \nCheers,   \nLee ",
+              "role": "system"
+            },
+            {
+              "content": "=You are an outbound email specialist hunting for new leads for a company that has just launched a new product for the legal and professional services industry in the UK. Your role is to sell the benefits to the fuiture client and craft a compelling, personalized ice breaker that resonates with the Lawyer in order to sell them the services of Leonard, the AI Voice Agent from Legal Engine.\n \nThe tone must be professional but not pompous. The email recipient will understand the concept of matter descriptions and directories submissions and will likely have felt pain in completing them previously. Your primary goal is to capitalise on this pain and encourage a trial of the AI agent (Leonard) we have built to reduce the pain.\n \nYour recipient audience will be UK based senior lawyers and law firm partners. They are sceptical, non-trusting and painfully slow to adopt new technology. They will be very wary of anything AI related and will need to have a clear understanding of the benefits of engaging in a demo of Leonard before they proceed. Another characteristic to use in your sales pitch is their egos. They LOVE legal directories rankings from Chambers and Legal 500 and put a disproportionate amount of importance to therse rankings. As a group, they are also incredibly time poor. They bill in six minute units so will not have time to read a lengthy email. Absolute maximum content should be 150 words, preferably shorter.\n\nThe recipents are ranked second out of six rankings in the UK Legal 500 rankings. They are just one off the best ranking. Make sure to reference that with Leonards help they could be ranked in the top tier. \n \nYou MUST write with UK English spelling, punctuationand grammer and NOT US English.\nYou should use the templates in the knowledge base as an 80% guide, only changing 20% of the content to make it more appeaking and personal. \n\nYour knowledge base is here, you should refer to this at every stage: \nSubject lines: \n- \"Band 1 in Chambers? Leonard’s here to help you stay there.\" \n- \"Another top tier ranking. Let’s make it easier next time.\" \n\nHi [First Name], \n \nDirectory submissions: important, but painfully time-consuming. You’ve already been ranked in [Chambers / Legal 500 / IFLR], nice work. But wouldn't it be better to spend less time telling the world how good you are, and more time being it? \n \nMeet Leonard, our AI directories assistant, who can write all your matter summaries for you:. \n \n🧠 Thousands of submissions worth of knowledge   \n📞 A 6-minute (one uinit) structured conversation   \n📄 A polished, submission-ready matter summary   \n \nGive Leonard a try here: [demo.legalengine.co.uk] \n \nCheers,   \nLee \n\nVersion B – Tier 3–5 or unranked lawyers \n\nSubject lines: \n- \"Want to climb the directory rankings?\" \n- \"Tier 3 today. Tier 1 tomorrow?\" \n\nHi [First Name], \n \nDirectory submissions are a chance to stand out—but most lawyers don’t have the time required to dedicate to them. \n \nWe built Leonard to change that. He’s an AI directories assistant who:   \n🧠 Knows what matters   \n📞 Asks the right questions in 6 minutes   \n📄 Creates a clean, accurate matter summary   \n \nTry the demo: [demo.legalengine.co.uk]   \n \nCheers,   \nLee "
+            }
+          ]
+        },
+        "jsonOutput": "={{ true }}",
+        "options": {}
+      },
+      "id": "739b0314-68d2-4359-bad9-807233b0f2b8",
+      "name": "Generate Email content2",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "position": [
+        960,
+        -540
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "openAiApi": {
+          "id": "LldOhLNBReShSMkE",
+          "name": "OpenAi account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When clicking Test workflow1": {
+      "main": [
+        [
+          {
+            "node": "Read List of Leads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Emails",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Emails1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait2": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Emails1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait3": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Emails2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait4": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Emails2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Emails",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Generate Email content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Email content": {
+      "main": [
+        [
+          {
+            "node": "Email from Leonard",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail1": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Emails1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Limit Markdown1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit Markdown1": {
+      "main": [
+        [
+          {
+            "node": "Product link2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "Wait4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail2": {
+      "main": [
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If3": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Emails2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Limit Markdown2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit Markdown2": {
+      "main": [
+        [
+          {
+            "node": "Product link3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read List of Leads": {
+      "main": [
+        [
+          {
+            "node": "Is it an Email ?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is it an Email ?": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Emails",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Loop Over Emails1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Loop Over Emails2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Emails": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Emails1": {
+      "main": [
+        [
+          {
+            "node": "Wait3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Users Company Domain1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Set Legal Engine Demolinik1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Emails2": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Set Users Company Domain2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Email Follow-up 1": {
+      "main": [
+        [
+          {
+            "node": "Gmail1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Email from Leonard1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Email Final Follow-up": {
+      "main": [
+        [
+          {
+            "node": "Gmail2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Email from Leonard2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email from Leonard": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Product link2": {
+      "main": [
+        [
+          {
+            "node": "Generate Email Follow-up 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Users Company Domain1": {
+      "main": [
+        [
+          {
+            "node": "Set Legal Engine Demolinik1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Legal Engine Demolinik1": {
+      "main": [
+        [
+          {
+            "node": "get users company info with Jina.ai1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get users company info with Jina.ai1": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email from Leonard1": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Users Company Domain2": {
+      "main": [
+        [
+          {
+            "node": "Set Legal Engine Demolinik2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Legal Engine Demolinik2": {
+      "main": [
+        [
+          {
+            "node": "get users company info with Jina.ai2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Product link3": {
+      "main": [
+        [
+          {
+            "node": "Generate Email Final Follow-up",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email from Leonard2": {
+      "main": [
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get users company info with Jina.ai2": {
+      "main": [
+        [
+          {
+            "node": "If3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 0,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

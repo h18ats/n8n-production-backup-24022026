@@ -1,0 +1,597 @@
+{
+  "name": "DEV OLD - Luke Post Call - Andy copy",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are Luke, an expert legal Business Development assistant. \nYour primary role is to support busy lawyers to complete business development and  growth actions that will increase revenue generation opportunities. You will achieve this by analysing transcripts of a short call from a lawyer post a client meeting and produce a structured, professional output. \n\nYour Tasks: \n\nIdentify Follow-Up Actions \n\nExtract all actions that arise in the transcript. \n\nCategorise each one clearly as: \n\nAgreed Action – explicitly confirmed by lawyer or client. \n\nInferred / Potential Action – implied but not explicitly confirmed. \n\nSummarise the Meeting \n\nProvide a concise high-level summary of the main topics, issues, and next steps discussed. \n\nFocus on legal and practical matters, not filler conversation. \n\nOutput Format: \n\nHigh-Level Summary (2-3 sentences) \n\nAgreed Actions: [who is responsible, what needs doing, when if specified] \n\nInferred / Potential Action: [description] \n\nStyle & Rules: \n\nBe precise, neutral, and professional. Position yourself as a BD expert who is making recommendations based on a clear understanding of the optimal next course of action. \n\nDo not invent actions that are not supported by the transcript. \n\nAlways separate what is confirmed from where further clarification is required. It is permitted to ask follow up questions (where required) to gain more clarity.  \n\nFlag anything that might require clarification before being treated as a true action. \n\nInputs: \nMeeting Transcript: {{ $json.body.transcript }} \nMeeting Summary from the call: {{ $json.body.summary }} ",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -192,
+        0
+      ],
+      "id": "8f6ece73-f580-4825-8972-85f6a870b30d",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini-2025-08-07",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini-2025-08-07"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -192,
+        224
+      ],
+      "id": "006ab6ae-2946-404b-836a-76d66c69f00f",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "LldOhLNBReShSMkE",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toRecipients": "=andy@legalengine.co.uk, lee@legalengine.co.uk",
+        "subject": "=Legal Engine Actions from Post Client Meeting Call",
+        "bodyContent": "=<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Legal Engine • Your Post Client Meeting Actions</title>\n\n  <!-- Brand Typeface -->\n  <link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap\" rel=\"stylesheet\">\n\n  <style>\n    :root{\n      --le-navy:#062047; --le-blue:#00b3ff; --le-indigo:#0066ff;\n      --le-grey:#f2f6fa; --le-silver:#e5ecf3; --le-text:#263238;\n    }\n    *{box-sizing:border-box;margin:0;padding:0;}\n    body{\n      width:100%!important;background:var(--le-grey);\n      font-family:'Inter',Helvetica,Arial,sans-serif;\n      color:var(--le-text);-webkit-font-smoothing:antialiased;\n    }\n    .wrapper{\n      max-width:700px;margin:0 auto;background:#fff;\n      border:1px solid var(--le-silver);border-radius:10px;\n      padding:48px 40px;\n    }\n    .section{margin-bottom:20px;line-height:1.55;}\n    .section h1{color:var(--le-navy);font-size:24px;font-weight:700;margin-bottom:18px;}\n    .section h2{\n      color:var(--le-navy);font-size:22px;font-weight:700;\n      padding-bottom:10px;border-bottom:2px solid var(--le-silver);\n      margin-bottom:14px;\n    }\n    .section p{margin-bottom:16px;white-space:pre-line;}\n\n    .button{\n      display:inline-block;padding:14px 28px;font-weight:600;\n      color:#fff!important;text-decoration:none;border-radius:6px;\n      background:linear-gradient(90deg,var(--le-blue)0%,var(--le-indigo)100%);\n      transition:opacity .25s ease-in-out;\n    }\n    .button:hover{opacity:.8;}\n\n\n    .signature p{margin-bottom:6px;}\n.signature{\n  color:var(--le-text);                /* same dark text as body */\n  font-family:'Inter',Helvetica,Arial,sans-serif;\n}\n.signature a{\n  color:var(--le-text);                /* links also black */\n  text-decoration:none;\n}\n\n\n    .footer{\n      font-size:13px;color:#6c7a84;text-align:center;\n      padding-top:24px;border-top:1px solid var(--le-silver);\n    }\n    .tracking-pixel{display:none;width:1px;height:1px;}\n\n    @media(max-width:520px){\n      .wrapper{padding:32px 22px;}\n      .section h1{font-size:22px;}\n      .section h2{font-size:20px;}\n    }\n  </style>\n</head>\n<body>\n  <div class=\"wrapper\">\n\n    <!-- HEADER -->\n    <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-collapse:collapse;margin-bottom:40px;\">\n      <tr>\n        <td align=\"center\">\n          <img\n            src=\"https://49390627.fs1.hubspotusercontent-eu1.net/hub/49390627/hubfs/e8ad0e08-aa6c-4d44-9053-cdcf7bbaec5b.png?width=852&amp;height=339&amp;name=e8ad0e08-aa6c-4d44-9053-cdcf7bbaec5b.png\"\n            alt=\"Legal Engine\"\n            width=\"180\" height=\"72\"\n            style=\"width:180px;max-width:100%;height:auto;display:block;border:0;outline:none;text-decoration:none;\">\n        </td>\n      </tr>\n    </table>\n    <!--[if mso]><style>.mso-logo img{width:180px!important;height:auto!important;}</style><![endif]-->\n\n  <!-- INTRO -->\n    <div class=\"section\">\n      <p>Hi,</p>\n      <p>Thanks for taking the time to test Legal Engine.</p>\n    \n    </div>\n\n    <!-- SUMMARY OF ACTIONS -->\n    <div class=\"section\">\n      <h2>Summary of Actions</h2>\n  {{ $json.output }}\n    </div>\n\n    <!-- EXTRA ASSETS INTRO -->\n    <div class=\"section\">\n  \n      <p>This is just a snapshot of my capabilities. At&nbsp;<a href=\"https://legalengine.co.uk/\"><b>Legal Engine</b></a>, we’re building a suite of assistants like me, ready to transform Marketing &amp; BD across the legal industry.</p>\n    </div>\n\n<!-- SIGN-OFF -->\n<div class=\"signature\">\n  <p>Cheers,</p>\n\n  <p><b>Luke</b></p>\n\n  <p><b>BD AI Assistant<br>Legal Engine</b></p>\n\n  <p>\n    E:&nbsp;<a href=\"mailto:luke@legalengine.co.uk\">luke@legalengine.co.uk</a><br>\n    W:&nbsp;<a href=\"https://legalengine.co.uk/\">www.legalengine.co.uk</a>\n  </p>\n</div>\n    <!-- FOOTER + UNSUBSCRIBE -->\n    <div class=\"footer\">\n      &copy; 2025 Legal Engine Ltd. All rights reserved.<br><br>\n      <a href=\"https://unsubscribe.legalengine.co.uk\" style=\"color:var(--le-blue);text-decoration:none;\">Unsubscribe</a>\n    </div>\n\n    <!-- OPEN-TRACKING -->\n    <img class=\"tracking-pixel\"\n         alt=\"\">\n  </div>\n</body>\n</html>",
+        "additionalFields": {
+          "bodyContentType": "html"
+        },
+        "path": "b7ec737f-6931-4570-8214-4343f905fcd6"
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        512,
+        0
+      ],
+      "id": "db1f9e58-9d9b-4ed6-a0ac-bab840d539b9",
+      "name": "HTML Email from Leonard to Lawyer",
+      "webhookId": "b7ec737f-6931-4570-8214-4343f905fcd6",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "APa28clvTTmmzH55",
+          "name": "Microsoft Outlook - Leonard @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "numberOfItems": -1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserItemList",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        224
+      ],
+      "id": "ba710a17-25c5-4520-b410-37377aee9920",
+      "name": "Item List Output Parser"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Your role is to produce a html formatted version of this text that will be embedded into an html email. I just need the output to be a paragaph of formatted text in html and not a full html template\n\nText here: {{ $json['0'] }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        160,
+        0
+      ],
+      "id": "0fbec973-ca2f-4aae-993b-ff8558a48eca",
+      "name": "AI Agent2"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini-2025-08-07",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini-2025-08-07"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        240,
+        336
+      ],
+      "id": "a4cec0e3-7f53-464f-bf51-6406b3c3d027",
+      "name": "OpenAI Chat Model2",
+      "credentials": {
+        "openAiApi": {
+          "id": "LldOhLNBReShSMkE",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -416,
+        272
+      ],
+      "id": "fd96d13c-d199-4c84-82fa-c308e156b0b1",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"subject\": {\n      \"type\": \"string\",\n      \"description\": \"The subject line of the email\"\n    },\n    \"email\": {\n      \"type\": \"string\",\n      \"description\": \"The body content of the email\"\n    }\n  },\n  \"required\": [\"subject\", \"email\"]\n}\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        -64,
+        784
+      ],
+      "id": "f6d11851-94d6-4e6a-bcf8-10997eb2ed9f",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3800e373-5f7a-4642-8392-d3a4aed9e067",
+              "name": "email",
+              "value": "={{ $json.output.email }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        224,
+        560
+      ],
+      "id": "3fa59c8d-911f-4036-8b6e-18ba950f7fad",
+      "name": "Set Email"
+    },
+    {
+      "parameters": {
+        "inputText": "={{ $json.data.text }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "Approved",
+              "description": "The email has been reviewed and accepted as-is. The human explicitly or implicitly expresses approval, indicating that no changes are needed. \n\nExample phrases include:\n\n\"Looks good.\"\n\"Okay.\"\n\"Ok.\"\n\"Go ahead and send it.\"\n\"This works for me.\"\n\"Approved.\"\n\"No changes needed.\"\n\"Fine.\"\n\"Send.\""
+            },
+            {
+              "category": "Declined",
+              "description": "The email has been reviewed, but the human requests modifications before it is sent like tweaks, removing parts, rewording, etc. This could include suggested edits, rewording, or major revisions. \n\nExample phrases include:\n\n\"Can we tweak this part?\"\n\"Needs some changes.\"\n\"I’d like to reword this.\"\n\"Not quite right—let’s revise it.\"\n\"Can you adjust this before sending?\"\n\"Don't mention that we can't do that\""
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1,
+      "position": [
+        736,
+        400
+      ],
+      "id": "95a436c5-5fdd-4bcc-b409-7f6c948683fa",
+      "name": "Check Feedback"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Email: {{ $('Set Email').item.json.email }}\n\nFeedback from human: {{ $json.data.text }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=# Overview\nYou are an expert Business Development Executive within professional services and law. Your job is to take an incoming set of minutes, actions and next steps and revise it based on the feedback the human submitted.\n\n## Rules\nHere is the current date/time: {{ $now }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        1088,
+        656
+      ],
+      "id": "e4359be7-e565-4b44-a3de-f3cc1e79a636",
+      "name": "Revision Agent1"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -192,
+        784
+      ],
+      "id": "2743a839-3aea-403e-a925-0b21683cb232",
+      "name": "OpenAI Chat Model4",
+      "credentials": {
+        "openAiApi": {
+          "id": "LldOhLNBReShSMkE",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "toRecipients": "andy@legalengine.co.uk, lee@legalengine.co.uk",
+        "subject": "=Hi, APPROVAL REQUIRED for your client email after your recent conversation with Luke from Legal Engine",
+        "message": "=Hi there, \n\nPlease see below a summary of agreed next actions for your written approval. \n\n---\n\n{{ $json.email }}\n\n---\n\nIf there are any revisons or edits please click on the link below to provide feedback and one of my AI Agent colleagues will pick this up and send you a revised version. \n\nBest regards\n\nLuke\nLegal Engine AI Agent",
+        "responseType": "freeText",
+        "options": {
+          "messageButtonLabel": "Click here to review and amend/approve"
+        },
+        "path": "2e9e5456-4723-4a32-aac3-af827d54580d"
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        512,
+        304
+      ],
+      "id": "79192dca-f9da-48f6-aa7a-3edaae697e0d",
+      "name": "Email from Leonard Chk Summary1",
+      "webhookId": "2e9e5456-4723-4a32-aac3-af827d54580d",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "APa28clvTTmmzH55",
+          "name": "Microsoft Outlook - Leonard @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        816,
+        624
+      ],
+      "id": "7437f06c-8e81-48fe-a9cf-8cad01332fe2",
+      "name": "OpenAI Chat Model5",
+      "credentials": {
+        "openAiApi": {
+          "id": "LldOhLNBReShSMkE",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toRecipients": "andy@legalengine.co.uk, lee@legalengine.co.uk",
+        "subject": "=Hi, here is your approved set of actions and next steps",
+        "bodyContent": "=Hi there, \n\nPlease see below the the summary of actions and next steps.\n\n---\n\n{{ $('Set Email').item.json.email }}\n\n---\n\nIt was great speaking to you, let's chat again soon.\n\nBest regards\n\nLuke\nLegal Engine AI Agent",
+        "additionalFields": {},
+        "path": "c45bd4b4-8a9e-4a31-a7d8-a16f183c7483"
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        1152,
+        336
+      ],
+      "id": "c89b1b9a-2858-4434-8795-aab6b705796f",
+      "name": "Email from Leonard - all assets1",
+      "webhookId": "c45bd4b4-8a9e-4a31-a7d8-a16f183c7483",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "APa28clvTTmmzH55",
+          "name": "Microsoft Outlook - Leonard @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Incoming Summary\n\nThe Transcript of the call is: {{ $json.body.transcript }}\nThe summary of the call is:{{ $json.body.summary }}\n",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=Writing as a sales and business development professional, create a plain text email to the client outlining the captured actions and next steps.  \n\nThe email should be drafted from the lawyer you are supporting and be addressed to the client.  \n\nThe tone should be professional but warm. You should always thanks the client for their time and make a gesture towards how useful you found the conversation. \n\nThe content of the email should only relate to the meeting summary and the follow up actions agreed. Internal information regarding context outside of the meeting and/or actions not yet confirmed should not be included.  \n\nEnsure it is written in UK English and NOT US English, with the names of people and Companies/Law Firms appropriately spelled and capiatlised, references to currency formatted properly, numbers and values also generally in figures as opposed to words (in keeping with UK English best practice), and with superior general spelling and grammer.  \n\nYou should keep the content as close as possible to the original and NOT add in additional information. "
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -192,
+        544
+      ],
+      "id": "9fc96022-c7cd-4caa-a432-69c75a927759",
+      "name": "Summary Agent"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "90cd324c-560f-496d-a340-174898156b32",
+        "options": {
+          "rawBody": true
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -640,
+        272
+      ],
+      "id": "ced0f1e8-4c33-40e2-850d-44060eeb64eb",
+      "name": "Luke Post Call Webhook",
+      "webhookId": "90cd324c-560f-496d-a340-174898156b32"
+    }
+  ],
+  "connections": {
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Item List Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent2": {
+      "main": [
+        [
+          {
+            "node": "HTML Email from Leonard to Lawyer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Summary Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Summary Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          },
+          {
+            "node": "Revision Agent1",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Email": {
+      "main": [
+        [
+          {
+            "node": "Email from Leonard Chk Summary1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Check Feedback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Feedback": {
+      "main": [
+        [
+          {
+            "node": "Email from Leonard - all assets1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Revision Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Revision Agent1": {
+      "main": [
+        [
+          {
+            "node": "Set Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Summary Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Revision Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email from Leonard Chk Summary1": {
+      "main": [
+        [
+          {
+            "node": "Check Feedback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Check Feedback",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summary Agent": {
+      "main": [
+        [
+          {
+            "node": "Set Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Luke Post Call Webhook": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {
+    "Luke Post Call Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "leonard-dev.app.n8n.cloud",
+            "user-agent": "ElevenLabs/1.0",
+            "content-length": "1544",
+            "accept": "*/*",
+            "accept-encoding": "gzip, br",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "34.59.11.47",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "US",
+            "cf-ray": "976de3a8e1e3f845-ORD",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "x-forwarded-for": "34.59.11.47, 172.70.130.186",
+            "x-forwarded-host": "leonard-dev.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-52-6c4f4684d5-ldxbx",
+            "x-is-trusted": "yes",
+            "x-real-ip": "34.59.11.47"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "summary": "The meeting went well. The key next steps are to send a summary of agreed actions and expertise to the client, and to hold an internal meeting tomorrow at 9 a.m. with Lee Curtis. We'll also make an introduction to Sam Stumpf.",
+            "transcript": "Good meeting Andy? Ready for a quick debrief?\nYeah, let's go.\nIs there any other context you want to capture now that the client isn’t around?\nYeah, we just need to move quickly because they are going to get cold feet otherwise.\nUnderstood. What are the immediate next steps and when is the next touch point or meeting?\nWe need to get a summary out to them of agreed actions and expertise and we need another touchpoint. Let's do an internal meeting tomorrow morning at 9 a.m.\nGot it. A summary of agreed actions and expertise, and an internal meeting tomorrow at 9 a.m. Is there anyone internally we should introduce the client to?\nYeah, let's introduce them to Sam Stumpf\nOkay, I've captured that. Is there anything else?\nYeah, let's include Lee Curtis on the meeting in the morning, please.\nSure, I'll add Lee Curtis to the internal meeting tomorrow at 9 a.m. Anything else from your side?\nNo, I think we're good\nGreat. So, to summarise: the meeting went well, and the key next steps are to send a summary of agreed actions and expertise to the client, and to hold an internal meeting tomorrow at 9 a.m. with Lee Curtis. We'll also make an introduction to Sam Stumpf. Does that sound right?\nYep sounds good.\nThanks for confirming. I’m sending the summary now."
+          },
+          "webhookUrl": "https://leonard-dev.app.n8n.cloud/webhook/luke_post_meeting_call",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "triggerCount": 1,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

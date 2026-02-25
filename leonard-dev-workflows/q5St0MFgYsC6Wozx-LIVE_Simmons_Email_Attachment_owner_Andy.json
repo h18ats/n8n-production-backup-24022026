@@ -1,0 +1,4469 @@
+{
+  "name": "LIVE - Simmons Email Attachment - owner Andy",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "={{ $json.fields.Word[0].url }}",
+        "options": {}
+      },
+      "name": "HTTP Request1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -192,
+        304
+      ],
+      "id": "6a517004-4d35-40af-8796-4d79dc2589ab"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ONE Code node: read from 'data-producer', merge binaries, count data*, build Outlook attachments,\n// and (optionally) merge JSON from existing 'Airtable' node — no new nodes added.\n\nconst SOURCE_NODE = 'data-producer';\nconst AIRTABLE_NODE = 'Airtable';\n\n// --- 1) Load source items (from named node; fallback to current input) ---\nlet srcItems;\ntry {\n  srcItems = $items(SOURCE_NODE);\n  if (!Array.isArray(srcItems) || srcItems.length === 0) srcItems = items;\n} catch (_) {\n  srcItems = items;\n}\n\n// --- 2) Merge binaries into a single item; prefer json.fieldName or data{index} ---\nconst merged = { json: {}, binary: {} };\n\nfor (const item of srcItems) {\n  const impliedKey = item.json?.fieldName || (item.json?.index ? `data${item.json.index}` : undefined);\n\n  if (impliedKey && item.binary?.[impliedKey]) {\n    merged.binary[impliedKey] = item.binary[impliedKey];\n    if (item.json?.filename) merged.binary[impliedKey].fileName = item.json.filename;\n    continue;\n  }\n\n  if (item.binary) {\n    for (const [bKey, bVal] of Object.entries(item.binary)) {\n      merged.binary[bKey] = bVal; // last one wins if duplicate keys\n      if (item.json?.filename && impliedKey === bKey) {\n        merged.binary[bKey].fileName = item.json.filename;\n      }\n    }\n  }\n}\n\n// --- 3) Count data* binaries (total + unique) and per-item breakdown ---\nconst dataKeyRegex = /^data\\d*$/i;\n\nlet totalDataKeys = 0;\nconst uniqueDataKeys = new Set();\nconst perItem = [];\n\nfor (let i = 0; i < srcItems.length; i++) {\n  const bin = srcItems[i].binary || {};\n  const keys = Object.keys(bin).filter(k => dataKeyRegex.test(k));\n  perItem.push({ itemIndex: i + 1, dataKeys: keys, count: keys.length });\n  totalDataKeys += keys.length;\n  keys.forEach(k => uniqueDataKeys.add(k));\n}\n\n// --- 4) Build Outlook-friendly attachments array (JSON Parameters = ON) ---\nconst allKeys = Object.keys(merged.binary || {});\nmerged.json.attachments = allKeys.map(k => ({\n  binaryPropertyName: k,\n  fileName: merged.binary[k]?.fileName,\n  mimeType: merged.binary[k]?.mimeType,\n}));\n\n// --- 5) (Optional) Merge JSON from existing 'Airtable' node (no new nodes created) ---\ntry {\n  const airtableItems = $items(AIRTABLE_NODE); // will throw if node doesn't exist\n  if (Array.isArray(airtableItems) && airtableItems.length > 0) {\n    const airtableJson = airtableItems[0]?.json ?? {};\n\n    // (a) Shallow-merge ALL top-level Airtable fields into merged.json (last write wins)\n    for (const [k, v] of Object.entries(airtableJson)) {\n      merged.json[k] = v;\n    }\n\n    // (b) Keep a namespaced copy to avoid key collisions / for debugging\n    merged.json.airtable = airtableJson;\n\n    // (c) If there's an Airtable \"Attachments\" array, add a flattened read-friendly view\n    if (Array.isArray(airtableJson.Attachments)) {\n      merged.json.airtableAttachments = airtableJson.Attachments.map(att => ({\n        id: att?.id,\n        url: att?.url,\n        filename: att?.filename,\n        size: att?.size,\n        type: att?.type,\n      }));\n    }\n  }\n} catch (_) {\n  // If 'Airtable' node isn't present, do nothing.\n}\n\n// --- 6) Summary meta (explicit totals) ---\nmerged.json.sourceNode = SOURCE_NODE;\nmerged.json.totalItems = srcItems.length;\nmerged.json.totalItemsFromSource = srcItems.length;\nmerged.json.totalBinaryKeys = allKeys.length;\nmerged.json.totalDataOutputs = totalDataKeys;\nmerged.json.uniqueDataOutputs = uniqueDataKeys.size;\nmerged.json.uniqueDataKeys = Array.from(uniqueDataKeys);\nmerged.json.perItem = perItem;\n\n// --- 7) Return ONE merged item ---\nreturn [merged];\n"
+      },
+      "name": "comp",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        32,
+        304
+      ],
+      "id": "3970e064-3562-4f75-8d4e-f3c8db1f5a0d"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "airtableTokenApi",
+        "baseId": {
+          "__rl": true,
+          "mode": "url",
+          "value": "https://airtable.com/appQYt45MjRLNkvEf/tblxTzllaLuruLHmG/viwImoxUDoxhhVvIx?blocks=hide",
+          "__regex": "https://airtable.com/([a-zA-Z0-9]{2,})"
+        },
+        "tableId": {
+          "__rl": true,
+          "value": "https://airtable.com/appQYt45MjRLNkvEf/tblxTzllaLuruLHmG/viwImoxUDoxhhVvIx?blocks=hide",
+          "mode": "url"
+        },
+        "triggerField": "Last Modified",
+        "additionalFields": {
+          "fields": "Word"
+        }
+      },
+      "name": "Airtable",
+      "type": "n8n-nodes-base.airtableTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1536,
+        -528
+      ],
+      "id": "9bd6c471-fec7-488d-a18f-587677fa2154"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appQYt45MjRLNkvEf",
+          "mode": "list",
+          "cachedResultName": "Fladgate - Leonard Live Data",
+          "cachedResultUrl": "https://airtable.com/appQYt45MjRLNkvEf"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblxTzllaLuruLHmG",
+          "mode": "list",
+          "cachedResultName": "FG - Leonard Conversation Log",
+          "cachedResultUrl": "https://airtable.com/appQYt45MjRLNkvEf/tblxTzllaLuruLHmG"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Call too short": false,
+            "D0 - Confidential Value": false,
+            "D4 - Cross Border Value": false,
+            "D8 - Completed Value": false,
+            "MD - Cross Border?": false,
+            "MD - Completed": false,
+            "Email Sent?": true,
+            "Word Sent?": true,
+            "Call Length (s)": 0,
+            "Call Cost": 0,
+            "LLM Charge": 0,
+            "Call Charge": 0,
+            "MD - Matter Value": 0,
+            "id": "={{ $('Get new conversation').item.json.id }}",
+            "Word Name": "={{ $('Get new conversation').item.json.Word[0].filename }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Conversation ID",
+              "displayName": "Conversation ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "conversation_id",
+              "displayName": "conversation_id",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Last Modified",
+              "displayName": "Last Modified",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Created time",
+              "displayName": "Created time",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Call Length (s)",
+              "displayName": "Call Length (s)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Call Length (m)",
+              "displayName": "Call Length (m)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Call too short",
+              "displayName": "Call too short",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Created by",
+              "displayName": "Created by",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Date Modified by",
+              "displayName": "Date Modified by",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Date Last Updated",
+              "displayName": "Date Last Updated",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Call Summary",
+              "displayName": "Call Summary",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Call Cost",
+              "displayName": "Call Cost",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "LLM Charge",
+              "displayName": "LLM Charge",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Call Charge",
+              "displayName": "Call Charge",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Agent ID",
+              "displayName": "Agent ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Call Status 11L",
+              "displayName": "Call Status 11L",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Termination Reason",
+              "displayName": "Termination Reason",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Error Reason",
+              "displayName": "Error Reason",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Call Successful 11L?",
+              "displayName": "Call Successful 11L?",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email recipient",
+              "displayName": "Email recipient",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email Copy",
+              "displayName": "Email Copy",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Conversation Date",
+              "displayName": "Conversation Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Call Summary Title",
+              "displayName": "Call Summary Title",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Call Transcript",
+              "displayName": "Call Transcript",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "SSO Source",
+              "displayName": "SSO Source",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Webhook Called",
+              "displayName": "Webhook Called",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D0 - Confidential",
+              "displayName": "D0 - Confidential",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D0 - Confidential Value",
+              "displayName": "D0 - Confidential Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D0 - Confidential Rationale",
+              "displayName": "D0 - Confidential Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D1 - Client Name",
+              "displayName": "D1 - Client Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D1 - Client Name Value",
+              "displayName": "D1 - Client Name Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D1 - Client Name Rationale",
+              "displayName": "D1 - Client Name Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D2 - Formatted Output",
+              "displayName": "D2 - Formatted Output",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D2 - Formatted Output Value",
+              "displayName": "D2 - Formatted Output Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D2 - Formatted Output Rationale",
+              "displayName": "D2 - Formatted Output Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D2 - Matter Description",
+              "displayName": "D2 - Matter Description",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D2 - Matter Description Value",
+              "displayName": "D2 - Matter Description Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D2 - Matter Description Rationale",
+              "displayName": "D2 - Matter Description Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D2 - Why Important",
+              "displayName": "D2 - Why Important",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D2 - Why Important Value",
+              "displayName": "D2 - Why Important Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D2 - Why Important Rationale",
+              "displayName": "D2 - Why Important Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D2 - Department Role",
+              "displayName": "D2 - Department Role",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D2 - Department Role Value",
+              "displayName": "D2 - Department Role Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D2 - Department Role Rationale",
+              "displayName": "D2 - Department Role Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D2 - Work Done Last 12m",
+              "displayName": "D2 - Work Done Last 12m",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D2 - Work Done Last 12m Value",
+              "displayName": "D2 - Work Done Last 12m Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D2 - Work Done Last 12m Rationale",
+              "displayName": "D2 - Work Done Last 12m Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D3 - Matter Value",
+              "displayName": "D3 - Matter Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D3 - Matter Value Value",
+              "displayName": "D3 - Matter Value Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D3 - Matter Value Rationale",
+              "displayName": "D3 - Matter Value Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D3 - Matter Value Currency",
+              "displayName": "D3 - Matter Value Currency",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D3 - Matter Value Currency Value",
+              "displayName": "D3 - Matter Value Currency Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D3 - Matter Value Currency Rationale",
+              "displayName": "D3 - Matter Value Currency Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D4 - Cross Border",
+              "displayName": "D4 - Cross Border",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D4 - Cross Border Value",
+              "displayName": "D4 - Cross Border Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D4 - Cross Border Rationale",
+              "displayName": "D4 - Cross Border Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D4 - Jurisdictions",
+              "displayName": "D4 - Jurisdictions",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D4 - Jurisdictions Value",
+              "displayName": "D4 - Jurisdictions Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D4 - Jurisdictions Rationale",
+              "displayName": "D4 - Jurisdictions Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D5 - Lead Lawyer Name",
+              "displayName": "D5 - Lead Lawyer Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D5 - Lead Lawyer Name Value",
+              "displayName": "D5 - Lead Lawyer Name Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D5 - Lead Lawyer Name Rationale",
+              "displayName": "D5 - Lead Lawyer Name Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D5 - Lead Lawyer Practice Group",
+              "displayName": "D5 - Lead Lawyer Practice Group",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D5 - Lead Lawyer Practice Group Value",
+              "displayName": "D5 - Lead Lawyer Practice Group Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D5 - Lead Lawyer Practice Group Rationale",
+              "displayName": "D5 - Lead Lawyer Practice Group Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D5 - Lead Lawyer Office",
+              "displayName": "D5 - Lead Lawyer Office",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D5 - Lead Lawyer Office Value",
+              "displayName": "D5 - Lead Lawyer Office Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D5 - Lead Lawyer Office Rationale",
+              "displayName": "D5 - Lead Lawyer Office Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D6 - Other Team Members",
+              "displayName": "D6 - Other Team Members",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D6 - Other Team Members Value",
+              "displayName": "D6 - Other Team Members Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D6 - Other Team Members Rationale",
+              "displayName": "D6 - Other Team Members Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D7 - Other Firms",
+              "displayName": "D7 - Other Firms",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D7 - Other Firms Value",
+              "displayName": "D7 - Other Firms Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D7 - Other Firms Rationale",
+              "displayName": "D7 - Other Firms Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D8 - Completed",
+              "displayName": "D8 - Completed",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D8 - Completed Value",
+              "displayName": "D8 - Completed Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D8 - Completed Rationale",
+              "displayName": "D8 - Completed Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D8 - Start Date",
+              "displayName": "D8 - Start Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D8 - Start Date Value",
+              "displayName": "D8 - Start Date Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D8 - Start Date Value Rationale",
+              "displayName": "D8 - Start Date Value Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D9 - Press Coverage",
+              "displayName": "D9 - Press Coverage",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D9 - Press Coverage Value",
+              "displayName": "D9 - Press Coverage Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D9 - Press Coverage Rationale",
+              "displayName": "D9 - Press Coverage Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D9 - Other Information",
+              "displayName": "D9 - Other Information",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D9 - Other Information Value",
+              "displayName": "D9 - Other Information Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "D9 - Other Information Rationale",
+              "displayName": "D9 - Other Information Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "JSON Validation",
+              "displayName": "JSON Validation",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MD - Is Confidential",
+              "displayName": "MD - Is Confidential",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MD - Client Name",
+              "displayName": "MD - Client Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MD - Client Output",
+              "displayName": "MD - Client Output",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MD - Matter Description",
+              "displayName": "MD - Matter Description",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MD - Department",
+              "displayName": "MD - Department",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MD - Last 12m",
+              "displayName": "MD - Last 12m",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MD - Why Important",
+              "displayName": "MD - Why Important",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MD - Format Output",
+              "displayName": "MD - Format Output",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MD - Matter Value",
+              "displayName": "MD - Matter Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MD - Matter Currency",
+              "displayName": "MD - Matter Currency",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MD - Value Output",
+              "displayName": "MD - Value Output",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MD - Cross Border?",
+              "displayName": "MD - Cross Border?",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MD - Jurisdiction 1",
+              "displayName": "MD - Jurisdiction 1",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MD - Jurisdiction 2",
+              "displayName": "MD - Jurisdiction 2",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MD - Jurisdiction 3",
+              "displayName": "MD - Jurisdiction 3",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MD - Jurisdiction 4",
+              "displayName": "MD - Jurisdiction 4",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MD - Jurisdiction 5",
+              "displayName": "MD - Jurisdiction 5",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MD - Jurisdictions output",
+              "displayName": "MD - Jurisdictions output",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MD - Lead Lawyer Name",
+              "displayName": "MD - Lead Lawyer Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MD - Lead Lawyer Office",
+              "displayName": "MD - Lead Lawyer Office",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MD - Lead Lawyer Practice Group",
+              "displayName": "MD - Lead Lawyer Practice Group",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MD - Lead Lawyer Output",
+              "displayName": "MD - Lead Lawyer Output",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MD - Other Team Member 1",
+              "displayName": "MD - Other Team Member 1",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MD - Other Team Member 1 office",
+              "displayName": "MD - Other Team Member 1 office",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MD - Other Team Member 1 PG",
+              "displayName": "MD - Other Team Member 1 PG",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MD - Other Team Member 2",
+              "displayName": "MD - Other Team Member 2",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MD - Other Team Member 2 office",
+              "displayName": "MD - Other Team Member 2 office",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MD - Other Team Member 2 PG",
+              "displayName": "MD - Other Team Member 2 PG",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MD - Other Team Member 3",
+              "displayName": "MD - Other Team Member 3",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MD - Other Team Member 3 office",
+              "displayName": "MD - Other Team Member 3 office",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MD - Other Team Member 3 PG",
+              "displayName": "MD - Other Team Member 3 PG",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MD - Other Team Member 4",
+              "displayName": "MD - Other Team Member 4",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MD - Other Team Member 4 office",
+              "displayName": "MD - Other Team Member 4 office",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MD - Other Team Member 4 PG",
+              "displayName": "MD - Other Team Member 4 PG",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MD - Other Team Member 5",
+              "displayName": "MD - Other Team Member 5",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MD - Other Team Member 5 office",
+              "displayName": "MD - Other Team Member 5 office",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MD - Other Team Member 5 PG",
+              "displayName": "MD - Other Team Member 5 PG",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MD - Other Team Members Output",
+              "displayName": "MD - Other Team Members Output",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MD - Other Firms - Name",
+              "displayName": "MD - Other Firms - Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MD - Other Firms - Role",
+              "displayName": "MD - Other Firms - Role",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MD - Other Firms Output",
+              "displayName": "MD - Other Firms Output",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MD - Start Date",
+              "displayName": "MD - Start Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MD - End Date",
+              "displayName": "MD - End Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MD - Completed",
+              "displayName": "MD - Completed",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MD - Date Output",
+              "displayName": "MD - Date Output",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MD - Press Link 1",
+              "displayName": "MD - Press Link 1",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MD - Press Link 2",
+              "displayName": "MD - Press Link 2",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MD - Press Link 3",
+              "displayName": "MD - Press Link 3",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MD - Press Link 4",
+              "displayName": "MD - Press Link 4",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MD - Other Info",
+              "displayName": "MD - Other Info",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MD - Press Output",
+              "displayName": "MD - Press Output",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MD - Submission Suggestions",
+              "displayName": "MD - Submission Suggestions",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email Sent?",
+              "displayName": "Email Sent?",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Word",
+              "displayName": "Word",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Word Name",
+              "displayName": "Word Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Word Sent?",
+              "displayName": "Word Sent?",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "name": "Update record",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        480,
+        304
+      ],
+      "id": "3be9355b-839f-4129-9b40-578687a332c2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code node (JavaScript)\n\n// Process all incoming items\nconst items = $input.all();\n\nfunction toDate(val) {\n  if (val == null) return null;\n\n  if (typeof val === 'number') {\n    const ms = val < 1e11 ? val * 1000 : val;\n    const d = new Date(ms);\n    return isNaN(d.getTime()) ? null : d;\n  }\n\n  if (val instanceof Date) return isNaN(val.getTime()) ? null : val;\n\n  if (typeof val === 'string') {\n    const s = val.trim();\n    let d = new Date(s);\n    if (!isNaN(d.getTime())) return d;\n\n    d = new Date(s.replace(' ', 'T'));\n    if (!isNaN(d.getTime())) return d;\n\n    if (!/[zZ]|[+\\-]\\d{2}:\\d{2}$/.test(s)) {\n      d = new Date(s + 'Z');\n      if (!isNaN(d.getTime())) return d;\n    }\n  }\n\n  return null;\n}\n\nfunction ordinal(n) {\n  const v = Math.abs(n);\n  const m100 = v % 100;\n  if (m100 >= 11 && m100 <= 13) return 'th';\n  switch (v % 10) {\n    case 1: return 'st';\n    case 2: return 'nd';\n    case 3: return 'rd';\n    default: return 'th';\n  }\n}\n\nfunction londonParts(date) {\n  const zone = 'Europe/London';\n\n  const base = new Intl.DateTimeFormat('en-GB', {\n    timeZone: zone,\n    year: 'numeric',\n    month: 'long',\n    day: 'numeric',\n    weekday: 'long',\n  }).formatToParts(date);\n\n  const get = (t) => base.find(p => p.type === t)?.value;\n\n  const dayNum = Number(get('day'));\n  const monthName = get('month');\n  const year = get('year');\n  const weekday = get('weekday');\n\n  const time12London = new Intl.DateTimeFormat('en-GB', {\n    timeZone: zone,\n    hour: '2-digit',\n    minute: '2-digit',\n    hour12: true,\n  }).format(date);\n\n  const time24London = new Intl.DateTimeFormat('en-GB', {\n    timeZone: zone,\n    hour: '2-digit',\n    minute: '2-digit',\n    hour12: false,\n  }).format(date);\n\n  return { dayNum, monthName, year, weekday, time12London, time24London };\n}\n\nfunction pickConversationDateSource(j) {\n  // Prefer explicit Conversation Date in fields, then top-level\n  let v =\n    j?.fields?.['Conversation Date'] ??\n    j?.['Conversation Date'] ??\n    j?.createdTime ?? // Airtable record createdTime as a safe fallback\n    j?.input ??\n    j?.timestamp ??\n    j?.date ??\n    null;\n\n  // If Airtable ever returns an array or object, coerce to string if possible\n  if (Array.isArray(v)) v = v[0] ?? null;\n  if (v && typeof v === 'object' && 'value' in v) v = v.value;\n\n  return v;\n}\n\nreturn items.map(item => {\n  const raw = pickConversationDateSource(item.json);\n  const d = toDate(raw);\n\n  if (!d) {\n    return {\n      json: {\n        ...item.json,\n        conversationDateRaw: raw,\n        error: 'Invalid or missing Conversation Date. Provide ISO string or epoch seconds/milliseconds in fields[\"Conversation Date\"] or top-level \"Conversation Date\".',\n      },\n    };\n  }\n\n  const { dayNum, monthName, year, weekday, time12London, time24London } = londonParts(d);\n\n  const dayWithOrdinal = `${dayNum}${ordinal(dayNum)}`;\n  const dateUK = `${dayWithOrdinal} ${monthName} ${year}`;\n\n  return {\n    json: {\n      ...item.json,\n      conversationDateRaw: raw,\n      dayOfWeek: weekday,\n      dateUK,\n      dayWithOrdinal,\n      month: monthName,\n      time12London,\n      time24London,\n      timeZone: 'Europe/London',\n    },\n  };\n});\n"
+      },
+      "name": "Date formatting",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -416,
+        304
+      ],
+      "id": "9a52542b-8087-4bf0-8508-b3f13cfc08de"
+    },
+    {
+      "parameters": {
+        "base": {
+          "__rl": true,
+          "value": "appQYt45MjRLNkvEf",
+          "mode": "list",
+          "cachedResultName": "Fladgate - Leonard Live Data",
+          "cachedResultUrl": "https://airtable.com/appQYt45MjRLNkvEf"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblxTzllaLuruLHmG",
+          "mode": "list",
+          "cachedResultName": "FG - Leonard Conversation Log",
+          "cachedResultUrl": "https://airtable.com/appQYt45MjRLNkvEf/tblxTzllaLuruLHmG"
+        },
+        "id": "={{ $json.id }}",
+        "options": {}
+      },
+      "name": "Get new conversation",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -864,
+        -528
+      ],
+      "id": "147300fe-de94-4262-826d-3ab2ac0ed149"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5cb69fe3-d811-40fd-a258-12f59b56d8e7",
+              "name": "fields.Word[0].url",
+              "value": "={{ $('Airtable').item.json.fields.Word[0].url }}",
+              "type": "string"
+            },
+            {
+              "id": "8b8c67fe-6361-49ea-ad1d-d8dc88e94295",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "63b25cbc-6f3c-47cc-b6fd-23ff5069424c",
+              "name": "createdTime",
+              "value": "={{ $json.createdTime }}",
+              "type": "string"
+            },
+            {
+              "id": "c668f8a5-ed20-49de-9cb6-c268e1b061ae",
+              "name": "Conversation Date",
+              "value": "={{ $('Get new conversation').item.json[\"Conversation Date\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "15731cba-5f00-4e4c-964f-375979ade150",
+              "name": "Full Name",
+              "value": "={{ $json[\"Full Name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "6f6d9886-d076-4605-84b3-6a0e4985e8a4",
+              "name": "Email",
+              "value": "={{ $json.Email }}",
+              "type": "string"
+            },
+            {
+              "id": "de641e0d-594e-4050-ab15-96477f18d740",
+              "name": "First Name",
+              "value": "={{ $json[\"First Name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "19ca1b0f-f626-4d4a-b638-ed4602ecbaf9",
+              "name": "Last Name",
+              "value": "={{ $json[\"Last Name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "28ec274b-02cb-4fda-9694-1920e2963955",
+              "name": "Word Name",
+              "value": "={{ $json[\"Word Name\"] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Edit Fields1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -640,
+        304
+      ],
+      "id": "27e1dc51-b352-41a9-9bbb-469655f9cec1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5cb69fe3-d811-40fd-a258-12f59b56d8e7",
+              "name": "fields.Word[0].url",
+              "value": "={{ $json.fields.Word[0].url }}",
+              "type": "string"
+            },
+            {
+              "id": "8b8c67fe-6361-49ea-ad1d-d8dc88e94295",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "63b25cbc-6f3c-47cc-b6fd-23ff5069424c",
+              "name": "createdTime",
+              "value": "={{ $json.createdTime }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Edit Fields",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1088,
+        -528
+      ],
+      "id": "43f2359b-978b-47e8-bc98-8b1b1301403f"
+    },
+    {
+      "parameters": {
+        "toRecipients": "={{ $('Get new conversation').item.json.Email }}",
+        "subject": "=Your Matter Summary for {{ $('Get new conversation').item.json[\"D1 - Client Name Value\"] }}",
+        "bodyContent": "=Hey {{ $('Get new conversation').item.json[\"First Name\"] }}, attached is your matter summary from your call on {{ $('Date formatting').item.json.dayOfWeek }} {{ $('Date formatting').item.json.dayWithOrdinal }} {{ $('Date formatting').item.json.month }} at {{ $('Date formatting').item.json.time12London }} relating to {{ $('Get new conversation').item.json[\"D1 - Client Name Value\"] }}\n\nCheers \n\nLegal Engine",
+        "additionalFields": {
+          "attachments": {
+            "attachments": [
+              {
+                "binaryPropertyName": "=data"
+              }
+            ]
+          },
+          "bccRecipients": "andy@legalengine.co.uk"
+        }
+      },
+      "name": "Send email with att",
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        256,
+        304
+      ],
+      "id": "fa45a5c9-8d92-4bce-b065-29475f2fa9d2"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C091GTR97L0",
+          "mode": "list",
+          "cachedResultName": "customer-simmons-and-simmons"
+        },
+        "text": "=*Simmons flow complete & email with word sent*\n*Completed for*: {{ $('Edit Fields1').item.json['Full Name'] }}. \n*Email Address*:{{ $('Edit Fields1').item.json.Email }}\n*Attachment Name*: {{ $('Edit Fields1').item.json['Word Name'] }}\n-----\n",
+        "otherOptions": {
+          "includeLinkToWorkflow": false,
+          "botProfile": {
+            "imageValues": {
+              "profilePhotoType": "emoji",
+              "icon_emoji": "+1F916"
+            }
+          }
+        }
+      },
+      "name": "Slack - Simmons Channel",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        704,
+        304
+      ],
+      "id": "9518601d-7f1e-4b06-8a38-6444ef5d8bc1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ec3139ee-a3bf-4933-8371-72645119586c",
+              "leftValue": "={{ $('Edit Fields').item.json.fields.Word[0].url }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "name": "If no word file",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -640,
+        -528
+      ],
+      "id": "5df2d9f2-5284-4177-9b83-138d27b62729"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ec3139ee-a3bf-4933-8371-72645119586c",
+              "leftValue": "={{ $('Get new conversation').item.json[\"Word Sent?\"] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "name": "If word not sent",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -416,
+        -528
+      ],
+      "id": "12cf0437-f379-4451-9a6f-aae2f18346fa"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appQYt45MjRLNkvEf",
+          "mode": "list",
+          "cachedResultName": "Fladgate - Leonard Live Data",
+          "cachedResultUrl": "https://airtable.com/appQYt45MjRLNkvEf"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblqUtiVACMGvfDbs",
+          "mode": "list",
+          "cachedResultName": "FG - Users details",
+          "cachedResultUrl": "https://airtable.com/appQYt45MjRLNkvEf/tblqUtiVACMGvfDbs"
+        },
+        "filterByFormula": "={Fee earner email} = '{{ $json.Email }}'",
+        "returnAll": false,
+        "options": {
+          "fields": [
+            "BD rep 1 email",
+            "BD rep 2 email",
+            "Shared inbox",
+            "Fee earner first name",
+            "Fee earner surname",
+            "Submission category"
+          ]
+        }
+      },
+      "name": "Search BD Emails1",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -144,
+        -528
+      ],
+      "id": "e751717a-0ff0-4b05-a2a0-72f8d1424e13"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.fields.Word[0].url }}",
+        "options": {}
+      },
+      "name": "HTTP Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        752,
+        -528
+      ],
+      "id": "b4b5e4c8-2249-49ae-b0b9-ddba3d072a1a"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ONE Code node: read from 'data-producer', merge binaries, count data*, build Outlook attachments,\n// and (optionally) merge JSON from existing 'Airtable' node — no new nodes added.\n\nconst SOURCE_NODE = 'data-producer';\nconst AIRTABLE_NODE = 'Airtable';\n\n// --- 1) Load source items (from named node; fallback to current input) ---\nlet srcItems;\ntry {\n  srcItems = $items(SOURCE_NODE);\n  if (!Array.isArray(srcItems) || srcItems.length === 0) srcItems = items;\n} catch (_) {\n  srcItems = items;\n}\n\n// --- 2) Merge binaries into a single item; prefer json.fieldName or data{index} ---\nconst merged = { json: {}, binary: {} };\n\nfor (const item of srcItems) {\n  const impliedKey = item.json?.fieldName || (item.json?.index ? `data${item.json.index}` : undefined);\n\n  if (impliedKey && item.binary?.[impliedKey]) {\n    merged.binary[impliedKey] = item.binary[impliedKey];\n    if (item.json?.filename) merged.binary[impliedKey].fileName = item.json.filename;\n    continue;\n  }\n\n  if (item.binary) {\n    for (const [bKey, bVal] of Object.entries(item.binary)) {\n      merged.binary[bKey] = bVal; // last one wins if duplicate keys\n      if (item.json?.filename && impliedKey === bKey) {\n        merged.binary[bKey].fileName = item.json.filename;\n      }\n    }\n  }\n}\n\n// --- 3) Count data* binaries (total + unique) and per-item breakdown ---\nconst dataKeyRegex = /^data\\d*$/i;\n\nlet totalDataKeys = 0;\nconst uniqueDataKeys = new Set();\nconst perItem = [];\n\nfor (let i = 0; i < srcItems.length; i++) {\n  const bin = srcItems[i].binary || {};\n  const keys = Object.keys(bin).filter(k => dataKeyRegex.test(k));\n  perItem.push({ itemIndex: i + 1, dataKeys: keys, count: keys.length });\n  totalDataKeys += keys.length;\n  keys.forEach(k => uniqueDataKeys.add(k));\n}\n\n// --- 4) Build Outlook-friendly attachments array (JSON Parameters = ON) ---\nconst allKeys = Object.keys(merged.binary || {});\nmerged.json.attachments = allKeys.map(k => ({\n  binaryPropertyName: k,\n  fileName: merged.binary[k]?.fileName,\n  mimeType: merged.binary[k]?.mimeType,\n}));\n\n// --- 5) (Optional) Merge JSON from existing 'Airtable' node (no new nodes created) ---\ntry {\n  const airtableItems = $items(AIRTABLE_NODE); // will throw if node doesn't exist\n  if (Array.isArray(airtableItems) && airtableItems.length > 0) {\n    const airtableJson = airtableItems[0]?.json ?? {};\n\n    // (a) Shallow-merge ALL top-level Airtable fields into merged.json (last write wins)\n    for (const [k, v] of Object.entries(airtableJson)) {\n      merged.json[k] = v;\n    }\n\n    // (b) Keep a namespaced copy to avoid key collisions / for debugging\n    merged.json.airtable = airtableJson;\n\n    // (c) If there's an Airtable \"Attachments\" array, add a flattened read-friendly view\n    if (Array.isArray(airtableJson.Attachments)) {\n      merged.json.airtableAttachments = airtableJson.Attachments.map(att => ({\n        id: att?.id,\n        url: att?.url,\n        filename: att?.filename,\n        size: att?.size,\n        type: att?.type,\n      }));\n    }\n  }\n} catch (_) {\n  // If 'Airtable' node isn't present, do nothing.\n}\n\n// --- 6) Summary meta (explicit totals) ---\nmerged.json.sourceNode = SOURCE_NODE;\nmerged.json.totalItems = srcItems.length;\nmerged.json.totalItemsFromSource = srcItems.length;\nmerged.json.totalBinaryKeys = allKeys.length;\nmerged.json.totalDataOutputs = totalDataKeys;\nmerged.json.uniqueDataOutputs = uniqueDataKeys.size;\nmerged.json.uniqueDataKeys = Array.from(uniqueDataKeys);\nmerged.json.perItem = perItem;\n\n// --- 7) Return ONE merged item ---\n// return [merged];\nreturn [{\n  json: merged.json,\n  binary: merged.binary,\n  pairedItem: { item: 0 }\n}];\n"
+      },
+      "name": "comp1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        976,
+        -528
+      ],
+      "id": "0568296e-4b74-4d17-bf0d-7ef31fa66406"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code node (JavaScript)\n\n// Process all incoming items\nconst items = $input.all();\n\nfunction toDate(val) {\n  if (val == null) return null;\n\n  if (typeof val === 'number') {\n    const ms = val < 1e11 ? val * 1000 : val;\n    const d = new Date(ms);\n    return isNaN(d.getTime()) ? null : d;\n  }\n\n  if (val instanceof Date) return isNaN(val.getTime()) ? null : val;\n\n  if (typeof val === 'string') {\n    const s = val.trim();\n    let d = new Date(s);\n    if (!isNaN(d.getTime())) return d;\n\n    d = new Date(s.replace(' ', 'T'));\n    if (!isNaN(d.getTime())) return d;\n\n    if (!/[zZ]|[+\\-]\\d{2}:\\d{2}$/.test(s)) {\n      d = new Date(s + 'Z');\n      if (!isNaN(d.getTime())) return d;\n    }\n  }\n\n  return null;\n}\n\nfunction ordinal(n) {\n  const v = Math.abs(n);\n  const m100 = v % 100;\n  if (m100 >= 11 && m100 <= 13) return 'th';\n  switch (v % 10) {\n    case 1: return 'st';\n    case 2: return 'nd';\n    case 3: return 'rd';\n    default: return 'th';\n  }\n}\n\nfunction londonParts(date) {\n  const zone = 'Europe/London';\n\n  const base = new Intl.DateTimeFormat('en-GB', {\n    timeZone: zone,\n    year: 'numeric',\n    month: 'long',\n    day: 'numeric',\n    weekday: 'long',\n  }).formatToParts(date);\n\n  const get = (t) => base.find(p => p.type === t)?.value;\n\n  const dayNum = Number(get('day'));\n  const monthName = get('month');\n  const year = get('year');\n  const weekday = get('weekday');\n\n  const time12London = new Intl.DateTimeFormat('en-GB', {\n    timeZone: zone,\n    hour: '2-digit',\n    minute: '2-digit',\n    hour12: true,\n  }).format(date);\n\n  const time24London = new Intl.DateTimeFormat('en-GB', {\n    timeZone: zone,\n    hour: '2-digit',\n    minute: '2-digit',\n    hour12: false,\n  }).format(date);\n\n  return { dayNum, monthName, year, weekday, time12London, time24London };\n}\n\nfunction pickConversationDateSource(j) {\n  // Prefer explicit Conversation Date in fields, then top-level\n  let v =\n    j?.fields?.['Conversation Date'] ??\n    j?.['Conversation Date'] ??\n    j?.createdTime ?? // Airtable record createdTime as a safe fallback\n    j?.input ??\n    j?.timestamp ??\n    j?.date ??\n    null;\n\n  // If Airtable ever returns an array or object, coerce to string if possible\n  if (Array.isArray(v)) v = v[0] ?? null;\n  if (v && typeof v === 'object' && 'value' in v) v = v.value;\n\n  return v;\n}\n\nreturn items.map(item => {\n  const raw = pickConversationDateSource(item.json);\n  const d = toDate(raw);\n\n  if (!d) {\n    return {\n      json: {\n        ...item.json,\n        conversationDateRaw: raw,\n        error: 'Invalid or missing Conversation Date. Provide ISO string or epoch seconds/milliseconds in fields[\"Conversation Date\"] or top-level \"Conversation Date\".',\n      },\n    };\n  }\n\n  const { dayNum, monthName, year, weekday, time12London, time24London } = londonParts(d);\n\n  const dayWithOrdinal = `${dayNum}${ordinal(dayNum)}`;\n  const dateUK = `${dayWithOrdinal} ${monthName} ${year}`;\n\n  return {\n    json: {\n      ...item.json,\n      conversationDateRaw: raw,\n      dayOfWeek: weekday,\n      dateUK,\n      dayWithOrdinal,\n      month: monthName,\n      time12London,\n      time24London,\n      timeZone: 'Europe/London',\n    },\n  };\n});\n"
+      },
+      "name": "Date formatting1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        528,
+        -528
+      ],
+      "id": "c1894272-8fac-44c0-b40c-7256d9e1455d"
+    },
+    {
+      "parameters": {
+        "toRecipients": "={{ $('Set 1').item.json[\"BD rep 1 email\"] }}",
+        "subject": "=Your Matter Summary for {{ $('Get new conversation').item.json[\"D1 - Client Name Value\"] }} relating to the {{ $('Get new conversation').item.json['Matter Category Match'].value }} category.",
+        "bodyContent": "=Hey {{ $('Get new conversation').item.json[\"First Name\"] }}, attached is your matter summary from your call on {{ $('Date formatting1').item.json.dayOfWeek }} {{ $('Date formatting1').item.json.dayWithOrdinal }} {{ $('Date formatting1').item.json.month }} at {{ $('Date formatting1').item.json.time12London }} relating to {{ $('Get new conversation').item.json[\"D1 - Client Name Value\"] }} for the {{ $('Get new conversation').item.json['Matter Category Match'].value }} category.\n\nCheers \n\nLegal Engine",
+        "additionalFields": {
+          "attachments": {
+            "attachments": [
+              {
+                "binaryPropertyName": "=data"
+              }
+            ]
+          },
+          "bccRecipients": "andy@legalengine.co.uk",
+          "ccRecipients": "={{ $('Set 1').item.json[\"BD rep 2 email\"] }}, {{ $('Set 1').item.json['Shared inbox'] }}"
+        }
+      },
+      "name": "Send email with att1",
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        -528
+      ],
+      "id": "e3ec228d-9eb6-41c8-9865-0e683a21cde2"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C09V8RQ41G9",
+          "mode": "id"
+        },
+        "text": "=*Simmons flow complete & email with word sent*\n*Completed for*: {{ $('Set 1').item.json[\"Fee earner first name\"] }} {{ $('Set 1').item.json[\"Fee earner surname\"] }} - {{ $('Set 1').item.json[\"Submission category\"] }}. \n*BD Email Address 1*: {{ $('Set 1').item.json[\"BD rep 1 email\"] }}\n*BD Email Address 2*: {{ $('Set 1').item.json[\"BD rep 2 email\"] }}\n*Shared Inbox*: {{ $('Set 1').item.json[\"Shared inbox\"] }}\n*Attachment Name*: {{ $('Set 1').item.json.fields.Word[0].filename }}\n-----\n",
+        "otherOptions": {
+          "includeLinkToWorkflow": false,
+          "botProfile": {
+            "imageValues": {
+              "profilePhotoType": "emoji",
+              "icon_emoji": "+1F916"
+            }
+          }
+        }
+      },
+      "name": "Slack - Simmons Channel1",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        1648,
+        -528
+      ],
+      "id": "8d3c06d9-8389-4582-9519-93f04d454c17"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5cb69fe3-d811-40fd-a258-12f59b56d8e7",
+              "name": "fields.Word[0].url",
+              "value": "={{ $('Airtable').item.json.fields.Word[0].url }}",
+              "type": "string"
+            },
+            {
+              "id": "8b8c67fe-6361-49ea-ad1d-d8dc88e94295",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "63b25cbc-6f3c-47cc-b6fd-23ff5069424c",
+              "name": "createdTime",
+              "value": "={{ $json.createdTime }}",
+              "type": "string"
+            },
+            {
+              "id": "c668f8a5-ed20-49de-9cb6-c268e1b061ae",
+              "name": "Conversation Date",
+              "value": "={{ $('Get new conversation').item.json.createdTime }}",
+              "type": "string"
+            },
+            {
+              "id": "4f31e261-ec09-4a1d-9c99-be3ee64df1cf",
+              "name": "BD rep 1 email",
+              "value": "={{ $json['BD rep 1 email'] }}",
+              "type": "string"
+            },
+            {
+              "id": "597874fc-8628-4640-b71e-06768290bd93",
+              "name": "BD rep 2 email",
+              "value": "={{ $json['BD rep 2 email'] }}",
+              "type": "string"
+            },
+            {
+              "id": "4f367c72-1b35-48c4-a0c5-7117dc9d44a7",
+              "name": "Shared inbox",
+              "value": "={{ $json['Shared inbox'] }}",
+              "type": "string"
+            },
+            {
+              "id": "82be6c15-bfc2-4bc5-ae54-27dc7f371336",
+              "name": "fields.Word[0].filename",
+              "value": "={{ $('Airtable').item.json.fields.Word[0].filename }}",
+              "type": "string"
+            },
+            {
+              "id": "83a8abe2-6a00-466a-8535-57097d40ad22",
+              "name": "Fee earner first name",
+              "value": "={{ $json[\"Fee earner first name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "bf4778a3-d670-42b5-98f8-552fdf35bc7a",
+              "name": "Fee earner surname",
+              "value": "={{ $json[\"Fee earner surname\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "5b8c545c-e468-4330-b36c-fe6809a921b5",
+              "name": "Submission category",
+              "value": "={{ $json[\"Submission category\"] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Set 1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        304,
+        -528
+      ],
+      "id": "6a3bd6ca-8072-47cd-aad9-cd8cc81f03f6"
+    },
+    {
+      "parameters": {},
+      "name": "Wait 6s",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -1312,
+        -528
+      ],
+      "id": "323fe9a7-3034-4a76-a07f-536920a45b80"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4072b833-8228-4199-bad6-43e979fad55d",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "name": "If",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        80,
+        -528
+      ],
+      "id": "7efa9358-e88a-4cf5-a03d-403e90f61b30"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C09V8RQ41G9",
+          "mode": "id"
+        },
+        "text": "=*Error Looking up details of Simmons user*\n*User Email*: {{ $('Get new conversation').item.json.Email }}. \n*User Name*: {{ $('Get new conversation').item.json[\"First Name\"] }} {{ $('Get new conversation').item.json[\"Last Name\"] }}\n-----\n",
+        "otherOptions": {
+          "includeLinkToWorkflow": false,
+          "botProfile": {
+            "imageValues": {
+              "profilePhotoType": "emoji",
+              "icon_emoji": "+1F916"
+            }
+          }
+        }
+      },
+      "name": "Slack - Simmons Channel2",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        368,
+        -304
+      ],
+      "id": "dc68fedb-f125-4a35-a8aa-65c851779e85"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appQYt45MjRLNkvEf",
+          "mode": "list",
+          "cachedResultName": "Fladgate - Leonard Live Data",
+          "cachedResultUrl": "https://airtable.com/appQYt45MjRLNkvEf"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblxTzllaLuruLHmG",
+          "mode": "list",
+          "cachedResultName": "FG - Leonard Conversation Log",
+          "cachedResultUrl": "https://airtable.com/appQYt45MjRLNkvEf/tblxTzllaLuruLHmG"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Email Sent?": true,
+            "Word Sent?": true,
+            "id": "={{ $('Get new conversation').item.json.id }}",
+            "Word Name": "={{ $('Get new conversation').item.json.Word[0].filename }}",
+            "BD 1 Email": "={{ $('Set 1').item.json[\"BD rep 1 email\"] }}",
+            "BD 2 Email": "={{ $('Set 1').item.json[\"BD rep 2 email\"] }}",
+            "Shared Inbox": "={{ $('Set 1').item.json[\"Shared inbox\"] }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Conversation ID",
+              "displayName": "Conversation ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "conversation_id",
+              "displayName": "conversation_id",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Last Modified",
+              "displayName": "Last Modified",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Created time",
+              "displayName": "Created time",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Call Length (s)",
+              "displayName": "Call Length (s)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Call Length (m)",
+              "displayName": "Call Length (m)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Call too short",
+              "displayName": "Call too short",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Conversation#",
+              "displayName": "Conversation#",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Created by",
+              "displayName": "Created by",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Date Modified by",
+              "displayName": "Date Modified by",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Date Last Updated",
+              "displayName": "Date Last Updated",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Call Summary",
+              "displayName": "Call Summary",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Call Cost",
+              "displayName": "Call Cost",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "LLM Charge",
+              "displayName": "LLM Charge",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Call Charge",
+              "displayName": "Call Charge",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Agent ID",
+              "displayName": "Agent ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Call Status 11L",
+              "displayName": "Call Status 11L",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Termination Reason",
+              "displayName": "Termination Reason",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Error Reason",
+              "displayName": "Error Reason",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Call Successful 11L?",
+              "displayName": "Call Successful 11L?",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Email recipient",
+              "displayName": "Email recipient",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Email Copy",
+              "displayName": "Email Copy",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Conversation Date",
+              "displayName": "Conversation Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Call Summary Title",
+              "displayName": "Call Summary Title",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Call Transcript",
+              "displayName": "Call Transcript",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "SSO Source",
+              "displayName": "SSO Source",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Webhook Called",
+              "displayName": "Webhook Called",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D0 - Confidential",
+              "displayName": "D0 - Confidential",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D0 - Confidential Value",
+              "displayName": "D0 - Confidential Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D0 - Confidential Rationale",
+              "displayName": "D0 - Confidential Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D1 - Client Name",
+              "displayName": "D1 - Client Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D1 - Client Name Value",
+              "displayName": "D1 - Client Name Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D1 - Client Name Rationale",
+              "displayName": "D1 - Client Name Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D2 - Formatted Output",
+              "displayName": "D2 - Formatted Output",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D2 - Formatted Output Value",
+              "displayName": "D2 - Formatted Output Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D2 - Formatted Output Rationale",
+              "displayName": "D2 - Formatted Output Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D2 - Matter Description",
+              "displayName": "D2 - Matter Description",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D2 - Matter Description Value",
+              "displayName": "D2 - Matter Description Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D2 - Matter Description Rationale",
+              "displayName": "D2 - Matter Description Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D2 - Why Important",
+              "displayName": "D2 - Why Important",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D2 - Why Important Value",
+              "displayName": "D2 - Why Important Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D2 - Why Important Rationale",
+              "displayName": "D2 - Why Important Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D2 - Department Role",
+              "displayName": "D2 - Department Role",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D2 - Department Role Value",
+              "displayName": "D2 - Department Role Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D2 - Department Role Rationale",
+              "displayName": "D2 - Department Role Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D2 - Work Done Last 12m",
+              "displayName": "D2 - Work Done Last 12m",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D2 - Work Done Last 12m Value",
+              "displayName": "D2 - Work Done Last 12m Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D2 - Work Done Last 12m Rationale",
+              "displayName": "D2 - Work Done Last 12m Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D3 - Matter Value",
+              "displayName": "D3 - Matter Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D3 - Matter Value Value",
+              "displayName": "D3 - Matter Value Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D3 - Matter Value Rationale",
+              "displayName": "D3 - Matter Value Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D3 - Matter Value Currency",
+              "displayName": "D3 - Matter Value Currency",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D3 - Matter Value Currency Value",
+              "displayName": "D3 - Matter Value Currency Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D3 - Matter Value Currency Rationale",
+              "displayName": "D3 - Matter Value Currency Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D4 - Cross Border",
+              "displayName": "D4 - Cross Border",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D4 - Cross Border Value",
+              "displayName": "D4 - Cross Border Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D4 - Cross Border Rationale",
+              "displayName": "D4 - Cross Border Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D4 - Jurisdictions",
+              "displayName": "D4 - Jurisdictions",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D4 - Jurisdictions Value",
+              "displayName": "D4 - Jurisdictions Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D4 - Jurisdictions Rationale",
+              "displayName": "D4 - Jurisdictions Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D5 - Lead Lawyer Name",
+              "displayName": "D5 - Lead Lawyer Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D5 - Lead Lawyer Name Value",
+              "displayName": "D5 - Lead Lawyer Name Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D5 - Lead Lawyer Name Rationale",
+              "displayName": "D5 - Lead Lawyer Name Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D5 - Lead Lawyer Practice Group",
+              "displayName": "D5 - Lead Lawyer Practice Group",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D5 - Lead Lawyer Practice Group Value",
+              "displayName": "D5 - Lead Lawyer Practice Group Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D5 - Lead Lawyer Practice Group Rationale",
+              "displayName": "D5 - Lead Lawyer Practice Group Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D5 - Lead Lawyer Office",
+              "displayName": "D5 - Lead Lawyer Office",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D5 - Lead Lawyer Office Value",
+              "displayName": "D5 - Lead Lawyer Office Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D5 - Lead Lawyer Office Rationale",
+              "displayName": "D5 - Lead Lawyer Office Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D6 - Other Team Members",
+              "displayName": "D6 - Other Team Members",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D6 - Other Team Members Value",
+              "displayName": "D6 - Other Team Members Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D6 - Other Team Members Rationale",
+              "displayName": "D6 - Other Team Members Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D7 - Other Firms",
+              "displayName": "D7 - Other Firms",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D7 - Other Firms Value",
+              "displayName": "D7 - Other Firms Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D7 - Other Firms Rationale",
+              "displayName": "D7 - Other Firms Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D8 - Completed",
+              "displayName": "D8 - Completed",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D8 - Completed Value",
+              "displayName": "D8 - Completed Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D8 - Completed Rationale",
+              "displayName": "D8 - Completed Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D8 - Start Date",
+              "displayName": "D8 - Start Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D8 - Start Date Value",
+              "displayName": "D8 - Start Date Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D8 - Start Date Value Rationale",
+              "displayName": "D8 - Start Date Value Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D9 - Press Coverage",
+              "displayName": "D9 - Press Coverage",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D9 - Press Coverage Value",
+              "displayName": "D9 - Press Coverage Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D9 - Press Coverage Rationale",
+              "displayName": "D9 - Press Coverage Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D9 - Other Information",
+              "displayName": "D9 - Other Information",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D9 - Other Information Value",
+              "displayName": "D9 - Other Information Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "D9 - Other Information Rationale",
+              "displayName": "D9 - Other Information Rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "JSON Validation",
+              "displayName": "JSON Validation",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Is Confidential",
+              "displayName": "MD - Is Confidential",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Client Name",
+              "displayName": "MD - Client Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Client Output",
+              "displayName": "MD - Client Output",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Matter Description",
+              "displayName": "MD - Matter Description",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Department",
+              "displayName": "MD - Department",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Last 12m",
+              "displayName": "MD - Last 12m",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Why Important",
+              "displayName": "MD - Why Important",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Format Output",
+              "displayName": "MD - Format Output",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Matter Value",
+              "displayName": "MD - Matter Value",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Matter Currency",
+              "displayName": "MD - Matter Currency",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Value Output",
+              "displayName": "MD - Value Output",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Cross Border?",
+              "displayName": "MD - Cross Border?",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Jurisdiction 1",
+              "displayName": "MD - Jurisdiction 1",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Jurisdiction 2",
+              "displayName": "MD - Jurisdiction 2",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Jurisdiction 3",
+              "displayName": "MD - Jurisdiction 3",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Jurisdiction 4",
+              "displayName": "MD - Jurisdiction 4",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Jurisdiction 5",
+              "displayName": "MD - Jurisdiction 5",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Jurisdictions output",
+              "displayName": "MD - Jurisdictions output",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Lead Lawyer Name",
+              "displayName": "MD - Lead Lawyer Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Lead Lawyer Office",
+              "displayName": "MD - Lead Lawyer Office",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Lead Lawyer Practice Group",
+              "displayName": "MD - Lead Lawyer Practice Group",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Lead Lawyer Output",
+              "displayName": "MD - Lead Lawyer Output",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Other Team Member 1",
+              "displayName": "MD - Other Team Member 1",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Other Team Member 1 office",
+              "displayName": "MD - Other Team Member 1 office",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Other Team Member 1 PG",
+              "displayName": "MD - Other Team Member 1 PG",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Other Team Member 2",
+              "displayName": "MD - Other Team Member 2",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Other Team Member 2 office",
+              "displayName": "MD - Other Team Member 2 office",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Other Team Member 2 PG",
+              "displayName": "MD - Other Team Member 2 PG",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Other Team Member 3",
+              "displayName": "MD - Other Team Member 3",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Other Team Member 3 office",
+              "displayName": "MD - Other Team Member 3 office",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Other Team Member 3 PG",
+              "displayName": "MD - Other Team Member 3 PG",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Other Team Member 4",
+              "displayName": "MD - Other Team Member 4",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Other Team Member 4 office",
+              "displayName": "MD - Other Team Member 4 office",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Other Team Member 4 PG",
+              "displayName": "MD - Other Team Member 4 PG",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Other Team Member 5",
+              "displayName": "MD - Other Team Member 5",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Other Team Member 5 office",
+              "displayName": "MD - Other Team Member 5 office",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Other Team Member 5 PG",
+              "displayName": "MD - Other Team Member 5 PG",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Other Team Members Output",
+              "displayName": "MD - Other Team Members Output",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Other Firms - Name",
+              "displayName": "MD - Other Firms - Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Other Firms - Role",
+              "displayName": "MD - Other Firms - Role",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Other Firms Output",
+              "displayName": "MD - Other Firms Output",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Start Date",
+              "displayName": "MD - Start Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - End Date",
+              "displayName": "MD - End Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Completed",
+              "displayName": "MD - Completed",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Date Output",
+              "displayName": "MD - Date Output",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Press Link 1",
+              "displayName": "MD - Press Link 1",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Press Link 2",
+              "displayName": "MD - Press Link 2",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Press Link 3",
+              "displayName": "MD - Press Link 3",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Press Link 4",
+              "displayName": "MD - Press Link 4",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Other Info",
+              "displayName": "MD - Other Info",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Press Output",
+              "displayName": "MD - Press Output",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "MD - Submission Suggestions",
+              "displayName": "MD - Submission Suggestions",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Email Sent?",
+              "displayName": "Email Sent?",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Word",
+              "displayName": "Word",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Word Name",
+              "displayName": "Word Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Word Sent?",
+              "displayName": "Word Sent?",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "BD 1 Email",
+              "displayName": "BD 1 Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "BD 2 Email",
+              "displayName": "BD 2 Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Shared Inbox",
+              "displayName": "Shared Inbox",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "name": "Update record to sent",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1424,
+        -528
+      ],
+      "id": "f22b3477-3d69-420a-ac66-98dff7993d3b"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.fields.Word[0].url }}",
+        "options": {}
+      },
+      "name": "HTTP Request2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1200,
+        -160
+      ],
+      "id": "985b8e3c-1f3f-4375-8be8-6d5290ab9ef2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ONE Code node: read from 'data-producer', merge binaries, count data*, build Outlook attachments,\n// and (optionally) merge JSON from existing 'Airtable' node — no new nodes added.\n\nconst SOURCE_NODE = 'data-producer';\nconst AIRTABLE_NODE = 'Airtable';\n\n// --- 1) Load source items (from named node; fallback to current input) ---\nlet srcItems;\ntry {\n  srcItems = $items(SOURCE_NODE);\n  if (!Array.isArray(srcItems) || srcItems.length === 0) srcItems = items;\n} catch (_) {\n  srcItems = items;\n}\n\n// --- 2) Merge binaries into a single item; prefer json.fieldName or data{index} ---\nconst merged = { json: {}, binary: {} };\n\nfor (const item of srcItems) {\n  const impliedKey = item.json?.fieldName || (item.json?.index ? `data${item.json.index}` : undefined);\n\n  if (impliedKey && item.binary?.[impliedKey]) {\n    merged.binary[impliedKey] = item.binary[impliedKey];\n    if (item.json?.filename) merged.binary[impliedKey].fileName = item.json.filename;\n    continue;\n  }\n\n  if (item.binary) {\n    for (const [bKey, bVal] of Object.entries(item.binary)) {\n      merged.binary[bKey] = bVal; // last one wins if duplicate keys\n      if (item.json?.filename && impliedKey === bKey) {\n        merged.binary[bKey].fileName = item.json.filename;\n      }\n    }\n  }\n}\n\n// --- 3) Count data* binaries (total + unique) and per-item breakdown ---\nconst dataKeyRegex = /^data\\d*$/i;\n\nlet totalDataKeys = 0;\nconst uniqueDataKeys = new Set();\nconst perItem = [];\n\nfor (let i = 0; i < srcItems.length; i++) {\n  const bin = srcItems[i].binary || {};\n  const keys = Object.keys(bin).filter(k => dataKeyRegex.test(k));\n  perItem.push({ itemIndex: i + 1, dataKeys: keys, count: keys.length });\n  totalDataKeys += keys.length;\n  keys.forEach(k => uniqueDataKeys.add(k));\n}\n\n// --- 4) Build Outlook-friendly attachments array (JSON Parameters = ON) ---\nconst allKeys = Object.keys(merged.binary || {});\nmerged.json.attachments = allKeys.map(k => ({\n  binaryPropertyName: k,\n  fileName: merged.binary[k]?.fileName,\n  mimeType: merged.binary[k]?.mimeType,\n}));\n\n// --- 5) (Optional) Merge JSON from existing 'Airtable' node (no new nodes created) ---\ntry {\n  const airtableItems = $items(AIRTABLE_NODE); // will throw if node doesn't exist\n  if (Array.isArray(airtableItems) && airtableItems.length > 0) {\n    const airtableJson = airtableItems[0]?.json ?? {};\n\n    // (a) Shallow-merge ALL top-level Airtable fields into merged.json (last write wins)\n    for (const [k, v] of Object.entries(airtableJson)) {\n      merged.json[k] = v;\n    }\n\n    // (b) Keep a namespaced copy to avoid key collisions / for debugging\n    merged.json.airtable = airtableJson;\n\n    // (c) If there's an Airtable \"Attachments\" array, add a flattened read-friendly view\n    if (Array.isArray(airtableJson.Attachments)) {\n      merged.json.airtableAttachments = airtableJson.Attachments.map(att => ({\n        id: att?.id,\n        url: att?.url,\n        filename: att?.filename,\n        size: att?.size,\n        type: att?.type,\n      }));\n    }\n  }\n} catch (_) {\n  // If 'Airtable' node isn't present, do nothing.\n}\n\n// --- 6) Summary meta (explicit totals) ---\nmerged.json.sourceNode = SOURCE_NODE;\nmerged.json.totalItems = srcItems.length;\nmerged.json.totalItemsFromSource = srcItems.length;\nmerged.json.totalBinaryKeys = allKeys.length;\nmerged.json.totalDataOutputs = totalDataKeys;\nmerged.json.uniqueDataOutputs = uniqueDataKeys.size;\nmerged.json.uniqueDataKeys = Array.from(uniqueDataKeys);\nmerged.json.perItem = perItem;\n\n// --- 7) Return ONE merged item ---\n// return [merged];\nreturn [{\n  json: merged.json,\n  binary: merged.binary,\n  pairedItem: { item: 0 }\n}];\n"
+      },
+      "name": "comp2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1424,
+        -160
+      ],
+      "id": "748e5cf3-7849-46a5-9f14-e9e5c57fdd80"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code node (JavaScript)\n\n// Process all incoming items\nconst items = $input.all();\n\nfunction toDate(val) {\n  if (val == null) return null;\n\n  if (typeof val === 'number') {\n    const ms = val < 1e11 ? val * 1000 : val;\n    const d = new Date(ms);\n    return isNaN(d.getTime()) ? null : d;\n  }\n\n  if (val instanceof Date) return isNaN(val.getTime()) ? null : val;\n\n  if (typeof val === 'string') {\n    const s = val.trim();\n    let d = new Date(s);\n    if (!isNaN(d.getTime())) return d;\n\n    d = new Date(s.replace(' ', 'T'));\n    if (!isNaN(d.getTime())) return d;\n\n    if (!/[zZ]|[+\\-]\\d{2}:\\d{2}$/.test(s)) {\n      d = new Date(s + 'Z');\n      if (!isNaN(d.getTime())) return d;\n    }\n  }\n\n  return null;\n}\n\nfunction ordinal(n) {\n  const v = Math.abs(n);\n  const m100 = v % 100;\n  if (m100 >= 11 && m100 <= 13) return 'th';\n  switch (v % 10) {\n    case 1: return 'st';\n    case 2: return 'nd';\n    case 3: return 'rd';\n    default: return 'th';\n  }\n}\n\nfunction londonParts(date) {\n  const zone = 'Europe/London';\n\n  const base = new Intl.DateTimeFormat('en-GB', {\n    timeZone: zone,\n    year: 'numeric',\n    month: 'long',\n    day: 'numeric',\n    weekday: 'long',\n  }).formatToParts(date);\n\n  const get = (t) => base.find(p => p.type === t)?.value;\n\n  const dayNum = Number(get('day'));\n  const monthName = get('month');\n  const year = get('year');\n  const weekday = get('weekday');\n\n  const time12London = new Intl.DateTimeFormat('en-GB', {\n    timeZone: zone,\n    hour: '2-digit',\n    minute: '2-digit',\n    hour12: true,\n  }).format(date);\n\n  const time24London = new Intl.DateTimeFormat('en-GB', {\n    timeZone: zone,\n    hour: '2-digit',\n    minute: '2-digit',\n    hour12: false,\n  }).format(date);\n\n  return { dayNum, monthName, year, weekday, time12London, time24London };\n}\n\nfunction pickConversationDateSource(j) {\n  // Prefer explicit Conversation Date in fields, then top-level\n  let v =\n    j?.fields?.['Conversation Date'] ??\n    j?.['Conversation Date'] ??\n    j?.createdTime ?? // Airtable record createdTime as a safe fallback\n    j?.input ??\n    j?.timestamp ??\n    j?.date ??\n    null;\n\n  // If Airtable ever returns an array or object, coerce to string if possible\n  if (Array.isArray(v)) v = v[0] ?? null;\n  if (v && typeof v === 'object' && 'value' in v) v = v.value;\n\n  return v;\n}\n\nreturn items.map(item => {\n  const raw = pickConversationDateSource(item.json);\n  const d = toDate(raw);\n\n  if (!d) {\n    return {\n      json: {\n        ...item.json,\n        conversationDateRaw: raw,\n        error: 'Invalid or missing Conversation Date. Provide ISO string or epoch seconds/milliseconds in fields[\"Conversation Date\"] or top-level \"Conversation Date\".',\n      },\n    };\n  }\n\n  const { dayNum, monthName, year, weekday, time12London, time24London } = londonParts(d);\n\n  const dayWithOrdinal = `${dayNum}${ordinal(dayNum)}`;\n  const dateUK = `${dayWithOrdinal} ${monthName} ${year}`;\n\n  return {\n    json: {\n      ...item.json,\n      conversationDateRaw: raw,\n      dayOfWeek: weekday,\n      dateUK,\n      dayWithOrdinal,\n      month: monthName,\n      time12London,\n      time24London,\n      timeZone: 'Europe/London',\n    },\n  };\n});\n"
+      },
+      "name": "Date formatting2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        976,
+        -160
+      ],
+      "id": "3fb63fd8-88c8-4380-9728-b8f7c2c5bfa7"
+    },
+    {
+      "parameters": {
+        "toRecipients": "fladgatesubmissions@legalengine.co.uk",
+        "subject": "=FLADGATE EMAIL ADDRESS NOT IN DB - Your Matter Summary for {{ $('Get new conversation').item.json[\"D1 - Client Name Value\"] }} relating to the {{ $('Get new conversation').item.json['Matter Category Match'].value }} category.",
+        "bodyContent": "=Hey {{ $('Get new conversation').item.json[\"First Name\"] }}, attached is your matter summary from your call on {{ $('Date formatting2').item.json.dayOfWeek }} {{ $('Date formatting2').item.json.dayWithOrdinal }} {{ $('Date formatting2').item.json.month }} at {{ $('Date formatting2').item.json.time12London }} relating to {{ $('Get new conversation').item.json[\"D1 - Client Name Value\"] }} for the {{ $('Get new conversation').item.json['Matter Category Match'].value }} category.\n\nCheers \n\nLegal Engine",
+        "additionalFields": {
+          "attachments": {
+            "attachments": [
+              {
+                "binaryPropertyName": "=data"
+              }
+            ]
+          },
+          "bccRecipients": "andy@legalengine.co.uk"
+        }
+      },
+      "name": "Send email with att2",
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        1648,
+        -160
+      ],
+      "id": "cedc17b7-5c39-4308-b084-187fa56509c5"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5cb69fe3-d811-40fd-a258-12f59b56d8e7",
+              "name": "fields.Word[0].url",
+              "value": "={{ $('Airtable').item.json.fields.Word[0].url }}",
+              "type": "string"
+            },
+            {
+              "id": "8b8c67fe-6361-49ea-ad1d-d8dc88e94295",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "63b25cbc-6f3c-47cc-b6fd-23ff5069424c",
+              "name": "createdTime",
+              "value": "={{ $json.createdTime }}",
+              "type": "string"
+            },
+            {
+              "id": "c668f8a5-ed20-49de-9cb6-c268e1b061ae",
+              "name": "Conversation Date",
+              "value": "={{ $('Get new conversation').item.json.createdTime }}",
+              "type": "string"
+            },
+            {
+              "id": "4f31e261-ec09-4a1d-9c99-be3ee64df1cf",
+              "name": "BD rep 1 email",
+              "value": "={{ $json['BD rep 1 email'] }}",
+              "type": "string"
+            },
+            {
+              "id": "597874fc-8628-4640-b71e-06768290bd93",
+              "name": "BD rep 2 email",
+              "value": "={{ $json['BD rep 2 email'] }}",
+              "type": "string"
+            },
+            {
+              "id": "4f367c72-1b35-48c4-a0c5-7117dc9d44a7",
+              "name": "Shared inbox",
+              "value": "={{ $json['Shared inbox'] }}",
+              "type": "string"
+            },
+            {
+              "id": "82be6c15-bfc2-4bc5-ae54-27dc7f371336",
+              "name": "fields.Word[0].filename",
+              "value": "={{ $('Airtable').item.json.fields.Word[0].filename }}",
+              "type": "string"
+            },
+            {
+              "id": "83a8abe2-6a00-466a-8535-57097d40ad22",
+              "name": "Fee earner first name",
+              "value": "={{ $json[\"Fee earner first name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "bf4778a3-d670-42b5-98f8-552fdf35bc7a",
+              "name": "Fee earner surname",
+              "value": "={{ $json[\"Fee earner surname\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "5b8c545c-e468-4330-b36c-fe6809a921b5",
+              "name": "Submission category",
+              "value": "={{ $json[\"Submission category\"] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Set ",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        752,
+        -160
+      ],
+      "id": "934a2200-c754-4ffd-a6ce-a18cd0ec1f96"
+    }
+  ],
+  "connections": {
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "comp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "comp": {
+      "main": [
+        [
+          {
+            "node": "Send email with att",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Airtable": {
+      "main": [
+        [
+          {
+            "node": "Wait 6s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date formatting": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get new conversation": {
+      "main": [
+        [
+          {
+            "node": "If no word file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Date formatting",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Get new conversation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send email with att": {
+      "main": [
+        [
+          {
+            "node": "Update record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update record": {
+      "main": [
+        [
+          {
+            "node": "Slack - Fladgate Channel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If no word file": {
+      "main": [
+        [
+          {
+            "node": "If word not sent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If word not sent": {
+      "main": [
+        [
+          {
+            "node": "Search BD Emails1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "comp1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "comp1": {
+      "main": [
+        [
+          {
+            "node": "Send email with att1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date formatting1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send email with att1": {
+      "main": [
+        [
+          {
+            "node": "Update record to sent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search BD Emails1": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set 1": {
+      "main": [
+        [
+          {
+            "node": "Date formatting1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 6s": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Set 1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Slack - Fladgate Channel2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update record to sent": {
+      "main": [
+        [
+          {
+            "node": "Slack - Fladgate Channel1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "comp2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "comp2": {
+      "main": [
+        [
+          {
+            "node": "Send email with att2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date formatting2": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set ": {
+      "main": [
+        [
+          {
+            "node": "Date formatting2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack - Fladgate Channel2": {
+      "main": [
+        [
+          {
+            "node": "Set ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "any",
+    "executionTimeout": 90,
+    "availableInMCP": false,
+    "errorWorkflow": "nSr5syzpgcboR5Da",
+    "timeSavedPerExecution": 5
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 0,
+  "meta": null
+}

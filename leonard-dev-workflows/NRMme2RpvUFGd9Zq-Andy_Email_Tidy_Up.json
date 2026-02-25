@@ -1,0 +1,941 @@
+{
+  "name": "Andy Email Tidy Up",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -496,
+        128
+      ],
+      "id": "cd0c7668-b38c-47f7-826f-72b640e8d625",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "move",
+        "messageId": {
+          "__rl": true,
+          "value": "={{ $('Just Eat').item.json.id }}",
+          "mode": "id"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "AQMkADAwATZiZmYAZC05Y2I4LTQ0AGY1LTAwAi0wMAoALgAAA2QS1OtkhP1HqkHqJvjoSWEBACbRHx0Y--5Es8CLEwdUGpQACKYFTGEAAAA=",
+          "mode": "list",
+          "cachedResultName": "Just Eat",
+          "cachedResultUrl": "https://outlook.office365.com/mail/AQMkADAwATZiZmYAZC05Y2I4LTQ0AGY1LTAwAi0wMAoALgAAA2QS1OtkhP1HqkHqJvjoSWEBACbRHx0Y%2F%2F5Es8CLEwdUGpQACKYFTGEAAAA%3D"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        336,
+        -80
+      ],
+      "id": "57ade4b3-d27d-4a14-ab2c-5d1105e4afcd",
+      "name": "Move a message",
+      "webhookId": "02b597f1-3c33-4358-b491-e3d070b73121",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "J6emPxQ1aamee9nR",
+          "name": "Microsoft Outlook - Andy Personal Hotmail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "messageId": {
+          "__rl": true,
+          "value": "={{ $('Just Eat').item.json.id }}",
+          "mode": "id"
+        },
+        "updateFields": {
+          "isRead": true
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        112,
+        -80
+      ],
+      "id": "762b9e63-a076-4cdf-96a1-d58744c74e28",
+      "name": "Update a message",
+      "webhookId": "02b597f1-3c33-4358-b491-e3d070b73121",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "J6emPxQ1aamee9nR",
+          "name": "Microsoft Outlook - Andy Personal Hotmail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "move",
+        "messageId": {
+          "__rl": true,
+          "value": "={{ $('Experian').item.json.id }}",
+          "mode": "id"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "AQMkADAwATZiZmYAZC05Y2I4LTQ0AGY1LTAwAi0wMAoALgAAA2QS1OtkhP1HqkHqJvjoSWEBACbRHx0Y--5Es8CLEwdUGpQACKYFTGIAAAA=",
+          "mode": "list",
+          "cachedResultName": "Experian",
+          "cachedResultUrl": "https://outlook.office365.com/mail/AQMkADAwATZiZmYAZC05Y2I4LTQ0AGY1LTAwAi0wMAoALgAAA2QS1OtkhP1HqkHqJvjoSWEBACbRHx0Y%2F%2F5Es8CLEwdUGpQACKYFTGIAAAA%3D"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        352,
+        144
+      ],
+      "id": "82a2657a-c5e9-47ad-812d-8cf5e4af9f70",
+      "name": "Move a message1",
+      "webhookId": "02b597f1-3c33-4358-b491-e3d070b73121",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "J6emPxQ1aamee9nR",
+          "name": "Microsoft Outlook - Andy Personal Hotmail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "messageId": {
+          "__rl": true,
+          "value": "={{ $('Experian').item.json.id }}",
+          "mode": "id"
+        },
+        "updateFields": {
+          "isRead": true
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        128,
+        144
+      ],
+      "id": "146ff6b6-bfd7-40cf-85c2-ce2e09240284",
+      "name": "Update a message1",
+      "webhookId": "02b597f1-3c33-4358-b491-e3d070b73121",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "J6emPxQ1aamee9nR",
+          "name": "Microsoft Outlook - Andy Personal Hotmail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": 25,
+        "output": "fields",
+        "fields": [
+          "sentDateTime",
+          "body",
+          "from",
+          "sender",
+          "subject"
+        ],
+        "filtersUI": {
+          "values": {
+            "filters": {
+              "foldersToExclude": [
+                "AQMkADAwATZiZmYAZC05Y2I4LTQ0AGY1LTAwAi0wMAoALgAAA2QS1OtkhP1HqkHqJvjoSWEBACbRHx0Y--5Es8CLEwdUGpQACKYFTGEAAAA="
+              ],
+              "receivedAfter": "=2025-09-10T06:35:48Z",
+              "sender": "Just Eat"
+            }
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        -112,
+        -80
+      ],
+      "id": "317dc2d8-91fa-45a6-b0a4-fb0a4c9348ff",
+      "name": "Just Eat",
+      "webhookId": "02b597f1-3c33-4358-b491-e3d070b73121",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "J6emPxQ1aamee9nR",
+          "name": "Microsoft Outlook - Andy Personal Hotmail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": 250,
+        "output": "fields",
+        "fields": [
+          "sentDateTime",
+          "body",
+          "from",
+          "sender",
+          "subject"
+        ],
+        "filtersUI": {
+          "values": {
+            "filters": {
+              "foldersToExclude": [
+                "AQMkADAwATZiZmYAZC05Y2I4LTQ0AGY1LTAwAi0wMAoALgAAA2QS1OtkhP1HqkHqJvjoSWEBACbRHx0Y--5Es8CLEwdUGpQACKYFTGIAAAA="
+              ],
+              "receivedAfter": "=2025-09-10T06:35:48Z",
+              "sender": "Experian"
+            }
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        -96,
+        144
+      ],
+      "id": "c3b9691b-4ae7-4859-916e-ed2c063877bd",
+      "name": "Experian",
+      "webhookId": "02b597f1-3c33-4358-b491-e3d070b73121",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "J6emPxQ1aamee9nR",
+          "name": "Microsoft Outlook - Andy Personal Hotmail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "move",
+        "messageId": {
+          "__rl": true,
+          "value": "={{ $('Amy Legal Engine').item.json.id }}",
+          "mode": "id"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "AQMkADAwATZiZmYAZC05Y2I4LTQ0AGY1LTAwAi0wMAoALgAAA2QS1OtkhP1HqkHqJvjoSWEBACbRHx0Y--5Es8CLEwdUGpQACKYFTGMAAAA=",
+          "mode": "list",
+          "cachedResultName": "Legal Engine",
+          "cachedResultUrl": "https://outlook.office365.com/mail/AQMkADAwATZiZmYAZC05Y2I4LTQ0AGY1LTAwAi0wMAoALgAAA2QS1OtkhP1HqkHqJvjoSWEBACbRHx0Y%2F%2F5Es8CLEwdUGpQACKYFTGMAAAA%3D"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        352,
+        336
+      ],
+      "id": "6e603739-8fb6-46dd-881c-5de48763d77d",
+      "name": "Move a message2",
+      "webhookId": "02b597f1-3c33-4358-b491-e3d070b73121",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "J6emPxQ1aamee9nR",
+          "name": "Microsoft Outlook - Andy Personal Hotmail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "messageId": {
+          "__rl": true,
+          "value": "={{ $('Amy Legal Engine').item.json.id }}",
+          "mode": "id"
+        },
+        "updateFields": {
+          "isRead": true
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        128,
+        336
+      ],
+      "id": "4a5dcb58-7ce5-4e60-aefa-0f5b01d47f5b",
+      "name": "Update a message2",
+      "webhookId": "02b597f1-3c33-4358-b491-e3d070b73121",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "J6emPxQ1aamee9nR",
+          "name": "Microsoft Outlook - Andy Personal Hotmail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": 1000,
+        "output": "fields",
+        "fields": [
+          "sentDateTime",
+          "body",
+          "from",
+          "sender",
+          "subject"
+        ],
+        "filtersUI": {
+          "values": {
+            "filters": {
+              "foldersToExclude": [
+                "AQMkADAwATZiZmYAZC05Y2I4LTQ0AGY1LTAwAi0wMAoALgAAA2QS1OtkhP1HqkHqJvjoSWEBACbRHx0Y--5Es8CLEwdUGpQACKYFTGMAAAA="
+              ],
+              "receivedAfter": "=2025-09-10T06:35:48Z",
+              "sender": "Amy from Legal Engine"
+            }
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        -96,
+        336
+      ],
+      "id": "6772f03c-f781-4290-aa1e-c86b70e6d716",
+      "name": "Amy Legal Engine",
+      "webhookId": "02b597f1-3c33-4358-b491-e3d070b73121",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "J6emPxQ1aamee9nR",
+          "name": "Microsoft Outlook - Andy Personal Hotmail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "move",
+        "messageId": {
+          "__rl": true,
+          "value": "={{ $('Leonard Legal Engine').item.json.id }}",
+          "mode": "id"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "AQMkADAwATZiZmYAZC05Y2I4LTQ0AGY1LTAwAi0wMAoALgAAA2QS1OtkhP1HqkHqJvjoSWEBACbRHx0Y--5Es8CLEwdUGpQACKYFTGMAAAA=",
+          "mode": "list",
+          "cachedResultName": "Legal Engine",
+          "cachedResultUrl": "https://outlook.office365.com/mail/AQMkADAwATZiZmYAZC05Y2I4LTQ0AGY1LTAwAi0wMAoALgAAA2QS1OtkhP1HqkHqJvjoSWEBACbRHx0Y%2F%2F5Es8CLEwdUGpQACKYFTGMAAAA%3D"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        320,
+        528
+      ],
+      "id": "48b221a7-8648-4920-ada1-a3ed8c850910",
+      "name": "Move a message3",
+      "webhookId": "02b597f1-3c33-4358-b491-e3d070b73121",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "J6emPxQ1aamee9nR",
+          "name": "Microsoft Outlook - Andy Personal Hotmail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "messageId": {
+          "__rl": true,
+          "value": "={{ $('Leonard Legal Engine').item.json.id }}",
+          "mode": "id"
+        },
+        "updateFields": {
+          "isRead": true
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        96,
+        528
+      ],
+      "id": "4ee97261-6ac6-4202-8022-094db9117962",
+      "name": "Update a message3",
+      "webhookId": "02b597f1-3c33-4358-b491-e3d070b73121",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "J6emPxQ1aamee9nR",
+          "name": "Microsoft Outlook - Andy Personal Hotmail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": 1000,
+        "output": "fields",
+        "fields": [
+          "sentDateTime",
+          "body",
+          "from",
+          "sender",
+          "subject"
+        ],
+        "filtersUI": {
+          "values": {
+            "filters": {
+              "foldersToExclude": [
+                "AQMkADAwATZiZmYAZC05Y2I4LTQ0AGY1LTAwAi0wMAoALgAAA2QS1OtkhP1HqkHqJvjoSWEBACbRHx0Y--5Es8CLEwdUGpQACKYFTGMAAAA="
+              ],
+              "receivedAfter": "=2025-09-10T06:35:48Z",
+              "sender": "Leonard at Legal Engine"
+            }
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        -128,
+        528
+      ],
+      "id": "18b8120b-64a2-4e47-a35c-40d24cbe84e9",
+      "name": "Leonard Legal Engine",
+      "webhookId": "02b597f1-3c33-4358-b491-e3d070b73121",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "J6emPxQ1aamee9nR",
+          "name": "Microsoft Outlook - Andy Personal Hotmail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "move",
+        "messageId": {
+          "__rl": true,
+          "value": "={{ $('LinkedIn Jobs').item.json.id }}",
+          "mode": "id"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "AQMkADAwATZiZmYAZC05Y2I4LTQ0AGY1LTAwAi0wMAoALgAAA2QS1OtkhP1HqkHqJvjoSWEBACbRHx0Y--5Es8CLEwdUGpQACKYFTGQAAAA=",
+          "mode": "list",
+          "cachedResultName": "Linkedin Job",
+          "cachedResultUrl": "https://outlook.office365.com/mail/AQMkADAwATZiZmYAZC05Y2I4LTQ0AGY1LTAwAi0wMAoALgAAA2QS1OtkhP1HqkHqJvjoSWEBACbRHx0Y%2F%2F5Es8CLEwdUGpQACKYFTGQAAAA%3D"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        336,
+        736
+      ],
+      "id": "f4f5855b-12b1-49cd-9257-7d6d5ce755e9",
+      "name": "Move a message4",
+      "webhookId": "02b597f1-3c33-4358-b491-e3d070b73121",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "J6emPxQ1aamee9nR",
+          "name": "Microsoft Outlook - Andy Personal Hotmail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "messageId": {
+          "__rl": true,
+          "value": "={{ $('LinkedIn Jobs').item.json.id }}",
+          "mode": "id"
+        },
+        "updateFields": {
+          "isRead": true
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        112,
+        736
+      ],
+      "id": "57a32594-8185-41c2-b81e-a9d4d90e2829",
+      "name": "Update a message4",
+      "webhookId": "02b597f1-3c33-4358-b491-e3d070b73121",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "J6emPxQ1aamee9nR",
+          "name": "Microsoft Outlook - Andy Personal Hotmail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "output": "fields",
+        "fields": [
+          "sentDateTime",
+          "body",
+          "from",
+          "sender",
+          "subject"
+        ],
+        "filtersUI": {
+          "values": {
+            "filters": {
+              "foldersToExclude": [
+                "AQMkADAwATZiZmYAZC05Y2I4LTQ0AGY1LTAwAi0wMAoALgAAA2QS1OtkhP1HqkHqJvjoSWEBACbRHx0Y--5Es8CLEwdUGpQACKYFTGQAAAA="
+              ],
+              "receivedAfter": "=2024-06-10T06:35:48Z",
+              "sender": "LinkedIn Job Alerts"
+            }
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        -112,
+        736
+      ],
+      "id": "039a0014-9c41-4014-b384-4c84f20cda5a",
+      "name": "LinkedIn Jobs",
+      "webhookId": "02b597f1-3c33-4358-b491-e3d070b73121",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "J6emPxQ1aamee9nR",
+          "name": "Microsoft Outlook - Andy Personal Hotmail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "markAsRead",
+        "messageId": "={{ $json.id }}"
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        96,
+        -272
+      ],
+      "id": "68e876cd-55cd-4fda-97fc-d6f76486c1a1",
+      "name": "Mark a message as read",
+      "webhookId": "9fab15a4-ec94-49cd-b041-4082e5ab8b91",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "bGGFKDTuuG2o02nS",
+          "name": "Gmail - V88ATS- Andy Personal"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $json.id }}",
+        "labelIds": [
+          "Label_454824337147712720"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        352,
+        -272
+      ],
+      "id": "5bb3dc32-1b65-4116-817c-fefa3d363a1c",
+      "name": "Add label to message",
+      "webhookId": "9fab15a4-ec94-49cd-b041-4082e5ab8b91",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "bGGFKDTuuG2o02nS",
+          "name": "Gmail - V88ATS- Andy Personal"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": 250,
+        "filters": {
+          "receivedAfter": "2015-10-19T14:38:08",
+          "sender": "Just Eat"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -112,
+        -272
+      ],
+      "id": "8b29203e-a326-41b1-91eb-8ea605093538",
+      "name": "Just Eat1",
+      "webhookId": "9fab15a4-ec94-49cd-b041-4082e5ab8b91",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "bGGFKDTuuG2o02nS",
+          "name": "Gmail - V88ATS- Andy Personal"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "removeLabels",
+        "messageId": "={{ $json.id }}",
+        "labelIds": [
+          "INBOX"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        560,
+        -272
+      ],
+      "id": "05099c34-bb41-4e74-a0d7-244b71540163",
+      "name": "Remove label from message",
+      "webhookId": "9fab15a4-ec94-49cd-b041-4082e5ab8b91",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "bGGFKDTuuG2o02nS",
+          "name": "Gmail - V88ATS- Andy Personal"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "markAsRead",
+        "messageId": "={{ $json.id }}"
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        96,
+        -432
+      ],
+      "id": "44dbd6c3-af42-4ada-8560-8c330b01f03a",
+      "name": "Mark a message as read1",
+      "webhookId": "9fab15a4-ec94-49cd-b041-4082e5ab8b91",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "bGGFKDTuuG2o02nS",
+          "name": "Gmail - V88ATS- Andy Personal"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $json.id }}",
+        "labelIds": [
+          "Label_2019057176703474757"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        352,
+        -432
+      ],
+      "id": "24abfed2-c1a4-4923-a001-e090c4979b7c",
+      "name": "Add label to message1",
+      "webhookId": "9fab15a4-ec94-49cd-b041-4082e5ab8b91",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "bGGFKDTuuG2o02nS",
+          "name": "Gmail - V88ATS- Andy Personal"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "removeLabels",
+        "messageId": "={{ $json.id }}",
+        "labelIds": [
+          "INBOX"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        560,
+        -432
+      ],
+      "id": "61827229-692b-4191-85e1-d2134ee091e0",
+      "name": "Remove label from message1",
+      "webhookId": "9fab15a4-ec94-49cd-b041-4082e5ab8b91",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "bGGFKDTuuG2o02nS",
+          "name": "Gmail - V88ATS- Andy Personal"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": 250,
+        "filters": {
+          "receivedAfter": "2015-10-19T14:38:08",
+          "sender": "Beefeater"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -112,
+        -432
+      ],
+      "id": "6f45e429-efb8-4d41-9bfa-99af3fda4497",
+      "name": "Beefeater",
+      "webhookId": "9fab15a4-ec94-49cd-b041-4082e5ab8b91",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "bGGFKDTuuG2o02nS",
+          "name": "Gmail - V88ATS- Andy Personal"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Just Eat",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Experian",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Amy Legal Engine",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Leonard Legal Engine",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "LinkedIn Jobs",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Just Eat1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Beefeater",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Move a message": {
+      "main": [
+        []
+      ]
+    },
+    "Update a message": {
+      "main": [
+        [
+          {
+            "node": "Move a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a message1": {
+      "main": [
+        [
+          {
+            "node": "Move a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Just Eat": {
+      "main": [
+        [
+          {
+            "node": "Update a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Experian": {
+      "main": [
+        [
+          {
+            "node": "Update a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a message2": {
+      "main": [
+        [
+          {
+            "node": "Move a message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Amy Legal Engine": {
+      "main": [
+        [
+          {
+            "node": "Update a message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a message3": {
+      "main": [
+        [
+          {
+            "node": "Move a message3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leonard Legal Engine": {
+      "main": [
+        [
+          {
+            "node": "Update a message3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a message4": {
+      "main": [
+        [
+          {
+            "node": "Move a message4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LinkedIn Jobs": {
+      "main": [
+        [
+          {
+            "node": "Update a message4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark a message as read": {
+      "main": [
+        [
+          {
+            "node": "Add label to message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Just Eat1": {
+      "main": [
+        [
+          {
+            "node": "Mark a message as read",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add label to message": {
+      "main": [
+        [
+          {
+            "node": "Remove label from message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark a message as read1": {
+      "main": [
+        [
+          {
+            "node": "Add label to message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add label to message1": {
+      "main": [
+        [
+          {
+            "node": "Remove label from message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Beefeater": {
+      "main": [
+        [
+          {
+            "node": "Mark a message as read1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 0,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

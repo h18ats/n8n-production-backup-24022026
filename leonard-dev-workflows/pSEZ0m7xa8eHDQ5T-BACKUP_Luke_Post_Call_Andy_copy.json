@@ -1,0 +1,1563 @@
+{
+  "name": "BACKUP - Luke Post Call - Andy copy",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are Luke, an expert legal Business Development assistant. \nYour primary role is to support busy lawyers to complete business development and  growth actions that will increase revenue generation opportunities. You will achieve this by analysing transcripts of a short call from a lawyer post a client meeting and produce a structured, professional output. \n\nYour Tasks: \n\nIdentify Follow-Up Actions \n\nExtract all actions that arise in the transcript. \n\nCategorise each one clearly as: \n\nAgreed Action – explicitly confirmed by lawyer or client. \n\nInferred / Potential Action – implied but not explicitly confirmed. \n\nSummarise the Meeting \n\nProvide a concise high-level summary of the main topics, issues, and next steps discussed. \n\nFocus on legal and practical matters, not filler conversation. \n\nOutput Format: \n\nHigh-Level Summary (2-3 sentences) \n\nAgreed Actions: [who is responsible, what needs doing, when if specified] \n\nInferred / Potential Action: [description] \n\nStyle & Rules: \n\nBe precise, neutral, and professional. Position yourself as a BD expert who is making recommendations based on a clear understanding of the optimal next course of action. \n\nDo not invent actions that are not supported by the transcript. \n\nAlways separate what is confirmed from where further clarification is required. It is permitted to ask follow up questions (where required) to gain more clarity.  \n\nFlag anything that might require clarification before being treated as a true action. \n\nInputs: \nMeeting Transcript: {{ JSON.stringify($('Luke Post Call Webhook').item.json.body.data.transcript) }} \nMeeting Summary from the call:{{ $('Luke Post Call Webhook').item.json.body.data.analysis.transcript_summary }}\nCurrent Date & Time: {{ $('Date & Time8').item.json.currentDate }}",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -64,
+        0
+      ],
+      "id": "90af8ad6-9a6b-4663-bb3f-1ddc95024ea3",
+      "name": "AI Agent",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini-2025-08-07",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini-2025-08-07"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -64,
+        224
+      ],
+      "id": "1c0fdd1f-5b41-4346-8a5b-a47b2a38e54f",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "LldOhLNBReShSMkE",
+          "name": "OpenAi account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "toRecipients": "=lara@legalengine.co.uk, lee@legalengine.co.uk",
+        "subject": "=Legal Engine Actions from Post Client Meeting Call",
+        "bodyContent": "=<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Legal Engine • Your Post Client Meeting Actions</title>\n\n  <!-- Brand Typeface -->\n  <link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap\" rel=\"stylesheet\">\n\n  <style>\n    :root{\n      --le-navy:#062047; --le-blue:#00b3ff; --le-indigo:#0066ff;\n      --le-grey:#f2f6fa; --le-silver:#e5ecf3; --le-text:#263238;\n    }\n    *{box-sizing:border-box;margin:0;padding:0;}\n    body{\n      width:100%!important;background:var(--le-grey);\n      font-family:'Inter',Helvetica,Arial,sans-serif;\n      color:var(--le-text);-webkit-font-smoothing:antialiased;\n    }\n    .wrapper{\n      max-width:700px;margin:0 auto;background:#fff;\n      border:1px solid var(--le-silver);border-radius:10px;\n      padding:48px 40px;\n    }\n    .section{margin-bottom:20px;line-height:1.55;}\n    .section h1{color:var(--le-navy);font-size:24px;font-weight:700;margin-bottom:18px;}\n    .section h2{\n      color:var(--le-navy);font-size:22px;font-weight:700;\n      padding-bottom:10px;border-bottom:2px solid var(--le-silver);\n      margin-bottom:14px;\n    }\n    .section p{margin-bottom:16px;white-space:pre-line;}\n\n    .button{\n      display:inline-block;padding:14px 28px;font-weight:600;\n      color:#fff!important;text-decoration:none;border-radius:6px;\n      background:linear-gradient(90deg,var(--le-blue)0%,var(--le-indigo)100%);\n      transition:opacity .25s ease-in-out;\n    }\n    .button:hover{opacity:.8;}\n\n\n    .signature p{margin-bottom:6px;}\n.signature{\n  color:var(--le-text);                /* same dark text as body */\n  font-family:'Inter',Helvetica,Arial,sans-serif;\n}\n.signature a{\n  color:var(--le-text);                /* links also black */\n  text-decoration:none;\n}\n\n\n    .footer{\n      font-size:13px;color:#6c7a84;text-align:center;\n      padding-top:24px;border-top:1px solid var(--le-silver);\n    }\n    .tracking-pixel{display:none;width:1px;height:1px;}\n\n    @media(max-width:520px){\n      .wrapper{padding:32px 22px;}\n      .section h1{font-size:22px;}\n      .section h2{font-size:20px;}\n    }\n  </style>\n</head>\n<body>\n  <div class=\"wrapper\">\n\n    <!-- HEADER -->\n    <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-collapse:collapse;margin-bottom:40px;\">\n      <tr>\n        <td align=\"center\">\n          <img\n            src=\"https://49390627.fs1.hubspotusercontent-eu1.net/hub/49390627/hubfs/e8ad0e08-aa6c-4d44-9053-cdcf7bbaec5b.png?width=852&amp;height=339&amp;name=e8ad0e08-aa6c-4d44-9053-cdcf7bbaec5b.png\"\n            alt=\"Legal Engine\"\n            width=\"180\" height=\"72\"\n            style=\"width:180px;max-width:100%;height:auto;display:block;border:0;outline:none;text-decoration:none;\">\n        </td>\n      </tr>\n    </table>\n    <!--[if mso]><style>.mso-logo img{width:180px!important;height:auto!important;}</style><![endif]-->\n\n  <!-- INTRO -->\n    <div class=\"section\">\n      <p>Hi,</p>\n      <p>Thanks for taking the time to test Legal Engine.</p>\n    \n    </div>\n\n    <!-- SUMMARY OF ACTIONS -->\n    <div class=\"section\">\n      <h2>Summary of Actions</h2>\n  {{ $json.output }}\n    </div>\n\n    <!-- EXTRA ASSETS INTRO -->\n    <div class=\"section\">\n  \n      <p>This is just a snapshot of my capabilities. At&nbsp;<a href=\"https://legalengine.co.uk/\"><b>Legal Engine</b></a>, we’re building a suite of assistants like me, ready to transform Marketing &amp; BD across the legal industry.</p>\n    </div>\n\n<!-- SIGN-OFF -->\n<div class=\"signature\">\n  <p>Cheers,</p>\n\n  <p><b>Luke</b></p>\n\n  <p><b>BD AI Assistant<br>Legal Engine</b></p>\n\n  <p>\n    E:&nbsp;<a href=\"mailto:luke@legalengine.co.uk\">luke@legalengine.co.uk</a><br>\n    W:&nbsp;<a href=\"https://legalengine.co.uk/\">www.legalengine.co.uk</a>\n  </p>\n</div>\n    <!-- FOOTER + UNSUBSCRIBE -->\n    <div class=\"footer\">\n      &copy; 2025 Legal Engine Ltd. All rights reserved.<br><br>\n      <a href=\"https://unsubscribe.legalengine.co.uk\" style=\"color:var(--le-blue);text-decoration:none;\">Unsubscribe</a>\n    </div>\n\n    <!-- OPEN-TRACKING -->\n    <img class=\"tracking-pixel\"\n         alt=\"\">\n  </div>\n</body>\n</html>",
+        "additionalFields": {
+          "bodyContentType": "html"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        640,
+        112
+      ],
+      "id": "7763c8e1-0fc0-47ab-a40a-2bde4234ff9c",
+      "name": "HTML Email from Leonard to Lawyer",
+      "webhookId": "b0124010-bf50-4c9b-9ee2-b893f399570b",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "APa28clvTTmmzH55",
+          "name": "Microsoft Outlook - Leonard @ Legal Engine"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {
+          "numberOfItems": -1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserItemList",
+      "typeVersion": 1,
+      "position": [
+        80,
+        224
+      ],
+      "id": "db7e425b-55fc-40a9-a238-a9bca28d03a5",
+      "name": "Item List Output Parser",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Your role is to produce a html formatted version of this text that will be embedded into an html email. I just need the output to be a paragaph of formatted text in html and not a full html template\n\nText here: {{ $json['0'] }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        288,
+        112
+      ],
+      "id": "640a2577-d4b4-4810-b6a5-07fad3af1cd0",
+      "name": "AI Agent2",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini-2025-08-07",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini-2025-08-07"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        368,
+        336
+      ],
+      "id": "7e3de241-1865-4e93-8897-c492be5e5717",
+      "name": "OpenAI Chat Model2",
+      "credentials": {
+        "openAiApi": {
+          "id": "LldOhLNBReShSMkE",
+          "name": "OpenAi account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -288,
+        272
+      ],
+      "id": "3cef1a28-5925-40d8-b9d3-46cb1ad42035",
+      "name": "Respond to Webhook",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"subject\": {\n      \"type\": \"string\",\n      \"description\": \"The subject line of the email\"\n    },\n    \"email\": {\n      \"type\": \"string\",\n      \"description\": \"The body content of the email\"\n    }\n  },\n  \"required\": [\"subject\", \"email\"]\n}\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        80,
+        784
+      ],
+      "id": "27b07fc4-61e5-4cbe-bd20-35699b6cd51a",
+      "name": "Structured Output Parser",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3800e373-5f7a-4642-8392-d3a4aed9e067",
+              "name": "email",
+              "value": "={{ $json.output.email }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        352,
+        560
+      ],
+      "id": "32d65468-79e7-4242-a1ef-0d6f28f693b8",
+      "name": "Set Email",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "inputText": "={{ $json.data.text }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "Approved",
+              "description": "The email has been reviewed and accepted as-is. The human explicitly or implicitly expresses approval, indicating that no changes are needed. \n\nExample phrases include:\n\n\"Looks good.\"\n\"Okay.\"\n\"Ok.\"\n\"Go ahead and send it.\"\n\"This works for me.\"\n\"Approved.\"\n\"No changes needed.\"\n\"Fine.\"\n\"Send.\""
+            },
+            {
+              "category": "Declined",
+              "description": "The email has been reviewed, but the human requests modifications before it is sent like tweaks, removing parts, rewording, etc. This could include suggested edits, rewording, or major revisions. \n\nExample phrases include:\n\n\"Can we tweak this part?\"\n\"Needs some changes.\"\n\"I’d like to reword this.\"\n\"Not quite right—let’s revise it.\"\n\"Can you adjust this before sending?\"\n\"Don't mention that we can't do that\""
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1,
+      "position": [
+        864,
+        400
+      ],
+      "id": "e1e87b85-9ccc-4ca0-a7c8-b24bc9592aee",
+      "name": "Check Feedback",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Email: {{ $('Set Email').item.json.email }}\n\nFeedback from human: {{ $json.data.text }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=# Overview\nYou are an expert Business Development Executive within professional services and law. Your job is to take an incoming set of minutes, actions and next steps and revise it based on the feedback the human submitted.\n\n## Rules\nHere is the current date/time: {{ $now }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        1216,
+        656
+      ],
+      "id": "728ee29a-6267-4c67-ae26-630985270498",
+      "name": "Revision Agent1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -64,
+        784
+      ],
+      "id": "b3fa661c-5bd2-447b-b77f-98ab729e63aa",
+      "name": "OpenAI Chat Model4",
+      "credentials": {
+        "openAiApi": {
+          "id": "LldOhLNBReShSMkE",
+          "name": "OpenAi account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "toRecipients": "lara@legalengine.co.uk, lee@legalengine.co.uk",
+        "subject": "=Hi, APPROVAL REQUIRED for your client email after your recent conversation with Luke from Legal Engine",
+        "message": "=Hi there, \n\nPlease see below a summary of agreed next actions for your written approval. \n\n---\n\n{{ $json.email }}\n\n---\n\nIf there are any revisons or edits please click on the link below to provide feedback and one of my AI Agent colleagues will pick this up and send you a revised version. \n\nBest regards\n\nLuke\nLegal Engine AI Agent",
+        "responseType": "freeText",
+        "options": {
+          "messageButtonLabel": "Click here to review and amend/approve"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        640,
+        304
+      ],
+      "id": "2a75962f-9db1-4159-be80-77a987213cb5",
+      "name": "Email from Leonard Chk Summary1",
+      "webhookId": "a04cd6e2-4fb0-46e4-8ef0-6402499c5dfa",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "APa28clvTTmmzH55",
+          "name": "Microsoft Outlook - Leonard @ Legal Engine"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        944,
+        624
+      ],
+      "id": "56c2f59c-a616-4b8c-ab16-c3b63bb5e227",
+      "name": "OpenAI Chat Model5",
+      "credentials": {
+        "openAiApi": {
+          "id": "LldOhLNBReShSMkE",
+          "name": "OpenAi account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "toRecipients": "lara@legalengine.co.uk, lee@legalengine.co.uk",
+        "subject": "=Hi, here is your approved set of actions and next steps",
+        "bodyContent": "=Hi there, \n\nPlease see below the the summary of actions and next steps.\n\n---\n\n{{ $('Set Email').item.json.email }}\n\n---\n\nIt was great speaking to you, let's chat again soon.\n\nBest regards\n\nLuke\nLegal Engine AI Agent",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        1280,
+        336
+      ],
+      "id": "d3726e97-50ec-41d3-b019-e7733e5862b9",
+      "name": "Email from Leonard - all assets1",
+      "webhookId": "b2677980-4d53-48b2-b236-4bc147719cc9",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "APa28clvTTmmzH55",
+          "name": "Microsoft Outlook - Leonard @ Legal Engine"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Inputs: \nMeeting Transcript: {{ JSON.stringify($('Luke Post Call Webhook').item.json.body.data.transcript) }} \nMeeting Summary from the call:{{ $('Luke Post Call Webhook').item.json.body.data.analysis.transcript_summary }}\nCurrent Date & Time: {{ $('Date & Time8').item.json.currentDate }}\n",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=Writing as a sales and business development professional, create a plain text email to the client outlining the captured actions and next steps.  \n\nThe email should be drafted from the lawyer you are supporting and be addressed to the client.  \n\nThe tone should be professional but warm. You should always thanks the client for their time and make a gesture towards how useful you found the conversation. \n\nThe content of the email should only relate to the meeting summary and the follow up actions agreed. Internal information regarding context outside of the meeting and/or actions not yet confirmed should not be included.  \n\nEnsure it is written in UK English and NOT US English, with the names of people and Companies/Law Firms appropriately spelled and capiatlised, references to currency formatted properly, numbers and values also generally in figures as opposed to words (in keeping with UK English best practice), and with superior general spelling and grammer.  \n\nYou should keep the content as close as possible to the original and NOT add in additional information. "
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -64,
+        560
+      ],
+      "id": "f77d3f08-555c-445a-acff-f95c6f62b8cf",
+      "name": "Summary Agent",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "5f2b6069-abac-478e-b187-9c1b47a02336",
+        "responseMode": "responseNode",
+        "options": {
+          "rawBody": true
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -960,
+        272
+      ],
+      "id": "84e10d3a-7426-417d-b8e5-015c07771d31",
+      "name": "Luke Post Call Webhook",
+      "webhookId": "5f2b6069-abac-478e-b187-9c1b47a02336",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        -736,
+        272
+      ],
+      "id": "d7bb2d11-f131-4ffc-9306-dded6960785a",
+      "name": "Date & Time8",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- Function node code ---\n// Get the first item (same pattern you used)\nconst inputDate = new Date($input.first().json.currentDate);   // \"2025-05-26T10:22:34.868+01:00\"\n\n// Helper to zero-pad to two digits\nconst pad = n => n.toString().padStart(2, '0');\n\n// Date  →  MM/DD/YYYY\nconst formattedDate = `${pad(inputDate.getMonth() + 1)}/${pad(inputDate.getDate())}/${inputDate.getFullYear()}`;\n\n// Time  →  HH:mm:ss   (24-hour clock)\nconst formattedTime = `${pad(inputDate.getHours())}:${pad(inputDate.getMinutes())}:${pad(inputDate.getSeconds())}`;\n\nreturn [\n  {\n    json: {\n      formattedDate,   // e.g. \"05/26/2025\"\n      formattedTime    // e.g. \"09:22:34\"\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -512,
+        272
+      ],
+      "id": "65565ad2-1bf5-4756-a7db-aea87789acfc",
+      "name": "Date Format",
+      "disabled": true
+    }
+  ],
+  "connections": {
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Item List Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent2": {
+      "main": [
+        [
+          {
+            "node": "HTML Email from Leonard to Lawyer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Summary Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Summary Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          },
+          {
+            "node": "Revision Agent1",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Email": {
+      "main": [
+        [
+          {
+            "node": "Email from Leonard Chk Summary1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Check Feedback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Feedback": {
+      "main": [
+        [
+          {
+            "node": "Email from Leonard - all assets1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Revision Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Revision Agent1": {
+      "main": [
+        [
+          {
+            "node": "Set Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Summary Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Revision Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email from Leonard Chk Summary1": {
+      "main": [
+        [
+          {
+            "node": "Check Feedback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Check Feedback",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summary Agent": {
+      "main": [
+        [
+          {
+            "node": "Set Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Luke Post Call Webhook": {
+      "main": [
+        [
+          {
+            "node": "Date & Time8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Time8": {
+      "main": [
+        [
+          {
+            "node": "Date Format",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date Format": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {
+    "Luke Post Call Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "leonard-dev.app.n8n.cloud",
+            "user-agent": "ElevenLabs/1.0",
+            "content-length": "19354",
+            "accept": "*/*",
+            "accept-encoding": "gzip, br",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "34.59.11.47",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "US",
+            "cf-ray": "978e8b84c5030252-ORD",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "elevenlabs-signature": "t=1756832230,v0=742b1fdbd18896722d1013fb5542d652b021637daf89c4c3993fa031a8688ca7",
+            "x-forwarded-for": "34.59.11.47, 172.70.179.210",
+            "x-forwarded-host": "leonard-dev.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-52-6c4f4684d5-kmrgc",
+            "x-is-trusted": "yes",
+            "x-real-ip": "34.59.11.47"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "type": "post_call_transcription",
+            "event_timestamp": 1756832230,
+            "data": {
+              "agent_id": "agent_2501k3v11788e6w908yswfp1w66z",
+              "conversation_id": "conv_4601k45nqbfff71an1kf2tq284dx",
+              "status": "done",
+              "user_id": "1jocLV1YMhbdrLSRX3Me8aWkbRX2",
+              "transcript": [
+                {
+                  "role": "agent",
+                  "message": "Good meeting Andy? Ready for a quick debrief?",
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 0,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.13277126499451697
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "message": "Yeah, it's pretty good.",
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 4,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.10567430302035064
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "message": "Great. Let's capture the key points from your meeting. I'll ask three quick questions.\n\nIs there any additional context you want to capture now that the client isn’t around?",
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 6,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.44973216904327273
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.2757212510332465
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.727674909052439
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.1516318409703672
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": {
+                    "chunks": [
+                      {
+                        "document_id": "2iraNikPTduYn5k35cOm",
+                        "chunk_id": "nf1WkrwikQPgo971ihnM",
+                        "vector_distance": 0.22684907913208008
+                      },
+                      {
+                        "document_id": "MTpwK0CrEtUiXwgBm8iR",
+                        "chunk_id": "yz1D049wfabDnC9FGWuL",
+                        "vector_distance": 0.22801995277404785
+                      },
+                      {
+                        "document_id": "asdugn4RGhF5gvo638Mz",
+                        "chunk_id": "HKnroSF0VeEpMbPw82w6",
+                        "vector_distance": 0.22833657264709473
+                      },
+                      {
+                        "document_id": "MTpwK0CrEtUiXwgBm8iR",
+                        "chunk_id": "wZd9PqMv3YOZjVaxAKAq",
+                        "vector_distance": 0.2290334701538086
+                      },
+                      {
+                        "document_id": "MTpwK0CrEtUiXwgBm8iR",
+                        "chunk_id": "B3GxEbPfK0DVi7HRYl6H",
+                        "vector_distance": 0.23220348358154297
+                      },
+                      {
+                        "document_id": "cVtHD9YVd694frbPrdcp",
+                        "chunk_id": "m2rAOMd65pS8tUowpe9n",
+                        "vector_distance": 0.23357045650482178
+                      },
+                      {
+                        "document_id": "MTpwK0CrEtUiXwgBm8iR",
+                        "chunk_id": "w6628UKu3HvKOR7ArwhI",
+                        "vector_distance": 0.23797082901000977
+                      },
+                      {
+                        "document_id": "MTpwK0CrEtUiXwgBm8iR",
+                        "chunk_id": "jrTtdRADMqEIavkjcInH",
+                        "vector_distance": 0.23968291282653809
+                      },
+                      {
+                        "document_id": "2iraNikPTduYn5k35cOm",
+                        "chunk_id": "7dDrSE9TKdLQJNfotqJG",
+                        "vector_distance": 0.2432672381401062
+                      },
+                      {
+                        "document_id": "3mFCiXHku9ztKIF3wEhk",
+                        "chunk_id": "NQmFopfO9691daiXZkV8",
+                        "vector_distance": 0.24399948120117188
+                      },
+                      {
+                        "document_id": "2iraNikPTduYn5k35cOm",
+                        "chunk_id": "CHMCWvs4OJCQilpKgx4O",
+                        "vector_distance": 0.24456405639648438
+                      },
+                      {
+                        "document_id": "e2duhzBJ1ZnOdumAhBqN",
+                        "chunk_id": "7mnXJa5sr8wyQLwR9aTS",
+                        "vector_distance": 0.2456265687942505
+                      },
+                      {
+                        "document_id": "3mFCiXHku9ztKIF3wEhk",
+                        "chunk_id": "mH9riFl5GckROfXyh4Lj",
+                        "vector_distance": 0.2462848424911499
+                      },
+                      {
+                        "document_id": "WTSeALM0hCdp3JOAQkh7",
+                        "chunk_id": "VuiGkEcCaprsIkxMbBbD",
+                        "vector_distance": 0.2463780641555786
+                      },
+                      {
+                        "document_id": "nOJjal7lkUVPed2qWVNY",
+                        "chunk_id": "F94zJV0SwsUtG80qsM3j",
+                        "vector_distance": 0.24779343605041504
+                      },
+                      {
+                        "document_id": "Mqlgv1gjqpsM0F25hARc",
+                        "chunk_id": "UHXca2RcYTwRfioujW4h",
+                        "vector_distance": 0.2478933334350586
+                      },
+                      {
+                        "document_id": "3mFCiXHku9ztKIF3wEhk",
+                        "chunk_id": "deMJHzMxHEqCK0fHXK3b",
+                        "vector_distance": 0.24916374683380127
+                      },
+                      {
+                        "document_id": "ppbrfEfQtSZAeubOmOd0",
+                        "chunk_id": "S0lF31pfdtGSLgcdisG3",
+                        "vector_distance": 0.24947041273117065
+                      }
+                    ],
+                    "embedding_model": "e5_mistral_7b_instruct",
+                    "retrieval_query": "Ready for a debrief?",
+                    "rag_latency_secs": 0.1577090739738196
+                  },
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 13174,
+                          "price": 0.0013174
+                        },
+                        "input_cache_read": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 40,
+                          "price": 0.000016
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "message": "No.",
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 15,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.19049320300109684
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "message": "What are the immediate next steps and when is the next touch point or meeting?",
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 17,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.5393648790195584
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.3510591040831059
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.5393395409919322
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.14408844290301204
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": {
+                    "chunks": [
+                      {
+                        "document_id": "asdugn4RGhF5gvo638Mz",
+                        "chunk_id": "HKnroSF0VeEpMbPw82w6",
+                        "vector_distance": 0.22924363613128662
+                      },
+                      {
+                        "document_id": "MTpwK0CrEtUiXwgBm8iR",
+                        "chunk_id": "wZd9PqMv3YOZjVaxAKAq",
+                        "vector_distance": 0.22985291481018066
+                      },
+                      {
+                        "document_id": "MTpwK0CrEtUiXwgBm8iR",
+                        "chunk_id": "B3GxEbPfK0DVi7HRYl6H",
+                        "vector_distance": 0.2335229516029358
+                      },
+                      {
+                        "document_id": "2iraNikPTduYn5k35cOm",
+                        "chunk_id": "nf1WkrwikQPgo971ihnM",
+                        "vector_distance": 0.2344551682472229
+                      },
+                      {
+                        "document_id": "Mqlgv1gjqpsM0F25hARc",
+                        "chunk_id": "UHXca2RcYTwRfioujW4h",
+                        "vector_distance": 0.23727178573608398
+                      },
+                      {
+                        "document_id": "3mFCiXHku9ztKIF3wEhk",
+                        "chunk_id": "NQmFopfO9691daiXZkV8",
+                        "vector_distance": 0.23982012271881104
+                      },
+                      {
+                        "document_id": "MTpwK0CrEtUiXwgBm8iR",
+                        "chunk_id": "yz1D049wfabDnC9FGWuL",
+                        "vector_distance": 0.241469144821167
+                      },
+                      {
+                        "document_id": "cVtHD9YVd694frbPrdcp",
+                        "chunk_id": "m2rAOMd65pS8tUowpe9n",
+                        "vector_distance": 0.24265271425247192
+                      },
+                      {
+                        "document_id": "3mFCiXHku9ztKIF3wEhk",
+                        "chunk_id": "deMJHzMxHEqCK0fHXK3b",
+                        "vector_distance": 0.243178129196167
+                      },
+                      {
+                        "document_id": "e2duhzBJ1ZnOdumAhBqN",
+                        "chunk_id": "7mnXJa5sr8wyQLwR9aTS",
+                        "vector_distance": 0.24577677249908447
+                      },
+                      {
+                        "document_id": "2iraNikPTduYn5k35cOm",
+                        "chunk_id": "7dDrSE9TKdLQJNfotqJG",
+                        "vector_distance": 0.2465749979019165
+                      },
+                      {
+                        "document_id": "3mFCiXHku9ztKIF3wEhk",
+                        "chunk_id": "zitblBlEaRe4hcQbaDPD",
+                        "vector_distance": 0.24738001823425293
+                      },
+                      {
+                        "document_id": "WTSeALM0hCdp3JOAQkh7",
+                        "chunk_id": "VuiGkEcCaprsIkxMbBbD",
+                        "vector_distance": 0.24785327911376953
+                      },
+                      {
+                        "document_id": "x5czocKtT2gFjii3zilv",
+                        "chunk_id": "2av97BjSlobY0GyaT0MZ",
+                        "vector_distance": 0.2484428882598877
+                      },
+                      {
+                        "document_id": "3mFCiXHku9ztKIF3wEhk",
+                        "chunk_id": "SFhEmHGb3TIKB6a53jVe",
+                        "vector_distance": 0.24859488010406494
+                      },
+                      {
+                        "document_id": "x5czocKtT2gFjii3zilv",
+                        "chunk_id": "bCekWQ9tHiu4omueXSnZ",
+                        "vector_distance": 0.2487567663192749
+                      },
+                      {
+                        "document_id": "MTpwK0CrEtUiXwgBm8iR",
+                        "chunk_id": "w6628UKu3HvKOR7ArwhI",
+                        "vector_distance": 0.24877291917800903
+                      },
+                      {
+                        "document_id": "x5czocKtT2gFjii3zilv",
+                        "chunk_id": "1cLKZmpvHoAB6EaJ5XoE",
+                        "vector_distance": 0.2494596242904663
+                      }
+                    ],
+                    "embedding_model": "e5_mistral_7b_instruct",
+                    "retrieval_query": "Did you discuss the project timeline during the meeting?",
+                    "rag_latency_secs": 0.18012936098966748
+                  },
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 13167,
+                          "price": 0.0013167
+                        },
+                        "input_cache_read": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 16,
+                          "price": 0.0000064000000000000006
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "message": "We should set up a meeting for a week today and next steps are sending a summary of the actions from today's meeting by nine o'clock tomorrow morning.",
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 21,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.18758388608694077
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "message": "And who should own that action?",
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 36,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.609371213009581
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.4160608419915661
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.6093326279660687
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.40810491191223264
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": {
+                    "chunks": [
+                      {
+                        "document_id": "asdugn4RGhF5gvo638Mz",
+                        "chunk_id": "HKnroSF0VeEpMbPw82w6",
+                        "vector_distance": 0.20161890983581543
+                      },
+                      {
+                        "document_id": "2iraNikPTduYn5k35cOm",
+                        "chunk_id": "nf1WkrwikQPgo971ihnM",
+                        "vector_distance": 0.20233142375946045
+                      },
+                      {
+                        "document_id": "MTpwK0CrEtUiXwgBm8iR",
+                        "chunk_id": "B3GxEbPfK0DVi7HRYl6H",
+                        "vector_distance": 0.20793616771697998
+                      },
+                      {
+                        "document_id": "WTSeALM0hCdp3JOAQkh7",
+                        "chunk_id": "VuiGkEcCaprsIkxMbBbD",
+                        "vector_distance": 0.20862102508544922
+                      },
+                      {
+                        "document_id": "MTpwK0CrEtUiXwgBm8iR",
+                        "chunk_id": "wZd9PqMv3YOZjVaxAKAq",
+                        "vector_distance": 0.2090773582458496
+                      },
+                      {
+                        "document_id": "ppbrfEfQtSZAeubOmOd0",
+                        "chunk_id": "FiQL1K7zWl11VG44uhVx",
+                        "vector_distance": 0.2131144404411316
+                      },
+                      {
+                        "document_id": "MTpwK0CrEtUiXwgBm8iR",
+                        "chunk_id": "yz1D049wfabDnC9FGWuL",
+                        "vector_distance": 0.21318119764328003
+                      },
+                      {
+                        "document_id": "Mqlgv1gjqpsM0F25hARc",
+                        "chunk_id": "UHXca2RcYTwRfioujW4h",
+                        "vector_distance": 0.21589386463165283
+                      },
+                      {
+                        "document_id": "cVtHD9YVd694frbPrdcp",
+                        "chunk_id": "m2rAOMd65pS8tUowpe9n",
+                        "vector_distance": 0.2172766923904419
+                      },
+                      {
+                        "document_id": "ppbrfEfQtSZAeubOmOd0",
+                        "chunk_id": "uGIAvIBWPkJ9hZ1AMWcP",
+                        "vector_distance": 0.21789538860321045
+                      },
+                      {
+                        "document_id": "3mFCiXHku9ztKIF3wEhk",
+                        "chunk_id": "deMJHzMxHEqCK0fHXK3b",
+                        "vector_distance": 0.21821105480194092
+                      },
+                      {
+                        "document_id": "e2duhzBJ1ZnOdumAhBqN",
+                        "chunk_id": "7mnXJa5sr8wyQLwR9aTS",
+                        "vector_distance": 0.2182321548461914
+                      },
+                      {
+                        "document_id": "ppbrfEfQtSZAeubOmOd0",
+                        "chunk_id": "S0lF31pfdtGSLgcdisG3",
+                        "vector_distance": 0.21981096267700195
+                      },
+                      {
+                        "document_id": "2iraNikPTduYn5k35cOm",
+                        "chunk_id": "7dDrSE9TKdLQJNfotqJG",
+                        "vector_distance": 0.2198343276977539
+                      },
+                      {
+                        "document_id": "3mFCiXHku9ztKIF3wEhk",
+                        "chunk_id": "NQmFopfO9691daiXZkV8",
+                        "vector_distance": 0.21985840797424316
+                      },
+                      {
+                        "document_id": "e2duhzBJ1ZnOdumAhBqN",
+                        "chunk_id": "gTGLxhfGbgxkJNOj3P7w",
+                        "vector_distance": 0.22058260440826416
+                      },
+                      {
+                        "document_id": "2iraNikPTduYn5k35cOm",
+                        "chunk_id": "CHMCWvs4OJCQilpKgx4O",
+                        "vector_distance": 0.2222590446472168
+                      },
+                      {
+                        "document_id": "MTpwK0CrEtUiXwgBm8iR",
+                        "chunk_id": "jrTtdRADMqEIavkjcInH",
+                        "vector_distance": 0.22449809312820435
+                      },
+                      {
+                        "document_id": "nOJjal7lkUVPed2qWVNY",
+                        "chunk_id": "F94zJV0SwsUtG80qsM3j",
+                        "vector_distance": 0.22529661655426025
+                      }
+                    ],
+                    "embedding_model": "e5_mistral_7b_instruct",
+                    "retrieval_query": "What is the next meeting date and when should the summary be sent?",
+                    "rag_latency_secs": 0.38034040690399706
+                  },
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 13556,
+                          "price": 0.0013556000000000002
+                        },
+                        "input_cache_read": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 7,
+                          "price": 0.0000028000000000000003
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "message": "Lee Curtis.",
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 39,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.20470362098421901
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "message": "Got it. Is there...",
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 41,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.4678509390214458
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.2865780950523913
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.4678218610351905
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.3784969880944118
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": {
+                    "chunks": [
+                      {
+                        "document_id": "2iraNikPTduYn5k35cOm",
+                        "chunk_id": "nf1WkrwikQPgo971ihnM",
+                        "vector_distance": 0.18804752826690674
+                      },
+                      {
+                        "document_id": "asdugn4RGhF5gvo638Mz",
+                        "chunk_id": "HKnroSF0VeEpMbPw82w6",
+                        "vector_distance": 0.19985705614089966
+                      },
+                      {
+                        "document_id": "MTpwK0CrEtUiXwgBm8iR",
+                        "chunk_id": "B3GxEbPfK0DVi7HRYl6H",
+                        "vector_distance": 0.20109879970550537
+                      },
+                      {
+                        "document_id": "MTpwK0CrEtUiXwgBm8iR",
+                        "chunk_id": "wZd9PqMv3YOZjVaxAKAq",
+                        "vector_distance": 0.2044316530227661
+                      },
+                      {
+                        "document_id": "MTpwK0CrEtUiXwgBm8iR",
+                        "chunk_id": "w6628UKu3HvKOR7ArwhI",
+                        "vector_distance": 0.20583033561706543
+                      },
+                      {
+                        "document_id": "MTpwK0CrEtUiXwgBm8iR",
+                        "chunk_id": "yz1D049wfabDnC9FGWuL",
+                        "vector_distance": 0.20621812343597412
+                      },
+                      {
+                        "document_id": "WTSeALM0hCdp3JOAQkh7",
+                        "chunk_id": "VuiGkEcCaprsIkxMbBbD",
+                        "vector_distance": 0.20687073469161987
+                      },
+                      {
+                        "document_id": "2iraNikPTduYn5k35cOm",
+                        "chunk_id": "7dDrSE9TKdLQJNfotqJG",
+                        "vector_distance": 0.2073664665222168
+                      },
+                      {
+                        "document_id": "e2duhzBJ1ZnOdumAhBqN",
+                        "chunk_id": "7mnXJa5sr8wyQLwR9aTS",
+                        "vector_distance": 0.20856547355651855
+                      },
+                      {
+                        "document_id": "2iraNikPTduYn5k35cOm",
+                        "chunk_id": "CHMCWvs4OJCQilpKgx4O",
+                        "vector_distance": 0.20936107635498047
+                      },
+                      {
+                        "document_id": "cVtHD9YVd694frbPrdcp",
+                        "chunk_id": "m2rAOMd65pS8tUowpe9n",
+                        "vector_distance": 0.21078729629516602
+                      },
+                      {
+                        "document_id": "3mFCiXHku9ztKIF3wEhk",
+                        "chunk_id": "NQmFopfO9691daiXZkV8",
+                        "vector_distance": 0.21249103546142578
+                      },
+                      {
+                        "document_id": "ppbrfEfQtSZAeubOmOd0",
+                        "chunk_id": "FiQL1K7zWl11VG44uhVx",
+                        "vector_distance": 0.21363991498947144
+                      },
+                      {
+                        "document_id": "nOJjal7lkUVPed2qWVNY",
+                        "chunk_id": "F94zJV0SwsUtG80qsM3j",
+                        "vector_distance": 0.21502697467803955
+                      },
+                      {
+                        "document_id": "e2duhzBJ1ZnOdumAhBqN",
+                        "chunk_id": "gTGLxhfGbgxkJNOj3P7w",
+                        "vector_distance": 0.21553242206573486
+                      },
+                      {
+                        "document_id": "3mFCiXHku9ztKIF3wEhk",
+                        "chunk_id": "deMJHzMxHEqCK0fHXK3b",
+                        "vector_distance": 0.21745169162750244
+                      },
+                      {
+                        "document_id": "MTpwK0CrEtUiXwgBm8iR",
+                        "chunk_id": "jrTtdRADMqEIavkjcInH",
+                        "vector_distance": 0.21831250190734863
+                      },
+                      {
+                        "document_id": "Mqlgv1gjqpsM0F25hARc",
+                        "chunk_id": "UHXca2RcYTwRfioujW4h",
+                        "vector_distance": 0.21831363439559937
+                      },
+                      {
+                        "document_id": "ppbrfEfQtSZAeubOmOd0",
+                        "chunk_id": "S0lF31pfdtGSLgcdisG3",
+                        "vector_distance": 0.22127312421798706
+                      }
+                    ],
+                    "embedding_model": "e5_mistral_7b_instruct",
+                    "retrieval_query": "Who owns the action of sending the meeting summary by tomorrow morning?",
+                    "rag_latency_secs": 0.2066599050303921
+                  },
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 13716,
+                          "price": 0.0013716000000000002
+                        },
+                        "input_cache_read": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 14,
+                          "price": 0.000005600000000000001
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": true,
+                  "original_message": "Got it. Is there anyone internally we should introduce the client to?",
+                  "source_medium": null
+                }
+              ],
+              "metadata": {
+                "start_time_unix_secs": 1756832181,
+                "accepted_time_unix_secs": 1756832181,
+                "call_duration_secs": 43,
+                "cost": 191,
+                "deletion_settings": {
+                  "deletion_time_unix_secs": null,
+                  "deleted_logs_at_time_unix_secs": null,
+                  "deleted_audio_at_time_unix_secs": null,
+                  "deleted_transcript_at_time_unix_secs": null,
+                  "delete_transcript_and_pii": false,
+                  "delete_audio": false
+                },
+                "feedback": {
+                  "overall_score": null,
+                  "likes": 0,
+                  "dislikes": 0
+                },
+                "authorization_method": "authorization_header",
+                "charging": {
+                  "dev_discount": true,
+                  "is_burst": false,
+                  "tier": "pro",
+                  "llm_usage": {
+                    "irreversible_generation": {
+                      "model_usage": {
+                        "gemini-2.5-flash-lite": {
+                          "input": {
+                            "tokens": 53613,
+                            "price": 0.005361300000000001
+                          },
+                          "input_cache_read": {
+                            "tokens": 0,
+                            "price": 0
+                          },
+                          "input_cache_write": {
+                            "tokens": 0,
+                            "price": 0
+                          },
+                          "output_total": {
+                            "tokens": 77,
+                            "price": 0.0000308
+                          }
+                        }
+                      }
+                    },
+                    "initiated_generation": {
+                      "model_usage": {
+                        "gemini-2.5-flash-lite": {
+                          "input": {
+                            "tokens": 53613,
+                            "price": 0.005361300000000001
+                          },
+                          "input_cache_read": {
+                            "tokens": 0,
+                            "price": 0
+                          },
+                          "input_cache_write": {
+                            "tokens": 0,
+                            "price": 0
+                          },
+                          "output_total": {
+                            "tokens": 77,
+                            "price": 0.0000308
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "llm_price": 0.005392100000000001,
+                  "llm_charge": 27,
+                  "call_charge": 164
+                },
+                "phone_call": null,
+                "batch_call": null,
+                "termination_reason": "Client disconnected: 1005",
+                "error": null,
+                "main_language": "en",
+                "rag_usage": {
+                  "usage_count": 4,
+                  "embedding_model": "e5_mistral_7b_instruct"
+                },
+                "text_only": false,
+                "features_usage": {
+                  "language_detection": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "transfer_to_agent": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "transfer_to_number": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "multivoice": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "dtmf_tones": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "external_mcp_servers": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "pii_zrm_workspace": false,
+                  "pii_zrm_agent": false,
+                  "tool_dynamic_variable_updates": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "is_livekit": false,
+                  "voicemail_detection": {
+                    "enabled": true,
+                    "used": false
+                  },
+                  "workflow": {
+                    "enabled": false,
+                    "tool_node": {
+                      "enabled": false,
+                      "used": false
+                    }
+                  },
+                  "agent_testing": {
+                    "enabled": false,
+                    "tests_ran_after_last_modification": false,
+                    "tests_ran_in_last_7_days": false
+                  }
+                },
+                "eleven_assistant": {
+                  "is_eleven_assistant": false
+                },
+                "initiator_id": "1jocLV1YMhbdrLSRX3Me8aWkbRX2",
+                "conversation_initiation_source": "react_sdk",
+                "conversation_initiation_source_version": "0.5.0",
+                "timezone": null
+              },
+              "analysis": {
+                "evaluation_criteria_results": {
+                  "summary_sent": {
+                    "criteria_id": "summary_sent",
+                    "result": "failure",
+                    "rationale": "The conversation ends abruptly after the agent asks 'Is there...' and there is no tool call to the 'send_post_client_meeting_summary' tool. Therefore, the goal was not met."
+                  }
+                },
+                "data_collection_results": {},
+                "call_successful": "failure",
+                "transcript_summary": "The agent debriefed Andy after a meeting, asking about additional context, next steps, and action ownership. Andy stated no additional context was needed. Next steps are to send a meeting summary by 9 AM tomorrow, owned by Lee Curtis, and to schedule a follow-up meeting in one week.\n",
+                "call_summary_title": "Meeting debrief"
+              },
+              "conversation_initiation_client_data": {
+                "conversation_config_override": {
+                  "tts": {
+                    "voice_id": null,
+                    "stability": null,
+                    "speed": null,
+                    "similarity_boost": null
+                  },
+                  "conversation": {
+                    "text_only": null
+                  },
+                  "agent": {
+                    "first_message": null,
+                    "language": null,
+                    "prompt": null
+                  }
+                },
+                "custom_llm_extra_body": {},
+                "user_id": "1jocLV1YMhbdrLSRX3Me8aWkbRX2",
+                "source_info": {
+                  "source": "react_sdk",
+                  "version": "0.5.0"
+                },
+                "dynamic_variables": {
+                  "system__agent_id": "agent_2501k3v11788e6w908yswfp1w66z",
+                  "system__current_agent_id": "agent_2501k3v11788e6w908yswfp1w66z",
+                  "system__conversation_id": "conv_4601k45nqbfff71an1kf2tq284dx",
+                  "system__caller_id": null,
+                  "system__called_number": null,
+                  "system__call_duration_secs": 43,
+                  "system__time_utc": "2025-09-02T16:57:04.911856+00:00",
+                  "system__time": "Tuesday, 16:57 02 September 2025",
+                  "system__timezone": null,
+                  "system__call_sid": null
+                }
+              }
+            }
+          },
+          "webhookUrl": "https://leonard-dev.app.n8n.cloud/webhook/luke_post_meeting_call",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "triggerCount": 1,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

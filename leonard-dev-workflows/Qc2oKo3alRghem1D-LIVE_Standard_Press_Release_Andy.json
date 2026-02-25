@@ -1,0 +1,894 @@
+{
+  "name": "LIVE - Standard Press Release - Andy",
+  "nodes": [
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        368
+      ],
+      "id": "cd4cadce-7118-4577-9dd9-f219a924f85b",
+      "name": "Google Vertex Chat Model",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -528,
+        160
+      ],
+      "id": "92e8dd9e-f911-4f1a-afb5-5be64bb5b52a",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=This is the output from the transcript from the call {{ $json.output }}",
+        "options": {
+          "systemMessage": "=You are an expert copywriter and marketer who specialises in press releases for law firms based on the information from a conversation about a particular matter. Your task is to take these instructions and the conversation transcript to create a world class press release in UK English. \n\n\n\nBelow is a comprehensive tone of voice and style guide for Legalaces Inc. press-release style outputs, designed specifically for Legal Engine’s post-processing of agent-captured matter conversations.\nIt is fully derived from the sample Legalaces Inc. releases you provided and shaped so that Leonard, Luke and future Legal Engine agents can automatically generate perfectly-aligned, “Big-Four-meets-top-tier-law-firm” style announcements after a lawyer’s spoken matter debrief.\nAs always, written in UK English, sentence case, and with just enough humour to keep us sane without upsetting the Brits.\nLegalaces Inc. tone of voice and style guide\n(for automated matter-summary post-processing)\n Derived from sample Legalaces Inc. releases\n\n1. Core personality\nLegalaces Inc.’s voice consistently reflects:\n1. Formal but readable professionalism\n Clear, steady, and confident without being pompous. Never chatty. No slang. No unnecessary flourishes.\n2. Transaction-first seriousness\n The matter is the hero. The voice emphasises significance, scale and strategic value.\n3. Corporate optimism\n Positive but not breathless. “We’re proud…”, “This marks…”, “This reflects…”.\n4. Institutional weight\n Everything implies: “We do this kind of work all the time, and we do it well.”\n5. Precision and breadth\n Strong emphasis on structure, regulatory awareness, multi-disciplinary teams and cross-border collaboration.\n\n2. Structural blueprint\nEvery Legalaces Inc.-style press release follows a dependable architecture.\nYour post-processing should reproduce the same structure:\nA. Headline\nFormat: “Legalaces Inc. advises [Client] on [Deal]”\n Short, fact-based, no adjectives.\nB. Subhead / metadata\nTime to read + date.\n E.g. “2 minute read | 26.10.2025”.\nC. Opening paragraph\nOne sentence, always:\n* \t\tLegalaces Inc. advised X\n* \t\tOn Y\n* \t\tBrief deal description\n* \t\tPossibly the value or structure\nThis paragraph sets the factual foundation.\nD. Client / deal description paragraph\nSummarise:\n* \t\tWho the client is\n* \t\tWhat they do\n* \t\tWhy the deal matters commercially or strategically\n* \t\tAny global presence or sector specialism\nE. Significance paragraph\nA consistent feature in every sample:\n* \t\t“This marks…”\n* \t\t“This transaction represents…”\n* \t\t“This acquisition supports…”\n* \t\t“This reflects strategic growth / sector expansion / investor appetite.”\nF. Scope of Legalaces Inc.’s work\nHighly detailed and expansive.\n Bullet-like in style but written as prose.\n Include:\n* \t\tDue diligence\n* \t\tDrafting\n* \t\tNegotiations\n* \t\tRegulatory engagement\n* \t\tCross-practice collaboration\n* \t\tInternational offices involved\nAgents should always extract these elements from the conversation if they exist; if not, omit rather than invent.\nG. Team list\nAlways formatted as:\n “The Legalaces Inc. team was led by [Partner], supported by…”\n Include roles (Partner, Special Counsel, Senior Associate, Lawyer).\nH. Partner quote\nThree characteristics:\n1. Warm, confident, proud.\n2. Highlights strategic significance for the client.\n3. Subtle self-validation (“our multi-disciplinary team”, “complex structuring”, “successful outcome”).\nNever boastful.\n And absolutely no comedy here unless we want to be sued.\n\n3. Sentence style and grammar rules\n1. Sentences are long, formal and information-rich\nAverage: 22–30 words.\n Colon and semicolon friendly.\n Avoid short punchy “tech-style” lines.\n2. Always foreground the client and the transaction\nThe order is:\n Client → Transaction → Significance → Legalaces Inc.contribution\n Never reverse that.\n3. No marketing fluff\nNo exclamation marks.\n No rhetorical questions.\n No hype language (“groundbreaking”, “revolutionary”, “cutting-edge”).\n Instead: “significant”, “strategic”, “important milestone”.\n4. Third-person formal\nNot “we helped”. Always “Legalaces Inc.advised”.\n5. Consistent terminology\nUse the following preferred phrases extracted from the samples:\n* \t\t“advised on all aspects of the transaction”\n* \t\t“strategic acquisition”\n* \t\t“supports [client’s] expansion into…”\n* \t\t“reflects the strength and depth of our team”\n* \t\t“multi-disciplinary team”\n* \t\t“complex and multi-faceted”\n* \t\t“successful outcome”\n* \t\t“market-leading”\n* \t\t“globally recognised”\n* \t\t“competitive sale process”\n* \t\t“scheme of arrangement”\n* \t\t“fully underwritten to the amount of…” (for capital markets)\n6. Numbers\n* \t\tMonetary figures always with “A$” or “$” depending on jurisdiction.\n* \t\tSpell out small numbers (“two warehouses”).\n* \t\tWrite timelines like “three-year relationship”, “six-year period”.\n* \t\tDates follow Euro style (e.g. 26.10.2025).\n7. Tense\nPast tense for completed transactions.\n Future tense only when describing expected listing or future performance.\n\n4. Tone of voice rules for Legal Engine’s agent output\nTo convert a conversational matter debrief into a Legalaces Inc.-style release, the agent must apply:\nTone switch 1: From colloquial to corporate\nLawyer says:\n “Bit of a messy one with image rights, but we sorted it.”\nOutput becomes:\n “The transaction involved complex image-rights considerations, which were addressed as part of the multi-jurisdictional advisory work.”\nTone switch 2: From timeline chatter to disciplined sequencing\nLawyer says:\n “We got it done slightly outside the deadline, but the client was happy.”\nOutput becomes:\n “While delivery occurred marginally outside the original timeline, the transaction achieved the client’s strategic objectives.”\nTone switch 3: From personalities to professional recognition\nLawyer says:\n “Dorothy smashed the employment stuff.”\nOutput becomes:\n “Employment aspects were led by Dorothy [Surname] (Employment Partner), whose expertise was integral to the successful completion of the transaction.”\nTone switch 4: From humour to gravitas\nLawyer says:\n “Tonto handled the Madrid stuff because he speaks better Spanish than me.”\nOutput becomes:\n “Spanish elements were managed by Tonto [Surname] (Partner, Madrid), who provided specialist cross-border IP advice.”\n\n5. Content inclusions your agents must always capture\nFrom the examples , there are mandatory ingredients:\nA. Client identity + market position\nIndustry, geographic footprint, specialist capabilities.\nB. Transaction mechanics\n* \t\tAcquisition\n* \t\tScheme of arrangement\n* \t\tIPO\n* \t\tCapital raising\n* \t\tPlacements\n* \t\tCross-border considerations\n* \t\tPayment structures (cash, shares, hybrid)\nC. Strategic rationale\nWhy the deal matters commercially, financially or sector-wise.\nD. Scope of legal advisory\nAlways list everything the firm did – it appears exhaustive in every sample.\nE. Multi-disciplinary / multi-jurisdictional involvement\nInclude internal team collaboration and any overseas offices.\nF. Team list\nSenior people first, followed by associates.\nG. Quote from a Partner\nTone: warm, authoritative, reflective.\nH. No invented detail\nIf the lawyer did not mention regulatory work, do not add it.\n Silence is better than invented compliance advice.\n\n6. Examples of transformation from lawyer-speak → Legalaces Inc.-speak\nUsing your fictional Star Wars matter summary sample :\nLawyer debrief (raw)\n“Lone Ranger bought Star Wars. Hostile takeover. Tight timeline. We helped them do it. Eight gold. Dorothy on employment, Tonto in Madrid on IP, Buzz on corporate. America mainly, bit of PNG and Uzbekistan. Tricky image rights. Finished Oct 2024. Lone Ranger up for Cowboy Dealmaker 2025.”\nConverted output (Legalaces Inc.-style)\nHeadline:\n Legalaces Inc.advises Lone Ranger on acquisition of Star Wars\nOpening paragraph:\n Legalaces Inc.has advised Lone Ranger on its successful acquisition of Star Wars through a hostile takeover process valued at eight pieces of gold.\nClient description:\n Lone Ranger is a globally recognised entertainment and media operator with interests across film, television and character-based merchandising. Star Wars is a leading space-focused franchise with significant brand equity and a multi-generational global audience.\nSignificance:\n This transaction represents a major expansion of Lone Ranger’s presence across the entertainment sector, creating a combined organisation with a diversified portfolio spanning Western, futuristic and intergalactic markets.\nScope of work:\n Legalaces Inc.advised on all aspects of the transaction, including corporate structuring, multi-jurisdictional due diligence across America, Papua New Guinea and Uzbekistan, complex image-rights analysis, negotiation of key transaction documents and coordination of hostile-takeover protocols.\nTeam:\n The Legalaces Inc.team was led by Buzz Lightyear (Partner) with support from Dorothy [Surname] (Employment Partner) and Tonto [Surname] (Partner, Madrid, IP).\nQuote:\n Buzz Lightyear, Partner at Legalaces Inc., said:\n “We’re pleased to have supported Lone Ranger on this strategically significant acquisition. The transaction required careful navigation of complex cross-border issues and brand-rights considerations, and we’re delighted to have achieved a successful outcome that positions the combined business for long-term global growth.”\n\n7. Final formatting rules\nAgents should always output press-releases in this order:\n1. Headline\n2. Read time + date (optional for internal use)\n3. Paragraph 1 – Advisory headline sentence\n4. Paragraph 2 – Client + sector description\n5. Paragraph 3 – Strategic significance\n6. Paragraph 4 – Scope of Legalaces Inc.’s work\n7. Paragraph 5 – Any structural uniqueness (e.g. scheme elements, hybrid structures)\n8. Team paragraph\n9. Partner quote\n10. Optional second quote (client CEO / chair)\nWhitespace, paragraph spacing and style should follow the aesthetic of the samples.\n\n8. Summary for the agent system prompt\nIf you want the short, system-level instruction for Leonard or Luke:\n“Rewrite the matter information in the formal style of a Legalaces Inc.press release. Use a confident, precise and professional tone. Structure the output with a headline, opening factual statement, client description, strategic significance, scope of legal work, multidisciplinary team list and a partner quote. Maintain a steady, formal rhythm, avoid hype, and emphasise cross-practice expertise, regulatory awareness and transaction significance. Do not invent details.” \n\n\nThis is the output of the transcript from the call: {{ $json.output }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -64,
+        160
+      ],
+      "id": "bdd0ef25-ffa9-478b-b115-657b6d5d390d",
+      "name": "Press Release Agent"
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        288,
+        368
+      ],
+      "id": "6c5877e4-1eb9-434f-b643-dc6bd2b8e426",
+      "name": "Google Vertex Chat Model1",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toRecipients": "=andy@legalengine.co.uk, lee@legalengine.co.uk",
+        "subject": "=Your Press Release based on our conversation",
+        "bodyContent": "=<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Legal Engine • Your Additional BD Assets</title>\n\n  <!-- Brand Typeface -->\n  <link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap\" rel=\"stylesheet\">\n\n  <style>\n    :root{\n      --le-navy:#062047; --le-blue:#00b3ff; --le-indigo:#0066ff;\n      --le-grey:#f2f6fa; --le-silver:#e5ecf3; --le-text:#263238;\n    }\n    *{box-sizing:border-box;margin:0;padding:0;}\n    body{\n      width:100%!important;background:var(--le-grey);\n      font-family:'Inter',Helvetica,Arial,sans-serif;\n      color:var(--le-text);-webkit-font-smoothing:antialiased;\n    }\n    .wrapper{\n      max-width:700px;margin:0 auto;background:#fff;\n      border:1px solid var(--le-silver);border-radius:10px;\n      padding:48px 40px;\n    }\n    .section{margin-bottom:20px;line-height:1.55;}\n    .section h1{color:var(--le-navy);font-size:24px;font-weight:700;margin-bottom:18px;}\n    .section h2{\n      color:var(--le-navy);font-size:22px;font-weight:700;\n      padding-bottom:10px;border-bottom:2px solid var(--le-silver);\n      margin-bottom:14px;\n    }\n    .section p{margin-bottom:16px;white-space:pre-line;}\n\n    .button{\n      display:inline-block;padding:14px 28px;font-weight:600;\n      color:#fff!important;text-decoration:none;border-radius:6px;\n      background:linear-gradient(90deg,var(--le-blue)0%,var(--le-indigo)100%);\n      transition:opacity .25s ease-in-out;\n    }\n    .button:hover{opacity:.8;}\n\n\n    .signature p{margin-bottom:6px;}\n.signature{\n  color:var(--le-text);                /* same dark text as body */\n  font-family:'Inter',Helvetica,Arial,sans-serif;\n}\n.signature a{\n  color:var(--le-text);                /* links also black */\n  text-decoration:none;\n}\n\n\n    .footer{\n      font-size:13px;color:#6c7a84;text-align:center;\n      padding-top:24px;border-top:1px solid var(--le-silver);\n    }\n    .tracking-pixel{display:none;width:1px;height:1px;}\n\n    @media(max-width:520px){\n      .wrapper{padding:32px 22px;}\n      .section h1{font-size:22px;}\n      .section h2{font-size:20px;}\n    }\n  </style>\n</head>\n<body>\n  <div class=\"wrapper\">\n\n    <!-- HEADER -->\n    <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-collapse:collapse;margin-bottom:40px;\">\n      <tr>\n        <td align=\"center\">\n          <img\n            src=\"https://49390627.fs1.hubspotusercontent-eu1.net/hub/49390627/hubfs/e8ad0e08-aa6c-4d44-9053-cdcf7bbaec5b.png?width=852&amp;height=339&amp;name=e8ad0e08-aa6c-4d44-9053-cdcf7bbaec5b.png\"\n            alt=\"Legal Engine\"\n            width=\"180\" height=\"72\"\n            style=\"width:180px;max-width:100%;height:auto;display:block;border:0;outline:none;text-decoration:none;\">\n        </td>\n      </tr>\n    </table>\n    <!--[if mso]><style>.mso-logo img{width:180px!important;height:auto!important;}</style><![endif]-->\n\n    <!-- INTRO -->\n    <div class=\"section\">\n      <p>Hi,</p>\n      <p>I've been busy in the background since we spoke and created a press release based on our conversation .<br></p>\n\n    </div>\n\n    <!-- EXTRA ASSETS INTRO -->\n    <div class=\"section\">\n      <p>Hopefully this bespoke asset gives you a flavour of what I can do on the back of a single conversation!</p>\n      <p>This is just a snapshot of my capabilities. At&nbsp;<a href=\"https://legalengine.co.uk/\"><b>Legal Engine</b></a>, we’re building a suite of assistants like me, ready to transform Marketing &amp; BD across the legal industry.</p>\n    </div>\n\n<!-- SIGN-OFF -->\n<div class=\"signature\">\n  <p>Cheers,</p>\n\n  <p><b>Leonard</b></p>\n\n  <p><b>AI Assistant<br>Legal Engine</b></p>\n\n  <p>\n    E:&nbsp;<a href=\"mailto:leonard@legalengine.co.uk\">leonard@legalengine.co.uk</a><br>\n    W:&nbsp;<a href=\"https://legalengine.co.uk/\">www.legalengine.co.uk</a><br><br>\n  </p>\n</div>\n\n<!-- PRESS RELEASE -->\n    <div class=\"section\">\n      <h2>Press Release Example</h2>\n    <p>{{ $json.output }}</p>\n    </div>\n\n    <!-- FOOTER + UNSUBSCRIBE -->\n    <div class=\"footer\">\n      &copy; 2025 Legal Engine Ltd. All rights reserved.<br><br>\n      <a href=\"https://unsubscribe.legalengine.co.uk\" style=\"color:var(--le-blue);text-decoration:none;\">Unsubscribe</a>\n    </div>\n\n    <!-- OPEN-TRACKING -->\n    <img class=\"tracking-pixel\"\n         src=\"https://legalengine.co.uk/track/open?email=\"\n         alt=\"\">\n  </div>\n</body>\n</html>",
+        "additionalFields": {
+          "bodyContentType": "html"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        656,
+        160
+      ],
+      "id": "2a42cc06-62f4-407a-bf5a-2ca78475e636",
+      "name": "HTML Email from to Lee1",
+      "webhookId": "f3d06286-f343-493f-b312-c36ef5359dab",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "OAftwNOqCIYj8Src",
+          "name": "Microsoft Outlook - New Dec 2025 Leonard account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=This is a press release created by an AI agent {{ $json.output }}",
+        "options": {
+          "systemMessage": "=ROLE AND PURPOSE\nYou are an expert copywriter and marketer specialising in press releases for law firms. Your task is to read the conversation transcript about a particular matter and produce a world class press release in UK English. After writing the press release, convert it into a complete HTML email body using the exact structure, CSS, typography and colour rules below.\n\nABSOLUTE PROHIBITION ON CODE FENCES\nYou must never output anything enclosed in or any code fences of any kind. You must never outputhtml or any other variant.\nYou must never output backticks in the final answer.\nYour final output must be a raw HTML document only.\nThe first line must be exactly <!DOCTYPE html> and the last line must be exactly </html>.\n\nThe variable {{ $json.output }} contains the press release text you produced in the first stage. Use it in the HTML stage.\n\nAll em dashes must be replaced with either a full stop or a comma.\n\nBrand Fonts, Colours And Pantone\n\nTypography\nPrimary body font: Open Sans, sans serif\nLoaded from Google Fonts\nWeights: 400, 600, 700\nUse for all body copy, UI labels and meta text\n\nDisplay and headings font: 'Museo_Slab300', sans serif\nUse for H1, H2, H3, section titles and quotes\n\nFont rules\nHeadings use: font-family: 'Museo_Slab300', 'Open Sans', sans-serif\nBody uses: font-family: 'Open Sans', sans-serif\nDo not introduce additional fonts.\n\nColour palette\nMinterEllison Red: #CE0E2D\nDeep Red Accent: #CE202D\nBlack: #000000\nMid Grey: #8D8D8D\nWhite: #FFFFFF\n\nPHASE 1: PRESS RELEASE CREATION\nUsing the conversation transcript, generate a world class press release that includes:\n• UK English\n• Professional legal-sector tone\n• Accurate narrative reflecting the discussion\n• Body paragraphs\n• A quote section\n• An About section\n• Required media contact details:\nName: Leonard\nRole: Your always on PR exec\nMobile: +1800 - Agent\nStructure the content so it maps directly into the HTML template below.\n\nPHASE 2: HTML EMAIL GENERATION\nConvert the press release text in {{ $json.output }} into a fully formed HTML email body.\n\nSTRICT OUTPUT RULES\n\nNo code fences of any kind.\n\nNo backticks anywhere.\n\nOutput only HTML.\n\nFirst line must be exactly <!DOCTYPE html>\n\nFinal line must be exactly </html>\n\nNo commentary or explanation before or after the HTML.\n\nREQUIRED HTML STRUCTURE\nThe HTML document must follow this exact structure, populated with the real press release content.\n\n<!DOCTYPE html> <html> <head> <meta charset=\"UTF-8\"> <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"> <title>[Same as <h1> headline]</title>\n<link href=\"https://fonts.googleapis.com/css?family=Open+Sans:400,600,700\" rel=\"stylesheet\">\n\n<style>\n    body {\n        font-family: 'Open Sans', sans-serif;\n        line-height: 1.6;\n        color: #000000;\n        margin: 0;\n        padding: 20px;\n        background-color: #f9f9f9;\n    }\n    .container {\n        max-width: 600px;\n        margin: 0 auto;\n        background: #FFFFFF;\n        padding: 30px;\n        border-radius: 8px;\n        box-shadow: 0 0 10px rgba(0,0,0,0.1);\n    }\n    h1, h2, h3 {\n        font-family: 'Museo_Slab300', 'Open Sans', sans-serif;\n    }\n    h1 {\n        color: #CE0E2D;\n        font-size: 26px;\n        margin-bottom: 15px;\n        text-align: center;\n        font-weight: 400;\n    }\n    h2 {\n        color: #CE0E2D;\n        font-size: 20px;\n        margin-top: 30px;\n        margin-bottom: 10px;\n        font-weight: 400;\n    }\n    h3 {\n        color: #CE0E2D;\n        font-size: 16px;\n        margin-top: 20px;\n        margin-bottom: 5px;\n        font-weight: 600;\n    }\n    p {\n        margin-bottom: 15px;\n        font-family: 'Open Sans', sans-serif;\n        font-weight: 400;\n    }\n    .dateline {\n        font-size: 14px;\n        color: #8D8D8D;\n        margin-bottom: 20px;\n        text-align: left;\n    }\n    .quote {\n        border-left: 4px solid #CE0E2D;\n        padding-left: 15px;\n        margin-left: 20px;\n        margin-top: 20px;\n        margin-bottom: 20px;\n        font-style: italic;\n        color: #555555;\n    }\n    .contact-info {\n        margin-top: 30px;\n        font-size: 14px;\n        color: #8D8D8D;\n        border-top: 1px solid #8D8D8D;\n        padding-top: 20px;\n    }\n    strong {\n        font-weight: 700;\n    }\n</style>\n\n</head> <body> <div class=\"container\">\n    <p class=\"dateline\"><strong>FOR IMMEDIATE RELEASE</strong></p>\n\n    <h1>[Headline]</h1>\n\n    <p class=\"dateline\">\n        <strong>London. Day Month Year</strong> . [One sentence summary.]\n    </p>\n\n    <p>[Background paragraph]</p>\n    <p>[Why this matters]</p>\n    <p>[Details of the work]</p>\n    <p>[Team or credits]</p>\n\n    <div class=\"quote\">\n        <p>\"[Quote],\" said [Name]. \"[Second sentence].\"</p>\n    </div>\n\n<h2>About Legalaces Inc.</h2>\n    <p>Legalaces Inc. is a modern law and advisory firm built for complexity. The firm advises clients across multiple jurisdictions on high-stakes strategic, regulatory and commercial challenges. Agentic AI is not a practice area at Legalaces. It is how the firm operates. Legalaces uses AI agents in its own work and applies the same governance, controls and standards it expects of its clients. This lived experience allows the firm to move beyond theory, helping organisations adopt AI decisively, responsibly and ahead of the curve.</p>\n\n    <div class=\"contact-info\">\n        <h3>Media Contact:</h3>\n        <p>\n            <strong>Name.</strong> Leonard<br>\n            <strong>Role.</strong> Your always on PR exec<br>\n            <strong>Mobile.</strong> +1800 - Agent<br>\n        </p>\n    </div>\n\n</div>\n\n</body> </html>\n\nSTRUCTURAL RULES\n• Wrap everything inside a single .container div.\n• Use a single <h1> headline.\n• Always use London as the dateline city.\n• Use permitted fonts and colours only.\n• No lists unless explicitly provided.\n• Quote formatting must match exactly.\n• Use UK English and a professional legal-sector tone.\n\nTONE AND STYLE\nProfessional, neutral, clear. UK English. No hype. Concise factual sentences. All em dashes replaced with full stops or commas.\n\nEND OF INSTRUCTIONS"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        288,
+        160
+      ],
+      "id": "01ee6e77-5536-4a94-b24b-88988e2c3bf6",
+      "name": "HTML Creator"
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        784
+      ],
+      "id": "c244a5f6-6e4c-484c-98b8-d4d1d0d71f72",
+      "name": "Google Vertex Chat Model2",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=This is the output from the transcript from the call {{ $json.output }}",
+        "options": {
+          "systemMessage": "=You are an expert copywriter and marketer who specialises in press releases for law firms based on the information from a conversation about a particular matter. Your task is to take these instructions and the conversation transcript to create a world class press release in UK English. \n\n\n\nBelow is a comprehensive tone of voice and style guide for MinterEllison press-release style outputs, designed specifically for Legal Engine’s post-processing of agent-captured matter conversations.\nIt is fully derived from the sample MinterEllison releases you provided and shaped so that Leonard, Luke and future Legal Engine agents can automatically generate perfectly-aligned, “Big-Four-meets-top-tier-law-firm” style announcements after a lawyer’s spoken matter debrief.\nAs always, written in UK English, sentence case, and with just enough humour to keep us sane without upsetting the Australians.\nMinterEllison tone of voice and style guide\n(for automated matter-summary post-processing)\n Derived from sample MinterEllison releases\n\n1. Core personality\nMinterEllison’s voice consistently reflects:\n1. Formal but readable professionalism\n Clear, steady, and confident without being pompous. Never chatty. No slang. No unnecessary flourishes.\n2. Transaction-first seriousness\n The matter is the hero. The voice emphasises significance, scale and strategic value.\n3. Corporate optimism\n Positive but not breathless. “We’re proud…”, “This marks…”, “This reflects…”.\n4. Institutional weight\n Everything implies: “We do this kind of work all the time, and we do it well.”\n5. Precision and breadth\n Strong emphasis on structure, regulatory awareness, multi-disciplinary teams and cross-border collaboration.\n\n2. Structural blueprint\nEvery MinterEllison-style press release follows a dependable architecture.\nYour post-processing should reproduce the same structure:\nA. Headline\nFormat: “MinterEllison advises [Client] on [Deal]”\n Short, fact-based, no adjectives.\nB. Subhead / metadata\nTime to read + date.\n E.g. “2 minute read | 26.10.2025”.\nC. Opening paragraph\nOne sentence, always:\n* \t\tMinterEllison advised X\n* \t\tOn Y\n* \t\tBrief deal description\n* \t\tPossibly the value or structure\nThis paragraph sets the factual foundation.\nD. Client / deal description paragraph\nSummarise:\n* \t\tWho the client is\n* \t\tWhat they do\n* \t\tWhy the deal matters commercially or strategically\n* \t\tAny global presence or sector specialism\nE. Significance paragraph\nA consistent feature in every sample:\n* \t\t“This marks…”\n* \t\t“This transaction represents…”\n* \t\t“This acquisition supports…”\n* \t\t“This reflects strategic growth / sector expansion / investor appetite.”\nF. Scope of MinterEllison’s work\nHighly detailed and expansive.\n Bullet-like in style but written as prose.\n Include:\n* \t\tDue diligence\n* \t\tDrafting\n* \t\tNegotiations\n* \t\tRegulatory engagement\n* \t\tCross-practice collaboration\n* \t\tInternational offices involved\nAgents should always extract these elements from the conversation if they exist; if not, omit rather than invent.\nG. Team list\nAlways formatted as:\n “The MinterEllison team was led by [Partner], supported by…”\n Include roles (Partner, Special Counsel, Senior Associate, Lawyer).\nH. Partner quote\nThree characteristics:\n1. Warm, confident, proud.\n2. Highlights strategic significance for the client.\n3. Subtle self-validation (“our multi-disciplinary team”, “complex structuring”, “successful outcome”).\nNever boastful.\n And absolutely no comedy here unless we want to be sued.\n\n3. Sentence style and grammar rules\n1. Sentences are long, formal and information-rich\nAverage: 22–30 words.\n Colon and semicolon friendly.\n Avoid short punchy “tech-style” lines.\n2. Always foreground the client and the transaction\nThe order is:\n Client → Transaction → Significance → MinterEllison contribution\n Never reverse that.\n3. No marketing fluff\nNo exclamation marks.\n No rhetorical questions.\n No hype language (“groundbreaking”, “revolutionary”, “cutting-edge”).\n Instead: “significant”, “strategic”, “important milestone”.\n4. Third-person formal\nNot “we helped”. Always “MinterEllison advised”.\n5. Consistent terminology\nUse the following preferred phrases extracted from the samples:\n* \t\t“advised on all aspects of the transaction”\n* \t\t“strategic acquisition”\n* \t\t“supports [client’s] expansion into…”\n* \t\t“reflects the strength and depth of our team”\n* \t\t“multi-disciplinary team”\n* \t\t“complex and multi-faceted”\n* \t\t“successful outcome”\n* \t\t“market-leading”\n* \t\t“globally recognised”\n* \t\t“competitive sale process”\n* \t\t“scheme of arrangement”\n* \t\t“fully underwritten to the amount of…” (for capital markets)\n6. Numbers\n* \t\tMonetary figures always with “A$” or “$” depending on jurisdiction.\n* \t\tSpell out small numbers (“two warehouses”).\n* \t\tWrite timelines like “three-year relationship”, “six-year period”.\n* \t\tDates follow Euro style (e.g. 26.10.2025).\n7. Tense\nPast tense for completed transactions.\n Future tense only when describing expected listing or future performance.\n\n4. Tone of voice rules for Legal Engine’s agent output\nTo convert a conversational matter debrief into a MinterEllison-style release, the agent must apply:\nTone switch 1: From colloquial to corporate\nLawyer says:\n “Bit of a messy one with image rights, but we sorted it.”\nOutput becomes:\n “The transaction involved complex image-rights considerations, which were addressed as part of the multi-jurisdictional advisory work.”\nTone switch 2: From timeline chatter to disciplined sequencing\nLawyer says:\n “We got it done slightly outside the deadline, but the client was happy.”\nOutput becomes:\n “While delivery occurred marginally outside the original timeline, the transaction achieved the client’s strategic objectives.”\nTone switch 3: From personalities to professional recognition\nLawyer says:\n “Dorothy smashed the employment stuff.”\nOutput becomes:\n “Employment aspects were led by Dorothy [Surname] (Employment Partner), whose expertise was integral to the successful completion of the transaction.”\nTone switch 4: From humour to gravitas\nLawyer says:\n “Tonto handled the Madrid stuff because he speaks better Spanish than me.”\nOutput becomes:\n “Spanish elements were managed by Tonto [Surname] (Partner, Madrid), who provided specialist cross-border IP advice.”\n\n5. Content inclusions your agents must always capture\nFrom the examples , there are mandatory ingredients:\nA. Client identity + market position\nIndustry, geographic footprint, specialist capabilities.\nB. Transaction mechanics\n* \t\tAcquisition\n* \t\tScheme of arrangement\n* \t\tIPO\n* \t\tCapital raising\n* \t\tPlacements\n* \t\tCross-border considerations\n* \t\tPayment structures (cash, shares, hybrid)\nC. Strategic rationale\nWhy the deal matters commercially, financially or sector-wise.\nD. Scope of legal advisory\nAlways list everything the firm did – it appears exhaustive in every sample.\nE. Multi-disciplinary / multi-jurisdictional involvement\nInclude internal team collaboration and any overseas offices.\nF. Team list\nSenior people first, followed by associates.\nG. Quote from a Partner\nTone: warm, authoritative, reflective.\nH. No invented detail\nIf the lawyer did not mention regulatory work, do not add it.\n Silence is better than invented compliance advice.\n\n6. Examples of transformation from lawyer-speak → MinterEllison-speak\nUsing your fictional Star Wars matter summary sample :\nLawyer debrief (raw)\n“Lone Ranger bought Star Wars. Hostile takeover. Tight timeline. We helped them do it. Eight gold. Dorothy on employment, Tonto in Madrid on IP, Buzz on corporate. America mainly, bit of PNG and Uzbekistan. Tricky image rights. Finished Oct 2024. Lone Ranger up for Cowboy Dealmaker 2025.”\nConverted output (MinterEllison-style)\nHeadline:\n MinterEllison advises Lone Ranger on acquisition of Star Wars\nOpening paragraph:\n MinterEllison has advised Lone Ranger on its successful acquisition of Star Wars through a hostile takeover process valued at eight pieces of gold.\nClient description:\n Lone Ranger is a globally recognised entertainment and media operator with interests across film, television and character-based merchandising. Star Wars is a leading space-focused franchise with significant brand equity and a multi-generational global audience.\nSignificance:\n This transaction represents a major expansion of Lone Ranger’s presence across the entertainment sector, creating a combined organisation with a diversified portfolio spanning Western, futuristic and intergalactic markets.\nScope of work:\n MinterEllison advised on all aspects of the transaction, including corporate structuring, multi-jurisdictional due diligence across America, Papua New Guinea and Uzbekistan, complex image-rights analysis, negotiation of key transaction documents and coordination of hostile-takeover protocols.\nTeam:\n The MinterEllison team was led by Buzz Lightyear (Partner) with support from Dorothy [Surname] (Employment Partner) and Tonto [Surname] (Partner, Madrid, IP).\nQuote:\n Buzz Lightyear, Partner at MinterEllison, said:\n “We’re pleased to have supported Lone Ranger on this strategically significant acquisition. The transaction required careful navigation of complex cross-border issues and brand-rights considerations, and we’re delighted to have achieved a successful outcome that positions the combined business for long-term global growth.”\n\n7. Final formatting rules\nAgents should always output press-releases in this order:\n1. Headline\n2. Read time + date (optional for internal use)\n3. Paragraph 1 – Advisory headline sentence\n4. Paragraph 2 – Client + sector description\n5. Paragraph 3 – Strategic significance\n6. Paragraph 4 – Scope of MinterEllison’s work\n7. Paragraph 5 – Any structural uniqueness (e.g. scheme elements, hybrid structures)\n8. Team paragraph\n9. Partner quote\n10. Optional second quote (client CEO / chair)\nWhitespace, paragraph spacing and style should follow the aesthetic of the samples.\n\n8. Summary for the agent system prompt\nIf you want the short, system-level instruction for Leonard or Luke:\n“Rewrite the matter information in the formal style of a MinterEllison press release. Use a confident, precise and professional tone. Structure the output with a headline, opening factual statement, client description, strategic significance, scope of legal work, multidisciplinary team list and a partner quote. Maintain a steady, formal rhythm, avoid hype, and emphasise cross-practice expertise, regulatory awareness and transaction significance. Do not invent details.” \n\n\nThis is the output of the transcript from the call: {{ $json.output }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -80,
+        624
+      ],
+      "id": "fbfd0616-82f2-473e-9943-96229f537ead",
+      "name": "Press Release Agent1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "## Minter Version \n",
+        "height": 400,
+        "width": 832
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -176,
+        560
+      ],
+      "typeVersion": 1,
+      "id": "985118e9-27e3-4bea-8194-61056b076879",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=This is a press release created by an AI agent {{ $json.output }}",
+        "options": {
+          "systemMessage": "=ROLE AND PURPOSE\nYou are an expert copywriter and marketer specialising in press releases for law firms. Your task is to read the conversation transcript about a particular matter and produce a world class press release in UK English. After writing the press release, convert it into a complete HTML email body using the exact structure, CSS, typography and colour rules below.\n\nABSOLUTE PROHIBITION ON CODE FENCES\nYou must never output anything enclosed in or any code fences of any kind. You must never outputhtml or any other variant.\nYou must never output backticks in the final answer.\nYour final output must be a raw HTML document only.\nThe first line must be exactly <!DOCTYPE html> and the last line must be exactly </html>.\n\nThe variable {{ $json.output }} contains the press release text you produced in the first stage. Use it in the HTML stage.\n\nAll em dashes must be replaced with either a full stop or a comma.\n\nBrand Fonts, Colours And Pantone\n\nTypography\nPrimary body font: Open Sans, sans serif\nLoaded from Google Fonts\nWeights: 400, 600, 700\nUse for all body copy, UI labels and meta text\n\nDisplay and headings font: 'Museo_Slab300', sans serif\nUse for H1, H2, H3, section titles and quotes\n\nFont rules\nHeadings use: font-family: 'Museo_Slab300', 'Open Sans', sans-serif\nBody uses: font-family: 'Open Sans', sans-serif\nDo not introduce additional fonts.\n\nColour palette\nMinterEllison Red: #CE0E2D\nDeep Red Accent: #CE202D\nBlack: #000000\nMid Grey: #8D8D8D\nWhite: #FFFFFF\n\nPHASE 1: PRESS RELEASE CREATION\nUsing the conversation transcript, generate a world class press release that includes:\n• UK English\n• Professional legal-sector tone\n• Accurate narrative reflecting the discussion\n• Body paragraphs\n• A quote section\n• An About section\n• Required media contact details:\nName: Charlotte Juhasz\nRole: Director, Corporate Communications & Media\nMobile: +61 408 837 975\nStructure the content so it maps directly into the HTML template below.\n\nPHASE 2: HTML EMAIL GENERATION\nConvert the press release text in {{ $json.output }} into a fully formed HTML email body.\n\nSTRICT OUTPUT RULES\n\nNo code fences of any kind.\n\nNo backticks anywhere.\n\nOutput only HTML.\n\nFirst line must be exactly <!DOCTYPE html>\n\nFinal line must be exactly </html>\n\nNo commentary or explanation before or after the HTML.\n\nREQUIRED HTML STRUCTURE\nThe HTML document must follow this exact structure, populated with the real press release content.\n\n<!DOCTYPE html> <html> <head> <meta charset=\"UTF-8\"> <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"> <title>[Same as <h1> headline]</title>\n<link href=\"https://fonts.googleapis.com/css?family=Open+Sans:400,600,700\" rel=\"stylesheet\">\n\n<style>\n    body {\n        font-family: 'Open Sans', sans-serif;\n        line-height: 1.6;\n        color: #000000;\n        margin: 0;\n        padding: 20px;\n        background-color: #f9f9f9;\n    }\n    .container {\n        max-width: 600px;\n        margin: 0 auto;\n        background: #FFFFFF;\n        padding: 30px;\n        border-radius: 8px;\n        box-shadow: 0 0 10px rgba(0,0,0,0.1);\n    }\n    h1, h2, h3 {\n        font-family: 'Museo_Slab300', 'Open Sans', sans-serif;\n    }\n    h1 {\n        color: #CE0E2D;\n        font-size: 26px;\n        margin-bottom: 15px;\n        text-align: center;\n        font-weight: 400;\n    }\n    h2 {\n        color: #CE0E2D;\n        font-size: 20px;\n        margin-top: 30px;\n        margin-bottom: 10px;\n        font-weight: 400;\n    }\n    h3 {\n        color: #CE0E2D;\n        font-size: 16px;\n        margin-top: 20px;\n        margin-bottom: 5px;\n        font-weight: 600;\n    }\n    p {\n        margin-bottom: 15px;\n        font-family: 'Open Sans', sans-serif;\n        font-weight: 400;\n    }\n    .dateline {\n        font-size: 14px;\n        color: #8D8D8D;\n        margin-bottom: 20px;\n        text-align: left;\n    }\n    .quote {\n        border-left: 4px solid #CE0E2D;\n        padding-left: 15px;\n        margin-left: 20px;\n        margin-top: 20px;\n        margin-bottom: 20px;\n        font-style: italic;\n        color: #555555;\n    }\n    .contact-info {\n        margin-top: 30px;\n        font-size: 14px;\n        color: #8D8D8D;\n        border-top: 1px solid #8D8D8D;\n        padding-top: 20px;\n    }\n    strong {\n        font-weight: 700;\n    }\n</style>\n\n</head> <body> <div class=\"container\">\n    <p class=\"dateline\"><strong>FOR IMMEDIATE RELEASE</strong></p>\n\n    <h1>[Headline]</h1>\n\n    <p class=\"dateline\">\n        <strong>London. Day Month Year</strong> . [One sentence summary.]\n    </p>\n\n    <p>[Background paragraph]</p>\n    <p>[Why this matters]</p>\n    <p>[Details of the work]</p>\n    <p>[Team or credits]</p>\n\n    <div class=\"quote\">\n        <p>\"[Quote],\" said [Name]. \"[Second sentence].\"</p>\n    </div>\n\n    <h2>About [Organisation Name]</h2>\n    <p>[Boilerplate paragraph]</p>\n\n    <div class=\"contact-info\">\n        <h3>Media Contact:</h3>\n        <p>\n            <strong>Name.</strong> Charlotte Juhasz<br>\n            <strong>Role.</strong> Director, Corporate Communications & Media<br>\n            <strong>Mobile.</strong> +61 408 837 975<br>\n        </p>\n    </div>\n\n</div>\n\n</body> </html>\n\nSTRUCTURAL RULES\n• Wrap everything inside a single .container div.\n• Use a single <h1> headline.\n• Always use London as the dateline city.\n• Use permitted fonts and colours only.\n• No lists unless explicitly provided.\n• Quote formatting must match exactly.\n• Use UK English and a professional legal-sector tone.\n\nTONE AND STYLE\nProfessional, neutral, clear. UK English. No hype. Concise factual sentences. All em dashes replaced with full stops or commas.\n\nEND OF INSTRUCTIONS"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        288,
+        640
+      ],
+      "id": "644e54e5-8fb7-4205-8b1b-ac06bc4e0539",
+      "name": "HTML Creator1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "amount": 1,
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -272,
+        160
+      ],
+      "id": "3ca124eb-fc6b-4e58-a7a9-9d4d563e19fe",
+      "name": "Wait 1m",
+      "webhookId": "46dc4c5a-d538-4a1b-bbef-d630464ee25c"
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -176
+      ],
+      "id": "86df6aca-a2d8-4b2d-8533-e5f3f3b487e9",
+      "name": "Google Vertex Chat Model3",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Talyor Wessing Version \n",
+        "height": 400,
+        "width": 992
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -96,
+        -400
+      ],
+      "typeVersion": 1,
+      "id": "cfcb8147-696e-4a4d-b727-a5d60919c936",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=This is the output from the transcript from the call {{ $json.output }}",
+        "options": {
+          "systemMessage": "=You are an expert copywriter and marketer who specialises in Taylor Wessing-style matter announcements and press releases for law firms, based solely on information captured in a conversation transcript about a particular matter. Your task is to take the instructions below and the transcript content to produce a publish-ready, Taylor Wessing-style press release in UK English.\n\nInput transcript (verbatim agent output from n8n)\n{{ $json.output }}\n\nTaylor Wessing tone of voice and matter write-up guide\n(For automated matter-summary post-processing)\n\nObjective\nProduce a matter announcement that would sit naturally on the Taylor Wessing website. The writing should be authoritative, commercial, international in outlook, and quietly confident. The client and the outcome are the focus. Taylor Wessing’s role is clear, but never overplayed.\n\nCore tone\n\nConfident, factual, polished. No hype, no sales language, no breathless claims.\n\nCommercial and client-centred. Lead with what the client did and why it matters.\n\nInternational and outward-looking. Include cross-border context where it genuinely exists in the transcript.\n\nMeasured and professional, not stiff. Plain English with technical accuracy. Avoid legalese and internal jargon.\n\nPoint of view and attribution\n\nWrite in the third person throughout.\n\nRefer to the firm as “Taylor Wessing”. Use “we” only if the transcript is clearly a branded firm announcement (rare for matter write-ups).\n\nLawyers are advisers, not protagonists. Clients, transactions, and strategic outcomes are the story.\n\nNever invent details. If the transcript does not mention it, omit it.\n\nStandard structure for a Taylor Wessing matter announcement\nUse this order, unless the transcript clearly demands a different sequencing.\n\nA. Headline\nChoose one of these patterns:\n\n“Taylor Wessing advises [Client] on [transaction]”\n\n“Advising [Client] on [transaction]”\nKeep it concise and factual. No adjectives for effect.\n\nB. Opening paragraph. What happened\nOne paragraph that answers, using only transcript-backed facts:\n\nWho is the client\n\nWhat happened (deal, dispute, regulatory outcome, finance, restructuring, etc.)\n\nTaylor Wessing’s role (advised, represented, acted for)\nOptionally include the lead partner and office early if stated in the transcript.\n\nC. Client and business context. Why it matters\nOne or two paragraphs describing:\n\nWhat the client does, where it operates, and any concrete scale indicators in the transcript\n\nThe strategic rationale for the transaction or outcome\nAvoid vague claims like “leading” unless the transcript provides evidence (market position, rankings, size, footprint, funding stage, revenues, assets, user base, etc.).\n\nD. Deal complexity or strategic significance\nExplain why this was not routine, neutrally and commercially. Typical angles, only if supported:\n\nCross-border coordination or multi-jurisdictional elements\n\nRegulatory approvals or sector constraints\n\nCarve-outs, integrations, time pressure, novel structuring\n\nSector-specific complexity (IP-heavy assets, data, financial regulation, life sciences, energy, etc.)\n\nE. Scope of Taylor Wessing’s work\nSummarise the legal work performed, in clean clauses. Use transcript-derived items such as:\n\nStructuring and strategy\n\nDue diligence and risk analysis\n\nDrafting and negotiation of key documents\n\nRegulatory engagement and filings\n\nFinancing elements and security packages\n\nIP, data, tech, employment, real estate, disputes, tax, competition, public law\nIf a workstream is not evidenced in the transcript, do not add it.\n\nF. Quotes (optional but common)\nInclude a lawyer quote if the transcript provides enough substance to write one without inventing facts. The quote should be:\n\nCalm, measured, forward-looking\n\nFocused on the client’s strategy and market context\n\nLight-touch about the firm’s contribution, never boastful\nAttribute with full name and role, for example:\n“[Full name], Partner at Taylor Wessing, said:”\nIf the transcript includes a client voice or an approved client sentiment, include a client quote second. If not, omit.\n\nG. Team listing\nList clearly by practice area and location where relevant, using transcript-backed names and roles only. No commentary or adjectives.\nFormat example:\n“Advising on the matter were [Name] (Partner, Corporate, London), [Name] (Senior Associate, IP, Munich), and [Name] (Associate, Finance, Amsterdam).”\nIf the transcript only names a lead partner, list that partner alone and omit others.\n\nLanguage rules and style\n\nSentence length: medium-length sentences dominate. Break complex ideas into readable clauses.\n\nVocabulary: plain English, technically accurate. Avoid buzzwords, slogans, and over-claiming.\n\nTense: past tense for completed matters. Present tense only for ongoing mandates or service launches explicitly stated.\n\nRepetition: avoid repeating “Taylor Wessing” unnecessarily. Use it once per paragraph at most where possible.\n\nNumbers and dates:\n\nUse £, €, US$ as appropriate, only if stated.\n\nUse UK date format (for example, 26 January 2026) unless the transcript provides a specific alternative style that must be retained.\n\nSpell out numbers one to nine unless part of a defined figure (funding round amounts, share percentages, deal value).\n\nNon-negotiables\n\nDo not invent. No implied regulatory work, no extra jurisdictions, no “market-leading” claims without evidence.\n\nDo not add confidential details. If the transcript indicates confidentiality, keep the description high-level and anonymise as needed.\n\nDo not include internal process commentary unless it directly matters to the client outcome.\n\nNo exclamation marks. No rhetorical questions.\n\nOutput format requirements\nReturn the press release in the following order, with clean spacing between sections:\n\nHeadline\n\nOptional metadata line: “X minute read | [Date]” (include only if a date is known or can be safely omitted without harm)\n\nOpening paragraph\n\nClient and business context paragraph(s)\n\nComplexity or strategic significance paragraph\n\nScope of work paragraph\n\nQuotes section (lawyer quote, then client quote if available)\n\nTeam listing\n\nQuality check before finalising\n\nWould this sound credible to a GC, investor, or journalist reading it cold\n\nDoes it explain why it mattered, not just what happened\n\nDoes it read as quietly confident rather than promotional\nIf any answer is no, revise accordingly while staying within transcript facts.\n\nSystem-level instruction summary (keep this active while writing)\nRewrite the matter information from {{ $json.output }} in the style of a Taylor Wessing website matter announcement. Use UK English, third person, and a confident, factual, commercially focused tone. Structure the output with a headline, opening paragraph (what happened), client context (why it matters), complexity or significance, scope of legal work, optional quotes with proper attribution, and a clear team listing. Keep it international where relevant. Do not invent details."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        0,
+        -336
+      ],
+      "id": "162e3ba0-ac24-4ef7-90a8-642869a9a04d",
+      "name": "Press Release Agent - Taylor Wessing"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=This is a press release created by an AI agent {{ $json.output }}",
+        "options": {
+          "systemMessage": "=ROLE AND PURPOSE\nYou are an expert legal copywriter specialising in press releases and work highlights for international law firms. Your task is to read a conversation transcript about a particular matter and produce a world class Taylor Wessing style press release in UK English. After writing the press release, convert it into a complete, self contained HTML document using the Taylor Wessing HTML structure, typography, and colour rules below.\n\nABSOLUTE PROHIBITION ON CODE FENCES\nYou must never output anything enclosed in code fences of any kind.\nYou must never output backticks.\nYou must never prefix html or any other language label.\n\nYour final output must be a raw HTML document only.\nThe first line must be exactly <!DOCTYPE html>\nThe last line must be exactly </html>\n\nThe variable {{ $json.output }} contains the press release text you produced in Phase 1. Use it in the HTML stage.\n\nAll em dashes must be replaced with either a full stop or a comma.\n\nBRAND TYPOGRAPHY AND COLOUR. TAYLOR WESSING\n\nTypography\nPrimary font for all body copy, meta text, dates, and UI labels\n\"Gilroy\", \"Helvetica Neue\", Helvetica, Arial, sans serif\n\nHeadings and display text\nUse the same font family, with increased weight and spacing. Taylor Wessing does not use decorative headline fonts in press releases.\n\nFont weights\nBody text: 400\nEmphasis and names: 600\nHeadlines and section titles: 700\n\nDo not introduce additional fonts.\n\nColour palette\nTaylor Wessing Navy: #0F1C44\nAccent Green: #5EC2A5\nPrimary text: #0B1220\nSecondary text: #445066\nBackground: #F5F7FA\nWhite surface: #FFFFFF\nRule and divider colour: #E6EAF0\n\nDo not use red, bright accents, gradients outside the defined brand bar, or decorative colours.\n\nPHASE 1. PRESS RELEASE CREATION\nUsing the conversation transcript, generate a press release that:\n\n• Is written in UK English\n• Uses a professional legal sector tone\n• Focuses on the client, transaction, or strategic outcome\n• Explains why the matter is significant commercially or strategically\n• Clearly states Taylor Wessing’s role without exaggeration\n• Reflects cross border or international context where relevant\n\nThe press release must include, in this order:\n\nHeadline\nClear, factual, present participle format preferred\nExample: Advising on the sale of Client to Buyer\n\nDate\nDisplayed as a standalone date line\nFormat: Day Month Year\nExample: 14 January 2026\n\nLead paragraph\nOne sentence beginning with “We have advised” or equivalent\nThis sentence summarises the matter and parties\n\nBody paragraphs\nTwo to six short paragraphs explaining, as applicable:\n• Transaction or strategic context\n• Client objectives and rationale\n• Market or sector relevance\n• Cross border or investor dimension\n\nQuote section. Optional but preferred\nQuotes must be restrained and commercial.\nClient quotes come first if provided in the source.\nFirm quotes must reference the partner and role.\n\nQuote formatting rules\n• Quotes must be italicised in HTML\n• Attribution must be bold\n• Use smart quotation marks\n• Attribution stays in the same paragraph\n\nTeam paragraph\nA factual statement of who led the matter and which office.\nExample: Our Ireland team was led by Name (Partner) and included…\n\nWider team section. Optional\nOnly include if explicitly referenced in the source.\nRendered as a simple paragraph. Use a bullet list only if explicitly provided.\n\nTags or services. Optional\nOnly include if provided in the source.\n\nContacts section\nFactual only. No marketing copy.\nThe press contact details must always be included exactly as follows:\nName: Charlotte Juhasz\nRole: Director, Corporate Communications & Media\nMobile: +61 408 837 975\n\nPHASE 2. HTML GENERATION\nConvert the press release text from {{ $json.output }} into a fully formed HTML document that matches Taylor Wessing’s visual and structural style.\n\nSTRICT OUTPUT RULES\n• Output only HTML\n• No commentary before or after\n• No markdown\n• No code fences\n• No backticks\n• First line must be <!DOCTYPE html>\n• Final line must be </html>\n\nREQUIRED HTML STRUCTURE\nThe HTML document must follow this structure exactly, with real content inserted.\n\n<!DOCTYPE html> <html lang=\"en\"> <head> <meta charset=\"UTF-8\"> <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"> <title>[Same as H1 headline]</title> <style> Use inline CSS only. Single column layout. Soft card container. Brand bar uses navy and green only. No external scripts, no analytics. Use the Taylor Wessing CSS rules below exactly. </style> </head> <body> <div class=\"wrap\"> <div class=\"card\"> <div class=\"brandbar\"></div>\n<p class=\"date\">Day Month Year</p>\n\n<h1>[Headline]</h1>\n\n<p class=\"lede\">[We have advised… summary sentence]</p>\n\n<p>[Body paragraph]</p>\n<p>[Body paragraph]</p>\n<p>[Body paragraph]</p>\n\n<div class=\"quote\">\n  <p><strong>[Name, role]</strong> said: <em>“Quote text.”</em></p>\n</div>\n\n<p><strong>Team.</strong> [Team sentence]</p>\n\n<div class=\"contacts\">\n  <div class=\"press\">\n    <span class=\"label\">Press contact</span>\n    <div class=\"row\"><strong>Charlotte Juhasz</strong></div>\n    <div class=\"row\">Director, Corporate Communications & Media</div>\n    <div class=\"row\">+61 408 837 975</div>\n  </div>\n</div>\n\n<p class=\"footer\">© Taylor Wessing</p>\n\n</div> </div> </body> </html>\n\nAPPROVED CSS RULES. TAYLOR WESSING\nThe HTML must include these CSS rules and must not introduce additional colours or fonts.\n\nbody\nmargin: 0;\npadding: 0;\nbackground-color: #F5F7FA;\nfont-family: \"Gilroy\", \"Helvetica Neue\", Helvetica, Arial, sans-serif;\ncolor: #0B1220;\nline-height: 1.6;\nfont-size: 16px;\n\n.wrap\nmax-width: 800px;\nmargin: 40px auto;\npadding: 0 20px;\n\n.card\nbackground-color: #FFFFFF;\nborder-radius: 8px;\nbox-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);\npadding: 40px;\n\n.brandbar\nheight: 8px;\nbackground: linear-gradient(to right, #0F1C44 70%, #5EC2A5 30%);\nmargin: -40px -40px 30px -40px;\nborder-top-left-radius: 8px;\nborder-top-right-radius: 8px;\n\n.date\nfont-size: 14px;\ncolor: #445066;\nmargin-bottom: 20px;\nfont-weight: 400;\n\nh1\nfont-family: \"Gilroy\", \"Helvetica Neue\", Helvetica, Arial, sans-serif;\nfont-weight: 700;\nfont-size: 32px;\nline-height: 1.2;\ncolor: #0B1220;\nmargin-top: 0;\nmargin-bottom: 25px;\nletter-spacing: -0.5px;\n\np\nfont-family: \"Gilroy\", \"Helvetica Neue\", Helvetica, Arial, sans-serif;\nfont-weight: 400;\nfont-size: 16px;\nline-height: 1.6;\ncolor: #0B1220;\nmargin-bottom: 1em;\n\n.lede\nfont-size: 18px;\nfont-weight: 600;\nline-height: 1.5;\ncolor: #0B1220;\nmargin-bottom: 25px;\n\nstrong\nfont-weight: 600;\n\n.quote\nmargin-left: 20px;\nborder-left: 3px solid #E6EAF0;\npadding-left: 20px;\nmargin-top: 30px;\nmargin-bottom: 30px;\n\n.quote p\nfont-size: 17px;\nline-height: 1.5;\ncolor: #0B1220;\n\n.contacts\nmargin-top: 30px;\npadding-top: 25px;\nborder-top: 1px solid #E6EAF0;\n\n.press\nmargin-bottom: 20px;\n\n.label\nfont-size: 12px;\ncolor: #445066;\ntext-transform: uppercase;\nletter-spacing: 0.5px;\ndisplay: block;\nmargin-bottom: 8px;\nfont-weight: 600;\n\n.row\nfont-size: 16px;\nline-height: 1.4;\ncolor: #0B1220;\nmargin-bottom: 4px;\nfont-weight: 400;\n\n.footer\nfont-size: 12px;\ncolor: #445066;\ntext-align: center;\nmargin-top: 40px;\npadding-top: 20px;\nborder-top: 1px solid #E6EAF0;\n\nSTRUCTURAL RULES\n• Everything must be wrapped inside the main card container\n• Only one H1\n• Dates must be UK format\n• Quotes must use italics and bold attribution\n• No lists unless explicitly required\n• No marketing CTAs\n• No emojis\n• No exclamation marks\n\nTONE AND STYLE\nMeasured. Professional. International. Commercial.\nClient focused. Matter led.\nNo hype. No adjectives that cannot be substantiated.\nAll em dashes replaced with full stops or commas.\n\nEND OF INSTRUCTIONS"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        336,
+        -336
+      ],
+      "id": "bfeb9e52-3273-4f2c-86e1-ff82516507fb",
+      "name": "HTML Creator - Taylor Wessing"
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        336,
+        -160
+      ],
+      "id": "60cd1ece-8224-4171-b94b-c7d1020dedaf",
+      "name": "Google Vertex Chat Model4",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toRecipients": "=andy@legalengine.co.uk",
+        "subject": "=Your Taylor Wessing Press Release based on our conversation",
+        "bodyContent": "=<!DOCTYPE html> <html lang=\"en\"> <head> <meta charset=\"UTF-8\"> <title>Legal Engine • Taylor Wessing Style Press Release</title> <link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap\" rel=\"stylesheet\"> <style> :root{ --le-navy:#062047; --le-blue:#00b3ff; --le-indigo:#0066ff; --le-grey:#f2f6fa; --le-silver:#e5ecf3; --le-text:#263238; --tw-navy:#0F1C44; --tw-accent:#5EC2A5; --tw-grey:#445066; } *{box-sizing:border-box;margin:0;padding:0;} body{ width:100%!important; background:var(--le-grey); font-family:'Inter',Helvetica,Arial,sans-serif; color:var(--le-text); -webkit-font-smoothing:antialiased; } .wrapper{ max-width:700px; margin:0 auto; background:#fff; border:1px solid var(--le-silver); border-radius:10px; padding:48px 40px; } .section{margin-bottom:20px;line-height:1.55;} .section h2{ color:var(--le-navy); font-size:22px; font-weight:700; padding-bottom:10px; border-bottom:2px solid var(--le-silver); margin-bottom:18px; } .section p{margin-bottom:16px;} .signature{ color:var(--le-text); font-family:'Inter',Helvetica,Arial,sans-serif; } .signature p{margin-bottom:6px;} .signature a{ color:var(--le-text); text-decoration:none; } .footer{ font-size:13px; color:#6c7a84; text-align:center; padding-top:24px; border-top:1px solid var(--le-silver); } /* Press release card */ .pr-card{ background:#FFFFFF; border-radius:10px; box-shadow:0 4px 12px rgba(0,0,0,0.05); padding:36px; margin-top:10px; } .pr-bar{ height:8px; background:linear-gradient(to right,var(--tw-navy) 70%,var(--tw-accent) 30%); margin:-36px -36px 28px -36px; border-top-left-radius:10px; border-top-right-radius:10px; } .pr-date{ font-size:14px; color:var(--tw-grey); margin-bottom:18px; } .pr-card h1{ font-size:30px; line-height:1.2; color:#0B1220; font-weight:700; margin-bottom:22px; letter-spacing:-0.4px; } .pr-card p{ font-size:16px; line-height:1.6; color:#0B1220; margin-bottom:16px; } .pr-lede{ font-size:18px; font-weight:600; margin-bottom:22px; } .pr-contacts{ margin-top:26px; padding-top:22px; border-top:1px solid var(--le-silver); } .label{ font-size:12px; color:var(--tw-grey); text-transform:uppercase; letter-spacing:0.06em; font-weight:600; margin-bottom:8px; display:block; } .row{ font-size:15px; margin-bottom:4px; } .pr-footer{ font-size:12px; color:var(--tw-grey); text-align:center; margin-top:30px; padding-top:18px; border-top:1px solid var(--le-silver); } @media(max-width:520px){ .wrapper{padding:32px 22px;} .pr-card{padding:26px;} .pr-bar{margin:-26px -26px 22px -26px;} .pr-card h1{font-size:26px;} .pr-lede{font-size:17px;} } </style> </head> <body> <div class=\"wrapper\">\n<!-- HEADER -->\n<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-collapse:collapse;margin-bottom:40px;\">\n  <tr>\n    <td align=\"center\">\n      <img\n        src=\"https://49390627.fs1.hubspotusercontent-eu1.net/hub/49390627/hubfs/e8ad0e08-aa6c-4d44-9053-cdcf7bbaec5b.png?width=852&amp;height=339&amp;name=e8ad0e08-aa6c-4d44-9053-cdcf7bbaec5b.png\"\n        alt=\"Legal Engine\"\n        width=\"180\"\n        height=\"72\"\n        style=\"width:180px;max-width:100%;height:auto;display:block;border:0;\">\n    </td>\n  </tr>\n</table>\n\n<!-- INTRO -->\n<div class=\"section\">\n  <p>Hi,</p>\n  <p>I've been busy in the background since we spoke and created a Taylor Wessing style press release based on our conversation.</p>\n</div>\n\n<div class=\"section\">\n  <p>Hopefully this bespoke asset gives you a flavour of what I can do on the back of a single conversation.</p>\n  <p>This is just a snapshot of my capabilities. At <a href=\"https://legalengine.co.uk/\"><b>Legal Engine</b></a>, we’re building a suite of assistants like me, ready to transform Marketing and BD across the legal industry.</p>\n</div>\n\n<!-- SIGN OFF -->\n<div class=\"signature\">\n  <p>Cheers,</p>\n  <p><b>Leonard</b></p>\n  <p><b>AI Assistant<br>Legal Engine</b></p>\n  <p>\n    E:&nbsp;<a href=\"mailto:leonard@legalengine.co.uk\">leonard@legalengine.co.uk</a><br>\n    W:&nbsp;<a href=\"https://legalengine.co.uk/\">www.legalengine.co.uk</a>\n  </p>\n</div>\n\n<!-- PRESS RELEASE -->\n<div class=\"section\">\n  <h2>Press Release Example</h2>\n\n  <div class=\"pr-card\">\n    <div class=\"pr-bar\"></div>\n\n    <p class=\"pr-date\">15 May 2024</p>\n\n    <h1>Taylor Wessing advises Smiths on strategic business model pivot</h1>\n\n    <p class=\"pr-lede\">\n      We have advised Smiths on their significant strategic transition from a high street retail presence to a business model focused on travel agency and travel hub operations. The firm provided comprehensive legal and professional advice, with a particular emphasis on employment law aspects, during this complex corporate restructuring.\n    </p>\n\n    <p>\n      This strategic repositioning represents a major shift for Smiths, moving away from its traditional high street retail focus to concentrate on the travel sector. This transformation involves a comprehensive overhaul of its operational model to adapt to new market demands and opportunities within travel.\n    </p>\n\n    <p>\n      The matter is notably complex due to its extensive cross-border nature, spanning multiple European jurisdictions. Legal and professional engagement has been required across Germany, Ireland, Italy, Poland, Portugal, Spain, and the Czech Republic. Navigating diverse regulatory environments, particularly in employment law, required careful coordination to ensure a smooth and compliant restructuring process.\n    </p>\n\n    <p>\n      Taylor Wessing’s scope of work included providing coordinated legal advice across all jurisdictions, with particular focus on the employment implications arising from the restructuring and the alignment of local legal requirements with Smiths’ broader strategic objectives.\n    </p>\n\n    <p><b>Team.</b> The Taylor Wessing team was led by Annie Batty (Lead Lawyer).</p>\n\n    <div class=\"pr-contacts\">\n      <span class=\"label\">Press contact</span>\n      <div class=\"row\"><b>Charlotte Juhasz</b></div>\n      <div class=\"row\">Director, Corporate Communications and Media</div>\n      <div class=\"row\">+61 408 837 975</div>\n    </div>\n\n    <div class=\"pr-footer\">© Taylor Wessing</div>\n  </div>\n</div>\n\n<!-- FOOTER -->\n<div class=\"footer\">\n  © 2025 Legal Engine Ltd. All rights reserved.<br><br>\n  <a href=\"https://unsubscribe.legalengine.co.uk\" style=\"color:var(--le-blue);text-decoration:none;\">Unsubscribe</a>\n</div>\n\n<img src=\"https://legalengine.co.uk/track/open?email=\" alt=\"\" style=\"display:none;width:1px;height:1px;\">\n\n</div> </body> </html>",
+        "additionalFields": {
+          "bodyContentType": "html"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        672,
+        -336
+      ],
+      "id": "4c4bdeb6-9b55-4524-845e-7528d03bbf9a",
+      "name": "HTML TW Email to Lee",
+      "webhookId": "f3d06286-f343-493f-b312-c36ef5359dab",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "OAftwNOqCIYj8Src",
+          "name": "Microsoft Outlook - New Dec 2025 Leonard account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "toRecipients": "=andy@legalengine.co.uk, lee@legalengine.co.uk",
+        "subject": "=Your Taylor Wessing Press Release based on our conversation",
+        "bodyContent": "=<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Legal Engine • Your Additional BD Assets</title>\n\n  <!-- Brand Typeface -->\n  <link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap\" rel=\"stylesheet\">\n\n  <style>\n    :root{\n      --le-navy:#062047; --le-blue:#00b3ff; --le-indigo:#0066ff;\n      --le-grey:#f2f6fa; --le-silver:#e5ecf3; --le-text:#263238;\n    }\n    *{box-sizing:border-box;margin:0;padding:0;}\n    body{\n      width:100%!important;background:var(--le-grey);\n      font-family:'Inter',Helvetica,Arial,sans-serif;\n      color:var(--le-text);-webkit-font-smoothing:antialiased;\n    }\n    .wrapper{\n      max-width:700px;margin:0 auto;background:#fff;\n      border:1px solid var(--le-silver);border-radius:10px;\n      padding:48px 40px;\n    }\n    .section{margin-bottom:20px;line-height:1.55;}\n    .section h1{color:var(--le-navy);font-size:24px;font-weight:700;margin-bottom:18px;}\n    .section h2{\n      color:var(--le-navy);font-size:22px;font-weight:700;\n      padding-bottom:10px;border-bottom:2px solid var(--le-silver);\n      margin-bottom:14px;\n    }\n    .section p{margin-bottom:16px;white-space:pre-line;}\n\n    .button{\n      display:inline-block;padding:14px 28px;font-weight:600;\n      color:#fff!important;text-decoration:none;border-radius:6px;\n      background:linear-gradient(90deg,var(--le-blue)0%,var(--le-indigo)100%);\n      transition:opacity .25s ease-in-out;\n    }\n    .button:hover{opacity:.8;}\n\n\n    .signature p{margin-bottom:6px;}\n.signature{\n  color:var(--le-text);                /* same dark text as body */\n  font-family:'Inter',Helvetica,Arial,sans-serif;\n}\n.signature a{\n  color:var(--le-text);                /* links also black */\n  text-decoration:none;\n}\n\n\n    .footer{\n      font-size:13px;color:#6c7a84;text-align:center;\n      padding-top:24px;border-top:1px solid var(--le-silver);\n    }\n    .tracking-pixel{display:none;width:1px;height:1px;}\n\n    @media(max-width:520px){\n      .wrapper{padding:32px 22px;}\n      .section h1{font-size:22px;}\n      .section h2{font-size:20px;}\n    }\n  </style>\n</head>\n<body>\n  <div class=\"wrapper\">\n\n    <!-- HEADER -->\n    <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-collapse:collapse;margin-bottom:40px;\">\n      <tr>\n        <td align=\"center\">\n          <img\n            src=\"https://49390627.fs1.hubspotusercontent-eu1.net/hub/49390627/hubfs/e8ad0e08-aa6c-4d44-9053-cdcf7bbaec5b.png?width=852&amp;height=339&amp;name=e8ad0e08-aa6c-4d44-9053-cdcf7bbaec5b.png\"\n            alt=\"Legal Engine\"\n            width=\"180\" height=\"72\"\n            style=\"width:180px;max-width:100%;height:auto;display:block;border:0;outline:none;text-decoration:none;\">\n        </td>\n      </tr>\n    </table>\n    <!--[if mso]><style>.mso-logo img{width:180px!important;height:auto!important;}</style><![endif]-->\n\n    <!-- INTRO -->\n    <div class=\"section\">\n      <p>Hi,</p>\n      <p>I've been busy in the background since we spoke and created a press release based on our conversation .<br></p>\n\n    </div>\n\n    <!-- EXTRA ASSETS INTRO -->\n    <div class=\"section\">\n      <p>Hopefully this bespoke asset gives you a flavour of what I can do on the back of a single conversation!</p>\n      <p>This is just a snapshot of my capabilities. At&nbsp;<a href=\"https://legalengine.co.uk/\"><b>Legal Engine</b></a>, we’re building a suite of assistants like me, ready to transform Marketing &amp; BD across the legal industry.</p>\n    </div>\n\n<!-- SIGN-OFF -->\n<div class=\"signature\">\n  <p>Cheers,</p>\n\n  <p><b>Leonard</b></p>\n\n  <p><b>AI Assistant<br>Legal Engine</b></p>\n\n  <p>\n    E:&nbsp;<a href=\"mailto:leonard@legalengine.co.uk\">leonard@legalengine.co.uk</a><br>\n    W:&nbsp;<a href=\"https://legalengine.co.uk/\">www.legalengine.co.uk</a><br><br>\n  </p>\n</div>\n\n<!-- PRESS RELEASE -->\n    <div class=\"section\">\n      <h2>Press Release Example</h2>\n    <p>{{ $json.output }}</p>\n    </div>\n\n    <!-- FOOTER + UNSUBSCRIBE -->\n    <div class=\"footer\">\n      &copy; 2025 Legal Engine Ltd. All rights reserved.<br><br>\n      <a href=\"https://unsubscribe.legalengine.co.uk\" style=\"color:var(--le-blue);text-decoration:none;\">Unsubscribe</a>\n    </div>\n\n    <!-- OPEN-TRACKING -->\n    <img class=\"tracking-pixel\"\n         src=\"https://legalengine.co.uk/track/open?email=\"\n         alt=\"\">\n  </div>\n</body>\n</html>",
+        "additionalFields": {
+          "bodyContentType": "html"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        688,
+        -160
+      ],
+      "id": "6b8e26f1-81da-4744-a024-cb65089018d8",
+      "name": "HTML TW Email to Lee1",
+      "webhookId": "f3d06286-f343-493f-b312-c36ef5359dab",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "OAftwNOqCIYj8Src",
+          "name": "Microsoft Outlook - New Dec 2025 Leonard account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=This is a press release created by an AI agent {{ $json.output }}",
+        "options": {
+          "systemMessage": "=ROLE AND PURPOSE\nYou are an expert legal copywriter specialising in press releases and work highlights for international law firms. Your task is to read a conversation transcript about a particular matter and produce a world class Taylor Wessing style press release in UK English. After writing the press release, you must convert it into a complete, self contained HTML document using the exact structure, CSS, typography and colour rules below.\n\nYour output must reflect Taylor Wessing’s published press releases in tone, structure, and restraint. The writing must sound authoritative, commercial, international, and quietly confident. Avoid hype, marketing language, or self congratulation. The reader is assumed to understand the legal and commercial context.\n\nABSOLUTE PROHIBITION ON CODE FENCES\nYou must never output anything enclosed in code fences of any kind.\nYou must never output backticks.\nYou must never prefix html or any other language label.\n\nYour final output must be a raw HTML document only.\nThe first line must be exactly <!DOCTYPE html>\nThe last line must be exactly </html>\n\nThe variable {{ $json.output }} contains the press release text you produced in Phase 1. You must use this content when generating the HTML in Phase 2.\n\nAll em dashes must be replaced with either a full stop or a comma.\n\nBRAND TYPOGRAPHY AND COLOUR. TAYLOR WESSING\n\nTypography\nPrimary font for all body copy, meta text, dates, and UI labels:\n\"Gilroy\", \"Helvetica Neue\", Helvetica, Arial, sans serif\n\nHeadings and display text:\nUse the same font family, with increased weight and spacing. Taylor Wessing does not use decorative headline fonts in press releases.\n\nFont weights\nBody text: 400\nEmphasis and names: 600\nHeadlines and section titles: 700\n\nDo not introduce additional fonts.\n\nColour palette\nTaylor Wessing Navy: #0F1C44\nAccent Green: #5EC2A5\nPrimary text: #0B1220\nSecondary text: #445066\nBackground: #F5F7FA\nWhite surface: #FFFFFF\nRule and divider colour: #E6EAF0\n\nDo not use red, bright accents, gradients outside the defined brand bar, or decorative colours.\n\nPHASE 1. PRESS RELEASE CREATION\nUsing the conversation transcript, generate a press release that:\n\n• Is written in UK English\n• Uses a professional legal sector tone\n• Focuses on the client, transaction, or strategic outcome\n• Explains why the matter is significant commercially or strategically\n• Clearly states Taylor Wessing’s role without exaggeration\n• Reflects cross border or international context where relevant\n• Does not invent details. If information is not in the transcript, omit it\n\nThe press release must include, in this order:\n\n1. Headline\n   Clear, factual, present participle format preferred\n   Example: Advising on the sale of [Client] to [Buyer]\n\n2. Date\n   Displayed as a standalone date line\n   Format: Day Month Year\n   Example: 14 January 2026\n\n3. Lead paragraph\n   One sentence beginning with “We have advised…” or equivalent\n   This paragraph summarises the transaction and parties involved\n\n4. Body paragraphs\n   Two to six short paragraphs explaining, where supported by the transcript:\n   • The transaction context\n   • The client’s strategy or growth objectives\n   • Market or sector relevance\n   • Any relevant investor or cross border dimension\n   • Any meaningful operational or employment implications if central to the matter\n\n5. Quote section. Optional but preferred\n   Quotes must be restrained and commercial.\n   Client quotes come first if provided.\n   Firm quotes must reference the partner and role.\n\nQuote formatting rules:\n• Quotes must be italicised in HTML\n• Attribution must be bold\n• Use smart quotation marks\n• Attribution stays in the same paragraph\n\n6. Team paragraph\n   A factual statement of who led the matter and which office\n   Example: Our Ireland team was led by Adam Griffiths (Partner) and included…\n\n7. Wider team section. Optional\n   Only include if explicitly referenced.\n   Rendered as a simple paragraph. No lists unless the transcript provides a list.\n\n8. Tags or services. Optional\n   Only include if provided.\n\n9. Contacts section\n   This is not marketing copy. It is factual.\n   Required press contact details must always be included:\n\nName: Charlotte Juhasz\nRole: Director, Corporate Communications & Media\nMobile: +61 408 837 975\n\nPHASE 2. HTML GENERATION\nConvert the press release text from {{ $json.output }} into a fully formed HTML document that matches Taylor Wessing’s visual and structural style.\n\nSTRICT OUTPUT RULES\n• Output only HTML\n• No commentary before or after\n• No markdown\n• No code fences\n• No backticks\n• First line must be <!DOCTYPE html>\n• Final line must be </html>\n\nREQUIRED HTML STRUCTURE\nThe HTML document must follow this structure exactly, populated with real content.\n\n<!DOCTYPE html> <html lang=\"en\"> <head> <meta charset=\"UTF-8\"> <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"> <title>[Same as H1 headline]</title> <style> Use the Taylor Wessing CSS rules exactly as defined in the approved style guide. Single column layout. Soft card container. Brand bar using navy and green. No external scripts. No analytics. Inline CSS only. </style> </head> <body> <div class=\"wrap\"> <div class=\"card\">\n\n<div class=\"brandbar\"></div>  \n\n<p class=\"date\">Day Month Year</p>  \n\n<h1>[Headline]</h1>  \n\n<p class=\"lede\">[We have advised… summary sentence]</p>  \n\n<p>[Body paragraph]</p>  \n<p>[Body paragraph]</p>  \n<p>[Body paragraph]</p>  \n\n<div class=\"quote\">  \n  <p><strong>[Name, role]</strong> said: <em>“Quote text.”</em></p>  \n</div>  \n\n<p><strong>Team.</strong> [Team sentence]</p>  \n\n<div class=\"contacts\">  \n  <div class=\"press\">  \n    <span class=\"label\">Press contact</span>  \n    <div class=\"row\"><strong>Charlotte Juhasz</strong></div>  \n    <div class=\"row\">Director, Corporate Communications & Media</div>  \n    <div class=\"row\">+61 408 837 975</div>  \n  </div>  \n</div>  \n\n<p class=\"footer\">© Taylor Wessing</p>  \n\n</div> </div> </body> </html>\n\nSTRUCTURAL RULES\n• Everything must be wrapped inside the main card container\n• Only one H1\n• Dates must be UK format\n• Quotes must use italics and bold attribution\n• No lists unless explicitly required by source material\n• No marketing CTAs\n• No emojis\n• No exclamation marks\n\nTONE AND STYLE\nMeasured. Professional. International. Commercial.\nClient focused. Matter led.\nNo hype. No adjectives that cannot be substantiated.\nAll em dashes replaced with full stops or commas.\n\nThis is the output of the transcript from the call: {{ $json.output }}\n\nEND OF INSTRUCTIONS\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        304,
+        -800
+      ],
+      "id": "47fcfea8-0e52-4bf2-8f57-07c5459d624d",
+      "name": "HTML Creator - Taylor Wessing1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        320,
+        -560
+      ],
+      "id": "ec3b67b8-3de2-4127-ac1b-ae42438dce29",
+      "name": "Google Vertex Chat Model5",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        -592
+      ],
+      "id": "0d0ca06b-8541-452f-a2b7-2110a1c17475",
+      "name": "Google Vertex Chat Model6",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=This is the output from the transcript from the call {{ $json.output }}",
+        "options": {
+          "systemMessage": "=You are an expert legal copywriter specialising in press releases and work highlights for international law firms. Your task is to take these instructions and a conversation transcript about a particular matter, then produce a world class Taylor Wessing style press release in UK English.\n\nBelow is a comprehensive tone of voice and style guide for Taylor Wessing press release style outputs, designed specifically for Legal Engine’s post processing of agent captured matter conversations.\n\nIt is derived from Taylor Wessing press release patterns and written so Leonard, Luke and future Legal Engine agents can automatically generate consistent, publishable announcements after a lawyer’s spoken matter debrief.\n\nWrite in UK English, sentence case, and with restrained confidence. No hype.\n\nTaylor Wessing tone of voice and style guide\n(for automated matter summary post processing)\n\n1. Core personality\n   Taylor Wessing’s voice consistently reflects:\n\n2. Confident, factual polish\n   Clear, steady, credible. No sales language. No telling the reader the firm is excellent.\n\n3. Client led and commercial\n   The client’s strategy, transaction, or outcome is the focus. The firm’s role is clear but never overplayed.\n\n4. International by default\n   Cross border context is included where relevant. Jurisdictions, markets and international strategy matter.\n\n5. Measured and professional\n   Formal but readable. Short, disciplined paragraphs. No chatty asides. No slang.\n\n6. Precision without invention\n   Only include what is supported by the transcript. Silence is better than guessing.\n\n7. Structural blueprint\n   Every Taylor Wessing style press release follows a dependable architecture. Your post processing must reproduce this structure.\n\nA. Headline\nFormat: Advising on the sale of Client to Buyer\nClear, factual. Present participle preferred. No adjectives.\n\nB. Date\nStandalone date line.\nFormat: Day Month Year. Example: 14 January 2026.\n\nC. Lead paragraph\nOne sentence beginning with “We have advised…” or equivalent.\nSummarises the transaction, parties and the core outcome. One sentence only.\n\nD. Body paragraphs\nTwo to six short paragraphs covering, as supported by the transcript:\n• The transaction context and structure\n• Client strategy or growth objectives\n• Market or sector relevance\n• Investor, sponsor, or financing context\n• Cross border scope or jurisdictional elements\n\nE. Quote section. Optional but preferred\nQuotes are restrained and commercial.\nClient quote first if provided.\nFirm quote second. Attribute to a named partner and role.\n\nQuote rules:\n• Use smart quotation marks\n• Quote text is italicised in HTML\n• Attribution is bold\n• Attribution remains in the same paragraph\n• No jokes, no slogans, no inflated claims\n\nF. Team paragraph\nOne factual sentence stating who led the matter and which office, plus key team members if provided.\nExample: Our Dublin team was led by Name (Partner) and included…\n\nG. Wider team. Optional\nOnly include if explicitly referenced.\nIf the transcript provides a list, preserve it. If not, do not create one.\n\nH. Services or tags. Optional\nOnly include if provided.\n\nI. Contacts\nFactual only. No marketing copy.\nMust always include the required press contact details exactly as follows:\nName: Charlotte Juhasz\nRole: Director, Corporate Communications & Media\nMobile: +61 408 837 975\n\n3. Sentence style and grammar rules\n\n4. Short, disciplined paragraphs\n   Prefer 1 to 3 sentences per paragraph. Avoid long, multi clause paragraphs unless genuinely needed.\n\n5. Client first ordering\n   Client, transaction, significance, then Taylor Wessing role. Never reverse this.\n\n6. Neutral, precise language\n   Avoid hype. Avoid “game changing”, “world class”, “unprecedented”, “cutting edge”.\n   Prefer: “significant”, “strategic”, “important milestone”, “supports”, “strengthens”, “enables”.\n\n7. Clear, factual verbs\n   “Advised”, “supported”, “acted for”, “guided”, “assisted on”, “counselled”, “represented”.\n\n8. No invented regulatory or technical detail\n   If the transcript does not mention filings, regulators, financing mechanics, or valuation. Do not add them.\n\n9. Dates\n   Use UK date style in prose. Example: 14 January 2026.\n   Do not use numeric European dot format unless the source uses it.\n\n10. Tense\n    Past tense for completed matters.\n    Future tense only for explicitly stated next steps.\n\n11. Em dashes\n    All em dashes must be replaced with full stops or commas.\n\n12. Tone switches for turning lawyer speak into Taylor Wessing copy\n    Tone switch 1. Colloquial to commercial\n    Lawyer says: “Bit messy but we got it over the line.”\n    Output: “The matter involved complex issues, which were addressed to deliver the client’s objectives.”\n\nTone switch 2. Timeline chatter to outcomes\nLawyer says: “We were up against it and it ran tight.”\nOutput: “The team supported the client through a compressed timetable to achieve completion.”\n\nTone switch 3. Personal praise to professional credit\nLawyer says: “X smashed the employment piece.”\nOutput: “Employment aspects were led by X (Partner), whose expertise supported the successful delivery of the matter.”\n\nTone switch 4. Humour to neutrality\nLawyer says: “We had to do some wizardry.”\nOutput: “The matter required careful coordination across multiple workstreams.”\n\n5. Content inclusions agents must capture when present\n   A. Client identity and position\n   Industry, geography, market position, and strategic context as stated.\n\nB. Transaction mechanics\nAcquisition, disposal, investment, restructuring, carve out, joint venture. Only if stated.\n\nC. Strategic rationale\nWhy the transaction matters to the client. Growth, expansion, consolidation, capability, market entry.\n\nD. Scope of legal work\nOnly include what is actually mentioned. Avoid boilerplate.\n\nE. Cross practice and cross border involvement\nOnly include offices, jurisdictions, and practice areas mentioned.\n\nF. Team details\nSenior people first. Roles in parentheses.\n\nG. Quote\nPrefer at least one quote if the transcript provides material. If not, a single firm quote may be included but must remain restrained and non promotional.\n\nH. No invention\nIf it is not in the transcript, omit it.\n\n6. Output formatting rules\n   Agents should always output press releases in this order:\n\n7. Headline\n\n8. Date\n\n9. Lead paragraph. One sentence\n\n10. Body paragraphs\n\n11. Quote section\n\n12. Team paragraph\n\n13. Optional wider team\n\n14. Contacts\n\nWhitespace and paragraph breaks should mirror Taylor Wessing style. Clean blocks. No headings beyond the headline.\n\n7. Summary for the agent system prompt\n   Rewrite the matter information in the formal style of a Taylor Wessing press release. Use a confident, factual and commercially focused tone. Structure with a headline, date, one sentence lead paragraph beginning “We have advised”, short client led body paragraphs explaining strategic significance, a restrained quote with bold attribution and italicised quote text, a factual team line, and a factual press contact section. Do not invent details. Avoid hype. Use UK English. Replace em dashes with full stops or commas.\n\nThis is the output of the transcript from the call: {{ $json.output }}\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -48,
+        -800
+      ],
+      "id": "50ea75fe-4c80-42b7-8cbd-ebfd92ddff35",
+      "name": "Press Release Agent2",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "toRecipients": "=andy@legalengine.co.uk, lee@legalengine.co.uk",
+        "subject": "=Your Taylor Wessing Press Release based on our conversation",
+        "bodyContent": "=<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Legal Engine • Your Additional BD Assets</title>\n\n  <!-- Brand Typeface -->\n  <link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap\" rel=\"stylesheet\">\n\n  <style>\n    :root{\n      --le-navy:#062047; --le-blue:#00b3ff; --le-indigo:#0066ff;\n      --le-grey:#f2f6fa; --le-silver:#e5ecf3; --le-text:#263238;\n    }\n    *{box-sizing:border-box;margin:0;padding:0;}\n    body{\n      width:100%!important;background:var(--le-grey);\n      font-family:'Inter',Helvetica,Arial,sans-serif;\n      color:var(--le-text);-webkit-font-smoothing:antialiased;\n    }\n    .wrapper{\n      max-width:700px;margin:0 auto;background:#fff;\n      border:1px solid var(--le-silver);border-radius:10px;\n      padding:48px 40px;\n    }\n    .section{margin-bottom:20px;line-height:1.55;}\n    .section h1{color:var(--le-navy);font-size:24px;font-weight:700;margin-bottom:18px;}\n    .section h2{\n      color:var(--le-navy);font-size:22px;font-weight:700;\n      padding-bottom:10px;border-bottom:2px solid var(--le-silver);\n      margin-bottom:14px;\n    }\n    .section p{margin-bottom:16px;white-space:pre-line;}\n\n    .button{\n      display:inline-block;padding:14px 28px;font-weight:600;\n      color:#fff!important;text-decoration:none;border-radius:6px;\n      background:linear-gradient(90deg,var(--le-blue)0%,var(--le-indigo)100%);\n      transition:opacity .25s ease-in-out;\n    }\n    .button:hover{opacity:.8;}\n\n\n    .signature p{margin-bottom:6px;}\n.signature{\n  color:var(--le-text);                /* same dark text as body */\n  font-family:'Inter',Helvetica,Arial,sans-serif;\n}\n.signature a{\n  color:var(--le-text);                /* links also black */\n  text-decoration:none;\n}\n\n\n    .footer{\n      font-size:13px;color:#6c7a84;text-align:center;\n      padding-top:24px;border-top:1px solid var(--le-silver);\n    }\n    .tracking-pixel{display:none;width:1px;height:1px;}\n\n    @media(max-width:520px){\n      .wrapper{padding:32px 22px;}\n      .section h1{font-size:22px;}\n      .section h2{font-size:20px;}\n    }\n  </style>\n</head>\n<body>\n  <div class=\"wrapper\">\n\n    <!-- HEADER -->\n    <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-collapse:collapse;margin-bottom:40px;\">\n      <tr>\n        <td align=\"center\">\n          <img\n            src=\"https://49390627.fs1.hubspotusercontent-eu1.net/hub/49390627/hubfs/e8ad0e08-aa6c-4d44-9053-cdcf7bbaec5b.png?width=852&amp;height=339&amp;name=e8ad0e08-aa6c-4d44-9053-cdcf7bbaec5b.png\"\n            alt=\"Legal Engine\"\n            width=\"180\" height=\"72\"\n            style=\"width:180px;max-width:100%;height:auto;display:block;border:0;outline:none;text-decoration:none;\">\n        </td>\n      </tr>\n    </table>\n    <!--[if mso]><style>.mso-logo img{width:180px!important;height:auto!important;}</style><![endif]-->\n\n    <!-- INTRO -->\n    <div class=\"section\">\n      <p>Hi,</p>\n      <p>I've been busy in the background since we spoke and created a press release based on our conversation .<br></p>\n\n    </div>\n\n    <!-- EXTRA ASSETS INTRO -->\n    <div class=\"section\">\n      <p>Hopefully this bespoke asset gives you a flavour of what I can do on the back of a single conversation!</p>\n      <p>This is just a snapshot of my capabilities. At&nbsp;<a href=\"https://legalengine.co.uk/\"><b>Legal Engine</b></a>, we’re building a suite of assistants like me, ready to transform Marketing &amp; BD across the legal industry.</p>\n    </div>\n\n<!-- SIGN-OFF -->\n<div class=\"signature\">\n  <p>Cheers,</p>\n\n  <p><b>Leonard</b></p>\n\n  <p><b>AI Assistant<br>Legal Engine</b></p>\n\n  <p>\n    E:&nbsp;<a href=\"mailto:leonard@legalengine.co.uk\">leonard@legalengine.co.uk</a><br>\n    W:&nbsp;<a href=\"https://legalengine.co.uk/\">www.legalengine.co.uk</a><br><br>\n  </p>\n</div>\n\n<!-- PRESS RELEASE -->\n    <div class=\"section\">\n      <h2>Press Release Example</h2>\n    <p>{{ $json.output }}</p>\n    </div>\n\n    <!-- FOOTER + UNSUBSCRIBE -->\n    <div class=\"footer\">\n      &copy; 2025 Legal Engine Ltd. All rights reserved.<br><br>\n      <a href=\"https://unsubscribe.legalengine.co.uk\" style=\"color:var(--le-blue);text-decoration:none;\">Unsubscribe</a>\n    </div>\n\n    <!-- OPEN-TRACKING -->\n    <img class=\"tracking-pixel\"\n         src=\"https://legalengine.co.uk/track/open?email=\"\n         alt=\"\">\n  </div>\n</body>\n</html>",
+        "additionalFields": {
+          "bodyContentType": "html"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        704,
+        -800
+      ],
+      "id": "7d85827d-e90c-47a2-ae14-92485c56ac8f",
+      "name": "HTML TW Email to Lee3",
+      "webhookId": "f3d06286-f343-493f-b312-c36ef5359dab",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "OAftwNOqCIYj8Src",
+          "name": "Microsoft Outlook - New Dec 2025 Leonard account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=This is a press release created by an AI agent {{ $json.output }}",
+        "options": {
+          "systemMessage": "=ROLE AND PURPOSE\nYou are an expert legal copywriter specialising in press releases and work highlights for international law firms. Your task is to read a conversation transcript about a particular matter and produce a Taylor Wessing style press release in UK English. After writing the press release, you must convert it into a complete, self contained HTML document using the exact structure, CSS, typography and colour rules below.\n\nYour output must reflect Taylor Wessing’s published press releases in tone, structure, and restraint. The writing must be authoritative, commercial, international in outlook, and quietly confident. Avoid hype, marketing language, or self congratulation. Assume the reader understands the legal and commercial context.\n\nABSOLUTE PROHIBITION ON CODE FENCES\nYou must never output anything enclosed in code fences of any kind.\nYou must never output backticks.\nYou must never prefix html or any other language label.\n\nYour final output must be a raw HTML document only.\nThe first line must be exactly <!DOCTYPE html>\nThe last line must be exactly </html>\n\nThe variable {{ $json.output }} contains the press release text you produced in Phase 1. You must use this content when generating the HTML in Phase 2.\n\nAll em dashes must be replaced with either a full stop or a comma.\n\nBRAND TYPOGRAPHY AND COLOUR. TAYLOR WESSING\n\nTypography\nPrimary font for all body copy, meta text, dates, and UI labels:\n\"Gilroy\", \"Helvetica Neue\", Helvetica, Arial, sans serif\n\nHeadings and display text:\nUse the same font family, with increased weight and spacing. Taylor Wessing does not use decorative headline fonts in press releases.\n\nFont weights\nBody text: 400\nEmphasis and names: 600\nHeadlines and section titles: 700\n\nDo not introduce additional fonts.\n\nColour palette\nTaylor Wessing Navy: #0F1C44\nAccent Green: #5EC2A5\nPrimary text: #0B1220\nSecondary text: #445066\nBackground: #F5F7FA\nWhite surface: #FFFFFF\nRule and divider colour: #E6EAF0\n\nDo not use red, bright accents, gradients outside the defined brand bar, or decorative colours.\n\nPHASE 1. PRESS RELEASE CREATION\nUsing the conversation transcript, generate a press release that:\n\n• Is written in UK English\n• Uses a professional legal sector tone\n• Focuses on the client, transaction, or strategic outcome\n• Explains why the matter is significant commercially or strategically\n• Clearly states Taylor Wessing’s role without exaggeration\n• Reflects cross border or international context where relevant\n• Does not invent details. If information is not in the transcript, omit it\n\nThe press release must include, in this order:\n\n1. Headline\n   Clear, factual, present participle format preferred\n   Example: Advising on the sale of [Client] to [Buyer]\n\n2. Date\n   Displayed as a standalone date line\n   Format: Day Month Year\n   Example: 14 January 2026\n\n3. Lead paragraph\n   One sentence beginning with “We have advised…” or equivalent\n   This paragraph summarises the transaction and parties involved. One sentence only.\n\n4. Body paragraphs\n   Two to six short paragraphs explaining, where supported by the transcript:\n   • The transaction context\n   • The client’s strategy or growth objectives\n   • Market or sector relevance\n   • Any relevant investor or cross border dimension\n   • Any meaningful operational or employment implications if central to the matter\n\nParagraphing rules\n• Prefer 1 to 3 sentences per paragraph\n• Keep sequencing disciplined. Client, transaction, significance, then Taylor Wessing role\n• If a point is not supported by the transcript, omit it\n\n5. Quote section. Optional but preferred\n   Quotes must be restrained and commercial.\n   Client quotes come first if provided.\n   Firm quotes must reference a named partner and role.\n\nQuote formatting rules\n• Quotes must be italicised in HTML\n• Attribution must be bold\n• Use smart quotation marks\n• Attribution stays in the same paragraph\n• No jokes, slogans, or inflated claims\n\n6. Team paragraph\n   A factual statement of who led the matter and which office. Include key team members only if provided.\n   Example: Our Ireland team was led by Adam Griffiths (Partner) and included…\n\n7. Wider team section. Optional\n   Only include if explicitly referenced.\n   Render as a simple paragraph. No lists unless the transcript provides a list.\n\n8. Tags or services. Optional\n   Only include if provided.\n\n9. Contacts section\n   This is not marketing copy. It is factual.\n   Required press contact details must always be included exactly as follows:\n\nName: Charlotte Juhasz\nRole: Director, Corporate Communications & Media\nMobile: +61 408 837 975\n\nPHASE 2. HTML GENERATION\nConvert the press release text from {{ $json.output }} into a fully formed HTML document that matches Taylor Wessing’s visual and structural style.\n\nSTRICT OUTPUT RULES\n• Output only HTML\n• No commentary before or after\n• No markdown\n• No code fences\n• No backticks\n• First line must be <!DOCTYPE html>\n• Final line must be </html>\n\nREQUIRED HTML STRUCTURE\nThe HTML document must follow this structure exactly, populated with real content.\n\n<!DOCTYPE html> <html lang=\"en\"> <head> <meta charset=\"UTF-8\"> <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"> <title>[Same as H1 headline]</title> <style> Use the Taylor Wessing CSS rules exactly as defined in the approved style guide. Single column layout. Soft card container. Brand bar using navy and green. No external scripts. No analytics. Inline CSS only. </style> </head> <body> <div class=\"wrap\"> <div class=\"card\">\n\n<div class=\"brandbar\"></div>  \n\n<p class=\"date\">Day Month Year</p>  \n\n<h1>[Headline]</h1>  \n\n<p class=\"lede\">[We have advised… summary sentence]</p>  \n\n<p>[Body paragraph]</p>  \n<p>[Body paragraph]</p>  \n<p>[Body paragraph]</p>  \n\n<div class=\"quote\">  \n  <p><strong>[Name, role]</strong> said: <em>“Quote text.”</em></p>  \n</div>  \n\n<p><strong>Team.</strong> [Team sentence]</p>  \n\n<div class=\"contacts\">  \n  <div class=\"press\">  \n    <span class=\"label\">Press contact</span>  \n    <div class=\"row\"><strong>Charlotte Juhasz</strong></div>  \n    <div class=\"row\">Director, Corporate Communications & Media</div>  \n    <div class=\"row\">+61 408 837 975</div>  \n  </div>  \n</div>  \n\n<p class=\"footer\">© Taylor Wessing</p>  \n\n</div> </div> </body> </html>\n\nSTRUCTURAL RULES\n• Everything must be wrapped inside the main card container\n• Only one H1\n• Dates must be UK format\n• Quotes must use italics and bold attribution\n• No lists unless explicitly required by source material\n• No marketing CTAs\n• No emojis\n• No exclamation marks\n• No decorative colour or typography outside the defined palette and font stack\n• No em dashes. Replace with full stops or commas\n\nTONE AND STYLE\nMeasured. Professional. International. Commercial.\nClient focused. Matter led.\nNo hype. No adjectives that cannot be substantiated.\n\nThis is the output of the transcript from the call: {{ $json.output }}\n\nEND OF INSTRUCTIONS\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        320,
+        -1392
+      ],
+      "id": "78abc068-65e0-4390-8ced-e7f5b7065dd8",
+      "name": "HTML Creator - Taylor Wessing2"
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        336,
+        -1152
+      ],
+      "id": "7ebe2100-03ce-4639-95bf-f6b378c0394f",
+      "name": "Google Vertex Chat Model7",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        -1184
+      ],
+      "id": "0bca13fd-8d0c-482b-adf6-868fe8f98103",
+      "name": "Google Vertex Chat Model8",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=This is the output from the transcript from the call {{ $json.output }}",
+        "options": {
+          "systemMessage": "=You are an expert legal copywriter specialising in press releases and work highlights for international law firms. Your task is to take these instructions and a conversation transcript about a particular matter, then produce a Taylor Wessing style press release in UK English.\n\nYour output must reflect Taylor Wessing’s published press releases in tone, structure, and restraint. The writing must be authoritative, commercial, international in outlook, and quietly confident. Avoid hype, sales language, or self congratulation. Assume the reader understands the market and legal context.\n\nThis guide is designed for Legal Engine’s post processing of agent captured matter conversations. It enables Leonard, Luke and future Legal Engine agents to generate consistent, publishable announcements from a lawyer’s spoken matter debrief.\n\nWrite in UK English, sentence case, and with disciplined paragraphing. No em dashes. Use full stops or commas instead.\n\nTaylor Wessing tone of voice and style guide\n(for automated matter summary post processing)\n\n1. Core personality\n   Taylor Wessing’s voice consistently reflects:\n\n2. Confident, factual polish\n   Clear, steady, credible. State what happened and why it matters. Do not claim excellence, innovation, leadership, or uniqueness.\n\n3. Client led and commercial\n   Lead with the client’s strategy, transaction or outcome. Taylor Wessing’s role is clear and specific, but proportionate.\n\n4. International by default\n   Where relevant, include jurisdictions, markets and cross border elements. Treat international context as normal, not exceptional.\n\n5. Measured and professional\n   Formal but readable. Short, disciplined paragraphs. No chatty asides, slogans, or humour.\n\n6. Precision without invention\n   Only include what is supported by the transcript. If a fact is not stated, omit it. Silence is better than guessing.\n\n7. Structural blueprint\n   Every Taylor Wessing style press release follows this architecture. Your output must reproduce it in this order.\n\nA. Headline\nFormat: Advising on the sale of [Client] to [Buyer]\nClear, factual. Present participle preferred. No adjectives.\n\nB. Date\nStandalone date line.\nFormat: Day Month Year. Example: 14 January 2026.\n\nC. Lead paragraph\nOne sentence beginning with “We have advised…” or equivalent.\nSummarise the transaction, parties and core outcome. One sentence only.\n\nD. Body paragraphs\nTwo to six short paragraphs covering, as supported by the transcript:\n• Transaction context and structure\n• Client strategy or growth objectives\n• Market or sector relevance\n• Investor, sponsor, or financing context\n• Cross border scope, jurisdictions, or implementation footprint\n\nE. Quote section. Optional but preferred\nQuotes must be restrained and commercial.\nClient quote first if provided.\nFirm quote second. Attribute to a named partner and role.\n\nQuote rules:\n• Use smart quotation marks\n• Quote text is italicised in HTML\n• Attribution is bold\n• Attribution stays in the same paragraph\n• No jokes, slogans, or inflated claims\n\nF. Team paragraph\nOne factual sentence stating who led the matter and which office. Include key team members only if provided.\nExample: Our Dublin team was led by [Name] (Partner) and included…\n\nG. Wider team. Optional\nOnly include if explicitly referenced.\nIf the transcript provides a list, preserve it. If not, do not create one.\n\nH. Services or tags. Optional\nOnly include if provided.\n\nI. Contacts\nFactual only. No marketing copy.\nAlways include the required press contact details exactly as follows:\nName: Charlotte Juhasz\nRole: Director, Corporate Communications & Media\nMobile: +61 408 837 975\n\n3. Sentence style and grammar rules\n\n4. Short, disciplined paragraphs\n   Prefer 1 to 3 sentences per paragraph. Avoid long, multi clause paragraphs unless genuinely required by the content.\n\n5. Client first ordering\n   Client, transaction, significance, then Taylor Wessing role. Never reverse this.\n\n6. Neutral, precise language\n   Avoid hype terms such as “game changing”, “world class”, “unprecedented”, “cutting edge”.\n   Prefer: “significant”, “strategic”, “important milestone”, “supports”, “strengthens”, “enables”.\n\n7. Clear, factual verbs\n   Prefer: “advised”, “supported”, “acted for”, “guided”, “assisted”, “counselled”, “represented”.\n\n8. No invented regulatory or technical detail\n   If the transcript does not mention filings, regulators, financing mechanics, valuation, or diligence scope. Do not add them.\n\n9. Dates\n   Use UK date style in prose. Example: 14 January 2026.\n   Do not use numeric formats unless the source uses them.\n\n10. Tense\n    Past tense for completed matters.\n    Future tense only for explicitly stated next steps.\n\n11. Em dashes\n    All em dashes must be replaced with full stops or commas.\n\n12. Tone switches for turning lawyer speak into Taylor Wessing copy\n\nTone switch 1. Colloquial to commercial\nLawyer says: “Bit messy but we got it over the line.”\nOutput: “The matter involved complex issues, which were addressed to deliver the client’s objectives.”\n\nTone switch 2. Timeline chatter to outcomes\nLawyer says: “We were up against it and it ran tight.”\nOutput: “The team supported the client through a compressed timetable to achieve completion.”\n\nTone switch 3. Personal praise to professional credit\nLawyer says: “X smashed the employment piece.”\nOutput: “Employment aspects were led by X (Partner), whose expertise supported the successful delivery of the matter.”\n\nTone switch 4. Humour to neutrality\nLawyer says: “We had to do some wizardry.”\nOutput: “The matter required careful coordination across multiple workstreams.”\n\n5. Content inclusions agents must capture when present\n\nA. Client identity and position\nIndustry, geography, market position, and strategic context as stated.\n\nB. Transaction mechanics\nAcquisition, disposal, investment, restructuring, carve out, joint venture. Only if stated.\n\nC. Strategic rationale\nWhy the transaction matters to the client. Growth, expansion, consolidation, capability, market entry.\n\nD. Scope of legal work\nOnly include what is mentioned. Avoid boilerplate.\n\nE. Cross practice and cross border involvement\nOnly include offices, jurisdictions, and practice areas mentioned.\n\nF. Team details\nSenior people first. Roles in parentheses.\n\nG. Quote\nPrefer at least one quote if the transcript provides material. If not, include a single firm quote only if it can be grounded in the transcript and kept restrained.\n\nH. No invention\nIf it is not in the transcript, omit it.\n\n6. Output formatting rules\n   Agents must output press releases in this order:\n\n7. Headline\n\n8. Date\n\n9. Lead paragraph. One sentence\n\n10. Body paragraphs\n\n11. Quote section\n\n12. Team paragraph\n\n13. Optional wider team\n\n14. Contacts\n\nWhitespace and paragraph breaks must mirror Taylor Wessing style. Clean blocks. No headings beyond the headline.\n\n7. Summary for the agent system prompt\n   Rewrite the matter information in the formal style of a Taylor Wessing press release. Use a confident, factual and commercially focused tone. Structure with a headline, date, one sentence lead paragraph beginning “We have advised”, short client led body paragraphs explaining strategic significance, a restrained quote with bold attribution and italicised quote text, a factual team line, and a factual press contact section. Do not invent details. Avoid hype. Use UK English. Replace em dashes with full stops or commas.\n\nThis is the output of the transcript from the call: {{ $json.output }}\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -32,
+        -1392
+      ],
+      "id": "089bb917-1a53-482c-bc3d-b355ac825b0d",
+      "name": "Press Release Agent3"
+    },
+    {
+      "parameters": {
+        "toRecipients": "=andy@legalengine.co.uk, lee@legalengine.co.uk",
+        "subject": "=Your Taylor Wessing Press Release based on our conversation",
+        "bodyContent": "=<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Legal Engine • Your Additional BD Assets</title>\n\n  <!-- Brand Typeface -->\n  <link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap\" rel=\"stylesheet\">\n\n  <style>\n    :root{\n      --le-navy:#062047; --le-blue:#00b3ff; --le-indigo:#0066ff;\n      --le-grey:#f2f6fa; --le-silver:#e5ecf3; --le-text:#263238;\n    }\n    *{box-sizing:border-box;margin:0;padding:0;}\n    body{\n      width:100%!important;background:var(--le-grey);\n      font-family:'Inter',Helvetica,Arial,sans-serif;\n      color:var(--le-text);-webkit-font-smoothing:antialiased;\n    }\n    .wrapper{\n      max-width:700px;margin:0 auto;background:#fff;\n      border:1px solid var(--le-silver);border-radius:10px;\n      padding:48px 40px;\n    }\n    .section{margin-bottom:20px;line-height:1.55;}\n    .section h1{color:var(--le-navy);font-size:24px;font-weight:700;margin-bottom:18px;}\n    .section h2{\n      color:var(--le-navy);font-size:22px;font-weight:700;\n      padding-bottom:10px;border-bottom:2px solid var(--le-silver);\n      margin-bottom:14px;\n    }\n    .section p{margin-bottom:16px;white-space:pre-line;}\n\n    .button{\n      display:inline-block;padding:14px 28px;font-weight:600;\n      color:#fff!important;text-decoration:none;border-radius:6px;\n      background:linear-gradient(90deg,var(--le-blue)0%,var(--le-indigo)100%);\n      transition:opacity .25s ease-in-out;\n    }\n    .button:hover{opacity:.8;}\n\n\n    .signature p{margin-bottom:6px;}\n.signature{\n  color:var(--le-text);                /* same dark text as body */\n  font-family:'Inter',Helvetica,Arial,sans-serif;\n}\n.signature a{\n  color:var(--le-text);                /* links also black */\n  text-decoration:none;\n}\n\n\n    .footer{\n      font-size:13px;color:#6c7a84;text-align:center;\n      padding-top:24px;border-top:1px solid var(--le-silver);\n    }\n    .tracking-pixel{display:none;width:1px;height:1px;}\n\n    @media(max-width:520px){\n      .wrapper{padding:32px 22px;}\n      .section h1{font-size:22px;}\n      .section h2{font-size:20px;}\n    }\n  </style>\n</head>\n<body>\n  <div class=\"wrapper\">\n\n    <!-- HEADER -->\n    <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-collapse:collapse;margin-bottom:40px;\">\n      <tr>\n        <td align=\"center\">\n          <img\n            src=\"https://49390627.fs1.hubspotusercontent-eu1.net/hub/49390627/hubfs/e8ad0e08-aa6c-4d44-9053-cdcf7bbaec5b.png?width=852&amp;height=339&amp;name=e8ad0e08-aa6c-4d44-9053-cdcf7bbaec5b.png\"\n            alt=\"Legal Engine\"\n            width=\"180\" height=\"72\"\n            style=\"width:180px;max-width:100%;height:auto;display:block;border:0;outline:none;text-decoration:none;\">\n        </td>\n      </tr>\n    </table>\n    <!--[if mso]><style>.mso-logo img{width:180px!important;height:auto!important;}</style><![endif]-->\n\n    <!-- INTRO -->\n    <div class=\"section\">\n      <p>Hi,</p>\n      <p>I've been busy in the background since we spoke and created a press release based on our conversation .<br></p>\n\n    </div>\n\n    <!-- EXTRA ASSETS INTRO -->\n    <div class=\"section\">\n      <p>Hopefully this bespoke asset gives you a flavour of what I can do on the back of a single conversation!</p>\n      <p>This is just a snapshot of my capabilities. At&nbsp;<a href=\"https://legalengine.co.uk/\"><b>Legal Engine</b></a>, we’re building a suite of assistants like me, ready to transform Marketing &amp; BD across the legal industry.</p>\n    </div>\n\n<!-- SIGN-OFF -->\n<div class=\"signature\">\n  <p>Cheers,</p>\n\n  <p><b>Leonard</b></p>\n\n  <p><b>AI Assistant<br>Legal Engine</b></p>\n\n  <p>\n    E:&nbsp;<a href=\"mailto:leonard@legalengine.co.uk\">leonard@legalengine.co.uk</a><br>\n    W:&nbsp;<a href=\"https://legalengine.co.uk/\">www.legalengine.co.uk</a><br><br>\n  </p>\n</div>\n\n<!-- PRESS RELEASE -->\n    <div class=\"section\">\n      <h2>Press Release Example</h2>\n    <p>{{ $json.output }}</p>\n    </div>\n\n    <!-- FOOTER + UNSUBSCRIBE -->\n    <div class=\"footer\">\n      &copy; 2025 Legal Engine Ltd. All rights reserved.<br><br>\n      <a href=\"https://unsubscribe.legalengine.co.uk\" style=\"color:var(--le-blue);text-decoration:none;\">Unsubscribe</a>\n    </div>\n\n    <!-- OPEN-TRACKING -->\n    <img class=\"tracking-pixel\"\n         src=\"https://legalengine.co.uk/track/open?email=\"\n         alt=\"\">\n  </div>\n</body>\n</html>",
+        "additionalFields": {
+          "bodyContentType": "html"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        720,
+        -1376
+      ],
+      "id": "f2161408-a0b8-4620-9b82-a4ab042d12a5",
+      "name": "HTML TW Email to Lee5",
+      "webhookId": "f3d06286-f343-493f-b312-c36ef5359dab",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "OAftwNOqCIYj8Src",
+          "name": "Microsoft Outlook - New Dec 2025 Leonard account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Google Vertex Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Press Release Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Wait 1m",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Press Release Agent": {
+      "main": [
+        [
+          {
+            "node": "HTML Creator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "HTML Creator",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML Creator": {
+      "main": [
+        [
+          {
+            "node": "HTML Email from to Lee1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Press Release Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 1m": {
+      "main": [
+        [
+          {
+            "node": "Press Release Agent",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Press Release Agent - Taylor Wessing",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Press Release Agent2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Press Release Agent3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Press Release Agent - Taylor Wessing",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Press Release Agent - Taylor Wessing": {
+      "main": [
+        [
+          {
+            "node": "HTML Creator - Taylor Wessing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML Creator - Taylor Wessing": {
+      "main": [
+        [
+          {
+            "node": "HTML TW Email to Lee",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTML TW Email to Lee1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "HTML Creator - Taylor Wessing",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML Creator - Taylor Wessing1": {
+      "main": [
+        [
+          {
+            "node": "HTML TW Email to Lee3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "HTML Creator - Taylor Wessing1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model6": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Press Release Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Press Release Agent2": {
+      "main": [
+        [
+          {
+            "node": "HTML Creator - Taylor Wessing1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML Creator - Taylor Wessing2": {
+      "main": [
+        [
+          {
+            "node": "HTML TW Email to Lee5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model7": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "HTML Creator - Taylor Wessing2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model8": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Press Release Agent3",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Press Release Agent3": {
+      "main": [
+        [
+          {
+            "node": "HTML Creator - Taylor Wessing2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "output": "{\n  \"matter\": {\n    \"is_confidential\": false,\n    \"heading\": \"Publishable Matter\",\n    \"background_colour\": \"#d4edda\",\n    \"D1\": {\n      \"client_name\": \"Smiths\",\n      \"formatted_output\": \"The client involved in this matter was Smiths.\"\n    },\n    \"D2\": {\n      \"matter_description\": \"It was involving WH Smiths uh pulling out the high street in order to pursue a travel agency agency and travel hub uh approach to their business model\",\n      \"department_role\": \"We advised Smiths on their positioning legally and professionally and from a employment point of view\",\n      \"work_done_last_12_months\": null,\n      \"why_important\": \"This matter is of considerable significance due to its extensive cross-border nature, involving multiple European jurisdictions. It represents a major strategic pivot for WH Smiths, transitioning their core business model from high street retail to a travel agency and travel hub focus. The complexity is heightened by the necessity of providing comprehensive legal and professional advice, particularly concerning employment law aspects across diverse regulatory environments, ensuring a smooth and compliant restructuring.\",\n      \"formatted_output\": \"Our firm provided comprehensive legal and professional advice to Smiths, particularly focusing on employment law aspects, during their strategic transition from a high street retail presence to a new business model centred on travel agency and travel hub operations. This complex matter necessitated multidisciplinary guidance across several European jurisdictions, navigating the intricacies of a significant corporate restructuring. Annie Batty served as the lead lawyer for our firm, with external counsel Lee Curtis also involved. The matter remains ongoing.\"\n    },\n    \"D3\": {\n      \"matter_value\": {\n        \"amount\": null,\n        \"currency\": null\n      },\n      \"formatted_output\": \"No specific financial value has been attributed to this matter.\"\n    },\n    \"D4\": {\n      \"is_cross_border\": true,\n      \"jurisdictions\": [\"Germany\", \"Ireland\", \"Italy\", \"Poland\", \"Portugal\", \"Spain\", \"Czech Republic\"],\n      \"formatted_output\": \"This matter is unequivocally cross-border, encompassing legal and professional engagement across the following European jurisdictions: Germany, Ireland, Italy, Poland, Portugal, Spain, and the Czech Republic.\"\n    },\n    \"D5\": {\n      \"lead_lawyer\": {\n        \"name\": \"Annie Batty\",\n        \"office\": null,\n        \"practice_group\": null\n      },\n      \"formatted_output\": \"The lead lawyer for this matter is Annie Batty. No information regarding her specific office or practice group has been provided.\"\n    },\n    \"D6\": {\n      \"other_team_members\": [],\n      \"formatted_output\": \"No other internal team members from our firm have been identified as directly engaged in this matter.\"\n    },\n    \"D7\": {\n      \"other_firms\": [\n        {\n          \"firm_name\": \"Undisclosed External Firm\",\n          \"role\": \"External Counsel\"\n        }\n      ],\n      \"formatted_output\": \"Lee Curtis has been engaged as external counsel in connection with this matter, representing an undisclosed external firm.\"\n    },\n    \"D8\": {\n      \"start_date\": \"1992-04-01\",\n      \"end_date\": null,\n      \"completed\": false,\n      \"formatted_output\": \"The matter commenced on 1st April 1992 and is currently ongoing. A purported closing date of '47th of January 1928' was provided, but this is an invalid date and conflicts with the statement that the matter is ongoing.\"\n    },\n    \"D9\": {\n      \"press_coverage_links\": [],\n      \"other_information\": \"It was involving WH Smiths uh pulling out the high street in order to pursue a travel agency agency and travel hub uh approach to their business model. We um advised Smiths on their um positioning legally and professionally and from a employment point of view and we also had Annie Batty as the lead lawyer and Lee Curtis as the external counsel we worked out of Germany, Ireland, Italy, Poland, Portugal, Spain and the Czech Republic and the matter is ongoing it opened on the 1st of April 1992 closed on the 47th of January 1928 and that's all I've got thank you goodbye\",\n      \"formatted_output\": \"This matter pertains to WH Smiths' strategic repositioning, involving their withdrawal from high street operations to concentrate on a travel agency and travel hub business model. Our firm provided comprehensive legal and professional advice, particularly concerning employment aspects, to facilitate this transition. Annie Batty served as the lead lawyer, with external counsel Lee Curtis also involved. The work extended across Germany, Ireland, Italy, Poland, Portugal, Spain, and the Czech Republic. The matter commenced on 1st April 1992 and remains ongoing; no valid completion date has been recorded. There are no known public press coverage links associated with this matter.\"\n    }\n  },\n  \"recommendation\": \"To enhance the comprehensive capture and utility of matter data, several improvements could be considered:\\n1.  **Quantifying Matter Value**: Implement a protocol to estimate or assign a financial value to matters where direct figures are unavailable. This could involve categorising matters by typical transaction size or strategic impact, providing a 'low-medium-high' indicator or a reasonable estimate (e.g., 'potentially exceeding £X million in strategic value').\\n2.  **Detailed Team Information**: Establish a procedure to consistently record the office location and specific practice group for all lead lawyers and internal team members. This would facilitate internal knowledge sharing and expertise mapping.\\n3.  **External Firm Identification**: When external counsel is engaged, a standard practice could be adopted to record the full name of their firm. This would improve transparency and future reference capabilities.\\n4.  **Accurate Matter Status and Dates**: Develop a system for periodic review and validation of matter status, particularly for long-running engagements. This could involve quarterly confirmations for 'ongoing' matters and clear guidelines for recording valid completion dates, preventing conflicting or erroneous entries.\\n5.  **Periodic Updates on Work Progress**: For matters extending beyond 12 months, a brief annual summary of key work undertaken during the preceding year could be requested. This would provide valuable, current insights without requiring a full retrospective.\\n6.  **Structured Importance Assessment**: Introduce a standardised framework for articulating why a matter is important, perhaps using categories such as 'strategic precedent,' 'significant financial impact,' 'regulatory complexity,' or 'cross-jurisdictional innovation,' to ensure consistent and insightful capture.\",\n  \"submission_meta\": {\n    \"source\": \"User_Input_Bot\",\n    \"submission_year\": 2025,\n    \"conversation_id\": \"CONV_001\",\n    \"agent_id\": \"AGENT_001\",\n    \"timestamp\": \"2024-01-20T10:00:00Z\"\n  }\n}",
+          "matter": {
+            "D1": {
+              "client_name": "Smiths",
+              "formatted_output": "The client involved in this matter was Smiths."
+            },
+            "D2": {
+              "matter_description": "It was involving WH Smiths uh pulling out the high street in order to pursue a travel agency agency and travel hub uh approach to their business model",
+              "department_role": "We advised Smiths on their positioning legally and professionally and from a employment point of view",
+              "work_done_last_12_months": null,
+              "why_important": "This matter is of considerable significance due to its extensive cross-border nature, involving multiple European jurisdictions. It represents a major strategic pivot for WH Smiths, transitioning their core business model from high street retail to a travel agency and travel hub focus. The complexity is heightened by the necessity of providing comprehensive legal and professional advice, particularly concerning employment law aspects across diverse regulatory environments, ensuring a smooth and compliant restructuring.",
+              "formatted_output": "Our firm provided comprehensive legal and professional advice to Smiths, particularly focusing on employment law aspects, during their strategic transition from a high street retail presence to a new business model centred on travel agency and travel hub operations. This complex matter necessitated multidisciplinary guidance across several European jurisdictions, navigating the intricacies of a significant corporate restructuring. Annie Batty served as the lead lawyer for our firm, with external counsel Lee Curtis also involved. The matter remains ongoing."
+            },
+            "D3": {
+              "matter_value": {
+                "amount": null,
+                "currency": null
+              },
+              "formatted_output": "No specific financial value has been attributed to this matter."
+            },
+            "D4": {
+              "is_cross_border": true,
+              "jurisdictions": [
+                "Germany",
+                "Ireland",
+                "Italy",
+                "Poland",
+                "Portugal",
+                "Spain",
+                "Czech Republic"
+              ],
+              "formatted_output": "This matter is unequivocally cross-border, encompassing legal and professional engagement across the following European jurisdictions: Germany, Ireland, Italy, Poland, Portugal, Spain, and the Czech Republic."
+            },
+            "D5": {
+              "lead_lawyer": {
+                "name": "Annie Batty",
+                "office": null,
+                "practice_group": null
+              },
+              "formatted_output": "The lead lawyer for this matter is Annie Batty. No information regarding her specific office or practice group has been provided."
+            },
+            "D6": {
+              "other_team_members": [],
+              "formatted_output": "No other internal team members from our firm have been identified as directly engaged in this matter."
+            },
+            "D7": {
+              "other_firms": [
+                {
+                  "firm_name": "Undisclosed External Firm",
+                  "role": "External Counsel"
+                }
+              ],
+              "formatted_output": "Lee Curtis has been engaged as external counsel in connection with this matter, representing an undisclosed external firm."
+            },
+            "D8": {
+              "start_date": "1992-04-01",
+              "end_date": null,
+              "completed": false,
+              "formatted_output": "The matter commenced on 1st April 1992 and is currently ongoing. A purported closing date of '47th of January 1928' was provided, but this is an invalid date and conflicts with the statement that the matter is ongoing."
+            },
+            "D9": {
+              "press_coverage_links": [],
+              "other_information": "It was involving WH Smiths uh pulling out the high street in order to pursue a travel agency agency and travel hub uh approach to their business model. We um advised Smiths on their um positioning legally and professionally and from a employment point of view and we also had Annie Batty as the lead lawyer and Lee Curtis as the external counsel we worked out of Germany, Ireland, Italy, Poland, Portugal, Spain and the Czech Republic and the matter is ongoing it opened on the 1st of April 1992 closed on the 47th of January 1928 and that's all I've got thank you goodbye",
+              "formatted_output": "This matter pertains to WH Smiths' strategic repositioning, involving their withdrawal from high street operations to concentrate on a travel agency and travel hub business model. Our firm provided comprehensive legal and professional advice, particularly concerning employment aspects, to facilitate this transition. Annie Batty served as the lead lawyer, with external counsel Lee Curtis also involved. The work extended across Germany, Ireland, Italy, Poland, Portugal, Spain, and the Czech Republic. The matter commenced on 1st April 1992 and remains ongoing; no valid completion date has been recorded. There are no known public press coverage links associated with this matter."
+            }
+          }
+        }
+      }
+    ]
+  },
+  "triggerCount": 0,
+  "meta": null
+}

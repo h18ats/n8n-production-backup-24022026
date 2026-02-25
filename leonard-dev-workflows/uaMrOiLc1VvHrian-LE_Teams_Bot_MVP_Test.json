@@ -1,0 +1,182 @@
+{
+  "name": "LE Teams Bot - MVP Test",
+  "nodes": [
+    {
+      "parameters": {
+        "event": "newChannelMessage",
+        "team": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "channel": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        }
+      },
+      "id": "teams-trigger",
+      "name": "Teams Trigger",
+      "type": "n8n-nodes-base.microsoftTeamsTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "credentials": {
+        "microsoftTeamsOAuth2Api": {
+          "id": "",
+          "name": "Microsoft Teams OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "check-mention",
+              "leftValue": "={{ $json.body?.content }}",
+              "rightValue": "Leonard</at>",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "filter-mentions",
+      "name": "Filter @mentions",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"originalMessage\": {{ JSON.stringify($json.body?.content) }},\n  \"cleanedMessage\": {{ JSON.stringify($json.body?.content?.replace(/<at[^>]*>.*?<\\/at>/g, '').trim()) }},\n  \"sender\": {{ JSON.stringify($json.from?.user?.displayName) }},\n  \"senderId\": {{ JSON.stringify($json.from?.user?.id) }},\n  \"channelId\": {{ JSON.stringify($json.channelIdentity?.channelId) }},\n  \"teamId\": {{ JSON.stringify($json.channelIdentity?.teamId) }},\n  \"messageId\": {{ JSON.stringify($json.id) }},\n  \"timestamp\": {{ JSON.stringify($json.createdDateTime) }}\n}",
+        "options": {}
+      },
+      "id": "extract-details",
+      "name": "Extract Message Details",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "content": "=### Message Received!\n\n**From:** {{ $json.sender }}\n**Message:** {{ $json.cleanedMessage }}\n**Time:** {{ $json.timestamp }}\n\n---\n*This is a test response from the LE Teams Bot MVP.*",
+        "options": {}
+      },
+      "id": "format-response",
+      "name": "Format Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "channelMessage",
+        "operation": "create",
+        "teamId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Extract Message Details').item.json.teamId }}"
+        },
+        "channelId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Extract Message Details').item.json.channelId }}"
+        },
+        "contentType": "html",
+        "message": "={{ $json.content }}"
+      },
+      "id": "send-reply",
+      "name": "Send Reply to Teams",
+      "type": "n8n-nodes-base.microsoftTeams",
+      "typeVersion": 2,
+      "position": [
+        880,
+        0
+      ],
+      "credentials": {
+        "microsoftTeamsOAuth2Api": {
+          "id": "",
+          "name": "Microsoft Teams OAuth2 API"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Teams Trigger": {
+      "main": [
+        [
+          {
+            "node": "Filter @mentions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter @mentions": {
+      "main": [
+        [
+          {
+            "node": "Extract Message Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Message Details": {
+      "main": [
+        [
+          {
+            "node": "Format Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Response": {
+      "main": [
+        [
+          {
+            "node": "Send Reply to Teams",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 0,
+  "meta": null
+}

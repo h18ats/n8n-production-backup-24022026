@@ -1,0 +1,582 @@
+{
+  "name": "HSFK UC 3.2b - Referral Follow-up (Scheduled)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## HSFK UC 3.2b - Referral Follow-up (Scheduled Path)\n\n**Trigger:** Schedule - Monday and Thursday 08:00 UTC (`0 8 * * 1,4`)\n\n**Purpose:** Scan Airtable for referral follow-ups that are due or overdue. Post Slack reminders to assignees. Escalate referrals that have been open for 30+ days.\n\n**Flow:**\n1. Schedule trigger (Mon + Thu 08:00 UTC)\n2. Query `HSFK - Referral Follow-ups` for records where reminder_date <= today AND status = pending\n3. For each due follow-up: post Slack reminder to #hsfk-referrals\n4. Mark follow-up record as 'sent' in Airtable\n5. Query `HSFK - Referral Tracker` for open referrals older than 30 days\n6. For each escalation candidate: post escalation Slack message\n7. Audit log via shared-05\n\n**Companion workflow:** UC 3.2a handles new referral capture (webhook trigger).\n\n**Sub-workflow IDs:**\n- shared-05 (Airtable Audit): `zjwCkfCuH3GnW2qT`\n\n**Airtable base:** `app0QZAuhY8Zx4I54`\n- Referral Tracker: `tbl4J4x7MgiBCGQ4W`\n- Referral Follow-ups: `tblJvRUsuJdVFogJT`\n\n**Slack channel:** #hsfk-referrals",
+        "height": 520,
+        "width": 480,
+        "color": 4
+      },
+      "id": "sticky-note-docs",
+      "name": "Documentation",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -540,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 8 * * 1,4"
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger",
+      "name": "Schedule: Mon + Thu 08:00 UTC",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -80,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Initialise run: compute today's date for Airtable filter\nconst startTime = Date.now();\nconst now = new Date();\n// ISO date string YYYY-MM-DD for Airtable date comparisons\nconst todayIso = now.toISOString().split('T')[0];\n\n// 30 days ago for escalation detection\nconst thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);\nconst thirtyDaysAgoIso = thirtyDaysAgo.toISOString().split('T')[0];\n\nreturn {\n  json: {\n    start_time: startTime,\n    run_id: `uc32b-${startTime}`,\n    started_at: now.toISOString(),\n    today_iso: todayIso,\n    thirty_days_ago_iso: thirtyDaysAgoIso\n  }\n};"
+      },
+      "id": "init-run",
+      "name": "Initialise Run",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "app0QZAuhY8Zx4I54"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tblJvRUsuJdVFogJT"
+        },
+        "filterByFormula": "AND(IS_BEFORE({Reminder Date}, DATEADD(TODAY(), 1, 'days')), {Slack Notification Sent} = 0)",
+        "sort": [
+          {
+            "field": "Reminder Date",
+            "direction": "asc"
+          }
+        ],
+        "maxRecords": 50,
+        "fields": [
+          "Follow-up ID",
+          "Reminder Date",
+          "Reminder Type",
+          "Status at Time of Reminder",
+          "Notes",
+          "HSFK - Referral Tracker"
+        ],
+        "options": {}
+      },
+      "id": "query-due-followups",
+      "name": "Query Due Follow-ups",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        400,
+        240
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "AIRTABLE_TOKEN_CRED",
+          "name": "Airtable - Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "has-followups",
+              "leftValue": "={{ $input.all().length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-has-followups",
+      "name": "If Has Due Follow-ups",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        640,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build Slack reminder message for this follow-up\nconst followUp = $json;\n\nconst reminderDate = followUp['Reminder Date'] || 'Unknown date';\nconst notes = followUp['Notes'] || 'No details recorded';\nconst reminderType = followUp['Reminder Type'] || 'follow_up';\nconst followUpRecordId = followUp.id;\n\n// The linked referral record IDs (linked field)\nconst linkedReferralIds = followUp['HSFK - Referral Tracker'] || [];\nconst primaryReferralId = Array.isArray(linkedReferralIds) ? linkedReferralIds[0] : linkedReferralIds;\n\nconst slackText = `:bell: *Referral Follow-up Due*\\n\\n*Details:* ${notes}\\n*Due date:* ${reminderDate}\\n*Type:* ${reminderType}\\n*Referral ID:* ${primaryReferralId || 'Unknown'}\\n\\nPlease update the referral status or make the connection.`;\n\nreturn {\n  json: {\n    follow_up_record_id: followUpRecordId,\n    primary_referral_id: primaryReferralId,\n    reminder_date: reminderDate,\n    notes: notes,\n    reminder_type: reminderType,\n    slack_text: slackText\n  }\n};"
+      },
+      "id": "build-reminder-message",
+      "name": "Build Reminder Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://slack.com/api/chat.postMessage",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({ channel: 'hsfk-referrals', text: $json.slack_text, unfurl_links: false }) }}",
+        "options": {
+          "timeout": 10000,
+          "response": {
+            "response": {
+              "fullResponse": false,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "slack-post-reminder",
+      "name": "Slack: Post Reminder",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1120,
+        140
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "SLACK_BOT_CRED",
+          "name": "Slack Bot - Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "app0QZAuhY8Zx4I54"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tblJvRUsuJdVFogJT"
+        },
+        "id": "={{ $('Build Reminder Message').item.json.follow_up_record_id }}",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Slack Notification Sent": true,
+            "Workflow Execution ID": "={{ $('Initialise Run').item.json.run_id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Slack Notification Sent",
+              "displayName": "Slack Notification Sent",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Workflow Execution ID",
+              "displayName": "Workflow Execution ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "mark-followup-sent",
+      "name": "Mark Follow-up Sent",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1360,
+        140
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "AIRTABLE_TOKEN_CRED",
+          "name": "Airtable - Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "app0QZAuhY8Zx4I54"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tbl4J4x7MgiBCGQ4W"
+        },
+        "filterByFormula": "AND({Status} = 'open', IS_BEFORE({Captured Date}, DATEADD(TODAY(), -30, 'days')))",
+        "sort": [
+          {
+            "field": "Captured Date",
+            "direction": "asc"
+          }
+        ],
+        "maxRecords": 20,
+        "fields": [
+          "Referral ID",
+          "Captured Date",
+          "Referrer Name",
+          "Referred Person",
+          "Referred Person Organisation",
+          "Target Team or Person",
+          "Context",
+          "Urgency",
+          "Status",
+          "Assignee",
+          "Follow-up Date"
+        ],
+        "options": {}
+      },
+      "id": "query-stale-referrals",
+      "name": "Query Stale Referrals (30+ days)",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        880,
+        360
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "AIRTABLE_TOKEN_CRED",
+          "name": "Airtable - Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "has-stale",
+              "leftValue": "={{ $input.all().length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-has-stale-referrals",
+      "name": "If Has Stale Referrals",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build escalation Slack message for stale referrals (30+ days open)\nconst staleReferrals = $input.all();\n\nconst lines = staleReferrals.map(item => {\n  const r = item.json;\n  const capturedDate = r['Captured Date'] ? r['Captured Date'].split('T')[0] : 'Unknown';\n  const referredPerson = r['Referred Person'] || 'Unknown';\n  const referredOrg = r['Referred Person Organisation'] ? ` (${r['Referred Person Organisation']})` : '';\n  const targetTeam = r['Target Team or Person'] || 'Unknown';\n  const context = r['Context'] || 'No context';\n  const assignee = r['Assignee'] || 'Unassigned';\n  const urgency = r['Urgency'] || 'medium';\n\n  return `• *${referredPerson}${referredOrg}* → ${targetTeam} | Since: ${capturedDate} | Urgency: ${urgency} | Assignee: ${assignee} | Re: ${context}`;\n}).join('\\n');\n\nconst slackText = `:rotating_light: *Referral Escalation - ${staleReferrals.length} referral(s) open 30+ days*\\n\\n${lines}\\n\\nThese referrals require immediate attention. Please update status or close.`;\n\nreturn {\n  json: {\n    stale_count: staleReferrals.length,\n    slack_text: slackText,\n    stale_referrals: staleReferrals.map(i => i.json)\n  }\n};"
+      },
+      "id": "build-escalation-message",
+      "name": "Build Escalation Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1360,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://slack.com/api/chat.postMessage",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({ channel: 'hsfk-referrals', text: $json.slack_text, unfurl_links: false }) }}",
+        "options": {
+          "timeout": 10000,
+          "response": {
+            "response": {
+              "fullResponse": false,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "slack-post-escalation",
+      "name": "Slack: Post Escalation",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1600,
+        300
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "SLACK_BOT_CRED",
+          "name": "Slack Bot - Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Summarise run for audit log\nconst initData = $('Initialise Run').item.json;\nconst startTime = initData.start_time;\nconst now = Date.now();\n\n// Count reminders and escalations\n// These numbers are approximations since we can't easily join both branches here\nreturn {\n  json: {\n    completed_at: new Date().toISOString(),\n    duration_ms: now - startTime,\n    run_id: initData.run_id\n  }\n};"
+      },
+      "id": "summarise-run",
+      "name": "Summarise Run",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1840,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "zjwCkfCuH3GnW2qT"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "workflow_name": "HSFK UC 3.2b - Referral Follow-up",
+            "use_case_id": "3.2b",
+            "trigger_type": "schedule",
+            "input_summary": "Scheduled follow-up scan: Mon/Thu 08:00 UTC",
+            "output_summary": "Follow-up reminders and escalation alerts sent to Slack",
+            "status": "success",
+            "duration_ms": "={{ $json.duration_ms }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "audit-log",
+      "name": "Audit Log via Shared-05",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        2080,
+        240
+      ]
+    }
+  ],
+  "connections": {
+    "Schedule: Mon + Thu 08:00 UTC": {
+      "main": [
+        [
+          {
+            "node": "Initialise Run",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Initialise Run": {
+      "main": [
+        [
+          {
+            "node": "Query Due Follow-ups",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query Due Follow-ups": {
+      "main": [
+        [
+          {
+            "node": "If Has Due Follow-ups",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Has Due Follow-ups": {
+      "main": [
+        [
+          {
+            "node": "Build Reminder Message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Query Stale Referrals (30+ days)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Reminder Message": {
+      "main": [
+        [
+          {
+            "node": "Slack: Post Reminder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack: Post Reminder": {
+      "main": [
+        [
+          {
+            "node": "Mark Follow-up Sent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark Follow-up Sent": {
+      "main": [
+        [
+          {
+            "node": "Query Stale Referrals (30+ days)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query Stale Referrals (30+ days)": {
+      "main": [
+        [
+          {
+            "node": "If Has Stale Referrals",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Has Stale Referrals": {
+      "main": [
+        [
+          {
+            "node": "Build Escalation Message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Summarise Run",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Escalation Message": {
+      "main": [
+        [
+          {
+            "node": "Slack: Post Escalation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack: Post Escalation": {
+      "main": [
+        [
+          {
+            "node": "Summarise Run",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summarise Run": {
+      "main": [
+        [
+          {
+            "node": "Audit Log via Shared-05",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:Schedule: Mon + Thu 08:00 UTC": {
+      "recurrenceRules": []
+    }
+  },
+  "pinData": {},
+  "triggerCount": 1,
+  "meta": null
+}

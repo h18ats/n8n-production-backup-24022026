@@ -1,0 +1,311 @@
+{
+  "name": "HSFK - Shared 05 - Airtable Audit Log",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## HSFK - Shared 05 - Airtable Audit Log\n\n**Purpose:** Reusable sub-workflow. Log every HSFK workflow execution to Airtable for audit trail, debugging, and usage reporting. One row per execution.\n\n**Inputs (from calling workflow via Execute Workflow node):**\n- `workflow_name` (string) - e.g. `HSFK UC 1.5 - Market News Monitor`\n- `use_case_id` (string) - e.g. `1.5`, `shared-02`, `4.1`\n- `trigger_type` (string) - `schedule`, `webhook`, `manual`, `sub-workflow`\n- `input_summary` (string) - Brief description of what was passed in\n- `output_summary` (string) - Brief description of what was produced\n- `status` (string) - `success`, `error`, or `partial`\n- `duration_ms` (number) - Total execution duration in milliseconds\n- `error_message` (string, optional) - Error details if status is `error`\n\n**Output:**\n```json\n{\n  \"record_id\": \"recXXXXXXXXXXXXXX\",\n  \"logged_at\": \"ISO 8601 string\",\n  \"airtable_url\": \"string\"\n}\n```\n\n**Airtable setup required:**\n- Base: `HSFK Demos` (create if not exists)\n- Table: `Workflow Audit Log`\n- Fields: Workflow Name, Use Case ID, Trigger Type, Input Summary, Output Summary, Status, Duration (ms), Error Message, Logged At, Execution Date\n\n**Credential required:** `Airtable Token API`\n\n**Used by:** All HSFK use case workflows (every workflow should call this at the end)\n\n**n8n instance:** leonard-dev.app.n8n.cloud",
+        "height": 560,
+        "width": 460,
+        "color": 3
+      },
+      "id": "sticky-note-docs",
+      "name": "Documentation",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -500,
+        -180
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Setup: Airtable Base & Table\n\n1. Create Airtable base: **HSFK Demos**\n2. Create table: **Workflow Audit Log**\n3. Add these fields:\n   - `Workflow Name` (Single line text)\n   - `Use Case ID` (Single line text)\n   - `Trigger Type` (Single select: schedule, webhook, manual, sub-workflow)\n   - `Execution Date` (Date, include time)\n   - `Status` (Single select: success, error, partial)\n   - `Duration (ms)` (Number, integer)\n   - `Input Summary` (Long text)\n   - `Output Summary` (Long text)\n   - `Error Message` (Long text)\n   - `Logged At` (Single line text - ISO 8601)\n4. Copy the Base ID and Table ID into the Airtable node below\n5. Update the `HSFK_AIRTABLE_BASE_ID` in the Set Config node",
+        "height": 380,
+        "width": 380,
+        "color": 4
+      },
+      "id": "sticky-note-setup",
+      "name": "Setup Instructions",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -500,
+        420
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "trigger-execute-workflow",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Format the audit log record with ISO 8601 timestamp\n// and validate/default all required fields\n\nconst now = new Date();\nconst isoTimestamp = now.toISOString();\n// Airtable date field expects ISO 8601 with time\nconst executionDate = isoTimestamp;\n\nconst workflowName = String($json.workflow_name || 'Unknown Workflow').trim();\nconst useCaseId = String($json.use_case_id || 'unknown').trim();\nconst triggerType = String($json.trigger_type || 'unknown').trim();\nconst inputSummary = String($json.input_summary || '').trim().substring(0, 2000);\nconst outputSummary = String($json.output_summary || '').trim().substring(0, 2000);\nconst status = ['success', 'error', 'partial'].includes($json.status) ? $json.status : 'unknown';\nconst durationMs = parseInt($json.duration_ms) || 0;\nconst errorMessage = String($json.error_message || '').trim().substring(0, 2000);\n\n// Build the Airtable record fields object\nconst airtableFields = {\n  'Workflow Name': workflowName,\n  'Use Case ID': useCaseId,\n  'Trigger Type': triggerType,\n  'Execution Date': executionDate,\n  'Status': status,\n  'Duration (ms)': durationMs,\n  'Input Summary': inputSummary,\n  'Output Summary': outputSummary,\n  'Logged At': isoTimestamp\n};\n\n// Only include error message if there is one\nif (errorMessage) {\n  airtableFields['Error Message'] = errorMessage;\n}\n\nreturn {\n  json: {\n    airtable_fields: airtableFields,\n    meta: {\n      workflow_name: workflowName,\n      use_case_id: useCaseId,\n      status: status,\n      logged_at: isoTimestamp\n    }\n  }\n};"
+      },
+      "id": "format-audit-record",
+      "name": "Format Audit Record",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "app0QZAuhY8Zx4I54"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "name",
+          "value": "Workflow Audit Log"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Workflow Name": "={{ $json.airtable_fields['Workflow Name'] }}",
+            "Use Case ID": "={{ $json.airtable_fields['Use Case ID'] }}",
+            "Trigger Type": "={{ $json.airtable_fields['Trigger Type'] }}",
+            "Execution Date": "={{ $json.airtable_fields['Execution Date'] }}",
+            "Status": "={{ $json.airtable_fields['Status'] }}",
+            "Duration (ms)": "={{ $json.airtable_fields['Duration (ms)'] }}",
+            "Input Summary": "={{ $json.airtable_fields['Input Summary'] }}",
+            "Output Summary": "={{ $json.airtable_fields['Output Summary'] }}",
+            "Error Message": "={{ $json.airtable_fields['Error Message'] || '' }}",
+            "Logged At": "={{ $json.airtable_fields['Logged At'] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Workflow Name",
+              "displayName": "Workflow Name",
+              "required": true,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Use Case ID",
+              "displayName": "Use Case ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Trigger Type",
+              "displayName": "Trigger Type",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "schedule",
+                  "value": "schedule"
+                },
+                {
+                  "name": "webhook",
+                  "value": "webhook"
+                },
+                {
+                  "name": "manual",
+                  "value": "manual"
+                },
+                {
+                  "name": "sub-workflow",
+                  "value": "sub-workflow"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Execution Date",
+              "displayName": "Execution Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "success",
+                  "value": "success"
+                },
+                {
+                  "name": "error",
+                  "value": "error"
+                },
+                {
+                  "name": "partial",
+                  "value": "partial"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Duration (ms)",
+              "displayName": "Duration (ms)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Input Summary",
+              "displayName": "Input Summary",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Output Summary",
+              "displayName": "Output Summary",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Error Message",
+              "displayName": "Error Message",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Logged At",
+              "displayName": "Logged At",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "airtable-create-record",
+      "name": "Create Airtable Audit Record",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        400,
+        240
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "AIRTABLE_TOKEN_CRED",
+          "name": "Airtable - Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Return the record ID and confirmation for the calling workflow\nconst airtableResponse = $json;\nconst meta = $('Format Audit Record').first().json.meta;\n\n// Airtable create returns { id: 'recXXX', fields: {...}, createdTime: '...' }\nconst recordId = airtableResponse.id || airtableResponse.fields?.id || 'unknown';\nconst loggedAt = meta.logged_at;\n\n// Build the Airtable record URL (for reference in Slack messages etc.)\n// Base ID is embedded in the node above - use a placeholder here\nconst airtableUrl = `https://airtable.com/HSFK_AIRTABLE_BASE_ID/${recordId}`;\n\nreturn {\n  json: {\n    record_id: recordId,\n    logged_at: loggedAt,\n    airtable_url: airtableUrl,\n    workflow_name: meta.workflow_name,\n    use_case_id: meta.use_case_id,\n    status: meta.status,\n    log_status: 'logged'\n  }\n};"
+      },
+      "id": "return-record-id",
+      "name": "Return Record ID",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        640,
+        240
+      ]
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Format Audit Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Audit Record": {
+      "main": [
+        [
+          {
+            "node": "Create Airtable Audit Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Airtable Audit Record": {
+      "main": [
+        [
+          {
+            "node": "Return Record ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 0,
+  "meta": null
+}

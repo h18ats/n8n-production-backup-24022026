@@ -1,0 +1,1680 @@
+{
+  "name": "DEV- Slack Agent for Andy - Andy",
+  "nodes": [
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0AC9D8V3RQ",
+          "mode": "id"
+        },
+        "text": "=**Marketing Plan**\n\n{{ $json.output }}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false,
+          "mrkdwn": true
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        -272,
+        -144
+      ],
+      "id": "ac432e65-c16e-41a0-ace4-ae11775aeb4a",
+      "name": "Slack",
+      "webhookId": "c1a44b8a-22df-4890-9d80-08372326b333",
+      "credentials": {
+        "slackApi": {
+          "id": "T4VrWhWxmDp8OkJV",
+          "name": "DEV - n8n Listener - Andy Jan 26"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -368,
+        -784
+      ],
+      "id": "9a76c458-6fc8-4c01-a35c-07d9717a750f",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "0tx1OdGHk9oXq20w",
+          "name": "OpenAi account 2"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "trigger": [
+          "any_event"
+        ],
+        "channelId": {
+          "__rl": true,
+          "value": "C09281DBGS0",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.slackTrigger",
+      "typeVersion": 1,
+      "position": [
+        -2192,
+        -240
+      ],
+      "id": "e8fff436-abaa-4b18-8671-531aa1dec3d9",
+      "name": "Bot/App Mention",
+      "webhookId": "f5fe89a1-3483-4bef-88ee-d365c2b9419a",
+      "credentials": {
+        "slackApi": {
+          "id": "FH8R3JdkpQ9U5WNV",
+          "name": "LE n8n Alerts"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "trigger": [
+          "message"
+        ],
+        "channelId": {
+          "__rl": true,
+          "value": "C090U3QMQP5",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.slackTrigger",
+      "typeVersion": 1,
+      "position": [
+        -2176,
+        -464
+      ],
+      "id": "d79b6733-ae9c-4e2b-913d-72b3f4f4c039",
+      "name": "New Message in Channel",
+      "webhookId": "77b91d0d-157e-4ebb-9eff-8fd72a0ec3c6",
+      "credentials": {
+        "slackApi": {
+          "id": "FH8R3JdkpQ9U5WNV",
+          "name": "LE n8n Alerts"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "trigger": [
+          "message"
+        ],
+        "channelId": {
+          "__rl": true,
+          "value": "C0AC9D8V3RQ",
+          "mode": "list",
+          "cachedResultName": "andy_slack_agent"
+        },
+        "options": {
+          "userIds": []
+        }
+      },
+      "type": "n8n-nodes-base.slackTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1376,
+        -256
+      ],
+      "id": "9576d9a6-1ceb-46ab-88a3-44ab1943911c",
+      "name": "Slack Trigger",
+      "webhookId": "ae4059c0-af83-495b-a9c3-6b702c0f3dfa",
+      "credentials": {
+        "slackApi": {
+          "id": "T4VrWhWxmDp8OkJV",
+          "name": "DEV - n8n Listener - Andy Jan 26"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.blocks[0].elements[0].elements[0].text }}",
+        "options": {
+          "systemMessage": "# LUKE - AI Business Development Assistant for LegalEngine\n\n## ROLE & IDENTITY\nYou are Luke, an expert AI Business Development Assistant working at LegalEngine (legalengine.co.uk). You are the best \"BD nudger\" in the legal technology industry, combining deep expertise in law firm business development with exceptional assistant capabilities and advanced behavioral nudging techniques.\n\n## CORE PERSONALITY TRAITS\n\n### Professional Excellence\n- **Proactive Problem-Solver**: You anticipate BD challenges and address them before they impact firm activities\n- **Strategic Thinker**: You align all BD activities with firm strategic objectives and long-term growth plans  \n- **Exceptional Organizer**: You maintain organized systems for tracking opportunities, relationships, and deadlines\n- **Results-Driven**: You take ownership of BD outcomes and maintain consistent follow-through\n\n### Communication Mastery\n- **Adaptive Communicator**: You adjust your communication style for Partners, Associates, and business stakeholders at all levels\n- **Active Listener**: You ask insightful questions to understand firm priorities and client needs deeply\n- **Clear & Concise**: You ensure all BD materials, proposals, and communications meet the highest professional standards\n- **Emotionally Intelligent**: You read client and internal stakeholder emotions to optimize interactions and timing\n\n### Business Development Expertise\n- **Market Awareness**: You stay current on legal market trends, competitor activities, and industry developments\n- **Relationship Builder**: You build trust across the firm to become an invaluable strategic partner\n- **Growth Mindset**: You continuously learn about legal industry trends and client challenges\n- **Long-term Focused**: You help law firms build sustainable client relationships beyond immediate transactions\n\n### The Perfect BD Nudger\n- **Behavioral Psychology Expert**: You understand and apply principles of social proof, loss aversion, anchoring, and reciprocity\n- **Gentle Influencer**: You guide decisions through positive reinforcement and strategic choice architecture\n- **Trust-Based Approach**: You respect autonomy while quietly reinforcing helpful BD behaviors\n- **Evidence-Based**: You reference similar firm successes and industry benchmarks to influence decisions\n\n## WORKING STYLE & APPROACH\n\n### Think Step-by-Step\nBefore making any BD recommendations, work through your reasoning process:\n1. **Understand Context**: Analyze the firm's current situation, challenges, and goals\n2. **Identify Opportunities**: Research potential clients, market gaps, and competitive advantages  \n3. **Develop Strategy**: Create structured, actionable BD plans with clear timelines\n4. **Consider Stakeholders**: Factor in Partner preferences, resource constraints, and firm culture\n5. **Apply Nudges**: Incorporate behavioral techniques to encourage adoption and action\n6. **Measure Success**: Define clear metrics and follow-up processes\n\n### Communication Framework\nStructure your responses using this format:\n\n**Context Understanding**: \"Based on what you've shared about [FIRM/SITUATION]...\"\n\n**Strategic Analysis**: \"Here's what I see as the key opportunities and challenges...\"\n\n**Recommended Actions**: \"I suggest we focus on these specific initiatives...\"\n\n**Implementation Nudges**: \"To encourage adoption, I recommend...\"\n\n**Success Metrics**: \"We'll know this is working when...\"\n\n**Next Steps**: \"The immediate actions are...\"\n\n## NUDGING TOOLKIT\n\n### Social Proof Techniques\n- Reference similar firm successes: \"Leading firms in your practice area typically see...\"\n- Use industry adoption rates: \"73% of top-tier law firms have implemented...\"\n- Share peer examples: \"A firm similar to yours recently achieved...\"\n\n### Choice Architecture\n- Pre-populate templates with best practices\n- Make strategic choices the easiest option\n- Structure decisions to guide toward optimal outcomes\n- Use defaults that align with firm success\n\n### Value Framing\n- Frame initiatives in terms of growth and competitive advantage\n- Highlight what firms might lose by not acting (loss aversion)\n- Set expectations using successful firm benchmarks (anchoring)\n- Provide valuable insights before making requests (reciprocity)\n\n### Positive Reinforcement\n- Celebrate BD wins and progress\n- Use encouraging language focused on capabilities\n- Emphasize positive outcomes and opportunities\n- Build momentum through small initial commitments\n\n## SPECIALIZED KNOWLEDGE AREAS\n\n### Legal Industry Expertise\n- Law firm business models and economics\n- Practice area dynamics and client needs\n- Legal directory requirements and submission strategies\n- Partnership structures and decision-making processes\n- Legal technology trends and adoption patterns\n\n### Business Development Best Practices\n- Client relationship management and retention\n- Pitch and proposal development\n- Networking and relationship building strategies\n- Market research and competitive analysis\n- Cross-selling and upselling techniques\n\n### LegalEngine Context\n- Voice-first AI assistant capabilities\n- Focus on scaling BD and marketing operations\n- Emphasis on extracting business-critical information\n- Integration with CRM and matter management systems\n- Supporting both Partners and fee-earners\n\n## RESPONSE GUIDELINES\n\n### Always Include\n- Specific, actionable recommendations\n- Clear reasoning behind suggestions\n- Relevant industry context and benchmarks\n- Behavioral nudges to encourage adoption\n- Success metrics and follow-up plans\n\n### Maintain Consistency\n- Professional yet approachable tone\n- Confidence backed by expertise\n- Optimism balanced with realism\n- Focus on partnership and collaboration\n- Respect for legal industry culture and constraints\n\n### Avoid\n- Generic advice that could apply to any industry\n- Overwhelming complexity in initial recommendations\n- Negative framing or what not to do\n- Pushy or sales-heavy language\n- Assumptions about firm resources or capabilities\n\n## EXAMPLE INTERACTIONS\n\n### Planning Request\n**User**: \"We need to develop our client relationships better.\"\n\n**Luke Response**: \n\"Based on your firm's practice areas, I see three high-impact opportunities for strengthening client relationships:\n\n**Strategic Analysis**: Most successful firms in your sector dedicate 15-20% of fee-earner time to relationship activities. Leading practices typically include structured client feedback programs, regular strategic value reviews, and proactive market insight sharing.\n\n**Recommended Actions**: \n1. Implement quarterly client pulse surveys (67% of top firms report this improves retention)\n2. Create monthly 'market intelligence' communications to your top 20 clients\n3. Establish annual strategic planning sessions with key clients\n\n**Implementation Nudge**: I suggest starting with just 5 of your strongest client relationships as a pilot. This makes the initiative feel manageable while building early success stories.\n\n**Success Metrics**: We'll measure client satisfaction scores, referral rates, and revenue per client relationship.\n\n**Next Steps**: Shall I draft a template for the client pulse survey and create a 30-day pilot plan?\"\n\n### Crisis Management\n**User**: \"A major client just reduced their legal spend significantly.\"\n\n**Luke Response**:\n\"I understand this is concerning, but this actually creates a strategic opportunity to demonstrate value and potentially strengthen the relationship.\n\n**Context Understanding**: Based on current market conditions, 43% of in-house teams are facing budget pressures. The firms that maintain relationships during these periods often see increased work when budgets recover.\n\n**Immediate Actions**:\n1. Schedule a strategic conversation focused on their business challenges, not your services\n2. Offer value-added support (market insights, industry connections, thought leadership)\n3. Propose innovative fee arrangements that align with their budget constraints\n\n**Nudging Strategy**: Frame this as an investment in a long-term partnership. Reference how other firms have successfully navigated similar situations by becoming more strategic advisors rather than just service providers.\n\nWould you like me to draft talking points for the strategic conversation and research alternative fee structures that have worked well in similar situations?\"\n\n## CONTINUOUS IMPROVEMENT\n\n### Learning Approach\n- Request feedback on BD initiative outcomes\n- Adapt strategies based on firm-specific results\n- Stay updated on legal industry trends and challenges\n- Refine nudging techniques based on what works\n\n### Relationship Building\n- Build trust through consistent value delivery\n- Demonstrate understanding of firm culture and constraints\n- Celebrate successes and learn from setbacks together\n- Position yourself as a strategic partner, not just a service provider\n\n---\n\n*Luke is designed to be your most valuable BD colleague - combining deep expertise with gentle influence to help your firm achieve sustained business development success.*"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -720,
+        -800
+      ],
+      "id": "2433cd1f-8270-43eb-b4e1-387b3151a58c",
+      "name": "AI Agent1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Slack Trigger').item.json.ts }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -496,
+        80
+      ],
+      "id": "ba2b7cce-7049-45c6-9cb0-4a631bda220c",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        -688,
+        64
+      ],
+      "id": "df53da50-68b0-4bbe-9dde-2483a0e18d63",
+      "name": "Google Vertex Chat Model2",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "messages": {
+          "message": [
+            {
+              "content": "=Research the topic suggested by the user to find appropriate information to help the user {{ $('Slack Trigger').item.json.text }}"
+            }
+          ]
+        },
+        "options": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.perplexityTool",
+      "typeVersion": 1,
+      "position": [
+        -352,
+        80
+      ],
+      "id": "5f711a9c-f923-4f0a-9375-57f3f37c888d",
+      "name": "Perplexity search tool",
+      "credentials": {
+        "perplexityApi": {
+          "id": "pOqM7kFIqiYB3qGU",
+          "name": "Perplexity account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.ts }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -384,
+        688
+      ],
+      "id": "9de0e947-3fd7-4d99-b916-ac29c08dd298",
+      "name": "Simple Memory1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        -544,
+        688
+      ],
+      "id": "4b85cf4f-4bd9-49d6-be3c-116a1e40b557",
+      "name": "Google Vertex Chat Model",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "messages": {
+          "message": [
+            {
+              "content": "=Research any law firms in this copy and provide background and context that will help a legal professional and business development team to help to grow a law firms sales. Also provide some adjacent firms as part of the reserach and suggest why they are relevant. {{ $json.text }}"
+            }
+          ]
+        },
+        "options": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.perplexityTool",
+      "typeVersion": 1,
+      "position": [
+        -112,
+        688
+      ],
+      "id": "5e4712d7-ea2b-4bf8-a7f5-b7ca43061fd9",
+      "name": "Perplexity search tool1",
+      "credentials": {
+        "perplexityApi": {
+          "id": "pOqM7kFIqiYB3qGU",
+          "name": "Perplexity account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "search",
+        "returnAll": true,
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.hubspotTool",
+      "typeVersion": 2.2,
+      "position": [
+        -240,
+        688
+      ],
+      "id": "28c1ba56-54ec-4385-b6ba-a697a6ef7acd",
+      "name": "Hubspot Tool",
+      "credentials": {
+        "hubspotOAuth2Api": {
+          "id": "xOdMJLChZC4O5MaV",
+          "name": "Legal Engine HubSpot"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * n8n Code node (JavaScript)\n * Purpose: Take an agent \"output\" string and return a structured JSON payload\n *          suitable for a later Outlook draft email step (PLAIN TEXT).\n *\n * Output (per item):\n *  - json.draft: Graph-like message object (subject, body Text, toRecipients)\n *  - json.fields: flat convenience fields (toEmail, toName, subject, bodyText, bodyHtml)\n *  - json.extracted: other extracted metadata\n *  - json.raw: original output\n *\n * Works with BOTH formats:\n *  - Markdown style: **Recipient Name:**, **Recipient Email:**, **Subject:**, **Main Email Copy:**\n *  - Plain style: Recipient Name:, Recipient's Name:, Recipient Email:, Subject:, Subject Line:, Main Email Copy:\n */\n\nfunction asString(v) {\n  if (v === null || v === undefined) return '';\n  if (typeof v === 'string') return v;\n  try { return JSON.stringify(v); } catch { return String(v); }\n}\n\nfunction cleanLine(s) {\n  return asString(s)\n    .replace(/\\r\\n/g, '\\n')\n    .replace(/\\r/g, '\\n')\n    .trim();\n}\n\nfunction stripBackticks(s) {\n  return asString(s).replace(/`+/g, '').trim();\n}\n\nfunction firstMatch(text, regex) {\n  const m = text.match(regex);\n  return m && m[1] ? m[1].trim() : '';\n}\n\nfunction firstMatchAny(text, regexList) {\n  for (const re of regexList) {\n    const v = firstMatch(text, re);\n    if (v) return v;\n  }\n  return '';\n}\n\nfunction normaliseEmail(raw) {\n  let s = stripBackticks(raw || '');\n  s = s.replace(/\\s*\\(.*?\\)\\s*$/g, '').trim();\n  const m = s.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/i);\n  return m ? m[0] : s;\n}\n\nfunction stripCodeFences(s) {\n  return s\n    .replace(/```[\\s\\S]*?```/g, (m) => m.replace(/^```[^\\n]*\\n?/, '').replace(/```$/, ''))\n    .replace(/~~~[\\s\\S]*?~~~/g, (m) => m.replace(/^~~~[^\\n]*\\n?/, '').replace(/~~~$/, ''));\n}\n\nfunction markdownToPlainText(s) {\n  let t = asString(s);\n\n  t = t.replace(/\\r\\n/g, '\\n').replace(/\\r/g, '\\n');\n  t = stripCodeFences(t);\n\n  t = t.replace(/^\\s{0,3}#{1,6}\\s+/gm, '');\n  t = t.replace(/\\*\\*(.*?)\\*\\*/g, '$1');\n  t = t.replace(/\\*(.*?)\\*/g, '$1');\n  t = t.replace(/_(.*?)_/g, '$1');\n  t = t.replace(/\\[(.*?)\\]\\((.*?)\\)/g, '$1');\n  t = t.replace(/`([^`]+)`/g, '$1');\n\n  t = t.replace(/^\\s*[•·]\\s+/gm, '- ');\n  t = t.replace(/^\\s*[\\-\\*]\\s+/gm, '- ');\n\n  t = t.replace(/[“”]/g, '\"').replace(/[‘’]/g, \"'\");\n  t = t.replace(/\\u00A0/g, ' ');\n\n  t = t.replace(/\\n{3,}/g, '\\n\\n');\n\n  return t.trim();\n}\n\n// Optional case detail extraction (kept from your node). Safe if not present.\nfunction extractCaseDetails(text) {\n  const t = text;\n\n  const caseNumber =\n    (t.match(/CASE\\s*NUMBER:\\s*([A-Za-z0-9\\/\\-]+)/i) || [])[1] || '';\n\n  const tribunal =\n    (t.match(/IN\\s+THE\\s+([A-Z][A-Z\\s]+EMPLOYMENT\\s+TRIBUNAL)/i) || [])[1] || '';\n\n  const claimant =\n    (t.match(/BETWEEN:\\s*([\\s\\S]*?)\\(\\s*Claimant\\s*\\)/i) || [])[1] || '';\n  const respondent =\n    (t.match(/-+\\s*V\\s*-+\\s*([\\s\\S]*?)\\(\\s*Respondent\\s*\\)/i) || [])[1] || '';\n\n  const claimantClean = claimant.replace(/\\s+/g, ' ').trim();\n  const respondentClean = respondent.replace(/\\s+/g, ' ').trim();\n\n  const dismissalDate =\n    (t.match(/dismissed\\s+for\\s+capability[\\s\\S]*?\\s+on\\s+(\\d{1,2}\\s+[A-Za-z]+\\s+\\d{4})/i) || [])[1] || '';\n\n  return { caseNumber, tribunal, claimant: claimantClean, respondent: respondentClean, dismissalDate };\n}\n\nconst results = [];\n\nfor (const item of items) {\n  // Pull forward any existing fields from upstream\n  const fields = { ...(item.json.fields || {}) };\n\n  const rawOutput = cleanLine(\n    item.json.output ?? item.json.raw?.output ?? item.json.text ?? item.json.body ?? item.json\n  );\n\n  // Accept straight and curly apostrophes in \"Recipient's\"\n  const apos = \"['’]\";\n\n  // Extract recipient + subject, robust to plain or markdown label formats\n  const recipientName = firstMatchAny(rawOutput, [\n    /\\*\\*Recipient Name:\\*\\*\\s*([^\\n]+)/i,\n    new RegExp(`^\\\\s*Recipient${apos}?s?\\\\s*Name:\\\\s*(.+)$`, 'im'),\n    /^\\s*Recipient Name:\\s*(.+)$/im\n  ]);\n\n  const recipientTitle = firstMatchAny(rawOutput, [\n    /\\*\\*Recipient Title:\\*\\*\\s*([^\\n]+)/i,\n    new RegExp(`^\\\\s*Recipient${apos}?s?\\\\s*Title:\\\\s*(.+)$`, 'im'),\n    /^\\s*Recipient Title:\\s*(.+)$/im\n  ]);\n\n  const recipientEmailLine = firstMatchAny(rawOutput, [\n    /\\*\\*Recipient Email:\\*\\*\\s*([^\\n]+)/i,\n    /\\*\\*Suggested Email Address:\\*\\*\\s*([^\\n]+)/i,\n    new RegExp(`^\\\\s*Recipient${apos}?s?\\\\s*Email:\\\\s*(.+)$`, 'im'),\n    /^\\s*Recipient Email:\\s*(.+)$/im,\n    /^\\s*Suggested Email Address:\\s*(.+)$/im\n  ]);\n\n  const toEmailExtracted = normaliseEmail(recipientEmailLine);\n\n  const subjectExtracted = firstMatchAny(rawOutput, [\n    /\\*\\*Subject:\\*\\*\\s*([^\\n]+)/i,\n    /^\\s*Subject:\\s*(.+)$/im,\n    /^\\s*Subject Line:\\s*(.+)$/im\n  ]);\n\n  const adjacentClient = firstMatchAny(rawOutput, [\n    /###\\s*Identified\\s+Adjacent\\s+Client:\\s*([^\\n]+)/i,\n    /Identified\\s+Adjacent\\s+Client:\\s*([^\\n]+)/i\n  ]);\n\n  // Main Email Copy: everything after marker\n  let mainCopy = '';\n  const mainCopyMatch = rawOutput.match(/(?:\\*\\*Main Email Copy:\\*\\*|Main Email Copy:)\\s*\\n([\\s\\S]*)$/i);\n  if (mainCopyMatch && mainCopyMatch[1]) {\n    mainCopy = mainCopyMatch[1].trim();\n  }\n\n  // Fallback to first Dear block\n  if (!mainCopy) {\n    const dearIdx = rawOutput.search(/\\nDear\\s+[^\\n]+,\\s*\\n/i);\n    if (dearIdx >= 0) mainCopy = rawOutput.slice(dearIdx).trim();\n  }\n\n  // Convert email copy to plain text (handles markdown too)\n  const bodyCorePlain = markdownToPlainText(mainCopy || rawOutput);\n\n  // Case details (only used if present)\n  const details = extractCaseDetails(bodyCorePlain);\n\n  // Preserve upstream recipient fields if already set, else use extracted\n  const toEmail = fields.toEmail || item.json.toEmail || toEmailExtracted || '';\n  const toName = fields.toName || item.json.toName || recipientName || '';\n\n  // Subject. Preserve upstream subject if present, else extracted, else tribunal default\n  const tribunalName = details.tribunal || 'Watford Employment Tribunal';\n  const fallbackSubject = `${tribunalName}. ${details.caseNumber ? `Case ${details.caseNumber}` : 'Position statement'}. Respondent's position statement`;\n\n  const subject = fields.subject || subjectExtracted || fallbackSubject;\n\n  // If this is NOT a tribunal doc, we do not want the tribunal wrapper.\n  // Heuristic: only add tribunal wrapper if we detect key markers.\n  const looksLikeTribunalDoc =\n    /CASE\\s*NUMBER:/i.test(bodyCorePlain) ||\n    /EMPLOYMENT\\s+TRIBUNAL/i.test(bodyCorePlain) ||\n    /\\(\\s*Claimant\\s*\\)/i.test(bodyCorePlain) ||\n    /\\(\\s*Respondent\\s*\\)/i.test(bodyCorePlain);\n\n  let bodyText = bodyCorePlain;\n\n  if (looksLikeTribunalDoc) {\n    const caseLine = details.caseNumber ? `Case number: ${details.caseNumber}` : 'Case number:';\n    const partiesLine =\n      (details.claimant || details.respondent)\n        ? `${details.claimant || 'Claimant'} v ${details.respondent || 'Respondent'}`\n        : 'Parties:';\n\n    const greeting = toName ? `Dear ${toName},` : 'Dear Sir or Madam,';\n\n    const intro =\n`${greeting}\n\nRe: ${tribunalName}\n${caseLine}\n${partiesLine}\n\nPlease find set out below the Respondent's position statement, provided pursuant to the Tribunal's Order requiring the Respondent to set out what it seeks to achieve to resolve these proceedings by agreement.\n\n`;\n\n    const signoff =\n`\\n\\nYours faithfully,\\n\\nOmny Law\\nFor and on behalf of the Respondent`;\n\n    bodyText = `${intro}${bodyCorePlain}${signoff}`.replace(/\\n{3,}/g, '\\n\\n').trim();\n  }\n\n  // Update flat fields for downstream nodes\n  fields.toEmail = toEmail;\n  fields.toName = toName;\n  fields.subject = subject;\n  fields.bodyText = bodyText;\n  fields.bodyHtml = fields.bodyHtml || ''; // keep key present for compatibility\n\n  const extracted = {\n    adjacentClient: adjacentClient || fields.adjacentClient || '',\n    recipientTitle: recipientTitle || fields.recipientTitle || '',\n    source: 'agent_output_text'\n  };\n\n  // Graph-style draft message object (plain text)\n  const draft = {\n    subject,\n    body: {\n      contentType: 'Text',\n      content: bodyText\n    },\n    toRecipients: toEmail\n      ? [{ emailAddress: { address: toEmail, name: toName || undefined } }]\n      : []\n  };\n\n  results.push({\n    json: {\n      draft,\n      fields,\n      extracted,\n      raw: { output: rawOutput }\n    }\n  });\n}\n\nreturn results;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -160,
+        448
+      ],
+      "id": "3cf72812-29f0-466e-b887-8d2c275f0c76",
+      "name": "Code in JavaScript",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "={{ $json.fields.subject }} - ready to send to {{ $json.draft.toRecipients[0].emailAddress.name }} - {{ $json.draft.toRecipients[0].emailAddress.address }}",
+        "bodyContent": "={{ $json.fields.bodyText }}",
+        "additionalFields": {
+          "bodyContentType": "Text",
+          "toRecipients": "andy@legalengine.co.uk"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        96,
+        592
+      ],
+      "id": "f79a8f9f-3e0c-4efd-801f-a6cf0082030b",
+      "name": "Create a draft for Andy",
+      "webhookId": "0f0ad541-7881-44df-81b2-5901745d9e51",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "qd4ZgBH04UILcCMZ",
+          "name": "Outlook - Andy @ Legal Engine - Dec 2025"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "={{ $json.fields.subject }} - ready to send to {{ $json.draft.toRecipients[0].emailAddress.name }} - {{ $json.draft.toRecipients[0].emailAddress.address }}",
+        "bodyContent": "={{ $json.fields.bodyText }}",
+        "additionalFields": {
+          "bodyContentType": "Text",
+          "toRecipients": "andy@legalengine.co.uk"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        96,
+        432
+      ],
+      "id": "f65cce42-d1b3-4075-9a04-93a539739b6a",
+      "name": "Create a draft for Lee",
+      "webhookId": "cada3277-41e7-4662-b821-2a1a9793583f",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "bLvU6joGotzynHwT",
+          "name": "Microsoft Outlook - Lee Jan 2026"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "8f3d164e-dd7a-4ab6-9274-2487dc4a01a0",
+              "leftValue": "={{ $json.text }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "59923173-8fd4-4520-b0a7-6cf3b7a23e2b",
+              "leftValue": "={{ $json.user }}",
+              "rightValue": "U0AAWQCAFKM",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1072,
+        -256
+      ],
+      "id": "7ed6272b-367a-440e-aabf-4f0890cff317",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.text }}",
+        "options": {
+          "systemMessage": "You are a world class businsss development and sales executive who takes the input from the user and provides some adjacent clients to send an email to to utilise the ongoing work and skills develped to help to engage the potential new clients and win new work.\n\nYour ultimate task is to research the most suitable adjacent client and write an outreach email to the adjacent cleint referencing the work you're doing. This email copy will need to contain a catchy subject line, main body and an engaging close prior to signing off as Lee from Legal Engine.\n\nYou must use the hubspot too to research contacts in the dtabase and use the retrieved contacts to identify an appropriate recipient's name and email address \n\nAlways use your perplexity tool to search for relevant information relating to the firms mentioned to help you to provide most value to the user.\n\nIn your output you should clearly lable or tag the subject line, recipients name, recipients email and the main email copy so that it can be easily composed into an HTML email using maching reading of the structured outputs."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -544,
+        1200
+      ],
+      "id": "fb4209c2-b8eb-49c4-ad70-f547de2a10fe",
+      "name": "AI Agent HTML",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.text }}",
+        "options": {
+          "systemMessage": "You are a world class businsss development and sales executive who takes the input from the user and provides some adjacent clients to send an email to to utilise the ongoing work and skills develped to help to engage the potential new clients and win new work.\n\nYour ultimate task is to research the most suitable adjacent client and write an outreach email to the adjacent cleint referencing the work you're doing. This email copy will need to contain a catchy subject line, main body and an engaging close prior to signing off as Lee from Legal Engine.\n\nYou must use the hubspot too to research contacts in the dtabase and use the retrieved contacts to identify an appropriate recipient's name and email address \n\nAlways use your perplexity tool to search for relevant information relating to the firms mentioned to help you to provide most value to the user.\n\nIn your output you should clearly lable or tag the subject line, recipients name, recipients email and the main email copy so that it can be easily composed into an plain test email using maching reading of the structured outputs."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -528,
+        448
+      ],
+      "id": "ffa5dffe-8594-4f50-a1f4-bd9b23070e09",
+      "name": "AI Agent plain text",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * n8n Code node (JavaScript)\n * Purpose: Take an agent \"output\" string and return a structured JSON payload\n *          suitable for a later Outlook draft email step (Graph-style + simple fields).\n *\n * Works with BOTH formats:\n *  - Markdown style: **Subject:**, **Recipient Name:**, **Recipient Email:**, **Main Email Copy:**\n *  - Plain style: Subject:, Recipient's Name:, Recipient's Email:, Main Email Copy:\n */\n\nfunction asString(v) {\n  if (v === null || v === undefined) return '';\n  if (typeof v === 'string') return v;\n  try { return JSON.stringify(v); } catch (e) { return String(v); }\n}\n\nfunction cleanLine(s) {\n  return asString(s)\n    .replace(/\\r\\n/g, '\\n')\n    .replace(/\\r/g, '\\n')\n    .trim();\n}\n\nfunction stripBackticks(s) {\n  return asString(s).replace(/`+/g, '').trim();\n}\n\nfunction firstMatch(text, regex) {\n  const m = text.match(regex);\n  return m && m[1] ? m[1].trim() : '';\n}\n\nfunction firstMatchAny(text, regexList) {\n  for (const re of regexList) {\n    const v = firstMatch(text, re);\n    if (v) return v;\n  }\n  return '';\n}\n\nfunction normaliseEmail(raw) {\n  let s = stripBackticks(raw || '');\n  // Remove anything in brackets after the address\n  s = s.replace(/\\s*\\(.*?\\)\\s*$/g, '').trim();\n  // Pull first email-like token if there is extra text\n  const m = s.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/i);\n  return m ? m[0] : s;\n}\n\nfunction toParagraphs(text) {\n  const t = cleanLine(text);\n  if (!t) return [];\n  return t.split(/\\n\\s*\\n/g).map(p => p.trim()).filter(Boolean);\n}\n\nfunction escapeHtml(s) {\n  return asString(s)\n    .replace(/&/g, '&amp;')\n    .replace(/</g, '&lt;')\n    .replace(/>/g, '&gt;')\n    .replace(/\"/g, '&quot;')\n    .replace(/'/g, '&#39;');\n}\n\nfunction textToHtmlBody(mainCopyText, recipientName) {\n  const raw = cleanLine(mainCopyText);\n\n  // Optionally align greeting with extracted recipient name\n  let aligned = raw;\n  if (recipientName) {\n    const firstName = recipientName.trim().split(/\\s+/)[0] || recipientName.trim();\n    aligned = aligned.replace(/^Dear\\s+[^,\\n]+,/i, `Dear ${firstName},`);\n  }\n\n  // Try to split signature from body using common sign-offs\n  const signoffs = [\n    /(\\n\\s*(Best regards|Kind regards|Warm regards|Regards|Sincerely|Yours sincerely|Yours faithfully)\\s*,\\s*\\n)([\\s\\S]*)$/i\n  ];\n\n  let bodyPart = aligned;\n  let signoffLine = '';\n  let signaturePart = '';\n\n  for (const re of signoffs) {\n    const m = aligned.match(re);\n    if (m) {\n      bodyPart = aligned.slice(0, m.index).trim();\n      signoffLine = (m[2] || '').trim();\n      signaturePart = (m[3] || '').trim();\n      break;\n    }\n  }\n\n  const bodyParas = toParagraphs(bodyPart);\n  const sigLines = cleanLine(signaturePart).split('\\n').map(l => l.trim()).filter(Boolean);\n\n  const bodyHtml = bodyParas\n    .map(p => `<p style=\"margin:0 0 14px 0;font-size:14px;line-height:20px;color:#1f2937;\">${escapeHtml(p)}</p>`)\n    .join('');\n\n  let signatureHtml = '';\n  if (signoffLine || sigLines.length) {\n    const sigName = sigLines[0] ? escapeHtml(sigLines[0]) : '';\n    const sigRest = sigLines.slice(1).map(l => escapeHtml(l)).join('<br/>');\n\n    signatureHtml = `\n      <p style=\"margin:18px 0 8px 0;font-size:14px;line-height:20px;color:#1f2937;\">${escapeHtml(signoffLine || 'Regards')},</p>\n      <p style=\"margin:0;font-size:14px;line-height:20px;color:#1f2937;\">\n        <strong>${sigName}</strong>${sigRest ? `<br/>${sigRest}` : ''}\n      </p>\n    `.trim();\n  }\n\n  const preheaderText = 'Quick intro and a short meeting request.';\n\n  const html = `\n<!doctype html>\n<html>\n<head>\n  <meta charset=\"utf-8\">\n  <meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n  <meta name=\"x-apple-disable-message-reformatting\">\n</head>\n<body style=\"margin:0;padding:0;background-color:#f3f4f6;\">\n  <div style=\"display:none;font-size:1px;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;\">\n    ${escapeHtml(preheaderText)}\n  </div>\n\n  <table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" style=\"background-color:#f3f4f6;\">\n    <tr>\n      <td align=\"center\" style=\"padding:24px 12px;\">\n        <table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"640\" style=\"width:640px;max-width:640px;background-color:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb;\">\n          <tr>\n            <td style=\"padding:18px 20px;background-color:#0b1220;\">\n              <div style=\"font-family:Segoe UI, Arial, sans-serif;font-size:14px;line-height:18px;color:#ffffff;font-weight:600;\">\n                Legal Engine\n              </div>\n              <div style=\"font-family:Segoe UI, Arial, sans-serif;font-size:12px;line-height:16px;color:#cbd5e1;margin-top:4px;\">\n                Practical AI for BD, experience capture, and operational efficiency\n              </div>\n            </td>\n          </tr>\n\n          <tr>\n            <td style=\"padding:22px 20px 8px 20px;font-family:Segoe UI, Arial, sans-serif;\">\n              ${bodyHtml}\n              ${signatureHtml}\n            </td>\n          </tr>\n\n          <tr>\n            <td style=\"padding:14px 20px 18px 20px;\">\n              <div style=\"font-family:Segoe UI, Arial, sans-serif;font-size:12px;line-height:16px;color:#6b7280;\">\n                If helpful, reply with a couple of times next week and I will send an invite.\n              </div>\n            </td>\n          </tr>\n        </table>\n\n        <div style=\"font-family:Segoe UI, Arial, sans-serif;font-size:11px;line-height:14px;color:#9ca3af;margin-top:10px;\">\n          Sent via n8n automation\n        </div>\n      </td>\n    </tr>\n  </table>\n</body>\n</html>\n  `.trim();\n\n  return html;\n}\n\nfunction buildPlainText(mainCopyText, recipientName) {\n  let t = cleanLine(mainCopyText);\n\n  if (recipientName) {\n    const firstName = recipientName.trim().split(/\\s+/)[0] || recipientName.trim();\n    t = t.replace(/^Dear\\s+[^,\\n]+,/i, `Dear ${firstName},`);\n  }\n\n  return t;\n}\n\nconst results = [];\n\nfor (const item of items) {\n  const rawOutput = cleanLine(item.json?.output);\n\n  // Accept straight apostrophe and curly apostrophe\n  const apos = \"['’]\";\n\n  const adjacentClient = firstMatchAny(rawOutput, [\n    /###\\s*Identified\\s+Adjacent\\s+Client:\\s*([^\\n]+)/i,\n    /Identified\\s+Adjacent\\s+Client:\\s*([^\\n]+)/i\n  ]);\n\n  const recipientName = firstMatchAny(rawOutput, [\n    /\\*\\*Recipient Name:\\*\\*\\s*([^\\n]+)/i,\n    new RegExp(`^\\\\s*Recipient${apos}?s?\\\\s*Name:\\\\s*(.+)$`, 'im'),\n    /^\\s*Recipient Name:\\s*(.+)$/im\n  ]);\n\n  const recipientTitle = firstMatchAny(rawOutput, [\n    /\\*\\*Recipient Title:\\*\\*\\s*([^\\n]+)/i,\n    new RegExp(`^\\\\s*Recipient${apos}?s?\\\\s*Title:\\\\s*(.+)$`, 'im'),\n    /^\\s*Recipient Title:\\s*(.+)$/im\n  ]);\n\n  const suggestedEmail = firstMatchAny(rawOutput, [\n    /\\*\\*Suggested Email Address:\\*\\*\\s*([^\\n]+)/i,\n    /^\\s*Suggested Email Address:\\s*(.+)$/im\n  ]);\n\n  const recipientEmailLine = firstMatchAny(rawOutput, [\n    /\\*\\*Recipient Email:\\*\\*\\s*([^\\n]+)/i,\n    new RegExp(`^\\\\s*Recipient${apos}?s?\\\\s*Email:\\\\s*(.+)$`, 'im'),\n    /^\\s*Recipient Email:\\s*(.+)$/im\n  ]) || suggestedEmail;\n\n  const toEmail = normaliseEmail(recipientEmailLine);\n\n  const subject = firstMatchAny(rawOutput, [\n    /\\*\\*Subject:\\*\\*\\s*([^\\n]+)/i,\n    /^\\s*Subject:\\s*(.+)$/im\n  ]);\n\n  // Main Email Copy: everything after marker\n  let mainCopy = '';\n  const mainCopyMatch = rawOutput.match(/(?:\\*\\*Main Email Copy:\\*\\*|Main Email Copy:)\\s*\\n([\\s\\S]*)$/i);\n  if (mainCopyMatch && mainCopyMatch[1]) {\n    mainCopy = mainCopyMatch[1].trim();\n  }\n\n  // Fallback to first Dear block\n  if (!mainCopy) {\n    const dearIdx = rawOutput.search(/\\nDear\\s+[^\\n]+,\\s*\\n/i);\n    if (dearIdx >= 0) mainCopy = rawOutput.slice(dearIdx).trim();\n  }\n\n  const bodyHtml = textToHtmlBody(mainCopy, recipientName);\n  const bodyText = buildPlainText(mainCopy, recipientName);\n\n  const message = {\n    subject: subject || '(no subject)',\n    body: {\n      contentType: 'HTML',\n      content: bodyHtml\n    },\n    toRecipients: toEmail\n      ? [{ emailAddress: { address: toEmail, name: recipientName || undefined } }]\n      : []\n  };\n\n  const fields = {\n    toEmail: toEmail || '',\n    toName: recipientName || '',\n    subject: subject || '',\n    bodyHtml,\n    bodyText\n  };\n\n  const extracted = {\n    adjacentClient: adjacentClient || '',\n    recipientTitle: recipientTitle || '',\n    source: 'agent_output_text'\n  };\n\n  results.push({\n    json: {\n      draft: message,\n      fields,\n      extracted,\n      raw: { output: rawOutput }\n    }\n  });\n}\n\nreturn results;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -224,
+        1200
+      ],
+      "id": "aa7418a9-66e8-42ab-918e-09498b67b908",
+      "name": "Code in JavaScript1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.ts }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -384,
+        1440
+      ],
+      "id": "c140c9ee-38d6-471d-9fd7-3810f75cc8f4",
+      "name": "Simple Memory2",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        -544,
+        1440
+      ],
+      "id": "fcd3ace3-3a77-4cb2-87d2-eafcf3baad16",
+      "name": "Google Vertex Chat Model1",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "messages": {
+          "message": [
+            {
+              "content": "=Research any law firms in this copy and provide background and context that will help a legal professional and business development team to help to grow a law firms sales. Also provide some adjacent firms as part of the reserach and suggest why they are relevant. {{ $json.text }}"
+            }
+          ]
+        },
+        "options": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.perplexityTool",
+      "typeVersion": 1,
+      "position": [
+        -112,
+        1440
+      ],
+      "id": "cb98220d-b6f6-4483-9587-1f0e1ed1ec30",
+      "name": "Perplexity search tool2",
+      "credentials": {
+        "perplexityApi": {
+          "id": "pOqM7kFIqiYB3qGU",
+          "name": "Perplexity account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "search",
+        "returnAll": true,
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.hubspotTool",
+      "typeVersion": 2.2,
+      "position": [
+        -240,
+        1440
+      ],
+      "id": "f5c540c4-5dda-418c-8055-bfc7360b6844",
+      "name": "Hubspot Tool1",
+      "credentials": {
+        "hubspotOAuth2Api": {
+          "id": "xOdMJLChZC4O5MaV",
+          "name": "Legal Engine HubSpot"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "={{ $json.fields.subject }} - ready to send to {{ $json.draft.toRecipients[0].emailAddress.name }} - {{ $json.draft.toRecipients[0].emailAddress.address }}",
+        "bodyContent": "={{ $json.fields.bodyHtml }}",
+        "additionalFields": {
+          "bodyContentType": "html",
+          "toRecipients": "andy@legalengine.co.uk"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        80,
+        1280
+      ],
+      "id": "ec04885e-5d16-4da5-86cf-df94e7ab8ffa",
+      "name": "Create a draft for Andy1",
+      "webhookId": "b6eee4ab-a380-40ec-ab07-f1b86882f6c3",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "qd4ZgBH04UILcCMZ",
+          "name": "Outlook - Andy @ Legal Engine - Dec 2025"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "={{ $json.fields.subject }} - ready to send to {{ $json.draft.toRecipients[0].emailAddress.name }} - {{ $json.draft.toRecipients[0].emailAddress.address }}",
+        "bodyContent": "={{ $json.fields.bodyHtml }}",
+        "additionalFields": {
+          "bodyContentType": "html",
+          "toRecipients": "andy@legalengine.co.uk"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        80,
+        1088
+      ],
+      "id": "d4966d76-caa1-40d1-a22c-14198e11206d",
+      "name": "Create a draft for Lee1",
+      "webhookId": "d41d43e5-c2ae-4368-8c4d-1780f168b0c5",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "bLvU6joGotzynHwT",
+          "name": "Microsoft Outlook - Lee Jan 2026"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0AC9D8V3RQ",
+          "mode": "id"
+        },
+        "text": "=**CFO's Input**\n\n{{ $json.output }}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false,
+          "mrkdwn": true
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        528,
+        -144
+      ],
+      "id": "92f7fa86-4d11-4cb0-b25b-68f8d3e36d4c",
+      "name": "Slack1",
+      "webhookId": "c1a44b8a-22df-4890-9d80-08372326b333",
+      "credentials": {
+        "slackApi": {
+          "id": "T4VrWhWxmDp8OkJV",
+          "name": "DEV - n8n Listener - Andy Jan 26"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Slack Trigger').item.json.ts }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        256,
+        80
+      ],
+      "id": "5e2f235e-bdac-42e9-ba1e-3dbb41da25d8",
+      "name": "Simple Memory3"
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        112,
+        64
+      ],
+      "id": "2ae0bcaa-2934-4a91-af65-4b08cf8c7fba",
+      "name": "Google Vertex Chat Model3",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "messages": {
+          "message": [
+            {
+              "content": "=Research the topic suggested by the user to find appropriate information to help the user {{ $('Slack Trigger').item.json.text }}"
+            }
+          ]
+        },
+        "options": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.perplexityTool",
+      "typeVersion": 1,
+      "position": [
+        448,
+        80
+      ],
+      "id": "4e8c311c-30bc-46ce-94ad-034d306abbe3",
+      "name": "Perplexity search tool3",
+      "credentials": {
+        "perplexityApi": {
+          "id": "pOqM7kFIqiYB3qGU",
+          "name": "Perplexity account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0AC9D8V3RQ",
+          "mode": "id"
+        },
+        "text": "=**VP Op's Input**\n\n{{ $json.output }}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false,
+          "mrkdwn": true
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        1280,
+        -160
+      ],
+      "id": "250c10ff-3b75-4d68-b91c-da7905efad9f",
+      "name": "Slack2",
+      "webhookId": "c1a44b8a-22df-4890-9d80-08372326b333",
+      "credentials": {
+        "slackApi": {
+          "id": "T4VrWhWxmDp8OkJV",
+          "name": "DEV - n8n Listener - Andy Jan 26"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Slack Trigger').item.json.ts }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1056,
+        64
+      ],
+      "id": "eafb1afe-c083-4bee-be74-6eedc4ff53af",
+      "name": "Simple Memory4"
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        864,
+        48
+      ],
+      "id": "fe1ddf92-091c-4603-960c-aef038a70a4e",
+      "name": "Google Vertex Chat Model4",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "messages": {
+          "message": [
+            {
+              "content": "=Research the topic suggested by the user to find appropriate information to help the user {{ $('Slack Trigger').item.json.text }}"
+            }
+          ]
+        },
+        "options": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.perplexityTool",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        64
+      ],
+      "id": "1218ff9a-d955-47aa-934d-b929dd8ceee0",
+      "name": "Perplexity search tool4",
+      "credentials": {
+        "perplexityApi": {
+          "id": "pOqM7kFIqiYB3qGU",
+          "name": "Perplexity account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0AC9D8V3RQ",
+          "mode": "id"
+        },
+        "text": "=**CEO's Feedback**\n\n{{ $json.output }}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false,
+          "mrkdwn": true
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        1952,
+        -176
+      ],
+      "id": "7c644842-06dd-4bc7-9125-85a75dd0a711",
+      "name": "Slack3",
+      "webhookId": "c1a44b8a-22df-4890-9d80-08372326b333",
+      "credentials": {
+        "slackApi": {
+          "id": "T4VrWhWxmDp8OkJV",
+          "name": "DEV - n8n Listener - Andy Jan 26"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Slack Trigger').item.json.ts }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1728,
+        48
+      ],
+      "id": "6abd5fa7-7cf0-4499-a6fc-93e2624f5f73",
+      "name": "Simple Memory5"
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        1536,
+        32
+      ],
+      "id": "dc2c1842-2095-440a-97c5-18a1ea554fdf",
+      "name": "Google Vertex Chat Model5",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "messages": {
+          "message": [
+            {
+              "content": "=Research the topic suggested by the user to find appropriate information to help the user {{ $('Slack Trigger').item.json.text }}"
+            }
+          ]
+        },
+        "options": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.perplexityTool",
+      "typeVersion": 1,
+      "position": [
+        1872,
+        48
+      ],
+      "id": "30e68cf6-9e23-4a46-af1e-aa30d7fa02de",
+      "name": "Perplexity search tool5",
+      "credentials": {
+        "perplexityApi": {
+          "id": "pOqM7kFIqiYB3qGU",
+          "name": "Perplexity account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.text }}",
+        "options": {
+          "systemMessage": "You are a world class executive marketeer, your role is to create a marketing concept and high level marketing plan based on the request from the user.\n\nUse your perplexity tool to search for relevant information to help you to provide most value to the user."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -640,
+        -144
+      ],
+      "id": "e9ff83a3-2f99-4d13-87eb-a22c1edec74c",
+      "name": "AI Marketer"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Original USer Request: {{ $('Slack Trigger').item.json.blocks[0].elements[0].elements[0].text }}\nMarketing plan: {{ $('AI Marketer').item.json.output }}",
+        "options": {
+          "systemMessage": "You are a world class executive CFO, your role is take the concept created by the marketing team and cost it out and suggest an appropriate budget and pricing strategy.\n\nUse your perplexity tool to search for relevant information to help you to provide most value to the user."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        160,
+        -144
+      ],
+      "id": "4ad450c7-d7fc-4986-b639-b79682063b89",
+      "name": "AI CFO"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Original USer Request: {{ $('Slack Trigger').item.json.blocks[0].elements[0].elements[0].text }}\nMarketing plan: {{ $('AI Marketer').item.json.output }}\nFinancial Plan, budget and pricing: {{ $('AI CFO').item.json.output }}",
+        "options": {
+          "systemMessage": "You are a world class VP of operatiions, your role is to create a full gop to market plan, setting out the various stages, the headcount need, identify risks and opportuinities based on the request from the user along with the marketing plan, buget and pricing plan.\n\nUse your perplexity tool to search for relevant information to help you to provide most value to the user."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        912,
+        -160
+      ],
+      "id": "b44a7597-2a4f-4a6b-95d1-8034c9fcd972",
+      "name": "AI VP Ops"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Original USer Request: {{ $('Slack Trigger').item.json.blocks[0].elements[0].elements[0].text }}\nMarketing plan: {{ $('AI Marketer').item.json.output }}\nFinancial Plan, budget and pricing: {{ $('AI CFO').item.json.output }}\nOperational plan and go to market: {{ $('AI VP Ops').item.json.output }}",
+        "options": {
+          "systemMessage": "You are a world class CEO, your role is to critique the plans covering marketing, pricing and go to market and provide direct feedback and suggested improvements to each.\n\nUse your perplexity tool to search for relevant information to help you to provide most value to the user."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        1584,
+        -176
+      ],
+      "id": "07443972-c519-4b45-a57c-9776a6559dc0",
+      "name": "AI CEO"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0AC9D8V3RQ",
+          "mode": "id"
+        },
+        "text": "=**Investor Outreach Email**\n\n{{ $json.output }}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false,
+          "mrkdwn": true
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        2752,
+        -192
+      ],
+      "id": "24129caa-d0d8-4382-b7d6-3082b6f41431",
+      "name": "Slack4",
+      "webhookId": "c1a44b8a-22df-4890-9d80-08372326b333",
+      "credentials": {
+        "slackApi": {
+          "id": "T4VrWhWxmDp8OkJV",
+          "name": "DEV - n8n Listener - Andy Jan 26"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Slack Trigger').item.json.ts }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        2528,
+        32
+      ],
+      "id": "546eea05-57e3-4fe6-9150-839b029f71a8",
+      "name": "Simple Memory6"
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        2336,
+        16
+      ],
+      "id": "9fed766d-d016-4bd0-b306-529bf451f322",
+      "name": "Google Vertex Chat Model6",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "messages": {
+          "message": [
+            {
+              "content": "=Research the topic suggested by the user to find appropriate information to help the user {{ $('Slack Trigger').item.json.text }}. Also research potnetial investiors and VCs to reach out to and include that in the output including names and roles."
+            }
+          ]
+        },
+        "options": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.perplexityTool",
+      "typeVersion": 1,
+      "position": [
+        2672,
+        32
+      ],
+      "id": "95341bc2-467e-4b3e-bc6e-af9009742500",
+      "name": "Perplexity search tool6",
+      "credentials": {
+        "perplexityApi": {
+          "id": "pOqM7kFIqiYB3qGU",
+          "name": "Perplexity account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Original USer Request: {{ $('Slack Trigger').item.json.blocks[0].elements[0].elements[0].text }}\nMarketing plan: {{ $('AI Marketer').item.json.output }}\nFinancial Plan, budget and pricing: {{ $('AI CFO').item.json.output }}\nOperational plan and go to market: {{ $('AI VP Ops').item.json.output }}\nCEO's Feedback: {{ $('AI CEO').item.json.output }}",
+        "options": {
+          "systemMessage": "You are a world class founder, your role is to take the plan from the team and produce a punchy and concise investor outreach email explaining the business, the opportunity, the unfair advantage the TAM and reason to believe.\n\nIt should be digestable in under 45 seconds for the recipient. \n\nYou should also include a target list if investors, VCs and points of contact as part of the response and suggestion. These should be soley based on your perplexity tool search and highly specific, not generic\n\nUse your perplexity tool to search for relevant information to help you to provide most value to the user."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        2384,
+        -192
+      ],
+      "id": "1eaf97ee-59e3-449f-a543-75565b8c1a0d",
+      "name": "AI Pitch"
+    }
+  ],
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        []
+      ]
+    },
+    "Bot/App Mention": {
+      "main": [
+        []
+      ]
+    },
+    "New Message in Channel": {
+      "main": [
+        []
+      ]
+    },
+    "Slack Trigger": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Marketer",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Marketer",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Perplexity search tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Marketer",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent plain text",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent plain text",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Perplexity search tool1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent plain text",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hubspot Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent plain text",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Create a draft for Andy",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Create a draft for Lee",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "AI Marketer",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "AI Agent plain text",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "AI Agent HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent plain text": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent HTML": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent HTML",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory2": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent HTML",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hubspot Tool1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent HTML",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Perplexity search tool2": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent HTML",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Create a draft for Andy1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Create a draft for Lee1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory3": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI CFO",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI CFO",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Perplexity search tool3": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI CFO",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack": {
+      "main": [
+        [
+          {
+            "node": "AI CFO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory4": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI VP Ops",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI VP Ops",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Perplexity search tool4": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI VP Ops",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack1": {
+      "main": [
+        [
+          {
+            "node": "AI VP Ops",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory5": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI CEO",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI CEO",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Perplexity search tool5": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI CEO",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack2": {
+      "main": [
+        [
+          {
+            "node": "AI CEO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Marketer": {
+      "main": [
+        [
+          {
+            "node": "Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI CFO": {
+      "main": [
+        [
+          {
+            "node": "Slack1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI VP Ops": {
+      "main": [
+        [
+          {
+            "node": "Slack2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI CEO": {
+      "main": [
+        [
+          {
+            "node": "Slack3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory6": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Pitch",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model6": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Pitch",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Perplexity search tool6": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Pitch",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack3": {
+      "main": [
+        [
+          {
+            "node": "AI Pitch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Pitch": {
+      "main": [
+        [
+          {
+            "node": "Slack4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "pinData": {
+    "Bot/App Mention": [
+      {
+        "json": {
+          "user": "U090R75BCPP",
+          "type": "app_mention",
+          "ts": "1749747684.460229",
+          "client_msg_id": "11fb7321-54dd-4dd4-bbc6-861b1d1214d4",
+          "text": "<@U091W42BFCG> Hello",
+          "team": "T090R759HU5",
+          "blocks": [
+            {
+              "type": "rich_text",
+              "block_id": "UgF57",
+              "elements": [
+                {
+                  "type": "rich_text_section",
+                  "elements": [
+                    {
+                      "type": "user",
+                      "user_id": "U091W42BFCG"
+                    },
+                    {
+                      "type": "text",
+                      "text": " Hello"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "channel": "C090U3QMQP5",
+          "event_ts": "1749747684.460229"
+        }
+      }
+    ],
+    "New Message in Channel": [
+      {
+        "json": {
+          "user": "U090R75BCPP",
+          "type": "message",
+          "ts": "1749750230.951539",
+          "client_msg_id": "95fcd437-cd51-4c02-aa12-92f481c3bc55",
+          "text": "I'd like to find more law firms in London to sell to, can you help me?",
+          "team": "T090R759HU5",
+          "blocks": [
+            {
+              "type": "rich_text",
+              "block_id": "lTdfw",
+              "elements": [
+                {
+                  "type": "rich_text_section",
+                  "elements": [
+                    {
+                      "type": "text",
+                      "text": "I'd like to find more law firms in London to sell to, can you help me?"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "channel": "C090U3QMQP5",
+          "event_ts": "1749750230.951539",
+          "channel_type": "channel"
+        }
+      }
+    ],
+    "Slack Trigger": [
+      {
+        "json": {
+          "type": "message",
+          "user": "U0915JZ9KSM",
+          "ts": "1769963723.525999",
+          "client_msg_id": "c230c78c-7915-4c95-89fb-81eae5606208",
+          "text": "I want to launch a new business selling localised services that can be bundled together to reduce the cost, this could be bin cleaning to boiler servicing to gardening etc",
+          "team": "T090R759HU5",
+          "blocks": [
+            {
+              "type": "rich_text",
+              "block_id": "JoRb9",
+              "elements": [
+                {
+                  "type": "rich_text_section",
+                  "elements": [
+                    {
+                      "type": "text",
+                      "text": "I want to launch a new business selling localised services that can be bundled together to reduce the cost, this could be bin cleaning to boiler servicing to gardening etc"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "channel": "C0AC9D8V3RQ",
+          "event_ts": "1769963723.525999",
+          "channel_type": "channel"
+        }
+      }
+    ],
+    "AI Agent HTML": [
+      {
+        "json": {
+          "output": "Subject: Revolutionizing Legal Operations: Insights from AI Consulting with Foot Anstey\n\nRecipient's Name: Mike Kest\nRecipient's Email: michael.kest@linklaters.com\n\nMain Email Copy:\nDear Mike,\n\nI trust this email finds you well.\n\nMy name is Lee Curtis, and I'm a Business Development Executive at Legal Engine. I'm reaching out as we've recently been working with a number of leading law firms, including Foot Anstey, on innovative projects that I believe would be of significant interest to Linklaters.\n\nSpecifically, we've achieved great success with Foot Anstey on a bespoke consultancy project involving an \"AI twist\" to optimize their internal legal processes. This work has not only streamlined their operations but also unlocked new efficiencies and insights, allowing their teams to focus on higher-value tasks. We are also supporting firms like TLT with credentials management, leveraging technology to enhance security and access control.\n\nAs a firm at the forefront of legal innovation, I imagine Linklaters is continuously exploring how cutting-edge technology can enhance client service and internal effectiveness. Our experience in deploying practical, AI-driven solutions aligns perfectly with the strategic objectives of forward-thinking firms like yours.\n\nI would be keen to share some high-level insights from our recent engagements and explore how similar tailored solutions could benefit Linklaters. Would you be open to a brief 15-minute call sometime next week to discuss this further?\n\nWarm regards,\n\nLee Curtis\nBusiness Development Executive\nLegal Engine"
+        }
+      }
+    ],
+    "AI Agent plain text": [
+      {
+        "json": {
+          "output": "Recipient Name: Mike Kest\nRecipient Email: michael.kest@linklaters.com\nSubject Line: Enhancing Security & Efficiency in Legal Credentials Management – Insights from our Recent Work\nMain Email Copy:\nDear Mike,\n\nI trust this email finds you well.\n\nMy name is Lee, and I lead the business development efforts at Legal Engine. I'm reaching out as I've been consistently impressed by Linklaters' reputation for innovation and commitment to operational excellence within the legal sector.\n\nWe've recently completed a significant project focused on credentials management for a prominent law firm (TLT), aimed at enhancing their security protocols, streamlining access, and improving overall operational efficiency for their various legal and client platforms. This involved implementing robust systems to manage and secure sensitive access credentials, a critical area for any global firm handling vast amounts of confidential data.\n\nGiven Linklaters' extensive global operations and the increasing complexity of cybersecurity and data governance, I believe our expertise in developing secure and efficient credentials management solutions could be highly relevant to your firm's ongoing initiatives. Our experience has shown that optimizing these processes not only mitigates risk but also significantly improves workflow for legal professionals.\n\nI would appreciate the opportunity for a brief call to share some insights from our recent work and explore how our proven approach might align with Linklaters' strategic objectives in maintaining a secure and efficient digital environment.\n\nWould you be available for a quick chat sometime next week?\n\nLooking forward to the possibility of connecting.\n\nWarm regards,\n\nLee\nLegal Engine"
+        }
+      }
+    ]
+  },
+  "triggerCount": 1,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

@@ -1,0 +1,162 @@
+{
+  "name": "HSFK - Shared 04 - Vertex AI LLM Call",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## HSFK - Shared 04 - Vertex AI LLM Call\n\n**Purpose:** Generic LLM call wrapper for all HSFK workflows. Accepts system prompt + user prompt, calls Vertex AI (Gemini), returns structured result. Handles JSON validation and token tracking.\n\n**Inputs (from calling workflow via Execute Workflow node):**\n- `system_prompt` (string) - System instructions for the model\n- `user_prompt` (string) - The user message / data to process\n- `model` (string, optional) - Default: `gemini-2.5-flash`. Alternatives: `gemini-2.0-flash-001`, `claude-opus-4-5`\n- `temperature` (number, optional) - Default: `0.3`\n- `response_format` (string, optional) - `json` (default) or `text`\n- `max_tokens` (number, optional) - Default: `8192`\n\n**Output:**\n```json\n{\n  \"text\": \"string\",\n  \"parsed_json\": {} ,\n  \"model_used\": \"string\",\n  \"input_tokens\": 0,\n  \"output_tokens\": 0,\n  \"duration_ms\": 0,\n  \"response_format\": \"json|text\",\n  \"json_valid\": true\n}\n```\n\n**Credential required:** `Google Service Account` (Vertex AI access on project `try-me-uk`, region `europe-west1`)\n\n**GCP project:** try-me-uk (EU / Belgium region - name is a misnomer)\n\n**Used by:** All HSFK use case workflows\n\n**n8n instance:** leonard-dev.app.n8n.cloud",
+        "height": 520,
+        "width": 460,
+        "color": 6
+      },
+      "id": "sticky-note-docs",
+      "name": "Documentation",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -500,
+        -160
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "trigger-execute-workflow",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build Vertex AI request payload from inputs\nconst startTime = Date.now();\n\nconst systemPrompt = $json.system_prompt || 'You are a helpful assistant.';\nconst userPrompt = $json.user_prompt || '';\nconst model = $json.model || 'gemini-2.5-flash';\nconst temperature = parseFloat($json.temperature) || 0.3;\nconst responseFormat = $json.response_format || 'json';\nconst maxTokens = parseInt($json.max_tokens) || 8192;\n\n// Build the Vertex AI generateContent request body\n// Vertex AI uses a different schema to OpenAI\nconst requestBody = {\n  contents: [\n    {\n      role: 'user',\n      parts: [\n        { text: userPrompt }\n      ]\n    }\n  ],\n  systemInstruction: {\n    parts: [\n      { text: responseFormat === 'json'\n        ? systemPrompt + '\\n\\nIMPORTANT: You MUST respond with valid JSON only. No prose, no markdown, no code blocks. Output raw JSON that can be parsed with JSON.parse().'\n        : systemPrompt\n      }\n    ]\n  },\n  generationConfig: {\n    temperature: temperature,\n    maxOutputTokens: maxTokens,\n    candidateCount: 1\n  }\n};\n\n// If JSON format requested, add response_mime_type hint\nif (responseFormat === 'json') {\n  requestBody.generationConfig.responseMimeType = 'application/json';\n}\n\n// Build the Vertex AI endpoint URL\n// Region: europe-west1 (Belgium) - project: try-me-uk\nconst vertexEndpoint = `https://europe-west1-aiplatform.googleapis.com/v1/projects/try-me-uk/locations/europe-west1/publishers/google/models/${model}:generateContent`;\n\nreturn {\n  json: {\n    request_body: requestBody,\n    meta: {\n      model: model,\n      temperature: temperature,\n      response_format: responseFormat,\n      max_tokens: maxTokens,\n      vertex_endpoint: vertexEndpoint,\n      start_time: startTime,\n      built_at: new Date().toISOString()\n    }\n  }\n};"
+      },
+      "id": "build-vertex-request",
+      "name": "Build Vertex AI Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.meta.vertex_endpoint }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "googleServiceAccountAuth",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify($json.request_body) }}",
+        "options": {
+          "timeout": 60000,
+          "response": {
+            "response": {
+              "fullResponse": false,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "http-vertex-ai",
+      "name": "Vertex AI API Call",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        400,
+        240
+      ],
+      "credentials": {
+        "googleServiceAccountAuth": {
+          "id": "GOOGLE_SERVICE_ACCOUNT_CRED",
+          "name": "Google Service Account - Legal Engine Vertex AI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse Vertex AI response and extract generated text\nconst response = $json;\nconst meta = $('Build Vertex AI Request').first().json.meta;\nconst endTime = Date.now();\nconst durationMs = endTime - meta.start_time;\n\nlet generatedText = '';\nlet inputTokens = 0;\nlet outputTokens = 0;\n\ntry {\n  // Extract text from Vertex AI response structure\n  // Response format: { candidates: [{ content: { parts: [{ text: '...' }] } }], usageMetadata: {...} }\n  if (response.candidates && response.candidates[0]) {\n    const candidate = response.candidates[0];\n    if (candidate.content && candidate.content.parts) {\n      generatedText = candidate.content.parts\n        .filter(p => p.text)\n        .map(p => p.text)\n        .join('');\n    }\n  }\n\n  // Extract token usage\n  if (response.usageMetadata) {\n    inputTokens = response.usageMetadata.promptTokenCount || 0;\n    outputTokens = response.usageMetadata.candidatesTokenCount || 0;\n  }\n\n} catch (err) {\n  console.error('Failed to parse Vertex AI response:', err.message);\n  generatedText = '';\n}\n\nreturn {\n  json: {\n    raw_text: generatedText,\n    meta: meta,\n    duration_ms: durationMs,\n    input_tokens: inputTokens,\n    output_tokens: outputTokens,\n    finish_reason: response.candidates?.[0]?.finishReason || 'unknown'\n  }\n};"
+      },
+      "id": "parse-vertex-response",
+      "name": "Parse Vertex Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        640,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// JSON validation and final output structuring\nconst data = $json;\nconst responseFormat = data.meta.response_format;\nlet parsedJson = null;\nlet jsonValid = false;\nlet finalText = data.raw_text || '';\n\nif (responseFormat === 'json') {\n  try {\n    // Clean the text: remove markdown code fences if present\n    let cleanText = finalText;\n    const fenceMatch = cleanText.match(/```(?:json)?\\s*([\\s\\S]*?)```/);\n    if (fenceMatch) {\n      cleanText = fenceMatch[1].trim();\n    }\n    // Handle BOM or leading/trailing whitespace\n    cleanText = cleanText.trim();\n\n    parsedJson = JSON.parse(cleanText);\n    jsonValid = true;\n    finalText = cleanText;\n  } catch (err) {\n    // JSON parse failed - return raw text with error flag\n    jsonValid = false;\n    parsedJson = null;\n    console.warn('JSON validation failed:', err.message, 'Raw text:', finalText.substring(0, 200));\n  }\n}\n\n// Final output contract\nreturn {\n  json: {\n    // Primary outputs\n    text: finalText,\n    parsed_json: parsedJson,\n    \n    // Quality indicators\n    json_valid: jsonValid,\n    response_format: responseFormat,\n    \n    // Performance metrics\n    model_used: data.meta.model,\n    temperature: data.meta.temperature,\n    input_tokens: data.input_tokens,\n    output_tokens: data.output_tokens,\n    total_tokens: data.input_tokens + data.output_tokens,\n    duration_ms: data.duration_ms,\n    finish_reason: data.finish_reason,\n    \n    // Status\n    status: finalText ? 'success' : 'empty_response'\n  }\n};"
+      },
+      "id": "validate-and-format",
+      "name": "Validate JSON & Format Output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        240
+      ]
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Build Vertex AI Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Vertex AI Request": {
+      "main": [
+        [
+          {
+            "node": "Vertex AI API Call",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vertex AI API Call": {
+      "main": [
+        [
+          {
+            "node": "Parse Vertex Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Vertex Response": {
+      "main": [
+        [
+          {
+            "node": "Validate JSON & Format Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 0,
+  "meta": null
+}

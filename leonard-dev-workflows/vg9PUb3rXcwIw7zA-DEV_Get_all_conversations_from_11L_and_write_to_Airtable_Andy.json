@@ -1,0 +1,770 @@
+{
+  "name": "DEV - Get all conversations from 11L and write to Airtable - Andy",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "6aa0393d-c44b-4d16-a818-3caf13ffd376",
+      "name": "When clicking 'Test workflow'",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1376,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "elevenLabsApiUrlAgent",
+              "value": "https://api.eu.residency.elevenlabs.io/v1/convai/conversations?agent_id=",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "elevenLabsApiKey",
+              "value": "sk_4cd28c6f6159241e431ba66e567cb1fe10d233d355bb442f_residency_eu",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "airtableBaseId",
+              "value": "appJdhl1omnA6ynrh",
+              "type": "string"
+            },
+            {
+              "id": "id-4",
+              "name": "airtableTableId",
+              "value": "tblSpWNrhpSIDNHYn",
+              "type": "string"
+            },
+            {
+              "id": "d0e7fd14-f973-4fe7-b7d4-cd9fcd43d213",
+              "name": "elevenLabsAgentID",
+              "value": "agent_5001kdmwmn2nejm8sa5x64th4pyc",
+              "type": "string"
+            },
+            {
+              "id": "eb90278f-46f0-41e5-befe-59689a47558b",
+              "name": "pagesize",
+              "value": "&page_size=100",
+              "type": "string"
+            },
+            {
+              "id": "a3d4a834-3206-40e5-abe3-174a7d64c2bc",
+              "name": "elevenLabsApiUrlconv",
+              "value": "https://api.eu.residency.elevenlabs.io/v1/convai/conversations/",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "0d4d53ff-b20b-4fc6-a1c7-fa34a4279a17",
+      "name": "Workflow Configuration",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1152,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.elevenLabsApiUrlAgent }}{{ $json.elevenLabsAgentID }}{{ $json.pagesize }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "xi-api-key",
+              "value": "={{ $('Workflow Configuration').first().json.elevenLabsApiKey }}"
+            }
+          ]
+        },
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 3
+            }
+          },
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "496d71ba-d9a8-433c-85f3-cf430d9d0b2b",
+      "name": "Get Conversation IDs from 11 Labs",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -928,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Workflow Configuration').first().json.airtableBaseId }}"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Workflow Configuration').first().json.airtableTableId }}"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Conversation ID": "={{ $json.conversation_id }}"
+          },
+          "matchingColumns": [
+            "Conversation ID"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Conversation ID",
+              "displayName": "Conversation ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Conversation Data",
+              "displayName": "Conversation Data",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "985c01e7-f18c-45ac-aae8-f551df868d57",
+      "name": "Write Conversation IDs to Airtable",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -480,
+        48
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "82cba0fe-1dd5-49f5-9929-cd73873f9ac6",
+      "name": "Loop Over Conversation IDs",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -256,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Workflow Configuration').item.json.elevenLabsApiUrlconv }}{{ $json.fields['Conversation ID'] }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "xi-api-key",
+              "value": "={{ $('Workflow Configuration').first().json.elevenLabsApiKey }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "d6b75299-2cc2-413e-9eff-2005e51d862d",
+      "name": "Get Individual Conversation Data",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -32,
+        -32
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Workflow Configuration').first().json.airtableBaseId }}"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Workflow Configuration').first().json.airtableTableId }}"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Conversation ID": "={{ $('Split Out Conversations').item.json.conversation_id }}",
+            "Conversation Data": "={{ JSON.stringify($json) }}"
+          },
+          "matchingColumns": [
+            "Conversation ID"
+          ],
+          "schema": [
+            {
+              "id": "Conversation ID",
+              "displayName": "Conversation ID",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Conversation Data",
+              "displayName": "Conversation Data",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "c9af4b10-765e-4eb7-be14-7869b74f9589",
+      "name": "Update Airtable with Conversation Data",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        192,
+        48
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "conversations",
+        "options": {}
+      },
+      "id": "7b679977-29b8-48a9-a861-19a2c164365f",
+      "name": "Split Out Conversations",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -704,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "elevenLabsApiUrlAgent",
+              "value": "https://api.eu.residency.elevenlabs.io/v1/convai/conversations?agent_id=",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "elevenLabsApiKey",
+              "value": "sk_4cd28c6f6159241e431ba66e567cb1fe10d233d355bb442f_residency_eu",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "airtableBaseId",
+              "value": "appJdhl1omnA6ynrh",
+              "type": "string"
+            },
+            {
+              "id": "id-4",
+              "name": "airtableTableId",
+              "value": "tblSpWNrhpSIDNHYn",
+              "type": "string"
+            },
+            {
+              "id": "d0e7fd14-f973-4fe7-b7d4-cd9fcd43d213",
+              "name": "elevenLabsAgentID",
+              "value": "agent_0101kfjpq72afbpt13zwvwb8dz2n",
+              "type": "string"
+            },
+            {
+              "id": "eb90278f-46f0-41e5-befe-59689a47558b",
+              "name": "pagesize",
+              "value": "&page_size=100",
+              "type": "string"
+            },
+            {
+              "id": "a3d4a834-3206-40e5-abe3-174a7d64c2bc",
+              "name": "elevenLabsApiUrlconv",
+              "value": "https://api.eu.residency.elevenlabs.io/v1/convai/conversations/",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "06754dba-18c6-437e-b695-20a4e225141f",
+      "name": "Workflow Configuration2",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1152,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.elevenLabsApiUrlAgent }}{{ $json.elevenLabsAgentID }}{{ $json.pagesize }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "xi-api-key",
+              "value": "={{ $('Workflow Configuration2').first().json.elevenLabsApiKey }}"
+            }
+          ]
+        },
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 3
+            }
+          },
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "436841fa-3297-4126-86dd-c2b787179ed0",
+      "name": "Get Conversation IDs from 11 Labs2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -928,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Workflow Configuration2').first().json.airtableBaseId }}"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Workflow Configuration2').first().json.airtableTableId }}"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Conversation ID": "={{ $json.conversation_id }}"
+          },
+          "matchingColumns": [
+            "Conversation ID"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Conversation ID",
+              "displayName": "Conversation ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Conversation Data",
+              "displayName": "Conversation Data",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "a2b8ae04-e6f8-4974-ae7b-c15b82e49dbe",
+      "name": "Write Conversation IDs to Airtable2",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -480,
+        480
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "1354fb08-1d6a-4a20-b48c-c888682c457b",
+      "name": "Loop Over Conversation IDs2",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -256,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Workflow Configuration2').item.json.elevenLabsApiUrlconv }}{{ $json.fields['Conversation ID'] }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "xi-api-key",
+              "value": "={{ $('Workflow Configuration2').first().json.elevenLabsApiKey }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "f2f0d13c-d902-45ab-bb6a-ec1bdabd6cc1",
+      "name": "Get Individual Conversation Data2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -32,
+        400
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Workflow Configuration2').first().json.airtableBaseId }}"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Workflow Configuration2').first().json.airtableTableId }}"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Conversation ID": "={{ $('Split Out Conversations2').item.json.conversation_id }}",
+            "Conversation Data": "={{ JSON.stringify($json) }}"
+          },
+          "matchingColumns": [
+            "Conversation ID"
+          ],
+          "schema": [
+            {
+              "id": "Conversation ID",
+              "displayName": "Conversation ID",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Conversation Data",
+              "displayName": "Conversation Data",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "911a57c4-e2e9-49a5-8b3b-8787d7805fa4",
+      "name": "Update Airtable with Conversation Data2",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        192,
+        480
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "conversations",
+        "options": {}
+      },
+      "id": "6b08c747-4910-47d7-a4ad-31bd3b202208",
+      "name": "Split Out Conversations2",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -704,
+        480
+      ]
+    }
+  ],
+  "connections": {
+    "When clicking 'Test workflow'": {
+      "main": [
+        [
+          {
+            "node": "Workflow Configuration2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Workflow Configuration": {
+      "main": [
+        [
+          {
+            "node": "Get Conversation IDs from 11 Labs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write Conversation IDs to Airtable": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Conversation IDs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Conversation IDs": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Get Individual Conversation Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Individual Conversation Data": {
+      "main": [
+        [
+          {
+            "node": "Update Airtable with Conversation Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Airtable with Conversation Data": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Conversation IDs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Conversation IDs from 11 Labs": {
+      "main": [
+        [
+          {
+            "node": "Split Out Conversations",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out Conversations": {
+      "main": [
+        [
+          {
+            "node": "Write Conversation IDs to Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Workflow Configuration2": {
+      "main": [
+        [
+          {
+            "node": "Get Conversation IDs from 11 Labs2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Conversation IDs from 11 Labs2": {
+      "main": [
+        [
+          {
+            "node": "Split Out Conversations2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write Conversation IDs to Airtable2": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Conversation IDs2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Conversation IDs2": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Get Individual Conversation Data2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Individual Conversation Data2": {
+      "main": [
+        [
+          {
+            "node": "Update Airtable with Conversation Data2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Airtable with Conversation Data2": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Conversation IDs2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out Conversations2": {
+      "main": [
+        [
+          {
+            "node": "Write Conversation IDs to Airtable2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 0,
+  "meta": null
+}

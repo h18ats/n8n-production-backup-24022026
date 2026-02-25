@@ -1,0 +1,452 @@
+{
+  "name": "DEV - A2 Taxi Luke - Post Call Luke create Agent with KB",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.elevenlabs.io/v1/convai/knowledge-base/text",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "xi-api-key",
+              "value": "sk_3eca705a3c2780af4cb1116beb64d3e1d3bfc187a8d565f8"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "text",
+              "value": "=Daily Meeting KB - {{ $('Today').item.json.currentDate }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $('Set Nodes to pass2').item.json.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -512,
+        -240
+      ],
+      "id": "f0cdc920-122a-4445-b27f-0f482785a347",
+      "name": "Create KB"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.elevenlabs.io/v1/convai/agents/create",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "xi-api-key",
+              "value": "sk_3eca705a3c2780af4cb1116beb64d3e1d3bfc187a8d565f8"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"agent_id\": \"agent_0201k4b73d15egvvd88yqxzvz19g\",\n    \"name\": \"N8N TEST: Luke - Post Meeting Follow Up [owner: Andy] - {{ $('Today').item.json.currentDate }}\",\n    \"conversation_config\": {\n        \"asr\": {\n            \"quality\": \"high\",\n            \"provider\": \"elevenlabs\",\n            \"user_input_audio_format\": \"pcm_16000\",\n            \"keywords\": []\n        },\n        \"turn\": {\n            \"turn_timeout\": 10.0,\n            \"silence_end_call_timeout\": -1.0,\n            \"mode\": \"turn\"\n        },\n        \"tts\": {\n            \"model_id\": \"eleven_flash_v2\",\n            \"voice_id\": \"AwP2bjcqrSky0yiDhZSe\",\n            \"supported_voices\": [],\n            \"agent_output_audio_format\": \"pcm_16000\",\n            \"optimize_streaming_latency\": 4,\n            \"stability\": 0.65,\n            \"speed\": 0.99,\n            \"similarity_boost\": 0.45,\n            \"pronunciation_dictionary_locators\": []\n        },\n        \"conversation\": {\n            \"text_only\": false,\n            \"max_duration_seconds\": 3600,\n            \"client_events\": [\n                \"audio\",\n                \"interruption\"\n            ]\n        },\n        \"language_presets\": {},\n        \"agent\": {\n            \"first_message\": \"Hey, how was your meeting with {{ $('Set Nodes to pass2').item.json.biz }} {{ $('Set Nodes to pass2').item.json.org_first_name }}? Ready for a quick debrief?\",\n            \"language\": \"en\",\n            \"dynamic_variables\": {\n                \"dynamic_variable_placeholders\": {}\n            },\n            \"prompt\": {\n                \"prompt\": \"VOICE AGENT SYSTEM PROMPT — Luke (Post-Meeting Coaching Assistant) — Robust v3 (Summary Read-Back Guaranteed)\\nRole & Persona\\n\\nYou are Luke, an expert legal Business Development assistant. You are professional yet approachable, and your role is to coach a lawyer immediately after a client meeting You are speaking with {{ $('Set Nodes to pass2').item.json.org_ful_name }} from {{ $('Set Nodes to pass2').item.json.org_biz }}. Your job is to capture key insights, context, and next steps in a structured but conversational way.\\n\\nBe concise, friendly, and focused.\\n\\nRecognise and record information even if given out of sequence.\\n\\nDo not paraphrase user responses until the final structured summary.\\n\\nThe year is 2025, and Legal Engine launched on 2 June 2025, and today is {{ $('Today').item.json.currentDate }}.\\n\\nCore Objectives\\n\\nEnsure the lawyer reflects on the meeting and provides both factual and contextual insights.\\n\\nCapture the highest-value actions for internal or client follow-up, with owners and timing where possible.\\n\\nAlways ask the explicit questions (below) in order.\\n\\nWhen appropriate, suggest next steps (e.g., schedule follow-up, share materials, cross-sell, internal approvals).\\n\\nMandatory read-back: After Q3, you must produce and speak a concise structured summary, every time.\\n\\nDialogue Flow (Deterministic State Machine with Summary Read-Back Guard)\\n\\nS0: Warm Start (optional, ≤1 turn)\\n“Let’s capture the key points from your meeting. I’ll ask three quick questions.”\\n\\nS1: Question 1\\n“Is there any additional context you want to capture now that the client isn’t around?”\\n\\nS2: Question 2\\n“What are the immediate next steps and when is the next touch point or meeting?”\\nIf owner unclear: “Who should own that action?”\\n\\nS3: Question 3\\n“Is there anyone internally we should introduce the client to?”\\n\\nS4: Structured Summary — Read-Back is Mandatory\\n\\nGenerate the final structured summary (see Summary Format).\\n\\nOnce the summary is agreed, say, \\\"I'll send you over a summary via email now, please allow a few minutes for it to land in your inbox.\\\"\",\n                \"llm\": \"gemini-2.5-flash-lite\",\n                \"temperature\": 0.3,\n                \"max_tokens\": -1,\n                \"tool_ids\": [],\n                \"built_in_tools\": {\n                    \"end_call\": {\n                        \"type\": \"system\",\n                        \"name\": \"end_call\",\n                        \"description\": \"\",\n                        \"response_timeout_secs\": 20,\n                        \"disable_interruptions\": false,\n                        \"force_pre_tool_speech\": false,\n                        \"assignments\": [],\n                        \"params\": {\n                            \"system_tool_type\": \"end_call\"\n                        }\n                    },\n                    \"language_detection\": null,\n                    \"transfer_to_agent\": null,\n                    \"transfer_to_number\": null,\n                    \"skip_turn\": null,\n                    \"play_keypad_touch_tone\": null,\n                    \"voicemail_detection\": {\n                        \"type\": \"system\",\n                        \"name\": \"voicemail_detection\",\n                        \"description\": \"\",\n                        \"response_timeout_secs\": 20,\n                        \"disable_interruptions\": false,\n                        \"force_pre_tool_speech\": false,\n                        \"assignments\": [],\n                        \"params\": {\n                            \"system_tool_type\": \"voicemail_detection\",\n                            \"voicemail_message\": \"Hi {{ $('Set Nodes to pass2').item.json.org_first_name }}, this is Luke from Legal Engine, I've just tried to call to get a quick debrief on your last meeting with {{ $('Set Nodes to pass2').item.json.biz }}. Speak soon.\"\n                        }\n                    }\n                },\n                \"mcp_server_ids\": [],\n                \"native_mcp_server_ids\": [],\n                \"knowledge_base\": [\n  {\n                        \"type\": \"text\",\n                        \"name\": \"text\",\n                        \"id\": \"{{ $('Create KB').item.json.id }}\",\n                        \"usage_mode\": \"prompt\"\n                    },                 \n                    {\n                        \"type\": \"text\",\n                        \"name\": \"old_pitch_deck_updated_Feb_2025_33d243.txt\",\n                        \"id\": \"x5czocKtT2gFjii3zilv\",\n                        \"usage_mode\": \"auto\"\n                    },\n                    {\n                        \"type\": \"text\",\n                        \"name\": \"Legal Engine Pitch - Q2 Update.pdf\",\n                        \"id\": \"MTpwK0CrEtUiXwgBm8iR\",\n                        \"usage_mode\": \"auto\"\n                    },\n                    {\n                        \"type\": \"text\",\n                        \"name\": \"Legal Engine - Voice-Enabled Legal Insights Platform\",\n                        \"id\": \"cVtHD9YVd694frbPrdcp\",\n                        \"usage_mode\": \"auto\"\n                    },\n                    {\n                        \"type\": \"url\",\n                        \"name\": \"Eduardo Aguilar Pelaez, MEng, PhD, MBA - Legal Engine | LinkedIn\",\n                        \"id\": \"3mFCiXHku9ztKIF3wEhk\",\n                        \"usage_mode\": \"auto\"\n                    },\n                    {\n                        \"type\": \"url\",\n                        \"name\": \"Lee Curtis - Legal Engine | LinkedIn\",\n                        \"id\": \"nOJjal7lkUVPed2qWVNY\",\n                        \"usage_mode\": \"auto\"\n                    },\n                    {\n                        \"type\": \"url\",\n                        \"name\": \"Sam Stamp - LINAR Consulting Ltd | LinkedIn\",\n                        \"id\": \"e2duhzBJ1ZnOdumAhBqN\",\n                        \"usage_mode\": \"auto\"\n                    },\n                    {\n                        \"type\": \"url\",\n                        \"name\": \"Andy Batty - Deliveroo | LinkedIn\",\n                        \"id\": \"2iraNikPTduYn5k35cOm\",\n                        \"usage_mode\": \"auto\"\n                    },\n                    {\n                        \"type\": \"url\",\n                        \"name\": \"Getting the best of directory submissions and how to work with your BD team\",\n                        \"id\": \"Mqlgv1gjqpsM0F25hARc\",\n                        \"usage_mode\": \"auto\"\n                    },\n                    {\n                        \"type\": \"url\",\n                        \"name\": \"GitHub - noslegal/taxonomy: noslegal taxonomy facets and release notes\",\n                        \"id\": \"WTSeALM0hCdp3JOAQkh7\",\n                        \"usage_mode\": \"auto\"\n                    },\n                    {\n                        \"type\": \"url\",\n                        \"name\": \"taxonomy/2025.03 v3 noslegal release/2025.03 guide - noslegal 3.0.pdf at main · noslegal/taxonomy\",\n                        \"id\": \"asdugn4RGhF5gvo638Mz\",\n                        \"usage_mode\": \"auto\"\n                    },\n                    {\n                        \"type\": \"file\",\n                        \"name\": \"MASTER - Legal Engine Agents_security architecture.docx\",\n                        \"id\": \"ppbrfEfQtSZAeubOmOd0\",\n                        \"usage_mode\": \"auto\"\n                    }\n                ],\n                \"custom_llm\": null,\n                \"ignore_default_personality\": false,\n                \"rag\": {\n                    \"enabled\": true,\n                    \"embedding_model\": \"e5_mistral_7b_instruct\",\n                    \"max_vector_distance\": 0.6,\n                    \"max_documents_length\": 50000,\n                    \"max_retrieved_rag_chunks_count\": 20\n                },\n                \"timezone\": null,\n                \"tools\": [\n                    {\n                        \"type\": \"system\",\n                        \"name\": \"end_call\",\n                        \"description\": \"\",\n                        \"response_timeout_secs\": 20,\n                        \"disable_interruptions\": false,\n                        \"force_pre_tool_speech\": false,\n                        \"assignments\": [],\n                        \"params\": {\n                            \"system_tool_type\": \"end_call\"\n                        }\n                    },\n                    {\n                        \"type\": \"system\",\n                        \"name\": \"voicemail_detection\",\n                        \"description\": \"\",\n                        \"response_timeout_secs\": 20,\n                        \"disable_interruptions\": false,\n                        \"force_pre_tool_speech\": false,\n                        \"assignments\": [],\n                        \"params\": {\n                            \"system_tool_type\": \"voicemail_detection\",\n                            \"voicemail_message\": \"Hi, this is Luke from Legal Engine, I've just tried to call to get a quick debrief on your last meeting. Speak soon.\"\n                        }\n                    }\n                ]\n            }\n        }\n    },\n    \"metadata\": {\n        \"created_at_unix_secs\": 1757018174,\n        \"updated_at_unix_secs\": 1757018174\n    },\n    \"platform_settings\": {\n        \"auth\": {\n            \"enable_auth\": false,\n            \"allowlist\": [],\n            \"shareable_token\": null\n        },\n        \"evaluation\": {\n            \"criteria\": []\n        },\n        \"widget\": {\n            \"variant\": \"full\",\n            \"placement\": \"bottom-right\",\n            \"expandable\": \"never\",\n            \"avatar\": {\n                \"type\": \"orb\",\n                \"color_1\": \"#2792dc\",\n                \"color_2\": \"#9ce6e6\"\n            },\n            \"feedback_mode\": \"during\",\n            \"bg_color\": \"#ffffff\",\n            \"text_color\": \"#000000\",\n            \"btn_color\": \"#000000\",\n            \"btn_text_color\": \"#ffffff\",\n            \"border_color\": \"#e1e1e1\",\n            \"focus_color\": \"#000000\",\n            \"border_radius\": null,\n            \"btn_radius\": null,\n            \"action_text\": null,\n            \"start_call_text\": null,\n            \"end_call_text\": null,\n            \"expand_text\": null,\n            \"listening_text\": null,\n            \"speaking_text\": null,\n            \"shareable_page_text\": null,\n            \"shareable_page_show_terms\": false,\n            \"terms_text\": null,\n            \"terms_html\": null,\n            \"terms_key\": null,\n            \"show_avatar_when_collapsed\": false,\n            \"disable_banner\": false,\n            \"override_link\": null,\n            \"mic_muting_enabled\": false,\n            \"transcript_enabled\": false,\n            \"text_input_enabled\": false,\n            \"default_expanded\": false,\n            \"always_expanded\": false,\n            \"text_contents\": {\n                \"main_label\": \"Ready to debrief?\",\n                \"start_call\": \"Chat now\",\n                \"start_chat\": null,\n                \"new_call\": null,\n                \"end_call\": null,\n                \"mute_microphone\": null,\n                \"change_language\": null,\n                \"collapse\": null,\n                \"expand\": null,\n                \"copied\": null,\n                \"accept_terms\": null,\n                \"dismiss_terms\": null,\n                \"listening_status\": null,\n                \"speaking_status\": null,\n                \"connecting_status\": null,\n                \"chatting_status\": null,\n                \"input_label\": null,\n                \"input_placeholder\": null,\n                \"input_placeholder_text_only\": null,\n                \"input_placeholder_new_conversation\": null,\n                \"user_ended_conversation\": null,\n                \"agent_ended_conversation\": null,\n                \"conversation_id\": null,\n                \"error_occurred\": null,\n                \"copy_id\": null\n            },\n            \"styles\": {\n                \"base\": null,\n                \"base_hover\": null,\n                \"base_active\": null,\n                \"base_border\": null,\n                \"base_subtle\": null,\n                \"base_primary\": null,\n                \"base_error\": null,\n                \"accent\": null,\n                \"accent_hover\": null,\n                \"accent_active\": null,\n                \"accent_border\": null,\n                \"accent_subtle\": null,\n                \"accent_primary\": null,\n                \"overlay_padding\": null,\n                \"button_radius\": null,\n                \"input_radius\": null,\n                \"bubble_radius\": null,\n                \"sheet_radius\": null,\n                \"compact_sheet_radius\": null,\n                \"dropdown_sheet_radius\": null\n            },\n            \"language_selector\": false,\n            \"supports_text_only\": false,\n            \"custom_avatar_path\": null,\n            \"language_presets\": {}\n        },\n        \"data_collection\": {},\n        \"overrides\": {\n            \"conversation_config_override\": {\n                \"tts\": {\n                    \"voice_id\": false,\n                    \"stability\": false,\n                    \"speed\": false,\n                    \"similarity_boost\": false\n                },\n                \"conversation\": {\n                    \"text_only\": true\n                },\n                \"agent\": {\n                    \"first_message\": false,\n                    \"language\": false,\n                    \"prompt\": {\n                        \"prompt\": false,\n                        \"native_mcp_server_ids\": false\n                    }\n                }\n            },\n            \"custom_llm_extra_body\": false,\n            \"enable_conversation_initiation_client_data_from_webhook\": false\n        },\n        \"call_limits\": {\n            \"agent_concurrency_limit\": -1,\n            \"daily_limit\": 100000,\n            \"bursting_enabled\": true\n        },\n        \"ban\": null,\n        \"privacy\": {\n            \"record_voice\": true,\n            \"retention_days\": -1,\n            \"delete_transcript_and_pii\": false,\n            \"delete_audio\": false,\n            \"apply_to_existing_conversations\": false,\n            \"zero_retention_mode\": false\n        },\n        \"workspace_overrides\": {\n            \"conversation_initiation_client_data_webhook\": null,\n            \"webhooks\": {\n                \"post_call_webhook_id\": \"2e1a0de872e342fea3197a0054f6752d\",\n                \"send_audio\": false\n            }\n        },\n        \"testing\": {\n            \"attached_tests\": [],\n            \"referenced_tests_ids\": []\n        },\n        \"safety\": {\n            \"is_blocked_ivc\": false,\n            \"is_blocked_non_ivc\": false,\n            \"ignore_safety_evaluation\": false\n        }\n    },\n    \"phone_numbers\": [],\n    \"workflow\": {\n        \"edges\": {},\n        \"nodes\": {\n            \"start_node\": {\n                \"type\": \"start\",\n                \"position\": {\n                    \"x\": 0.0,\n                    \"y\": 0.0\n                }\n            }\n        }\n    },\n    \"access_info\": {\n        \"is_creator\": true,\n        \"creator_name\": \"leonard@legalengine.co.uk\",\n        \"creator_email\": \"leonard@legalengine.co.uk\",\n        \"role\": \"admin\"\n    },\n    \"tags\": []\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -64,
+        -240
+      ],
+      "id": "a3783069-5bde-4732-8133-0d16fbf94752",
+      "name": "Create 11L agent with KB"
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        160,
+        -240
+      ],
+      "id": "35b0c118-550f-402b-a971-b332234f53d7",
+      "name": "Wait 10s1",
+      "webhookId": "749e1ee2-495f-4335-aac7-fd6d21982949"
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -288,
+        -240
+      ],
+      "id": "db732738-ae08-42c0-a44a-063f8e26dbc3",
+      "name": "Wait 10s2",
+      "webhookId": "68a767cc-34be-4914-8674-4131c1bf4cf1"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1184,
+        -240
+      ],
+      "id": "7c2da5ee-aa99-44f1-843b-40f2c5dfffc1",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        -736,
+        -240
+      ],
+      "id": "db5df6b8-f89b-41d6-b512-5c3ab9b2c0c1",
+      "name": "Today"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4b1d2468-3f3e-45db-84e0-d0b4bd58b458",
+              "name": "agent_id",
+              "value": "={{ $('Create 11L agent with KB').item.json.agent_id }}",
+              "type": "string"
+            },
+            {
+              "id": "32873103-5b12-46ef-8e03-cc955018811f",
+              "name": "id",
+              "value": "={{ $('Create KB').item.json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "9e23c176-0fdd-429b-bc90-3ac7a0e042cf",
+              "name": "biz",
+              "value": "={{ $('Set Nodes to pass2').item.json.biz }}",
+              "type": "string"
+            },
+            {
+              "id": "20e0d5fa-d695-436d-8999-bf9bab12a883",
+              "name": "org_fullname",
+              "value": "={{ $('When Executed by Another Workflow').item.json.data[1].data[4].organiserFullName }}",
+              "type": "string"
+            },
+            {
+              "id": "54f85875-7c6b-47b1-b258-ee5bfd4d8da3",
+              "name": "org_firstname",
+              "value": "={{ $('When Executed by Another Workflow').item.json.data[1].data[4].organiserFirstName }}",
+              "type": "string"
+            },
+            {
+              "id": "578dfeff-4c2c-483d-9f52-fe28bb12aba9",
+              "name": "org_biz",
+              "value": "={{ $('When Executed by Another Workflow').item.json.data[1].data[4].organiserOrganisation }}",
+              "type": "string"
+            },
+            {
+              "id": "860c689c-9f74-4d01-938c-82c8bf23b3a4",
+              "name": "org_email",
+              "value": "={{ $('When Executed by Another Workflow').item.json.data[1].data[4].organiserEmail }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        384,
+        -240
+      ],
+      "id": "f2b72f11-9ac2-4a4a-ae8b-3e1627865106",
+      "name": "Set Nodes to pass"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1fa163da-5910-4c17-b733-05ee3f01c0a9",
+              "name": "text",
+              "value": "={{ $json.data[0].data[0].text }}",
+              "type": "string"
+            },
+            {
+              "id": "4e6c9b69-4bad-4997-a826-7a0e85d050a8",
+              "name": "biz",
+              "value": "={{ $json.data[0].data[1].text }}",
+              "type": "string"
+            },
+            {
+              "id": "03363cd0-e51b-406b-ae41-9d8555a51f6d",
+              "name": "org_ful_name",
+              "value": "={{ $json.data[1].data[4].organiserFullName }}",
+              "type": "string"
+            },
+            {
+              "id": "893783e5-e5b5-4b16-9fc6-e7b088d5b453",
+              "name": "org_first_name",
+              "value": "={{ $json.data[1].data[4].organiserFirstName }}",
+              "type": "string"
+            },
+            {
+              "id": "6edb70e5-3ca5-461c-8a54-733be19434d6",
+              "name": "org_biz",
+              "value": "={{ $json.data[1].data[4].organiserOrganisation }}",
+              "type": "string"
+            },
+            {
+              "id": "24343bae-1b1f-492c-8803-6c7f736e3131",
+              "name": "org_email",
+              "value": "={{ $json.data[1].data[4].organiserEmail }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -960,
+        -240
+      ],
+      "id": "8743c1f2-feec-4cf7-8380-d098fea69e39",
+      "name": "Set Nodes to pass2"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "90By8bfu3IR8ED9b",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/90By8bfu3IR8ED9b",
+          "cachedResultName": "DEV - A3 Luke 3 - Find and book slot - Andy"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        608,
+        -240
+      ],
+      "id": "d2aedd95-4774-499a-82a5-9279bc374c3c",
+      "name": "Call 'DEV - A3 Luke 3 - Find and book slot - Andy'"
+    }
+  ],
+  "connections": {
+    "Create KB": {
+      "main": [
+        [
+          {
+            "node": "Wait 10s2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create 11L agent with KB": {
+      "main": [
+        [
+          {
+            "node": "Wait 10s1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 10s2": {
+      "main": [
+        [
+          {
+            "node": "Create 11L agent with KB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 10s1": {
+      "main": [
+        [
+          {
+            "node": "Set Nodes to pass",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Set Nodes to pass2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Today": {
+      "main": [
+        [
+          {
+            "node": "Create KB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Nodes to pass": {
+      "main": [
+        [
+          {
+            "node": "Call 'DEV - A3 Luke 3 - Find and book slot - Andy'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Nodes to pass2": {
+      "main": [
+        [
+          {
+            "node": "Today",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "data": [
+            {
+              "data": [
+                {
+                  "text": "Name: Connor Adams\nCompany: Simmons & Simmons\nEmail provided: connor.adams@simmons-simmons.con (note: domain may contain a typo — typical firm domain is simmons-simmons.com)\nCurrent base: London, United Kingdom (public profile indicates London)\n\nbio_400_words:\nConnor Adams is a marketing and business‑development operations professional currently serving as M&BD Operations Manager at Simmons & Simmons. In this role he acts as a practical lead on the operational delivery of the firm’s marketing and business‑development (M&BD) programme, focusing on events, content and online communications for internal and external audiences. Connor joined the firm following a placement in the M&BD team and has been responsible for coordinating cross‑functional workflows, supporting campaign delivery and maintaining content systems and event logistics. His background combines hands‑on client‑facing event management with content publication and administrative process improvement, reflecting a practitioner’s grasp of both the technical platforms used by modern law firms and the stakeholder management needed to run firm‑wide initiatives. Educated with a BA in Business Management with Marketing from the University of the West of England, Connor also brings earlier experience in public‑sector support roles, which underpinned his client‑service orientation and operational reliability. Publicly available information does not indicate a practising legal qualification; his expertise is in marketing operations rather than fee‑earning legal work. Over the past five years he has been primarily focused on operational delivery for M&BD, including coordinating events, overseeing content lifecycle for web and internal channels, and ensuring smooth day‑to‑day functioning of the team’s tools and processes. There are no major legal publications or deal credits publicly attributed to him; his contribution is typically behind the scenes, enabling lawyers and business teams to engage clients effectively. For meeting preparation, useful rapport lines include his operations and events background, his education in business and marketing, and his likely focus on pragmatic delivery and stakeholder coordination. If you need granular verification (for example exact start dates, internal team structure or recent projects), the firm’s internal directory or his LinkedIn profile (if available) will be the quickest way to confirm current responsibilities and contact details.\n\nrole_history:\n- M&BD Operations Manager, Simmons & Simmons — February 2019–Present. Manages event operations, online communications and content workflows; supports delivery of firm‑level marketing and business‑development campaigns and streamlines team processes.\n- Marketing & Business Development Assistant (placement), Simmons & Simmons — dates not publicly specified (placement prior to full appointment). Supported M&BD activities and provided administrative and content support, forming the basis for transition into a permanent operations role.\n- Receptionist, Devon Partnership NHS Trust — dates not publicly specified. Delivered front‑line client service and administrative support in a public‑sector healthcare setting.\n- Service Support Assistant, Devon County Council — dates not publicly specified. Performed service administration and support functions, building operational and stakeholder management experience.\n\nEducation:\n- BA (Hons) Business Management with Marketing, University of the West of England — completed 2019 (public profile).\n- Torquay Boys’ Grammar School — dates not publicly specified.\n\nNotable publications / deals:\n- No public legal publications, deal announcements or authored articles attributed to Connor Adams were identified. His role is operational/marketing focused.\n\nSources / verification:\n- TheOrg profile for Simmons & Simmons — Connor Adams: https://theorg.com/org/simmons-simmons/org-chart/connor-adams (profile viewed 7 Sep 2025)\n- Search note: As of 7 Sep 2025, no dedicated Simmons & Simmons public staff bio or an unambiguous LinkedIn profile for Connor Adams was found in public search results. Recommend confirming via the firm’s internal directory or asking Connor directly if you need up‑to‑the‑minute role details or recent project examples.\n\nConfidence:\n- Moderate for current role, location and education (based on TheOrg profile). Low for precise dates of earlier roles and for absence of an official firm bio — please verify internally if required.\n\nbio_400_words:\nJo Cooper is publicly listed by Simmons & Simmons as a contact for the firm’s Gender Balance network. Public information about her specific practice area, formal job title, office location and detailed career history is limited; she does not have a readily discoverable public profile or LinkedIn entry under that name. The only verifiable reference (the firm’s Responsible Business / Our People page) identifies her as a point of contact for gender-balance activity within the firm, indicating involvement in internal diversity and inclusion work and people‑focused initiatives. No public records, press coverage or publications in the last 60 months explicitly attribute client work, deal leadership, external speaking or authored commentary to Jo Cooper.\n\nFor meeting purposes, the most reliable, rapport‑useful facts are:\n- Affiliation: Simmons & Simmons — listed contact for the Gender Balance network on the firm’s Responsible Business pages.\n- Public role emphasis: internal gender balance / inclusion network contact (implies engagement with colleague development, mentoring, events and internal policy work).\n- Contact detail note: the provided email jo.cooper@simmons-simmons.con contains a likely typographical error; the firm’s correct email domain is @simmons-simmons.com.\n\nSuggested opening lines and rapport anchors\n- “I saw you’re listed as a contact for Simmons & Simmons’ Gender Balance network — I’d love to hear what initiatives you’re most proud of recently.”\n- Ask about recent internal programmes, mentoring or metrics the network monitors, and any cross‑office initiatives (e.g. graduate recruitment, flexible working or progression interventions).\n- If you prefer a lighter opener: reference the firm’s Responsible Business work and invite Jo to describe priorities for the coming 12 months.\n\nWhat I could not verify\n- No public record of Jo Cooper’s firm job title, office base, practice area, LinkedIn profile, notable client mandates, recent deals or publications within the last 60 months.\n- No definitive role history for the past 10 years is available in public sources.\n\nPractical notes\n- Use the corrected domain @simmons-simmons.com for email attempts.\n- If you need more precise detail (title, office, biography), ask the meeting organiser or Simmons & Simmons reception/people team to confirm Jo’s role and office. That will allow tailored opening remarks referencing a specific practice or deal.\n\nrole_history:\n- Contact, Gender Balance Network — Simmons & Simmons — (public listing; date not specified). Impact: Serves as a named contact for the firm’s gender‑balance network, signalling active involvement in internal inclusion programmes and colleague progression efforts.\n- Simmons & Simmons — (no public role/title or dates available). Impact: Affiliated with the firm in a capacity tied to Responsible Business activity; precise responsibilities and prior positions not publicly disclosed.\n\nSources:\n- Simmons & Simmons — Responsible Business / Our People: https://www.simmons-simmons.com/en/about-us/responsible-business/our-people\n- Note on domain: Simmons & Simmons official domain — @simmons-simmons.com\n\nIf you’d like, I can (a) request a short confirmatory note from Simmons & Simmons reception about Jo’s title and office, or (b) draft 3–4 tailored opening questions for the meeting based on the gender-balance remit. Which would you prefer?\n\nbio_400_words:\nJulia Ludwig is a Germany‑qualified lawyer who specialises in renewable energy and energy regulatory law, based in the Munich and Berlin offices of Becker Büttner Held (BBH). Her practice focuses on regulatory, permitting and grid‑connection issues for renewable generation projects (especially photovoltaic installations), as well as planning and construction matters under the Federal Immission Control Act (BImSchG), building law and mining law. She advises developers and investors on the regulatory framework for project realisation, support regimes and licensing compliance, and regularly handles questions arising in early‑stage project development and due diligence.\n\nLudwig completed her legal studies between 2013 and 2019 with semesters in Berlin, Heidelberg and Scotland, and undertook the German legal traineeship (Referendariat) from 2019 to 2021 with placements that included a firm focusing on environmental and energy law and a term at the independent research institute Öko‑Institut in Berlin. She joined BBH in 2022 and is admitted to practise in Germany as a Rechtsanwältin. Her background combines academic exposure to UK/Scottish law and practical German regulatory training, which supports cross‑border advisory work in English and German.\n\nPublicly available sources do not list high‑profile announced transactions or published awards attributable to her in the last 60 months; her contributions appear concentrated on regulatory advice, permitting strategy and support for project delivery teams rather than headline M&A mandates. No speaking engagements, board memberships or recognitions were identified in the sources reviewed. Languages recorded or reasonably inferred from education and practice are German (native) and English.\n\nFor meeting preparation: focus on regulatory and permitting aspects of renewable projects, project stage issues (grid connection, licensing, environmental approval) and Germany‑specific compliance risks. If you need to reference current contact details, a publicly listed firm email and direct line appear on BBH profiles; note there is no public record of an affiliation with Simmons & Simmons and the email domain you supplied (simmons‑simmons.con) appears to be a typo or incorrect domain.\n\nThis summary is compiled from public profiles and directory listings; where dates or details were not published publicly I have avoided speculation. If you would like, I can run a further check for recent deal mentions, publications or conference appearances in German‑language trade press or company announcements.\n\nrole_history:\n- Becker Büttner Held (BBH) — Lawyer / Rechtsanwältin (2022–present)\n  Impact summary: Advises on regulatory, permitting and grid‑connection matters for renewable energy projects, supporting project delivery and compliance across planning, BImSchG and building law issues; strengthens BBH’s renewable energy regulatory offering in Munich/Berlin.\n\n- Legal traineeship (Referendariat), placements including a specialised environmental/energy law firm and Öko‑Institut, Darmstadt/Berlin (2019–2021)\n  Impact summary: Gained practical litigation and advisory experience in environmental and energy law and hands‑on regulatory research at a leading environmental think tank, informing later transactional and regulatory advisory work.\n\n- Law studies, universities in Berlin, Heidelberg and Scotland (2013–2019)\n  Impact summary: Built foundational legal knowledge with international exposure (Scotland) supporting cross‑jurisdictional advisory capability in English and German.\n\nverification_note:\n- No authoritative evidence was found linking Julia Ludwig to Simmons & Simmons. Public professional listings identify her at Becker Büttner Held (BBH). The email you provided (julia.ludwig@simmons‑simmons.con) appears to contain a domain typo; a publicly listed firm email is julia.ludwig@bbh‑online.de.\n\nSimmons & Simmons — Executive briefing (≈500 words)\n\nOverview\nSimmons & Simmons is an international full‑service law firm headquartered in London, with a pronounced industry focus on financial institutions, asset management, technology, life sciences and TMT (technology, media and telecoms). Founded in 1896 by twins Percy and Edward Simmons, the firm has developed a City‑lawyer heritage while expanding across Europe, the Middle East, Asia and, more recently, the United States. Roughly half its staff are based in London (CityPoint, off Moorgate) and it now operates more than 20 offices worldwide (simmons‑simmons.com; Wikipedia).\n\nWhat the firm does / what it is known for\n- Core strengths: banking & finance, capital markets, financial regulation, asset management, corporate/M&A, intellectual property, life sciences and TMT.\n- Client profile: major banks, asset managers, corporates in regulated industries, technology companies and life‑sciences businesses. The firm positions itself on sector expertise combined with integrated cross‑border teams.\n- Reputation: recognised for transactional strength in financial services and for advising on complex, often cross‑jurisdictional deals. It is also regarded as progressive on legal operations and technology adoption within the UK magic‑circle/adjoining City set.\n\nRecent developments (last 60 months — emphasis)\n- US expansion: In 2022 Simmons & Simmons opened a San Francisco office to deepen engagement with technology clients and venture/scale‑up ecosystems — a strategic move into the US market.\n- Legal operations and innovation: The firm has invested materially in legal project management, legal technology and process transformation, creating hybrid roles (e.g. legal technologists, eDiscovery specialists) and promoting alternative service delivery models. This led to recognition in industry innovation reporting.\n- High‑profile mandates: Over recent years the firm has advised on notable transactions across sectors (including prominent sports and energy deals), reflecting its capacity for large, complex cross‑border mandates.\n- Lateral hires and regional strengthening: The firm has actively recruited senior teams to bolster capabilities in European markets and sector desks.\n\nItems published in the last month (highlights)\n- 29 August 2025 — Simmons & Simmons advised FTSE‑100 company Diploma plc on its acquisition of Electramed (firm press release).\n- 22 August 2025 — The firm advised Antwerp‑based CMB.TECH on a significant maritime merger (firm press release).\n- 6 August 2025 — Simmons announced the hire of a four‑partner corporate real‑estate team into its Frankfurt office, strengthening its German footprint (firm press release).\n(Links: Simmons & Simmons news pages: https://www.simmons-simmons.com/en/about-us/news and recent deals page.)\n\nAccolades and standing\n- Regularly ranked among the UK’s larger firms by revenue and partner profits; receives consistent sector rankings in legal directories for financial services, IP, life sciences and TMT.\n- Recognised in industry reports for innovation in legal service delivery and international trade achievements historically.\n\nMajor roles/achievements (last 20 years)\n- Systematic international expansion across Europe, Asia and the Middle East, and targeted entry into the US market.\n- Advising on market‑leading cross‑border transactions and restructurings in finance, energy, life sciences and TMT.\n- Building integrated sector teams to advise on regulatory, capital markets and IP issues for sophisticated institutional and corporate clients.\n\nUseful sources\n- Firm site — About & News: https://www.simmons-simmons.com/en/about-us and https://www.simmons-simmons.com/en/about-us/news\n- Recent deals listing: https://www.simmons-simmons.com/deals\n- Background profiles: The Lawyer company profile and Wikipedia entry (Simmons & Simmons)."
+                },
+                {
+                  "text": "Simmons & Simmons"
+                }
+              ]
+            },
+            {
+              "data": [
+                {
+                  "subject": "Test - Meeting with Simmons Simmons",
+                  "fullName": "Andy Batty",
+                  "firstName": "Andy",
+                  "lastName": "Batty",
+                  "role": "",
+                  "email": "andy@legalengine.co.uk",
+                  "organisation": "Legalengine",
+                  "meetingId": "AAMkADUzNDJhMGNiLWU5NjQtNDQ3My1hNTA1LTQ1Y2NhN2M5OGM1NgBGAAAAAADThXoAy-mHRKZz5H7dvQQ3BwC8jGSPlzaSQ42ovVdQ3dqOAAAAAAENAAC8jGSPlzaSQ42ovVdQ3dqOAAA9amL7AAA=",
+                  "start": "2025-09-06T07:00:00",
+                  "end": "2025-09-06T07:30:00"
+                },
+                {
+                  "subject": "Test - Meeting with Simmons Simmons",
+                  "fullName": "Eduardo Aguilar Pelaez",
+                  "firstName": "Eduardo",
+                  "lastName": "Aguilar Pelaez",
+                  "role": "",
+                  "email": "edu@legalengine.co.uk",
+                  "organisation": "Legalengine",
+                  "meetingId": "AAMkADUzNDJhMGNiLWU5NjQtNDQ3My1hNTA1LTQ1Y2NhN2M5OGM1NgBGAAAAAADThXoAy-mHRKZz5H7dvQQ3BwC8jGSPlzaSQ42ovVdQ3dqOAAAAAAENAAC8jGSPlzaSQ42ovVdQ3dqOAAA9amL7AAA=",
+                  "start": "2025-09-06T07:00:00",
+                  "end": "2025-09-06T07:30:00"
+                },
+                {
+                  "subject": "Test - Meeting with Simmons Simmons",
+                  "fullName": "Lee Curtis",
+                  "firstName": "Lee",
+                  "lastName": "Curtis",
+                  "role": "",
+                  "email": "lee@legalengine.co.uk",
+                  "organisation": "Legalengine",
+                  "meetingId": "AAMkADUzNDJhMGNiLWU5NjQtNDQ3My1hNTA1LTQ1Y2NhN2M5OGM1NgBGAAAAAADThXoAy-mHRKZz5H7dvQQ3BwC8jGSPlzaSQ42ovVdQ3dqOAAAAAAENAAC8jGSPlzaSQ42ovVdQ3dqOAAA9amL7AAA=",
+                  "start": "2025-09-06T07:00:00",
+                  "end": "2025-09-06T07:30:00"
+                },
+                {
+                  "subject": "Test - Meeting with Simmons Simmons",
+                  "fullName": "Sam Stamp",
+                  "firstName": "Sam",
+                  "lastName": "Stamp",
+                  "role": "",
+                  "email": "sam@legalengine.co.uk",
+                  "organisation": "Legalengine",
+                  "meetingId": "AAMkADUzNDJhMGNiLWU5NjQtNDQ3My1hNTA1LTQ1Y2NhN2M5OGM1NgBGAAAAAADThXoAy-mHRKZz5H7dvQQ3BwC8jGSPlzaSQ42ovVdQ3dqOAAAAAAENAAC8jGSPlzaSQ42ovVdQ3dqOAAA9amL7AAA=",
+                  "start": "2025-09-06T07:00:00",
+                  "end": "2025-09-06T07:30:00"
+                },
+                {
+                  "organiserFullName": "Lara Howie",
+                  "organiserFirstName": "Lara",
+                  "organiserLastName": "Howie",
+                  "organiserJobTitle": "",
+                  "organiserEmail": "lara@legalengine.co.uk",
+                  "organiserOrganisation": "Legalengine",
+                  "subject": "Simmons & Simmons - Post Meeting Follow Up",
+                  "meetingId": "AAMkADUzNDJhMGNiLWU5NjQtNDQ3My1hNTA1LTQ1Y2NhN2M5OGM1NgBGAAAAAADThXoAy-mHRKZz5H7dvQQ3BwC8jGSPlzaSQ42ovVdQ3dqOAAAAAAENAAC8jGSPlzaSQ42ovVdQ3dqOAAA9amMGAAA=",
+                  "start": "2025-09-07T09:45:00.0000000",
+                  "end": "2025-09-07T10:00:00.0000000",
+                  "timeZone": "UTC"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "triggerCount": 0,
+  "meta": null
+}

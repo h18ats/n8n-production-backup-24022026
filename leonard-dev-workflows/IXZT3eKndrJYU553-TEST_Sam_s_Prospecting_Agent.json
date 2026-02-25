@@ -1,0 +1,719 @@
+{
+  "name": "TEST - Sam's Prospecting Agent",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -848,
+        496
+      ],
+      "id": "d0ea19ca-8378-4b0e-a107-a3784e66455e",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "app0CFegk2noYIjK7",
+          "mode": "list",
+          "cachedResultName": "Sam's BD Base",
+          "cachedResultUrl": "https://airtable.com/app0CFegk2noYIjK7"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblWUVldCnDjJLWIK",
+          "mode": "list",
+          "cachedResultName": "Lead List",
+          "cachedResultUrl": "https://airtable.com/app0CFegk2noYIjK7/tblWUVldCnDjJLWIK"
+        },
+        "filterByFormula": "{Workflow Activated} = \"No\"",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -624,
+        496
+      ],
+      "id": "79cb49e7-90ae-4c15-83a0-0a0618a18626",
+      "name": "Search records",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "vYxuU00U3OJfSxuQ",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Pull all Airtable outputs\nconst items = $input.all();\n\n// Unwrap records if nested (Airtable outputs arrays)\nconst records = items.flatMap(i =>\n  Array.isArray(i.json.records)\n    ? i.json.records.map(r => ({ json: { ...r.fields, id: r.id } }))\n    : [i]\n);\n\n// Filter out firms already marked as 'Yes'\nlet unused = records.filter(r => {\n  const wf = (r.json[\"Workflow Activated\"] || \"\").toLowerCase().trim();\n  return wf !== \"yes\" && !!r.json[\"Company Name\"];\n});\n\nif (unused.length === 0) {\n  throw new Error(\"No unused firms found in Airtable.\");\n}\n\n// Shuffle helper (Fisher-Yates)\nfunction shuffle(array) {\n  let m = array.length, t, i;\n  while (m) {\n    i = Math.floor(Math.random() * m--);\n    t = array[m];\n    array[m] = array[i];\n    array[i] = t;\n  }\n  return array;\n}\n\n// Shuffle the unused firms\nunused = shuffle(unused);\n\n// Function to pick up to 6 unique firms, retrying if too few remain\nfunction pickFirms(source, desiredCount = 6, maxRetries = 3) {\n  let attempt = 0;\n  let selection = [];\n\n  while (selection.length < desiredCount && attempt < maxRetries) {\n    // Grab a few more (8 to allow for potential parsing dropouts)\n    const batch = shuffle(source).slice(0, 8);\n    const newOnes = batch.filter(\n      b => !selection.find(s => s.json[\"Company Name\"] === b.json[\"Company Name\"])\n    );\n    selection.push(...newOnes);\n    attempt++;\n  }\n\n  // Trim to exactly 6 for downstream\n  return selection.slice(0, desiredCount);\n}\n\n// Run the picker\nconst selected = pickFirms(unused, 6);\n\n// Final flat JSON output for downstream nodes\nreturn selected.map(r => ({\n  json: {\n    \"Company Name\": r.json[\"Company Name\"],\n    \"LinkedIn URL\": r.json[\"LinkedIn Sales Navigator URL\"] || \"\",\n    \"Record ID\": r.json.id,\n    \"Workflow Activated\": r.json[\"Workflow Activated\"] || \"No\"\n  }\n}));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -400,
+        496
+      ],
+      "id": "b31454a0-5e76-4025-ac63-34345f2283c7",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "jsCode": "const output = [];\n\nfor (const item of items) {\n  let data = item.json;\n\n  // 🧩 Unwrap Perplexity/Gemini structure\n  if (data.choices?.[0]?.message?.content) {\n    try {\n      data = JSON.parse(data.choices[0].message.content);\n    } catch (err) {\n      console.warn(\"⚠️ Bad JSON from model:\", err.message);\n      continue;\n    }\n  }\n\n  // 🧩 Handle if model returns directly an array or an object\n  const firmArray = Array.isArray(data) ? data : [data];\n\n  for (const firmData of firmArray) {\n    const company = firmData[\"Company Name\"] || firmData.company_name || \"Unknown Company\";\n    const contacts =\n      firmData[\"Relevant Contacts\"] ||\n      firmData[\"contacts\"] ||\n      firmData[\"RelevantContacts\"] ||\n      [];\n\n    const sourceUrls = firmData[\"Source URLs\"] || firmData[\"SourceURLs\"] || [];\n\n    console.log(`📋 Processing firm: ${company} (${contacts.length} contacts)`);\n\n    // 🧩 If no contacts, still push a placeholder so we can track the firm\n    if (!contacts || contacts.length === 0) {\n      output.push({\n        json: {\n          \"Company Name\": company,\n          \"Contact Person\": \"N/A\",\n          \"Job Title\": \"N/A\",\n          \"Focus Area\": \"N/A\",\n          \"Source URLs\": sourceUrls,\n          \"Email\": \"\", // will be filled by next stage\n        },\n      });\n      continue;\n    }\n\n    // 🧩 Flatten all contacts\n    for (const c of contacts) {\n      const name = c.Name || c[\"Full Name\"] || c[\"Contact Name\"] || \"N/A\";\n      const title = c.Title || c[\"Job Title\"] || c[\"Role\"] || \"N/A\";\n      const focus = c[\"Focus Area\"] || c[\"Focus\"] || \"N/A\";\n\n      if (name === \"N/A\" && title === \"N/A\") continue;\n\n      output.push({\n        json: {\n          \"Company Name\": company,\n          \"Contact Person\": name,\n          \"Job Title\": title,\n          \"Focus Area\": focus,\n          \"Source URLs\": sourceUrls,\n          \"Email\": \"\", // placeholder to be enriched in next node\n        },\n      });\n    }\n  }\n}\n\n// 🧩 Final check\nif (output.length === 0) {\n  console.warn(\"⚠️ No valid contacts found for any firms.\");\n}\n\nconsole.log(`✅ Total output records: ${output.length}`);\n\nreturn output;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        272,
+        496
+      ],
+      "id": "eee46a14-4634-4407-bddc-71c14fb01186",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const people = [\"Sam\", \"Lee\"];\nlet personIndex = 0;\nconst assignedMap = {}; // remembers who got which firm\n\nfor (const record of items) {\n  const firm = record.json[\"Company Name\"]; // ✅ updated key\n\n  if (assignedMap[firm]) {\n    // already assigned this firm → reuse\n    record.json[\"Assigned To\"] = assignedMap[firm];\n  } else {\n    // new firm → give to next person\n    const assigned = people[personIndex % people.length];\n    record.json[\"Assigned To\"] = assigned;\n    assignedMap[firm] = assigned;\n    personIndex++;\n  }\n}\n\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        496,
+        496
+      ],
+      "id": "4973c30d-6115-4354-bf95-fc7bc9f4a827",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "toRecipients": "=sam@legalengine.co.uk, lee@legalengine.co.uk",
+        "subject": "Your Daily Outreach",
+        "bodyContent": "={{$json[\"html\"]}}\n",
+        "additionalFields": {
+          "bodyContentType": "html"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        1744,
+        304
+      ],
+      "id": "7c89ef67-fae5-4ad1-bfce-774ea719ff93",
+      "name": "Summary email - INTERNAL1",
+      "webhookId": "1b47dd46-ea8d-4a5d-bcd2-6605c88773af",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "ZMK0z4y1ePoHQfPR",
+          "name": "Microsoft Outlook - Luke @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Group records by Company Name\nconst grouped = {};\n\nfor (const item of items) {\n  const f = item.json;\n\n  const firmName = f[\"Company Name\"] || \"Unknown firm\";\n  if (!grouped[firmName]) grouped[firmName] = [];\n  grouped[firmName].push(f);\n}\n\n// Build email HTML\nlet html = `\n<p>Hi both,</p>\n<p>Here are today's outreach targets.<br>\nAdd them on LinkedIn and send a message or email using the suggested copy below.</p>\n<hr>\n`;\n\nfor (const [firm, people] of Object.entries(grouped)) {\n  const assigned = people[0][\"Assigned To\"] || \"Unassigned\";\n  html += `<h3>${firm} <small>(Assigned to ${assigned})</small></h3><ul>`;\n\n  for (const p of people) {\n    const name = p[\"Contact Person\"] || \"N/A\";\n    const title = p[\"Job Title\"] || \"N/A\";\n    const email = p[\"Email\"] || \"\";\n    const insight = p[\"Suggested Insight\"] || \"\";\n    const outreach = p[\"Outreach Copy\"] || \"\";\n\n    html += `\n      <li>\n        <strong>${name}</strong> — ${title}${email ? ` — <a href=\"mailto:${email}\">${email}</a>` : \"\"}<br>\n        <em>${insight}</em><br>\n        <blockquote style=\"margin: 5px 0; padding-left: 10px; border-left: 3px solid #ddd;\">${outreach}</blockquote>\n      </li>`;\n  }\n\n  html += `</ul>`;\n}\n\nhtml += `\n<hr>\n<p>Generated automatically by n8n + Perplexity + Gemini.<br>\nHave a productive day 🚀</p>\n`;\n\nreturn [{ json: { html } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1520,
+        304
+      ],
+      "id": "369e8e31-9867-4ffc-a572-a57770f6a2fa",
+      "name": "Code in JavaScript3"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1296,
+        496
+      ],
+      "id": "358f525e-8407-4233-9bdc-8a20e4018934",
+      "name": "Code in JavaScript4"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "value": "app0CFegk2noYIjK7",
+          "mode": "list",
+          "cachedResultName": "Sam's BD Base",
+          "cachedResultUrl": "https://airtable.com/app0CFegk2noYIjK7"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblWUVldCnDjJLWIK",
+          "mode": "list",
+          "cachedResultName": "Lead List",
+          "cachedResultUrl": "https://airtable.com/app0CFegk2noYIjK7/tblWUVldCnDjJLWIK"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Workflow Activated": "=Yes",
+            "Company Name": "={{ $json['Company Name'] }}"
+          },
+          "matchingColumns": [
+            "Company Name"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Company Name",
+              "displayName": "Company Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn Sales Navigator URL",
+              "displayName": "LinkedIn Sales Navigator URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Workflow Activated",
+              "displayName": "Workflow Activated",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Yes",
+                  "value": "Yes"
+                },
+                {
+                  "name": "No",
+                  "value": "No"
+                },
+                {
+                  "name": "",
+                  "value": ""
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "updateAllMatches": false
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1520,
+        496
+      ],
+      "id": "a970115f-5e5b-4fe5-9c18-cea2a94bd1de",
+      "name": "Mark Worklow as Yes",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "vYxuU00U3OJfSxuQ",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "app0CFegk2noYIjK7",
+          "mode": "list",
+          "cachedResultName": "Sam's BD Base",
+          "cachedResultUrl": "https://airtable.com/app0CFegk2noYIjK7"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblAgufvBk2EcZaEk",
+          "mode": "list",
+          "cachedResultName": "Business Prospects",
+          "cachedResultUrl": "https://airtable.com/app0CFegk2noYIjK7/tblAgufvBk2EcZaEk"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Contact Person": "={{ $json['Company Name'] }}",
+            "Job Title": "={{ $json['Job Title'] }}",
+            "Contact Email": "={{ $json.Email }}",
+            "Assigned to": "={{ $json['Assigned To'] }}",
+            "Company Name": "={{ $json['Company Name'] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Company Name",
+              "displayName": "Company Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Contact Person",
+              "displayName": "Contact Person",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "First Name (Auto)",
+              "displayName": "First Name (Auto)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Last Name (Auto)",
+              "displayName": "Last Name (Auto)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Job Title",
+              "displayName": "Job Title",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Contact Email",
+              "displayName": "Contact Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn Page",
+              "displayName": "LinkedIn Page",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "New",
+                  "value": "New"
+                },
+                {
+                  "name": "Contacted",
+                  "value": "Contacted"
+                },
+                {
+                  "name": "Replied",
+                  "value": "Replied"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Created Date",
+              "displayName": "Created Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Last Modified",
+              "displayName": "Last Modified",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Assigned to",
+              "displayName": "Assigned to",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Sam",
+                  "value": "Sam"
+                },
+                {
+                  "name": "Lee",
+                  "value": "Lee"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1520,
+        688
+      ],
+      "id": "4facb38b-0f2a-476b-b230-19f2d4aaadb0",
+      "name": "Add records to table",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "vYxuU00U3OJfSxuQ",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        800,
+        720
+      ],
+      "id": "1a2a2cd0-4d66-4774-ac5e-337f451e0cbe",
+      "name": "Google Vertex Chat Model",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are assisting with business development outreach for a company that builds agentic voice AI assistants for law firms.\n\nHere is the current contact record:\n\n{{ JSON.stringify($json, null, 2) }}\n\nYour task:\nGenerate one short, credible outreach message that sounds human and relevant to the contact’s role, along with a single-sentence insight.\n\nReturn valid JSON in this format exactly:\n\n{\n  \"Company Name\": \"\",\n  \"Contact Person\": \"\",\n  \"Job Title\": \"\",\n  \"Email\": \"\",\n  \"Assigned To\": \"\",\n  \"Focus Area\": \"\",\n  \"Suggested Insight\": \"\",\n  \"Outreach Copy\": \"\"\n}\n\nGuidelines:\n- Keep all input values unchanged.\n- Use the existing \"Email\" field value if provided; otherwise, leave it blank.\n- Use the existing \"Focus Area\" if available, or infer it briefly from the job title.\n- Write the **Suggested Insight** as one short sentence explaining what this contact likely focuses on (e.g. \"Likely focused on client growth and operational efficiency.\").\n- Write **Outreach Copy** as one short message (2–3 sentences max) suitable for either LinkedIn or email.\n- Match this tone:\n  \"I'm ex Head of Innovation at Simmons & Simmons and now building agentic voice AI assistants for law firms — helping firms like yours scale BD and knowledge capture without adding headcount.\"\n- Avoid clichés or generic AI hype. Focus on relevance to their role or challenges.\n- Do not include markdown, code blocks, or explanations.\n- Return valid JSON only.\n- Use UK English.\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        720,
+        496
+      ],
+      "id": "5b6e3127-73c2-4b03-87a5-bc76a392c0c8",
+      "name": "Insight and Copy drafter"
+    },
+    {
+      "parameters": {
+        "jsCode": "const cleaned = [];\n\nfor (const item of items) {\n  let raw = item.json.output || item.json;\n\n  if (typeof raw === \"string\") {\n    raw = raw.replace(/```(?:json)?/g, \"\").trim();\n    try { raw = JSON.parse(raw); } catch (err) { continue; }\n  }\n\n  cleaned.push({\n    json: {\n      \"Company Name\": raw[\"Company Name\"] || \"Unknown\",\n      \"Contact Person\": raw[\"Contact Person\"] || \"N/A\",\n      \"Job Title\": raw[\"Job Title\"] || \"N/A\",\n      \"Email\": raw[\"Email\"] || \"\",\n      \"Assigned To\": raw[\"Assigned To\"] || \"Unassigned\",\n      \"Suggested Insight\": raw[\"Suggested Insight\"] || \"\",\n      \"Outreach Copy\": raw[\"Outreach Copy\"] || \"\"\n    },\n  });\n}\n\nreturn cleaned;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1072,
+        496
+      ],
+      "id": "14e902c6-79d1-420e-b159-bc873a307218",
+      "name": "Code in JavaScript5"
+    },
+    {
+      "parameters": {
+        "messages": {
+          "message": [
+            {
+              "content": "You are an expert researcher, focused on locating accurate information on prospective new business leads for Legal Engine, a voice-first AI company.",
+              "role": "system"
+            },
+            {
+              "content": "=Find senior or management-level professionals currently working at the UK law firm: {{ $json['Company Name'] }}.\n\nFocus on individuals connected to the firm's **technology, innovation, marketing, or business development** functions.\nAlso include anyone in overall **firm leadership** (e.g. Managing Partner, COO, CEO, Chambers Director) if no specific BD/innovation lead is visible.\n\nPrioritise these roles (titles can vary):\n- Chief Innovation Officer / Director of Innovation or Knowledge\n- Chief Technology Officer (CTO) / Head of IT / Head of Digital\n- Head or Director of Marketing, Business Development, or Client Relations\n- Chief Marketing Officer (CMO) / Business Development Director\n- Client Development or Growth lead\n- Marketing or Communications Manager (if firmwide or senior)\n- Managing Partner / Senior Partner / CEO / COO / Chambers Director (leadership context)\n\nIf no explicit person matches these roles, identify **the most senior operational or management figure** likely responsible for those areas.\n\nUse reliable public sources such as LinkedIn, the firm's own website, Legal 500, Chambers, or press releases. \nIf the firm’s website is not provided, infer it from the firm’s name.\n\nRespond in EXACTLY this JSON shape:\n\n[\n  {\n    \"Company Name\": \"{{ $json['Company Name'] }}\",\n    \"Relevant Contacts\": [\n      {\n        \"Title\": \"\",\n        \"Name\": \"\",\n        \"Focus Area\": \"Technology | Marketing | BD | Innovation | Leadership\"\n      }\n    ],\n    \"Source URLs\": [\"\", \"\"]\n  }\n]\n\nRules:\n- Each contact must be confirmed by a public, reliable source.\n- If no suitable people are found, return an empty array for \"Relevant Contacts\" but still include the firm object and one \"Source URL\".\n- No email addresses or external commentary.\n\n- Be tolerant of partial matches — e.g. “Practice Director” may map to BD/Leadership.\n- No commentary or explanation outside the JSON."
+            }
+          ]
+        },
+        "options": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.perplexity",
+      "typeVersion": 1,
+      "position": [
+        -176,
+        496
+      ],
+      "id": "68377698-d095-4451-9b3d-3444160a0658",
+      "name": "People Finder",
+      "credentials": {
+        "perplexityApi": {
+          "id": "pOqM7kFIqiYB3qGU",
+          "name": "Perplexity account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "messages": {
+          "message": [
+            {
+              "content": "You are an expert researcher, focused on locating accurate information on prospective new business leads for Legal Engine, a voice-first AI company.",
+              "role": "system"
+            },
+            {
+              "content": "=You are helping enrich contact data for law firms.\n\nHere is a contact record:\n{{ JSON.stringify($json, null, 2) }}\n\nIf \"Email\" is empty or blank:\n1. Identify the firm's likely website (from the name or any Source URLs if present).\n2. Look for any public contact patterns or staff emails.\n3. Make a realistic guess using one of these patterns:\n   - first.last@domain\n   - first@domain\n   - firstinitiallastname@domain\n\nIf the email already exists, keep it unchanged.\n\nReturn **only valid JSON** in this format:\n\n{\n  \"Company Name\": \"\",\n  \"Contact Person\": \"\",\n  \"Job Title\": \"\",\n  \"Email\": \"\",\n  \"Email Source\": \"found | guessed | unknown\"\n}\n\nRules:\n- Never invent non-law-firm domains (use the actual firm’s domain).\n- Prefer contact@ or info@ addresses only if no person-specific format can be inferred.\n- Always mark whether the email was found or guessed.\n- Do not include explanations or markdown.\n"
+            }
+          ]
+        },
+        "options": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.perplexity",
+      "typeVersion": 1,
+      "position": [
+        48,
+        496
+      ],
+      "id": "88030ff1-0363-40dc-8c11-58b8d86cc5c6",
+      "name": "Email Finder",
+      "credentials": {
+        "perplexityApi": {
+          "id": "pOqM7kFIqiYB3qGU",
+          "name": "Perplexity account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Search records",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search records": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "People Finder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Insight and Copy drafter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript3": {
+      "main": [
+        [
+          {
+            "node": "Summary email - INTERNAL1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summary email - INTERNAL1": {
+      "main": [
+        []
+      ]
+    },
+    "Code in JavaScript4": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Add records to table",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Mark Worklow as Yes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add records to table": {
+      "main": [
+        []
+      ]
+    },
+    "Google Vertex Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Insight and Copy drafter",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insight and Copy drafter": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript5": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "People Finder": {
+      "main": [
+        [
+          {
+            "node": "Email Finder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Finder": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 0,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

@@ -1,0 +1,260 @@
+{
+  "name": "DEV - 11L - Airtable",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "elevenlabs/post-meeting-summary",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "645b3be5-0662-4bc3-9b32-02d0fb7aae67",
+      "name": "Webhook (Eleven Labs)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1104,
+        16
+      ],
+      "webhookId": "4c2e96f5-5583-4b80-a2f1-86830350f909"
+    },
+    {
+      "parameters": {
+        "keepOnlySet": true,
+        "values": {
+          "string": [
+            {
+              "name": "meeting_quality",
+              "value": "={{$json.body.meeting_quality || $json.body.meetingQuality || $json.body.quality || ''}}"
+            },
+            {
+              "name": "context",
+              "value": "={{$json.body.context || $json.body.additional_context || ''}}"
+            },
+            {
+              "name": "immediate_next_steps",
+              "value": "={{$json.body.immediate_next_steps || $json.body.next_steps || ''}}"
+            },
+            {
+              "name": "internal_intros",
+              "value": "={{$json.body.internal_intros || $json.body.internalIntroductions || ''}}"
+            },
+            {
+              "name": "suggested_next_steps_raw",
+              "value": "={{$json.body.suggested_next_steps || $json.body.suggestedNextSteps || ''}}"
+            },
+            {
+              "name": "lawyer_email",
+              "value": "={{$json.body.lawyer_email || $json.body.email || ''}}"
+            },
+            {
+              "name": "client_name",
+              "value": "={{$json.body.client_name || $json.body.client || ''}}"
+            },
+            {
+              "name": "meeting_date",
+              "value": "={{$json.body.meeting_date || $json.body.date || ''}}"
+            },
+            {
+              "name": "summary",
+              "value": "={{$json.body.summary || ''}}"
+            },
+            {
+              "name": "raw_payload",
+              "value": "={{$json.body ? JSON.stringify($json.body) : ''}}"
+            }
+          ],
+          "boolean": [],
+          "number": []
+        },
+        "options": {}
+      },
+      "id": "2fc9c453-c462-4649-9d31-908d0e12bd79",
+      "name": "Set → Normalise Fields",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        -848,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Function Item node (single-item API)\nconst j = item.json;\n\nconst trim = v => typeof v === 'string' ? v.trim() : v;\n\nj.meeting_quality = trim(j.meeting_quality) || 'Unspecified';\nj.context = trim(j.context) || '';\nj.immediate_next_steps = trim(j.immediate_next_steps) || '';\nj.internal_intros = trim(j.internal_intros) || '';\nj.lawyer_email = trim(j.lawyer_email) || '';\nj.client_name = trim(j.client_name) || '';\nj.summary = trim(j.summary) || '';\n\n// suggested_next_steps normalisation\nlet suggested = j.suggested_next_steps_raw || '';\nif (Array.isArray(suggested)) {\n  j.suggested_next_steps = suggested.join(', ');\n} else if (typeof suggested === 'string') {\n  j.suggested_next_steps = suggested;\n} else {\n  j.suggested_next_steps = '';\n}\n\n// date → YYYY-MM-DD\nconst rawDate = j.meeting_date;\nif (rawDate) {\n  const d = new Date(rawDate);\n  if (!isNaN(d.getTime())) {\n    const yyyy = d.getFullYear();\n    const mm = String(d.getMonth() + 1).padStart(2, '0');\n    const dd = String(d.getDate()).padStart(2, '0');\n    j.meeting_date = `${yyyy}-${mm}-${dd}`;\n  }\n}\n\n// email validation\nj._valid_email = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(j.lawyer_email);\n\nreturn item;"
+      },
+      "id": "de710f92-fdee-4eca-ae42-2dea118c901f",
+      "name": "Function Item → Clean + Transform",
+      "type": "n8n-nodes-base.functionItem",
+      "typeVersion": 1,
+      "position": [
+        -608,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json._valid_email}}",
+              "operation": "isTrue"
+            }
+          ],
+          "string": []
+        },
+        "options": {}
+      },
+      "id": "13746707-c6bf-40bf-ba81-7b1a8eca6b12",
+      "name": "IF → Email Present & Valid",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -368,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://api.airtable.com/v0/appXXXXXXXXXXXXXX/Meetings",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "options": {}
+      },
+      "id": "5facec62-19da-4edd-a4ba-b467c77d5dcc",
+      "name": "HTTP Request → Airtable Create",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        -128,
+        -64
+      ]
+    },
+    {
+      "parameters": {
+        "keepOnlySet": true,
+        "values": {
+          "string": [
+            {
+              "name": "resCode",
+              "value": "={{ 200 }}"
+            },
+            {
+              "name": "resBody",
+              "value": "={{ { status: 'success', message: 'Record created in Airtable', airtable: $json } }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "3e1e9caf-1896-4170-b6e3-77d80e6fa847",
+      "name": "Set → Build Success Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        112,
+        -64
+      ]
+    },
+    {
+      "parameters": {
+        "keepOnlySet": true,
+        "values": {
+          "string": [
+            {
+              "name": "resCode",
+              "value": "={{ 400 }}"
+            },
+            {
+              "name": "resBody",
+              "value": "={{ { status: 'error', message: 'Missing or invalid email address', hint: 'Provide lawyer_email in the payload' } }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "093983e0-fd7c-455e-82fc-d0aad3c538f1",
+      "name": "Set → Build Error Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        -128,
+        144
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook (Eleven Labs)": {
+      "main": [
+        [
+          {
+            "node": "Set → Normalise Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set → Normalise Fields": {
+      "main": [
+        [
+          {
+            "node": "Function Item → Clean + Transform",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Function Item → Clean + Transform": {
+      "main": [
+        [
+          {
+            "node": "IF → Email Present & Valid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF → Email Present & Valid": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request → Airtable Create",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set → Build Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request → Airtable Create": {
+      "main": [
+        [
+          {
+            "node": "Set → Build Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 0,
+  "meta": null
+}

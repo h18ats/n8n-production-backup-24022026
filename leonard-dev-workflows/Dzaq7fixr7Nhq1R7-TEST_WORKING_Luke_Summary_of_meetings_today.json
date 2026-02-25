@@ -1,0 +1,1688 @@
+{
+  "name": "TEST WORKING - Luke - Summary of meetings today",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 5
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -336,
+        -480
+      ],
+      "id": "6cd7c111-ab64-49d8-b1be-86d88e23dc95",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        -112,
+        -480
+      ],
+      "id": "c21380e8-12e8-4dd7-8239-cdc4f676e90f",
+      "name": "Today"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "f2141cf2-1196-4521-b206-00def7b641ff",
+              "leftValue": "",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "3c5d6c37-2a2f-4202-9e1d-26d106ca3678",
+      "name": "IF — No meetings today?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        784,
+        -384
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Use the Perplexity Search tool to help with the following task:  \n\nResearch this person ahead of a business meeting: {{ $json.name }}, their email address is {{ $json.email }}. Their Company/domain: {{ $json.domain }} may help you to locate them on professional networks or from more public sources.\n\nLimit the use of the Perplexity Search tool to a single search per person.",
+        "options": {
+          "systemMessage": "You write compact, factual bios for meeting prep in UK English. Avoid speculation. Prefer official pages, LinkedIn, company sites, or major press. Return a compact 3–5 sentence bio (UK English), 1–2 recent items with dates, and 2–3 credible links. Keep it under 120 words per person. ",
+          "returnIntermediateSteps": false
+        }
+      },
+      "id": "a5529663-18ad-46d8-887c-476c577fe2d3",
+      "name": "Research Attendee (Agent)",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        1456,
+        -384
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Generate a mobile-friendly HTML day briefing from merged calendar data\n// Accepts mixed shapes (either your merged event objects OR ai_event wrappers).\n// Returns ONE item with { html, subject }.\n//\n// It handles:\n// - time: ev.time.{startISO,endISO,display,timeZone,durationMinutes} OR flat startISO/endISO/timeZone\n// - organizer: ev.organizer{name,email} OR organizerName/organizerEmail\n// - attendees: ev.attendeesAll / attendeesInternal / attendeesExternal OR single-attendee fields\n// - external bios: ev.externalAttendeeBios OR attendees with `bio`\n// - location: ev.location (string or {name})\n// - links: ev.meetingLink / ev.webLink\n//\n// Sorts meetings by start time and prints: time range, subject (linked), location/link, organizer,\n// internal & external attendees, and per-external bio (trimmed to ~120 words).\n\n//////////////////// helpers ////////////////////\nfunction clean(s){ return typeof s === 'string' ? s.trim() : ''; }\nfunction lower(s){ return typeof s === 'string' ? s.toLowerCase() : ''; }\nfunction get(o, p, d){\n  var parts = p.split('.'); var cur = o;\n  for (var i=0;i<parts.length;i++){ var k = parts[i]; if (cur && typeof cur==='object' && (k in cur)) cur = cur[k]; else return d; }\n  return cur;\n}\nfunction domainFromEmail(email){ var e = lower(clean(email)); var at = e.indexOf('@'); return at>-1 ? e.slice(at+1) : ''; }\nfunction normalizeIso(s){\n  s = clean(s); if (!s) return null;\n  var t = s.replace(/Z$/,''); var dot = t.indexOf('.'); if (dot>-1) t = t.slice(0, dot);\n  if (t.length >= 19) t = t.slice(0,19); // YYYY-MM-DDTHH:MM:SS\n  return t;\n}\nfunction hhmm(iso){ return (iso && iso.length>=16) ? iso.slice(11,16) : ''; }\nfunction ymd(iso){ return (iso && iso.length>=10) ? iso.slice(0,10) : null; }\nfunction parseUTCDate(iso){ // treat ISO (without Z) as UTC for header formatting\n  if (!iso) return null;\n  try { return new Date(iso + 'Z'); } catch(_) { return null; }\n}\nfunction headerDateString(date){\n  // Friday 30 Aug 2025\n  var DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];\n  var MOS  = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];\n  if (!date) date = new Date();\n  var d = date.getUTCDate();\n  var dow = DAYS[date.getUTCDay()];\n  var mo = MOS[date.getUTCMonth()];\n  var yr = date.getUTCFullYear();\n  return dow + ' ' + String(d).padStart(2,'0') + ' ' + mo + ' ' + yr;\n}\nfunction wordsClamp(text, maxWords){\n  var ws = clean(text).split(/\\s+/).filter(Boolean);\n  if (ws.length <= maxWords) return ws.join(' ');\n  return ws.slice(0, maxWords).join(' ') + '…';\n}\nfunction uniqBy(arr, keyFn){\n  var seen = {}; var out = [];\n  for (var i=0;i<arr.length;i++){\n    var k = keyFn(arr[i]);\n    if (k && !seen[k]){ seen[k] = 1; out.push(arr[i]); }\n    if (!k) out.push(arr[i]);\n  }\n  return out;\n}\n\nfunction deriveTimes(ev){\n  var t = ev.time || {};\n  var startISO = normalizeIso(t.startISO || ev.startISO || get(ev,'start.dateTime', null) || (typeof ev.start === 'string' ? ev.start : null));\n  var endISO   = normalizeIso(t.endISO   || ev.endISO   || get(ev,'end.dateTime',   null) || (typeof ev.end   === 'string' ? ev.end   : null));\n  var tz = t.timeZone || ev.timeZone || get(ev,'start.timeZone','UTC');\n  var display = t.display || (ev.display || (ev.isAllDay ? 'All day' : (hhmm(startISO) + ((startISO && endISO)?'-':'') + hhmm(endISO))));\n  var durationMinutes = (typeof t.durationMinutes === 'number') ? t.durationMinutes : (typeof ev.durationMinutes === 'number' ? ev.durationMinutes : null);\n  return { startISO:startISO, endISO:endISO, display:display, timeZone:tz, durationMinutes:durationMinutes };\n}\nfunction normalizeAttendee(a){\n  a = a || {};\n  var email = clean(a.email || get(a,'emailAddress.address',''));\n  var name  = clean(a.name  || get(a,'emailAddress.name','') || (email ? email.split('@')[0] : ''));\n  var domain = clean(a.domain || domainFromEmail(email));\n  var response = clean(a.response || get(a,'status.response','') || '');\n  var bio = clean(a.bio || a.output || '');\n  return { name:name, email:email, domain:domain, response:response, bio:bio };\n}\nfunction summarizeAttendeeList(list){\n  if (!list || !list.length) return '—';\n  return list.map(function(a){ return clean(a.name || a.email || ''); }).filter(Boolean).join(', ');\n}\nfunction eventKey(ev){\n  var id = ev.id || ev.eventId || '';\n  var s = get(ev,'time.startISO', ev.startISO || '') || '';\n  var subj = clean(ev.subject || ev.Subject || '');\n  return (id ? 'id:'+id : 'k:'+subj+'|'+s);\n}\n\n//////////////////// collect & normalize ////////////////////\nvar rows = $input.all().map(function(i){ return i.json; });\n\n// If upstream produced ai_event wrapper, unwrap to a consistent event shape\nvar events = rows.map(function(x){\n  return x && x.ai_event ? x.ai_event : x;\n});\n\n// Aggregate in case upstream still sends per-attendee items\nvar grouped = {};\nfor (var i=0;i<events.length;i++){\n  var ev = events[i] || {};\n  var key = eventKey(ev);\n  if (!grouped[key]){\n    grouped[key] = {\n      id: ev.id || ev.eventId || null,\n      subject: clean(ev.subject || ev.Subject || '(No subject)'),\n      isAllDay: !!ev.isAllDay,\n      time: deriveTimes(ev),\n      organizer: {\n        name: clean(get(ev,'organizer.name', ev.organizerName || '')),\n        email: clean(get(ev,'organizer.email', ev.organizerEmail || ''))\n      },\n      internalDomain: clean(ev.internalDomain || domainFromEmail(get(ev,'organizer.email', ev.organizerEmail || ''))),\n      location: (get(ev,'location.name', null) || (typeof ev.location==='string' ? ev.location : null)) || '',\n      meetingLink: ev.meetingLink || null,\n      webLink: ev.webLink || null,\n      description: clean(ev.contextHint || ev.description || ev.bodyPreview || ''),\n      attendeesAll: [],\n      externalAttendeeBios: Array.isArray(ev.externalAttendeeBios) ? ev.externalAttendeeBios.slice() : []\n    };\n  }\n  // Merge attendees from any shape\n  if (Array.isArray(ev.attendeesAll) && ev.attendeesAll.length){\n    grouped[key].attendeesAll = grouped[key].attendeesAll.concat(ev.attendeesAll.map(normalizeAttendee));\n  } else if (Array.isArray(ev.attendees) && ev.attendees.length){\n    grouped[key].attendeesAll = grouped[key].attendeesAll.concat(ev.attendees.map(normalizeAttendee));\n  } else if (ev.attendeeEmail || ev.attendeeName){\n    grouped[key].attendeesAll.push(normalizeAttendee({ email: ev.attendeeEmail, name: ev.attendeeName, domain: ev.attendeeDomain, response: ev.attendeeResponse, bio: ev.bio }));\n  }\n  // Merge bios if present on attendeesExternal\n  if (Array.isArray(ev.attendeesExternal)){\n    for (var j=0;j<ev.attendeesExternal.length;j++){\n      var a = normalizeAttendee(ev.attendeesExternal[j]);\n      if (a.bio) grouped[key].externalAttendeeBios.push({ name:a.name||a.email, email:a.email||'', domain:a.domain||'', bio:a.bio });\n    }\n  }\n}\n\n// Deduplicate attendees & bios, split internal/external\nvar meetings = [];\nfor (var k in grouped){\n  var g = grouped[k];\n  g.attendeesAll = uniqBy(g.attendeesAll, function(a){ return lower(a.email); });\n  var internal = []; var external = [];\n  for (var i2=0;i2<g.attendeesAll.length;i2++){\n    var a2 = g.attendeesAll[i2];\n    if (a2.domain && g.internalDomain && lower(a2.domain) === lower(g.internalDomain)) internal.push(a2);\n    else external.push(a2);\n  }\n  // Normalize bios: prefer explicit externalAttendeeBios, else from external attendees\n  var bios = [];\n  if (Array.isArray(g.externalAttendeeBios) && g.externalAttendeeBios.length){\n    for (var b=0;b<g.externalAttendeeBios.length;b++){\n      var eb = g.externalAttendeeBios[b] || {};\n      if (clean(eb.bio)) bios.push({ name: clean(eb.name||eb.email||''), email: clean(eb.email||''), domain: clean(eb.domain||''), bio: clean(eb.bio) });\n    }\n  } else {\n    for (var e=0;e<external.length;e++){\n      var ex = external[e];\n      if (ex.bio) bios.push({ name: ex.name||ex.email||'', email: ex.email||'', domain: ex.domain||'', bio: ex.bio });\n    }\n  }\n  // trim bios to ~120 words\n  for (var bb=0;bb<bios.length;bb++){ bios[bb].bio = wordsClamp(bios[bb].bio, 120); }\n\n  meetings.push({\n    id: g.id, subject: g.subject, isAllDay: g.isAllDay, time: g.time,\n    organizer: g.organizer, internalDomain: g.internalDomain,\n    location: g.location, meetingLink: g.meetingLink, webLink: g.webLink,\n    description: g.description,\n    attendeesInternal: internal, attendeesExternal: external,\n    bios: bios\n  });\n}\n\n// Sort by start time\nmeetings.sort(function(a,b){\n  var as = a.time.startISO || ''; var bs = b.time.startISO || '';\n  return as < bs ? -1 : (as > bs ? 1 : 0);\n});\n\n// Header date from earliest meeting start, fallback to today\nvar headerDate = (meetings[0] && meetings[0].time && meetings[0].time.startISO) ? parseUTCDate(meetings[0].time.startISO) : new Date();\nvar headerText = headerDateString(headerDate);\n\n// Build HTML\nfunction esc(s){\n  return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');\n}\nfunction linkify(label, href){\n  if (!href) return esc(label);\n  return '<a href=\"'+esc(href)+'\" target=\"_blank\" rel=\"noopener noreferrer\">'+esc(label)+'</a>';\n}\n\nvar htmlParts = [];\nhtmlParts.push(\n'<!doctype html><html><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">',\n'<title>Start-of-day Briefing — '+esc(headerText)+'</title>',\n'<style>',\n'body{margin:0;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#111;background:#fafafa;}',\n'.wrap{max-width:720px;margin:0 auto;padding:16px;}',\n'.hdr{position:sticky;top:0;background:#fff;padding:12px 16px;margin:0 -16px 16px;border-bottom:1px solid #eee;z-index:10;}',\n'.hdr h1{font-size:20px;margin:0;}',\n'.mtg{background:#fff;border:1px solid #eee;border-radius:12px;padding:14px 14px 12px;margin:12px 0;box-shadow:0 1px 1px rgba(0,0,0,0.02);}',\n'.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;color:#333;font-size:13px;}',\n'.time{font-weight:600;color:#0b5cff;}',\n'.subj{font-size:16px;font-weight:700;margin:4px 0 6px 0;}',\n'.meta{color:#555;font-size:13px;margin:2px 0 8px 0;}',\n'.pill{display:inline-block;background:#f1f5ff;color:#0b5cff;border-radius:999px;padding:2px 8px;font-size:12px;margin:2px 6px 0 0;}',\n'.bios{border-top:1px solid #f0f0f0;margin-top:10px;padding-top:10px;}',\n'.bio{margin:8px 0;}',\n'.bio .name{font-weight:600;}',\n'a{color:#0b5cff;text-decoration:none} a:hover{text-decoration:underline}',\n'</style></head><body><div class=\"wrap\">',\n'<div class=\"hdr\"><h1>Start-of-day Briefing — '+esc(headerText)+'</h1></div>'\n);\n\nif (!meetings.length){\n  htmlParts.push('<p>No meetings found for this day.</p>');\n} else {\n  for (var i3=0;i3<meetings.length;i3++){\n    var m = meetings[i3];\n    var t = m.time || {};\n    var timeLabel = m.isAllDay ? 'All day' : ((t.display || ((hhmm(t.startISO)||'') + ((t.startISO&&t.endISO)?'-':'') + (hhmm(t.endISO)||''))) + (t.timeZone ? ' '+t.timeZone : ''));\n    var subjectLine = esc(m.subject);\n    var href = m.meetingLink || m.webLink || '';\n    var subjectHtml = href ? linkify(subjectLine, href) : subjectLine;\n    var loc = m.location ? esc(m.location) : '';\n    var org = (m.organizer && (m.organizer.name || m.organizer.email)) ? esc([m.organizer.name, m.organizer.email ? '<'+m.organizer.email+'>' : ''].filter(Boolean).join(' ')) : '';\n    var internalList = summarizeAttendeeList(m.attendeesInternal);\n    var externalList = summarizeAttendeeList(m.attendeesExternal);\n\n    htmlParts.push('<section class=\"mtg\">');\n    htmlParts.push('<div class=\"row\"><span class=\"time\">'+esc(timeLabel)+'</span></div>');\n    htmlParts.push('<div class=\"subj\">'+subjectHtml+'</div>');\n    var metaBits = [];\n    if (loc) metaBits.push('📍 '+loc);\n    if (org) metaBits.push('👤 '+org);\n    if (t.durationMinutes) metaBits.push('⏱ '+t.durationMinutes+' min');\n    if ((m.meetingLink || m.webLink) && !href){\n      var linksLine = [m.meetingLink, m.webLink].filter(Boolean).map(function(u){ return linkify('link', u); }).join(' · ');\n      metaBits.push('🔗 '+linksLine);\n    }\n    if (metaBits.length) htmlParts.push('<div class=\"meta\">'+metaBits.join(' &nbsp;·&nbsp; ')+'</div>');\n\n    htmlParts.push('<div class=\"meta\"><span class=\"pill\">Internal</span> '+esc(internalList)+'</div>');\n    htmlParts.push('<div class=\"meta\"><span class=\"pill\">External</span> '+esc(externalList)+'</div>');\n\n    if (m.bios && m.bios.length){\n      htmlParts.push('<div class=\"bios\"><div class=\"meta\" style=\"margin-bottom:6px;\">Background</div>');\n      for (var b2=0;b2<m.bios.length;b2++){\n        var b = m.bios[b2];\n        var nm = esc(b.name || b.email || '');\n        var email = b.email ? ' &lt;'+esc(b.email)+'&gt;' : '';\n        var dom = b.domain ? ' — '+esc(b.domain) : '';\n        var bioTxt = esc(b.bio);\n        htmlParts.push('<div class=\"bio\"><div class=\"name\">', nm, email, dom, '</div><div class=\"txt\">', bioTxt, '</div></div>');\n      }\n      htmlParts.push('</div>');\n    }\n    htmlParts.push('</section>');\n  }\n}\n\nhtmlParts.push('</div></body></html>');\nvar html = htmlParts.join('');\n\nvar subjOut = 'Start-of-day Briefing — ' + headerText;\nreturn [{ json: { html: html, subject: subjOut, meetingCount: meetings.length } }];\n"
+      },
+      "id": "4d008f87-79e3-48b0-b4d9-c3900a71e6de",
+      "name": "Generate HTML Briefing",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2672,
+        -480
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "keepOnlySet": true,
+        "values": {
+          "string": [
+            {
+              "name": "name",
+              "value": "={{ $json.name }}"
+            },
+            {
+              "name": "email",
+              "value": "={{ $json.email }}"
+            },
+            {
+              "name": "domain",
+              "value": "={{ $json.domain }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "6e6fdd13-b867-495d-81bf-0ee308137a67",
+      "name": "Slim Inputs for Agent",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        1232,
+        -384
+      ]
+    },
+    {
+      "parameters": {
+        "toRecipients": "andy@legalengine.co.uk",
+        "subject": "=Meeting today",
+        "bodyContent": "={{ $json.output }}",
+        "additionalFields": {
+          "bodyContentType": "html",
+          "saveToSentItems": true
+        }
+      },
+      "id": "4190cf02-9478-40ef-86cd-f8c2b17daabb",
+      "name": "Send Briefing (Outlook, HTML)",
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        2960,
+        -624
+      ],
+      "webhookId": "f630d4c8-7b2d-4115-9cc9-be0361f1f25c",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "NEL55RMRYkKmOgp4",
+          "name": "Microsoft Outlook - Andy"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.elevenlabs.io/v1/convai/knowledge-base/text",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "xi-api-key",
+              "value": "sk_3eca705a3c2780af4cb1116beb64d3e1d3bfc187a8d565f8"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "name",
+              "value": "=Daily Meeting KB - {{ $json.currentDate }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $('Compiler').item.json.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3184,
+        -288
+      ],
+      "id": "ffdc2a2a-b246-47e6-9565-089136b9f1cc",
+      "name": "Create KB"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.elevenlabs.io/v1/convai/agents/create",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "xi-api-key",
+              "value": "sk_3eca705a3c2780af4cb1116beb64d3e1d3bfc187a8d565f8"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"agent_id\": \"agent_1901k43t7g5mfv29nqdmmztah09d\",\n    \"name\": \"TEST: Luke - Pre Meeting Prep n8n created [owner: Andy] - {{ $('Date & Time').item.json.currentDate }}\",\n    \"conversation_config\": {\n        \"asr\": {\n            \"quality\": \"high\",\n            \"provider\": \"elevenlabs\",\n            \"user_input_audio_format\": \"pcm_16000\",\n            \"keywords\": []\n        },\n        \"turn\": {\n            \"turn_timeout\": 10.0,\n            \"silence_end_call_timeout\": -1.0,\n            \"mode\": \"turn\"\n        },\n        \"tts\": {\n            \"model_id\": \"eleven_flash_v2\",\n            \"voice_id\": \"AwP2bjcqrSky0yiDhZSe\",\n            \"supported_voices\": [],\n            \"agent_output_audio_format\": \"pcm_16000\",\n            \"optimize_streaming_latency\": 4,\n            \"stability\": 0.65,\n            \"speed\": 0.99,\n            \"similarity_boost\": 0.45,\n            \"pronunciation_dictionary_locators\": []\n        },\n        \"conversation\": {\n            \"text_only\": false,\n            \"max_duration_seconds\": 3600,\n            \"client_events\": [\n                \"audio\",\n                \"interruption\"\n            ]\n        },\n        \"language_presets\": {},\n        \"agent\": {\n            \"first_message\": \"Hey Andy? Ready for a quick brief on what's planned for today?\",\n            \"language\": \"en\",\n            \"dynamic_variables\": {\n                \"dynamic_variable_placeholders\": {}\n            },\n            \"prompt\": {\n                \"prompt\": \"VOICE AGENT SYSTEM PROMPT — Luke (Pre Meeting Assistant)\\n\\nYou are Luke, an expert legal Business Development assistant.\\nYou are professional yet approachable, and your role is to coach a lawyer immediately after a client meeting.\\nYour job is to take the information in the knowledge base and brief the Sales Development Manager on the various meeting planned. \\n\\nThis should include, dates, times, subject or meeting title, duration, attendees and most importantly the information you have gathered on the bios  of external attendees \\n\",\n                \"llm\": \"gemini-2.5-flash-lite\",\n                \"temperature\": 0.3,\n                \"max_tokens\": -1,\n                \"tool_ids\": [],\n                \"built_in_tools\": {\n                    \"end_call\": {\n                        \"type\": \"system\",\n                        \"name\": \"end_call\",\n                        \"description\": \"\",\n                        \"response_timeout_secs\": 20,\n                        \"disable_interruptions\": false,\n                        \"force_pre_tool_speech\": false,\n                        \"assignments\": [],\n                        \"params\": {\n                            \"system_tool_type\": \"end_call\"\n                        }\n                    },\n                    \"language_detection\": null,\n                    \"transfer_to_agent\": null,\n                    \"transfer_to_number\": null,\n                    \"skip_turn\": null,\n                    \"play_keypad_touch_tone\": null,\n                    \"voicemail_detection\": {\n                        \"type\": \"system\",\n                        \"name\": \"voicemail_detection\",\n                        \"description\": \"\",\n                        \"response_timeout_secs\": 20,\n                        \"disable_interruptions\": false,\n                        \"force_pre_tool_speech\": false,\n                        \"assignments\": [],\n                        \"params\": {\n                            \"system_tool_type\": \"voicemail_detection\",\n                            \"voicemail_message\": \"Hi, this is Luke from Legal Engine, I've just tried to call to give you a quick brief on today's meetings. Speak soon.\"\n                        }\n                    }\n                },\n                \"mcp_server_ids\": [],\n                \"native_mcp_server_ids\": [],\n                \"knowledge_base\": [\n                    {\n                        \"type\": \"text\",\n                        \"name\": \"{{ $json.name }}\",\n                        \"id\": \"{{ $json.id }}\",\n                        \"usage_mode\": \"prompt\"\n                    },\n                    {\n                        \"type\": \"url\",\n                        \"name\": \"GitHub - noslegal/taxonomy: noslegal taxonomy facets and release notes\",\n                        \"id\": \"WTSeALM0hCdp3JOAQkh7\",\n                        \"usage_mode\": \"auto\"\n                    },\n                    {\n                        \"type\": \"url\",\n                        \"name\": \"taxonomy/2025.03 v3 noslegal release/2025.03 guide - noslegal 3.0.pdf at main · noslegal/taxonomy\",\n                        \"id\": \"asdugn4RGhF5gvo638Mz\",\n                        \"usage_mode\": \"auto\"\n                    },\n                    {\n                        \"type\": \"file\",\n                        \"name\": \"MASTER - Legal Engine Agents_security architecture.docx\",\n                        \"id\": \"ppbrfEfQtSZAeubOmOd0\",\n                        \"usage_mode\": \"auto\"\n                    }\n                ],\n                \"custom_llm\": null,\n                \"ignore_default_personality\": false,\n                \"rag\": {\n                    \"enabled\": true,\n                    \"embedding_model\": \"e5_mistral_7b_instruct\",\n                    \"max_vector_distance\": 0.6,\n                    \"max_documents_length\": 50000,\n                    \"max_retrieved_rag_chunks_count\": 20\n                },\n                \"timezone\": null,\n                \"tools\": [\n                    {\n                        \"type\": \"system\",\n                        \"name\": \"end_call\",\n                        \"description\": \"\",\n                        \"response_timeout_secs\": 20,\n                        \"disable_interruptions\": false,\n                        \"force_pre_tool_speech\": false,\n                        \"assignments\": [],\n                        \"params\": {\n                            \"system_tool_type\": \"end_call\"\n                        }\n                    },\n                    {\n                        \"type\": \"system\",\n                        \"name\": \"voicemail_detection\",\n                        \"description\": \"\",\n                        \"response_timeout_secs\": 20,\n                        \"disable_interruptions\": false,\n                        \"force_pre_tool_speech\": false,\n                        \"assignments\": [],\n                        \"params\": {\n                            \"system_tool_type\": \"voicemail_detection\",\n                            \"voicemail_message\": \"Hi, this is Luke from Legal Engine, I've just tried to call to get a quick debrief on your last meeting. Speak soon.\"\n                        }\n                    }\n                ]\n            }\n        }\n    },\n    \"metadata\": {\n        \"created_at_unix_secs\": 1756769796,\n        \"updated_at_unix_secs\": 1756769988\n    },\n    \"platform_settings\": {\n        \"auth\": {\n            \"enable_auth\": false,\n            \"allowlist\": [],\n            \"shareable_token\": null\n        },\n        \"evaluation\": {\n            \"criteria\": [\n                {\n                    \"id\": \"summary_sent\",\n                    \"name\": \"Summary Sent\",\n                    \"type\": \"prompt\",\n                    \"conversation_goal_prompt\": \"Did the meeting result in a successful tool call to the send_post_client_meeting_summary tool?\",\n                    \"use_knowledge_base\": false\n                }\n            ]\n        },\n        \"widget\": {\n            \"variant\": \"full\",\n            \"placement\": \"bottom-right\",\n            \"expandable\": \"never\",\n            \"avatar\": {\n                \"type\": \"orb\",\n                \"color_1\": \"#2792dc\",\n                \"color_2\": \"#9ce6e6\"\n            },\n            \"feedback_mode\": \"during\",\n            \"bg_color\": \"#ffffff\",\n            \"text_color\": \"#000000\",\n            \"btn_color\": \"#000000\",\n            \"btn_text_color\": \"#ffffff\",\n            \"border_color\": \"#e1e1e1\",\n            \"focus_color\": \"#000000\",\n            \"border_radius\": null,\n            \"btn_radius\": null,\n            \"action_text\": null,\n            \"start_call_text\": null,\n            \"end_call_text\": null,\n            \"expand_text\": null,\n            \"listening_text\": null,\n            \"speaking_text\": null,\n            \"shareable_page_text\": null,\n            \"shareable_page_show_terms\": false,\n            \"terms_text\": null,\n            \"terms_html\": null,\n            \"terms_key\": null,\n            \"show_avatar_when_collapsed\": false,\n            \"disable_banner\": false,\n            \"override_link\": null,\n            \"mic_muting_enabled\": false,\n            \"transcript_enabled\": false,\n            \"text_input_enabled\": false,\n            \"default_expanded\": false,\n            \"always_expanded\": false,\n            \"text_contents\": {\n                \"main_label\": \"Ready to debrief?\",\n                \"start_call\": \"Chat now\",\n                \"start_chat\": null,\n                \"new_call\": null,\n                \"end_call\": null,\n                \"mute_microphone\": null,\n                \"change_language\": null,\n                \"collapse\": null,\n                \"expand\": null,\n                \"copied\": null,\n                \"accept_terms\": null,\n                \"dismiss_terms\": null,\n                \"listening_status\": null,\n                \"speaking_status\": null,\n                \"connecting_status\": null,\n                \"chatting_status\": null,\n                \"input_label\": null,\n                \"input_placeholder\": null,\n                \"input_placeholder_text_only\": null,\n                \"input_placeholder_new_conversation\": null,\n                \"user_ended_conversation\": null,\n                \"agent_ended_conversation\": null,\n                \"conversation_id\": null,\n                \"error_occurred\": null,\n                \"copy_id\": null\n            },\n            \"styles\": {\n                \"base\": null,\n                \"base_hover\": null,\n                \"base_active\": null,\n                \"base_border\": null,\n                \"base_subtle\": null,\n                \"base_primary\": null,\n                \"base_error\": null,\n                \"accent\": null,\n                \"accent_hover\": null,\n                \"accent_active\": null,\n                \"accent_border\": null,\n                \"accent_subtle\": null,\n                \"accent_primary\": null,\n                \"overlay_padding\": null,\n                \"button_radius\": null,\n                \"input_radius\": null,\n                \"bubble_radius\": null,\n                \"sheet_radius\": null,\n                \"compact_sheet_radius\": null,\n                \"dropdown_sheet_radius\": null\n            },\n            \"language_selector\": false,\n            \"supports_text_only\": false,\n            \"custom_avatar_path\": null,\n            \"language_presets\": {}\n        },\n        \"data_collection\": {},\n        \"overrides\": {\n            \"conversation_config_override\": {\n                \"tts\": {\n                    \"voice_id\": false,\n                    \"stability\": false,\n                    \"speed\": false,\n                    \"similarity_boost\": false\n                },\n                \"conversation\": {\n                    \"text_only\": true\n                },\n                \"agent\": {\n                    \"first_message\": false,\n                    \"language\": false,\n                    \"prompt\": {\n                        \"prompt\": false,\n                        \"native_mcp_server_ids\": false\n                    }\n                }\n            },\n            \"custom_llm_extra_body\": false,\n            \"enable_conversation_initiation_client_data_from_webhook\": false\n        },\n        \"call_limits\": {\n            \"agent_concurrency_limit\": -1,\n            \"daily_limit\": 100000,\n            \"bursting_enabled\": true\n        },\n        \"ban\": null,\n        \"privacy\": {\n            \"record_voice\": true,\n            \"retention_days\": -1,\n            \"delete_transcript_and_pii\": false,\n            \"delete_audio\": false,\n            \"apply_to_existing_conversations\": false,\n            \"zero_retention_mode\": false\n        },\n        \"workspace_overrides\": {\n            \"conversation_initiation_client_data_webhook\": null,\n            \"webhooks\": {\n                \"post_call_webhook_id\": null,\n                \"send_audio\": false\n            }\n        },\n        \"testing\": {\n            \"attached_tests\": [],\n            \"referenced_tests_ids\": []\n        },\n        \"safety\": {\n            \"is_blocked_ivc\": false,\n            \"is_blocked_non_ivc\": false,\n            \"ignore_safety_evaluation\": false\n        }\n    },\n    \"phone_numbers\": [],\n    \"workflow\": {\n        \"edges\": {},\n        \"nodes\": {\n            \"start_node\": {\n                \"type\": \"start\",\n                \"position\": {\n                    \"x\": 0.0,\n                    \"y\": 0.0\n                }\n            }\n        }\n    },\n    \"access_info\": {\n        \"is_creator\": true,\n        \"creator_name\": \"leonard@legalengine.co.uk\",\n        \"creator_email\": \"leonard@legalengine.co.uk\",\n        \"role\": \"admin\"\n    },\n    \"tags\": []\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3632,
+        -288
+      ],
+      "id": "5965f1b9-fbe5-4705-98ec-4ab7b798bbd7",
+      "name": "Create 11L agent with KB"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.elevenlabs.io/v1/convai/twilio/outbound-call",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "={\n  \"xi-api-key\": \"sk_fb475a342401f1e2495de38b2193518f54778f4427ce83de\",\n  \"Content-Type\": \"application/json\"\n}\n",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"agent_id\": \"agent_2501k3v11788e6w908yswfp1w66z\",\n  \"agent_phone_number_id\": \"phnum_01jvx1f76mfg6akt98vk9jqyqh\",\n  \"to_number\": \"+447966543220\",\n  \"conversation_initiation_client_data\": {\n    \"client_name\": \"Acme Ltd\",\n    \"matter_ref\": \"M-2025-001\"\n  }\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4080,
+        -288
+      ],
+      "id": "a88dcd05-c2eb-4a75-aba4-560b9260079e",
+      "name": "Outbound call",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "resource": "event",
+        "filters": {
+          "custom": "=start/dateTime ge '{{ $('Today').item.json.currentDate }}' and start/dateTime lt '{{ $json.newDate }}'\n"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        336,
+        -480
+      ],
+      "id": "987f82f7-d134-421a-a587-0ac8161d7dab",
+      "name": "Get many events",
+      "webhookId": "b263f8c7-9a37-46ea-a9b2-3116089af30b",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "6M8EKjo0xkpyROgs",
+          "name": "Microsoft Outlook - Lee @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini-2025-08-07",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini-2025-08-07"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1472,
+        -160
+      ],
+      "id": "3fa38248-e75c-4b6e-bb21-883881002faa",
+      "name": "OpenAI Chat Model4",
+      "credentials": {
+        "openAiApi": {
+          "id": "LldOhLNBReShSMkE",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "sonar",
+        "messages": {
+          "message": [
+            {
+              "content": "=You are a helpful research assistant powered by Perplexity Sonar. You have built-in live web access. Always provide a concise answer followed by a short bulleted list of sources (title + URL). Use UK English. Today is {{$now.setZone('Europe/London').toFormat('yyyy-LL-dd')}}.\n\nResearch this person ahead of a business meeting: {{ $json.name }}, their email address is {{ $json.email }}. Their Company/domain: {{ $json.domain }} may help you to locate them on professional networks or from more public sources."
+            }
+          ]
+        },
+        "options": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.perplexityTool",
+      "typeVersion": 1,
+      "position": [
+        1600,
+        -160
+      ],
+      "id": "52acbf2e-3df9-4242-be32-b30c29569a48",
+      "name": "Perplexity Search",
+      "credentials": {
+        "perplexityApi": {
+          "id": "pOqM7kFIqiYB3qGU",
+          "name": "Perplexity account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalize bios from “Research Attendee (Agent)”\n// Works even if each item only has { output: \"<bio text>\" }.\n// If you also connect Input 1 with “Slim Inputs for Agent” (items with {name,email,domain}),\n// this node will align by index and/or fuzzy name to fill missing emails.\n//\n// Output (one per person):\n//   { emailLower?, email?, name?, domain?, bio, nameKey? }\n//\n// You can merge later by `emailLower` (preferred) and fall back to `nameKey` if email is missing.\n\nfunction clean(s){ return typeof s === 'string' ? s.trim() : ''; }\nfunction lower(s){ return typeof s === 'string' ? s.toLowerCase() : ''; }\n\n// --- regex helpers ---\nvar EMAIL_RE = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/ig;\nvar HOST_RE  = /\\b((?:[a-z0-9-]+\\.)+[a-z]{2,})\\b/ig;\n\n// strip ``` fences and collapse whitespace a bit\nfunction normalizeText(t){\n  var txt = String(t == null ? '' : t);\n  if (txt.indexOf('```') > -1) {\n    txt = txt.replace(/```json/ig,'').replace(/```/g,'');\n  }\n  // trim line ends, collapse >2 newlines to 2\n  txt = txt.split('\\n').map(function(l){ return l.replace(/\\s+$/,''); }).join('\\n');\n  txt = txt.replace(/\\n{3,}/g, '\\n\\n');\n  return txt.trim();\n}\n\n// naive name guess: take leading fragment before \" is \" or first line\nfunction guessNameFromBio(txt){\n  var t = clean(txt);\n  if (!t) return '';\n  var firstLine = t.split('\\n')[0];\n  var beforeIs = firstLine.toString().split(/\\s+is\\s+/i)[0];\n  var cand = clean(beforeIs.length >= 3 ? beforeIs : firstLine);\n  // Keep it reasonable: 2–5 words, title-case-ish\n  var words = cand.split(/\\s+/).filter(Boolean);\n  if (words.length > 6) words = words.slice(0,6);\n  // If it's something like \"Founder and director\", that's not a name; reject if no capital letter start\n  var hasCap = /^[A-Z]/.test(words[0] || '');\n  return hasCap ? words.join(' ') : '';\n}\n\nfunction extractEmailFromText(txt){\n  var m = String(txt||'').match(EMAIL_RE);\n  return (m && m.length) ? m[0] : '';\n}\n\nfunction extractDomainFromText(txt){\n  // pick a plausible company domain; ignore common service hosts\n  var IGNORE = { 'www.google.com':1,'linkedin.com':1,'www.linkedin.com':1,'twitter.com':1,'x.com':1,'facebook.com':1,'instagram.com':1,'youtube.com':1,'outlook.office365.com':1,'microsoft.com':1,'github.com':1,'medium.com':1 };\n  var hosts = []; var h;\n  var text = String(txt||'');\n  while ((h = HOST_RE.exec(text)) !== null){\n    var host = h[1].toLowerCase();\n    if (!IGNORE[host]) hosts.push(host);\n  }\n  // Return the most frequent non-ignored host if any\n  if (hosts.length === 0) return '';\n  var freq = {}; var best = '', bestN = -1;\n  for (var i=0;i<hosts.length;i++){ var k=hosts[i]; freq[k]=(freq[k]||0)+1; if (freq[k]>bestN){ bestN=freq[k]; best=k; } }\n  return best;\n}\n\nfunction domainFromEmail(email){\n  var e = lower(clean(email)); var at = e.indexOf('@'); return at>-1 ? e.slice(at+1) : '';\n}\n\n// --- collect inputs ---\nvar outItems = ($input.all(0) || []).map(function(i){ return i.json; });\nvar hintItems = []; try { hintItems = ($input.all(1) || []).map(function(i){ return i.json; }); } catch(_){}\n\n// Build hint maps (by index, by lower(name), by lower(email))\nvar hintsByIndex = hintItems;\nvar hintsByName  = {};\nvar hintsByEmail = {};\nfor (var hi=0; hi<hintItems.length; hi++){\n  var h = hintItems[hi] || {};\n  var hEmail = clean(h.email || (h.emailAddress && h.emailAddress.address) || '');\n  var hName  = clean(h.name || h.person || h.fullName || h.attendeeName || '');\n  if (hName) hintsByName[lower(hName)] = h;\n  if (hEmail) hintsByEmail[lower(hEmail)] = h;\n}\n\n// Process each research output\nvar results = [];\n\nfor (var i=0; i<outItems.length; i++){\n  var row = outItems[i] || {};\n  var bioRaw = (row.bio !== undefined ? row.bio : (row.output !== undefined ? row.output : (row.text !== undefined ? row.text : row.content)));\n  var bio = normalizeText(bioRaw);\n\n  // Try to resolve identity\n  var email = extractEmailFromText(bio);\n  var name  = '';\n  var domain = '';\n\n  // If no email in text, try to align with hints\n  if (!email && hintsByIndex[i]){\n    var h = hintsByIndex[i];\n    var hEmail = clean(h.email || (h.emailAddress && h.emailAddress.address) || '');\n    if (hEmail) email = hEmail;\n    name = clean(h.name || h.person || h.fullName || h.attendeeName || '');\n    domain = clean(h.domain || '');\n  }\n\n  // If still no email, try name-match from text → hintsByName\n  if (!email){\n    var guessName = guessNameFromBio(bio);\n    if (guessName && hintsByName[lower(guessName)]){\n      var hh = hintsByName[lower(guessName)];\n      email = clean(hh.email || (hh.emailAddress && hh.emailAddress.address) || '');\n      if (!name) name = clean(hh.name || hh.person || hh.fullName || hh.attendeeName || guessName);\n      if (!domain) domain = clean(hh.domain || '');\n    } else if (guessName) {\n      name = name || guessName;\n    }\n  }\n\n  // Derive domain if still missing\n  if (!domain){\n    if (email) domain = domainFromEmail(email);\n    if (!domain){\n      var dTxt = extractDomainFromText(bio);\n      if (dTxt) domain = dTxt;\n    }\n  }\n\n  // Fallback name if still empty\n  if (!name) name = guessNameFromBio(bio);\n\n  var emailLower = lower(email);\n  var nameKey = lower(clean(name));\n\n  results.push({\n    emailLower: emailLower || '',\n    email: email || '',\n    name: name || '',\n    domain: domain || '',\n    nameKey: nameKey || '',\n    bio: bio\n  });\n}\n\n// Deduplicate by emailLower if available; else by nameKey\nvar bestByKey = {};\nfor (var r=0; r<results.length; r++){\n  var it = results[r];\n  var key = it.emailLower || ('name:' + it.nameKey);\n  if (!key) continue;\n  var prev = bestByKey[key];\n  if (!prev || it.bio.length > prev.bio.length){\n    bestByKey[key] = it;\n    // prefer real email if one version had none\n    if (prev && !prev.email && it.email) bestByKey[key].email = it.email;\n    if (prev && !prev.domain && it.domain) bestByKey[key].domain = it.domain;\n  } else {\n    // keep better name if longer\n    if (it.name && (!prev.name || it.name.length > prev.name.length)) bestByKey[key].name = it.name;\n    if (it.domain && !prev.domain) bestByKey[key].domain = it.domain;\n    if (it.email && !prev.email) bestByKey[key].email = it.email;\n  }\n}\n\n// Emit items\nvar out = [];\nfor (var k in bestByKey){\n  out.push({ json: bestByKey[k] });\n}\n\nif (out.length === 0){\n  // Emit diagnostics to help wire Input 1 properly\n  return [{\n    json: {\n      warning: \"No usable bios (no email/name could be resolved). Consider connecting Slim Inputs as Input 1.\",\n      sampleKeys: Object.keys(outItems[0] || {}),\n      note: \"If Agent output only has 'output' text, merge with Slim Inputs by index so we can attach emails.\"\n    }\n  }];\n}\n\nreturn out;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1808,
+        -384
+      ],
+      "id": "8ab12285-f9e7-40b9-b66f-568b4e958502",
+      "name": "Normalize Bios"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {
+          "includeUnpaired": false
+        }
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2032,
+        -480
+      ],
+      "id": "6333acc7-b531-4c4a-8881-eeb3c2a46ebf",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Input: items from \"Microsoft Outlook → Event: Get Many\"\n// Output: one item per event with a clean, consistent shape\n\n// Helper to safely read nested props\nconst get = (obj, path, dflt = undefined) =>\n  path.split('.').reduce((o, k) => (o && o[k] !== undefined ? o[k] : dflt), obj);\n\n// Helper to coerce a Graph dateTime into a UNIX epoch (best-effort)\n// (If Graph returns local time without offset, Node will parse in server TZ.)\nconst toEpoch = (dt) => {\n  if (!dt) return null;\n  const s = typeof dt === 'string' ? dt : dt.dateTime || null;\n  if (!s) return null;\n  const t = Date.parse(s);\n  return Number.isNaN(t) ? null : Math.floor(t / 1000);\n};\n\nreturn items.map(({ json: ev }) => {\n  // Attendees\n  const attendeesRaw = Array.isArray(ev.attendees) ? ev.attendees : [];\n  const attendees = attendeesRaw.map(a => ({\n    name: get(a, 'emailAddress.name', '') || '',\n    email: get(a, 'emailAddress.address', '') || '',\n    type: a.type || 'required',\n    response: get(a, 'status.response', 'none'),\n    respondedAt: get(a, 'status.time', null),\n  }));\n\n  // Organizer\n  const organizer = {\n    name: get(ev, 'organizer.emailAddress.name', '') || '',\n    email: get(ev, 'organizer.emailAddress.address', '') || '',\n  };\n\n  // Location\n  const location = {\n    name: get(ev, 'location.displayName', '') || (typeof ev.location === 'string' ? ev.location : ''),\n    address: get(ev, 'location.address', null),\n    uri: get(ev, 'location.locationUri', null),\n    type: get(ev, 'location.locationType', null),\n  };\n\n  // Start / End\n  const start = ev.start || {};\n  const end = ev.end || {};\n\n  // Meeting links\n  const meetingLink =\n    get(ev, 'onlineMeeting.joinUrl', null) ||\n    ev.onlineMeetingUrl || // legacy field on some tenants\n    ev.webLink ||          // event page link (fallback)\n    null;\n\n  return {\n    json: {\n      id: ev.id,\n      subject: ev.subject || '(No subject)',\n      description: ev.bodyPreview || '',\n      isAllDay: !!ev.isAllDay,\n\n      start: {\n        dateTime: start.dateTime || null,\n        timeZone: start.timeZone || null,\n        epoch: toEpoch(start),\n      },\n      end: {\n        dateTime: end.dateTime || null,\n        timeZone: end.timeZone || null,\n        epoch: toEpoch(end),\n      },\n      durationMinutes:\n        toEpoch(end) && toEpoch(start) ? Math.max(0, Math.round((toEpoch(end) - toEpoch(start)) / 60)) : null,\n\n      organizer,\n      attendees,\n      location,\n\n      meetingLink,          // join link if present (Teams/online)\n      webLink: ev.webLink || null, // view/edit event in Outlook\n      seriesMasterId: ev.seriesMasterId || null,\n      recurrence: ev.recurrence || null,\n      sensitivity: ev.sensitivity || null,\n      importance: ev.importance || null,\n      categories: ev.categories || [],\n    },\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        560,
+        -480
+      ],
+      "id": "4738fa9d-d1cb-4afc-8674-5a346c29a0c3",
+      "name": "Clean Calendar Data"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini-2025-08-07",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini-2025-08-07"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        2336,
+        -256
+      ],
+      "id": "b8f78dd4-4689-4a3e-9ccb-369246a37276",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "LldOhLNBReShSMkE",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Clean Calendar Data → AI-ready payloads (per meeting)\n// Input: items from your “Clean Calendar Data” node. Handles both shapes:\n//   A) flat:  { subject, description, isAllDay, startISO, endISO, epoch?, end:{epoch?}, timeZone?, durationMinutes?, organizer{name,email}, attendees[], attendeesAll[], location{name}, meetingLink, webLink, internalDomain? }\n//   B) nested: { time:{ startISO, endISO, timeZone, durationMinutes }, organizer:{...}, attendeesAll:[...] }\n// Output (per meeting): { ai_event:{...minimal structured JSON...}, ai_text: \"...concise briefing...\" }\n//\n// Notes:\n// - No optional chaining / Intl; friendly to n8n cloud.\n// - Dedupes attendees, splits internal/external, strips noise, truncates long fields.\n\n//////////////////// helpers ////////////////////\nfunction clean(s){ return typeof s === 'string' ? s.trim() : ''; }\nfunction lower(s){ return typeof s === 'string' ? s.toLowerCase() : ''; }\nfunction get(o, p, d){\n  var parts = p.split('.'); var cur = o;\n  for (var i=0;i<parts.length;i++){ var k=parts[i]; if (cur && typeof cur==='object' && (k in cur)) cur = cur[k]; else return d; }\n  return cur;\n}\nfunction domainFromEmail(email){ var e = lower(clean(email)); var i = e.indexOf('@'); return i>-1 ? e.slice(i+1) : ''; }\nfunction normalizeIso(s){\n  s = clean(s); if (!s) return null;\n  var t = s.replace(/Z$/,''); var dot = t.indexOf('.');\n  if (dot>-1) t = t.slice(0, dot);\n  if (t.length>=19) t = t.slice(0,19); // YYYY-MM-DDTHH:MM:SS\n  return t;\n}\nfunction isoFromEpochSec(sec){\n  if (typeof sec !== 'number') return null;\n  var d = new Date(sec*1000);\n  var yyyy=d.getUTCFullYear(), mm=String(d.getUTCMonth()+1).padStart(2,'0'), dd=String(d.getUTCDate()).padStart(2,'0');\n  var hh=String(d.getUTCSeconds()>=30?d.getUTCHours()+Math.floor((d.getUTCMinutes()+1)/60):d.getUTCHours()).padStart(2,'0'); // minor guard\n  var mi=String(d.getUTCMinutes()).padStart(2,'0'); var ss='00';\n  return yyyy+'-'+mm+'-'+dd+'T'+hh+':'+mi+':'+ss;\n}\nfunction hhmm(iso){ return (iso && iso.length>=16) ? iso.slice(11,16) : ''; }\nfunction firstLine(s){ var t = clean(s); var i = t.indexOf('\\n'); return i>-1 ? t.slice(0,i) : t; }\nfunction clipWords(text, maxWords){\n  var ws = clean(text).split(/\\s+/).filter(Boolean);\n  if (ws.length <= maxWords) return ws.join(' ');\n  return ws.slice(0, maxWords).join(' ') + '…';\n}\nfunction prune(obj){\n  if (!obj || typeof obj!=='object') return obj;\n  var out = Array.isArray(obj) ? [] : {};\n  if (Array.isArray(obj)){\n    for (var i=0;i<obj.length;i++){\n      var v = prune(obj[i]);\n      var empty = v==='' || v==null || (typeof v==='object' && Object.keys(v).length===0);\n      if (!empty) out.push(v);\n    }\n  } else {\n    for (var k in obj){\n      var v2 = prune(obj[k]);\n      var empty2 = v2==='' || v2==null || (Array.isArray(v2) && v2.length===0) || (typeof v2==='object' && Object.keys(v2).length===0);\n      if (!empty2) out[k]=v2;\n    }\n  }\n  return out;\n}\nfunction uniqBy(arr, keyFn){\n  var seen = {}; var out = [];\n  for (var i=0;i<arr.length;i++){\n    var k = keyFn(arr[i]);\n    if (k && !seen[k]){ seen[k]=1; out.push(arr[i]); }\n    if (!k) out.push(arr[i]);\n  }\n  return out;\n}\nfunction normAttendee(a){\n  a = a || {};\n  var email = clean(a.email || get(a,'emailAddress.address',''));\n  var name  = clean(a.name  || get(a,'emailAddress.name','') || (email ? email.split('@')[0] : ''));\n  var type  = a.type || 'required';\n  var response = a.response || get(a,'status.response','none') || 'none';\n  var respondedAt = a.respondedAt || get(a,'status.time', null);\n  var domain = domainFromEmail(email);\n  var bio = clean(a.bio || a.output || '');\n  return { name: name, email: email, domain: domain, type: type, response: response, respondedAt: respondedAt, bio: bio };\n}\nfunction deriveTimes(ev){\n  var startISO = normalizeIso(get(ev,'time.startISO', null) || get(ev,'start.dateTime', null) || ev.startISO || (typeof ev.start === 'string' ? ev.start : null) || (typeof ev.epoch==='number' ? isoFromEpochSec(ev.epoch) : null) || (typeof get(ev,'start.epoch',null)==='number' ? isoFromEpochSec(get(ev,'start.epoch',null)) : null));\n  var endISO   = normalizeIso(get(ev,'time.endISO',   null) || get(ev,'end.dateTime',   null) || ev.endISO   || (typeof ev.end === 'string' ? ev.end : null)   || (typeof get(ev,'end.epoch',null)==='number' ? isoFromEpochSec(get(ev,'end.epoch',null)) : null));\n  var tz = get(ev,'time.timeZone', get(ev,'start.timeZone', get(ev,'end.timeZone','UTC')));\n  var display = ev.isAllDay ? 'All day' : (hhmm(startISO) + ((startISO && endISO)?'-':'') + hhmm(endISO));\n  var startEpoch = (typeof ev.epoch==='number') ? ev.epoch : get(ev,'time.startEpoch', get(ev,'start.epoch', null));\n  var endEpoch   = get(ev,'time.endEpoch', get(ev,'end.epoch', null));\n  var duration   = get(ev,'time.durationMinutes', ev.durationMinutes || null);\n  return { startISO:startISO, endISO:endISO, timeZone: tz, display: display, startEpoch: startEpoch, endEpoch: endEpoch, durationMinutes: duration };\n}\nfunction splitAttendees(list, internalDomain){\n  var intern = [], extern = [];\n  for (var i=0;i<list.length;i++){\n    var a = list[i];\n    if (a.domain && internalDomain && a.domain.toLowerCase()===internalDomain.toLowerCase()) intern.push(a);\n    else extern.push(a);\n  }\n  return {internal: intern, external: extern};\n}\nfunction isNoiseAttendee(a){\n  var e = lower(a.email||''); var n = lower(a.name||''); var t = lower(a.type||'');\n  return t==='resource' || n.indexOf('room')>-1 || e.indexOf('resource')>-1 || e.indexOf('calendar')>-1 || e.indexOf('no-reply')===0 || e.indexOf('noreply')===0;\n}\n\n//////////////////// main ////////////////////\nvar items = $input.all().map(function(i){ return i.json || {}; });\nvar out = [];\n\nfor (var i=0;i<items.length;i++){\n  var ev = items[i] || {};\n  var times = deriveTimes(ev);\n\n  var organizer = {\n    name: clean(get(ev,'organizer.name','')),\n    email: clean(get(ev,'organizer.email',''))\n  };\n  var internalDomain = clean(ev.internalDomain || domainFromEmail(organizer.email));\n\n  // Collect attendees from either attendeesAll (preferred) or attendees\n  var rawA = Array.isArray(ev.attendeesAll) ? ev.attendeesAll : (Array.isArray(ev.attendees) ? ev.attendees : []);\n  var att = rawA.map(normAttendee).filter(function(a){ return a.email || a.name; }).filter(function(a){ return !isNoiseAttendee(a); });\n  att = uniqBy(att, function(a){ return lower(a.email); });\n\n  var split = splitAttendees(att, internalDomain);\n\n  // Trim description, use first line as hint\n  var desc = clean(ev.description || ev.bodyPreview || '');\n  var descLine = firstLine(desc);\n  var descTrim = clipWords(desc, 90); // ~90 words max for hint\n\n  var subject = clean(ev.subject || ev.Subject || '(No subject)');\n  var dateISO = times.startISO ? times.startISO.slice(0,10) : null;\n\n  var externalBios = (Array.isArray(ev.externalAttendeeBios) ? ev.externalAttendeeBios : [])\n    .map(function(b){\n      return { name: clean(b.name||''), email: clean(b.email||''), domain: clean(b.domain||''), bio: clipWords(clean(b.bio||''), 120) };\n    });\n\n  var ai_event = prune({\n    id: ev.id || ev.eventId || null,\n    subject: subject,\n    isAllDay: !!ev.isAllDay,\n    date: dateISO,\n    time: {\n      startISO: times.startISO,\n      endISO: times.endISO,\n      timeZone: times.timeZone,\n      display: times.display,\n      startEpoch: times.startEpoch,\n      endEpoch: times.endEpoch,\n      durationMinutes: times.durationMinutes\n    },\n    organizer: organizer,\n    location: (get(ev,'location.name', null) || (typeof ev.location==='string' ? ev.location : null)) || null,\n    meetingLink: ev.meetingLink || null,\n    webLink: ev.webLink || null,\n    contextHint: descTrim || null,\n    attendees: {\n      internal: split.internal.map(function(a){ return { name:a.name, email:a.email, domain:a.domain, response:a.response }; }),\n      external: split.external.map(function(a){ return { name:a.name, email:a.email, domain:a.domain, response:a.response, bio: a.bio ? clipWords(a.bio, 120) : undefined }; })\n    },\n    externalBios: externalBios.length ? externalBios : undefined\n  });\n\n  // Compact text prompt for LLMs that prefer plain text\n  var ai_text = [\n    'Meeting: ' + subject,\n    'Date: ' + (dateISO || 'N/A') + '  Time: ' + (times.display || 'N/A') + ' ' + (times.timeZone || 'UTC'),\n    organizer.name || organizer.email ? ('Organizer: ' + clean([organizer.name, organizer.email ? '<'+organizer.email+'>' : ''].filter(Boolean).join(' '))) : null,\n    ev.location && (get(ev,'location.name',null) || typeof ev.location==='string') ? ('Location: ' + (get(ev,'location.name',null) || ev.location)) : null,\n    (ev.meetingLink || ev.webLink) ? ('Links: ' + [ev.meetingLink, ev.webLink].filter(Boolean).join(' | ')) : null,\n    split.internal.length ? ('Internal: ' + split.internal.map(function(a){ return a.name || a.email; }).join(', ')) : null,\n    split.external.length ? ('External: ' + split.external.map(function(a){ return a.name || a.email; }).join(', ')) : null,\n    externalBios.length ? ('External bios:\\n- ' + externalBios.map(function(b){ return (b.name || b.email) + ' — ' + b.bio; }).join('\\n- ')) : null,\n    descLine ? ('Context: ' + descLine) : null\n  ].filter(Boolean).join('\\n');\n\n  out.push({ json: { ai_event: ai_event, ai_text: ai_text } });\n}\n\nif (out.length === 0){\n  return [{ json: { warning: 'No calendar items to clean. Check upstream node output.' } }];\n}\n\nreturn out;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1808,
+        -640
+      ],
+      "id": "8d6affe9-2379-4a38-bbcc-375582a1d741",
+      "name": "Normalise Calendar Info"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract unique external attendees — tailored to your event shape\n// Input: each item.json is an Outlook event with fields like:\n//   isAllDay, epoch (start), end{dateTime,timeZone,epoch}, durationMinutes,\n//   organizer{name,email}, attendees[{name,email,type,response,respondedAt}],\n//   meetingLink, webLink, location{name}, subject?\n// Output: one item per *external* attendee: { name, email, domain, events:[{subject,startISO,endISO}] }\n\n// 1) EDIT: add your internal company domain(s)\nconst INTERNAL_DOMAINS = [\"yourcompany.com\"]; // <-- change me\n\n// ---------- helpers ----------\nfunction clean(s){ return typeof s === 'string' ? s.trim() : ''; }\nfunction lower(s){ return typeof s === 'string' ? s.toLowerCase() : ''; }\nfunction get(o, path, d){ var parts = path.split('.'); var cur = o;\n  for (var i=0;i<parts.length;i++){ var k=parts[i];\n    if (cur && typeof cur === 'object' && (k in cur)) cur = cur[k]; else return d;\n  } return cur;\n}\nfunction domainFromEmail(email){ var e=lower(clean(email)); var i=e.indexOf('@'); return i>-1 ? e.slice(i+1) : ''; }\nfunction isoFromEpochSec(sec){ if (typeof sec !== 'number') return null; return new Date(sec*1000).toISOString(); }\nfunction normalizeIso(s){\n  s = clean(s); if (!s) return null;\n  var t = s.replace(/Z$/,''); var dot = t.indexOf('.');\n  if (dot>-1) t = t.slice(0,dot);\n  if (t.length>=19) t = t.slice(0,19); // YYYY-MM-DDTHH:MM:SS\n  return t;\n}\nfunction startISOFromEvent(ev){\n  var s1 = get(ev,'start.dateTime',null); if (s1) return normalizeIso(String(s1));\n  var s2 = ev.startISO || get(ev,'start',null); if (typeof s2 === 'string') return normalizeIso(s2);\n  var e = ev.epoch; if (typeof e === 'number') return normalizeIso(isoFromEpochSec(e));\n  return null;\n}\nfunction endISOFromEvent(ev){\n  var e1 = get(ev,'end.dateTime',null); if (e1) return normalizeIso(String(e1));\n  var e2 = ev.endISO || get(ev,'end',null); if (typeof e2 === 'string') return normalizeIso(e2);\n  var ee = get(ev,'end.epoch',null); if (typeof ee === 'number') return normalizeIso(isoFromEpochSec(ee));\n  return null;\n}\n\n// ---------- inputs ----------\nvar items = $input.all();\n\n// 2) Auto-detect internal domain from organiser emails across all items\nvar domainCount = {};\nfor (var i=0;i<items.length;i++){\n  var ev = items[i].json || {};\n  var orgEmail = clean(get(ev,'organizer.email','') || get(ev,'organizer.emailAddress.address',''));\n  var d = domainFromEmail(orgEmail);\n  if (d) domainCount[d] = (domainCount[d] || 0) + 1;\n}\nvar best = null, bestN = -1; for (var k in domainCount){ if (domainCount[k] > bestN){ bestN = domainCount[k]; best = k; } }\nvar INTERNAL = new Set([].concat(INTERNAL_DOMAINS, best ? [best] : []).filter(Boolean).map(function(x){ return lower(x); }));\n\n// 3) Collect uniques by external email\nvar byEmail = new Map();\n\nfor (var j=0;j<items.length;j++){\n  var ev = items[j].json || {};\n  var subject = clean(ev.subject || ev.Subject || '(No subject)');\n  var startISO = startISOFromEvent(ev);\n  var endISO   = endISOFromEvent(ev);\n  var attendees = Array.isArray(ev.attendees) ? ev.attendees : [];\n\n  for (var a=0; a<attendees.length; a++){\n    var att = attendees[a] || {};\n    var email = lower(clean(att.email || get(att,'emailAddress.address','')));\n    if (!email || email.indexOf('@') === -1) continue;\n\n    var domain = email.split('@')[1];\n\n    // Skip internal domains\n    if (INTERNAL.has(domain)) continue;\n\n    // Skip rooms/resources/no-reply\n    var type = lower(String(att.type || ''));\n    var nm = lower(clean(att.name || get(att,'emailAddress.name','') || ''));\n    if (type === 'resource' || nm.indexOf('room') > -1 || email.indexOf('resource') > -1 || email.indexOf('calendar') > -1 || email.indexOf('no-reply') === 0 || email.indexOf('noreply') === 0){\n      continue;\n    }\n\n    var displayName = clean(att.name || get(att,'emailAddress.name','') || email.split('@')[0]);\n\n    if (!byEmail.has(email)){\n      byEmail.set(email, { name: displayName, email: email, domain: domain, events: [] });\n    } else {\n      var cur = byEmail.get(email);\n      if (displayName.length > (cur.name || '').length) cur.name = displayName;\n    }\n\n    byEmail.get(email).events.push({ subject: subject, startISO: startISO, endISO: endISO });\n  }\n}\n\n// 4) Output sorted list\nvar out = Array.from(byEmail.values()).sort(function(a,b){\n  var n=(a.name||'').localeCompare(b.name||'');\n  return n!==0 ? n : a.email.localeCompare(b.email);\n});\nreturn out.map(function(x){ return { json: x }; });\n"
+      },
+      "id": "40942d6d-d745-45e4-9b69-db8719cf39f1",
+      "name": "Extract External Attendees",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1008,
+        -384
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "addToDate",
+        "magnitude": "={{ $json.currentDate }}",
+        "duration": 2,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        112,
+        -480
+      ],
+      "id": "b3ff2e87-c459-479e-9c3b-acc551b20d7b",
+      "name": "Tomorrow +2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You will receive information relating to one or more meetings, decide which information to use for each meeting and cycle through them one by one.\n\nMeeting Name:{{ $('Get many events').item.json.subject }}\nMeeting date and start time:{{ $('Get many events').item.json.start.dateTime }}\nAttendees:{{ $('Get many events').item.json.attendees[0].emailAddress.name }}, {{ $('Get many events').item.json.attendees[1].emailAddress.name }}, {{ $('Get many events').item.json.attendees[3].emailAddress.name }}, {{ $('Get many events').item.json.attendees[4].emailAddress.name }}, {{ $('Get many events').item.json.attendees[5].emailAddress.name }}, {{ $('Get many events').item.json.attendees[6].emailAddress.name }}, {{ $('Get many events').item.json.attendees[7].emailAddress.name }}, {{ $('Get many events').item.json.attendees[8].emailAddress.name }}, {{ $('Get many events').item.json.attendees[9].emailAddress.name }}, {{ $('Get many events').item.json.attendees[10].emailAddress.name }}\nBio for external attendeess:{{ $json.bio }}",
+        "options": {
+          "systemMessage": "You are an expert personal business assistant. For each calendar event, write me a full summary of the event with dates, times, attendees, meeting length and the external bios to allow attendees to prepare for the meetings taking place today.",
+          "returnIntermediateSteps": false
+        }
+      },
+      "id": "e9b40ef7-e8d7-41a9-ab99-c0b4f5c80b1f",
+      "name": "Summary Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        2256,
+        -480
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini-2025-08-07",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini-2025-08-07"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        2688,
+        -656
+      ],
+      "id": "482b5eea-5b8f-4e6a-9141-1c726b43925e",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "LldOhLNBReShSMkE",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You will receive information relating to one or more meetings, decide which information to use for each meeting and cycle through them one by one.\n{{ $json.output }}\n",
+        "options": {
+          "systemMessage": "You are an expert in creating html emails that format calendar details perfectly and create an easy to digest email template to brief a professional on what they have on that day ",
+          "returnIntermediateSteps": false
+        }
+      },
+      "id": "59b1c22f-4616-47cd-a83b-09409e547d08",
+      "name": "HTML Creator",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        2608,
+        -880
+      ],
+      "alwaysOutputData": true,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        2672,
+        -288
+      ],
+      "id": "0e887e95-2eee-4f51-801e-e2bfc70f617c",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "amount": 30
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3408,
+        -288
+      ],
+      "id": "44e803c7-c844-4c26-9268-9cbf4bd116a4",
+      "name": "Wait",
+      "webhookId": "21df89cf-e884-4687-a590-2db50104d664"
+    },
+    {
+      "parameters": {
+        "amount": 30
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3856,
+        -288
+      ],
+      "id": "4b6c05d8-6781-455c-b47b-104cc7cc889f",
+      "name": "Wait1",
+      "webhookId": "82220f02-7f55-4d1c-aa4f-8da85cbcb7cc"
+    },
+    {
+      "parameters": {
+        "resource": "event",
+        "operation": "create",
+        "calendarId": {
+          "__rl": true,
+          "value": "AAMkAGMxYzIyMDNiLTMwNDQtNDE5OC05OGE2LTgyYmMxZjc0N2MxYgBGAAAAAACBf1OFgphsQr9q5Dg5U1xxBwBDq17NBUT6TZpi2QJ2WTqUAAAAAAEGAABDq17NBUT6TZpi2QJ2WTqUAAAAAIZiAAA=",
+          "mode": "list",
+          "cachedResultName": "Calendar"
+        },
+        "subject": "=Daily Briefing",
+        "startDateTime": "={{ $('Wait5').item.json['start-time'] }}",
+        "endDateTime": "={{ $json['end-time'] }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        4688,
+        -16
+      ],
+      "id": "9d012780-2f93-43d7-a337-315615e8a0c5",
+      "name": "Create an event",
+      "webhookId": "ec8119c6-a106-45e3-b9fe-37e07b6e9802",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "NEL55RMRYkKmOgp4",
+          "name": "Microsoft Outlook - Andy"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.microsoft.com/v1.0/me/calendar/getSchedule",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "microsoftOutlookOAuth2Api",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"Content-Type\": \"application/json\",\n  \"Prefer\": \"outlook.timezone=\\\"GMT Standard Time\\\"\"\n}\n",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"schedules\": [\"andy@legalengine.co.uk\"],\n  \"startTime\": {\n    \"dateTime\": \"{{$now.setZone('Europe/London').toISO({ suppressMilliseconds: true, includeOffset: false })}}\",\n    \"timeZone\": \"GMT Standard Time\"\n  },\n  \"endTime\": {\n    \"dateTime\": \"{{$now.setZone('Europe/London').plus({ minutes: 60 }).toISO({ suppressMilliseconds: true, includeOffset: false })}}\",\n    \"timeZone\": \"GMT Standard Time\"\n  },\n  \"availabilityViewInterval\": 15\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4096,
+        -16
+      ],
+      "id": "6bf8f125-59b6-4887-9b16-810b82358ec5",
+      "name": "Outlook find time in next 60m",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "NEL55RMRYkKmOgp4",
+          "name": "Microsoft Outlook - Andy"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resume": "specificTime",
+        "dateTime": "={{ $json.createdDateTime }}"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        4864,
+        -16
+      ],
+      "id": "cab48a06-e5fe-4345-807b-9f95708f5a01",
+      "name": "Wait2",
+      "webhookId": "cca2f272-925a-4ba8-8e97-6595a8a4ec27"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Mode: Run once for all items\nconst items = $input.all().map(i => i.json);\n\n// Choose which field(s) to join\nconst lines = items.map(j =>\n  j.html || j.ai_text || j.text || j.output || j.name || JSON.stringify(j)\n).filter(Boolean);\n\n// Build one string\nconst text = lines.join('\\n\\n---\\n\\n');\n\n// Return ONE item with the string\nreturn [{ json: { text } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2848,
+        -288
+      ],
+      "id": "e88e95ae-e138-4159-a53e-516198939c9b",
+      "name": "Compiler"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        3008,
+        -288
+      ],
+      "id": "5b01af31-8539-4b3e-83a5-a8f0cd59c479",
+      "name": "Date & Time"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.elevenlabs.io/v1/convai/agents/agent_0401k43x6keeenes1q39qfn93qrk",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "xi-api-key",
+              "value": "sk_3eca705a3c2780af4cb1116beb64d3e1d3bfc187a8d565f8"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "=",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4560,
+        256
+      ],
+      "id": "983efda1-2a3c-4ed1-883c-77f591269823",
+      "name": "Delete Agent",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "resume": "specificTime",
+        "dateTime": "={{ $('Pick Slot on 15m').item.json.slotStart }}"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        4960,
+        224
+      ],
+      "id": "6ae4eccc-f6cf-4254-b081-af7f8bb68012",
+      "name": "Wait4",
+      "webhookId": "2b5929f6-49ab-4a52-b76e-8d292a86d45d",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.elevenlabs.io/v1/convai/agents/",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "xi-api-key",
+              "value": "sk_3eca705a3c2780af4cb1116beb64d3e1d3bfc187a8d565f8"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "=",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        5168,
+        224
+      ],
+      "id": "c4b011f8-d154-4262-ba88-f3aad67759c3",
+      "name": "Delete KB",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.elevenlabs.io/v1/convai/twilio/outbound-call",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "={\n  \"xi-api-key\": \"sk_fb475a342401f1e2495de38b2193518f54778f4427ce83de\",\n  \"Content-Type\": \"application/json\"\n}\n",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"agent_id\": \"{{ $('Create 11L agent with KB').item.json.agent_id }}\",\n  \"agent_phone_number_id\": \"phnum_01jvx1f76mfg6akt98vk9jqyqh\",\n  \"to_number\": \"+447966543220\",\n  \"conversation_initiation_client_data\": {\n    \"client_name\": \"Acme Ltd\",\n    \"matter_ref\": \"M-2025-001\"\n  }\n}\n ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        5040,
+        -16
+      ],
+      "id": "a8a2b648-1c0a-4539-bd3a-1fa858054399",
+      "name": "Outbound Call"
+    },
+    {
+      "parameters": {
+        "amount": 30
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        4192,
+        256
+      ],
+      "id": "bf1b79bc-3a05-43b9-9b3f-07c405534d2d",
+      "name": "Wait3",
+      "webhookId": "b23d68d2-6f25-4476-b776-ad34a7efb2d0",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "amount": 30
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        4416,
+        -16
+      ],
+      "id": "4b21c0a7-4383-4a1c-b920-5ac3e234bc79",
+      "name": "Wait5",
+      "webhookId": "ca455803-7ef5-4e35-afdd-2e36963a1ff5"
+    },
+    {
+      "parameters": {
+        "operation": "addToDate",
+        "magnitude": "={{ $('Date & Time').item.json.currentDate }}",
+        "timeUnit": "minutes",
+        "duration": 30,
+        "outputFieldName": "start-time",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        4256,
+        -16
+      ],
+      "id": "db928983-062d-4541-914d-34753fd0c0ba",
+      "name": "Start Time"
+    },
+    {
+      "parameters": {
+        "operation": "addToDate",
+        "magnitude": "={{ $json['start-time'] }}",
+        "timeUnit": "minutes",
+        "duration": 15,
+        "outputFieldName": "end-time",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        4544,
+        -16
+      ],
+      "id": "bb18f831-d48e-49a1-ab50-2406ffe861fa",
+      "name": "End Time"
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Today",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Today": {
+      "main": [
+        [
+          {
+            "node": "Tomorrow +2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF — No meetings today?": {
+      "main": [
+        [
+          {
+            "node": "Extract External Attendees",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Research Attendee (Agent)": {
+      "main": [
+        [
+          {
+            "node": "Normalize Bios",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate HTML Briefing": {
+      "main": [
+        [
+          {
+            "node": "Send Briefing (Outlook, HTML)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slim Inputs for Agent": {
+      "main": [
+        [
+          {
+            "node": "Research Attendee (Agent)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Briefing (Outlook, HTML)": {
+      "main": [
+        []
+      ]
+    },
+    "Create KB": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create 11L agent with KB": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Wait3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many events": {
+      "main": [
+        [
+          {
+            "node": "Clean Calendar Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Research Attendee (Agent)",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Perplexity Search": {
+      "ai_tool": [
+        [
+          {
+            "node": "Research Attendee (Agent)",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Bios": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean Calendar Data": {
+      "main": [
+        [
+          {
+            "node": "IF — No meetings today?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Normalise Calendar Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Summary Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Summary Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalise Calendar Info": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Extract External Attendees": {
+      "main": [
+        [
+          {
+            "node": "Slim Inputs for Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tomorrow +2": {
+      "main": [
+        [
+          {
+            "node": "Get many events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summary Agent": {
+      "main": [
+        [
+          {
+            "node": "Generate HTML Briefing",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTML Creator",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "HTML Creator",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML Creator": {
+      "main": [
+        [
+          {
+            "node": "Send Briefing (Outlook, HTML)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Compiler",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Create 11L agent with KB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "Outbound call",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Outlook find time in next 60m",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create an event": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Outlook find time in next 60m": {
+      "main": [
+        [
+          {
+            "node": "Start Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait2": {
+      "main": [
+        [
+          {
+            "node": "Outbound Call",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compiler": {
+      "main": [
+        [
+          {
+            "node": "Date & Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Time": {
+      "main": [
+        [
+          {
+            "node": "Create KB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Agent": {
+      "main": [
+        [
+          {
+            "node": "Wait4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait4": {
+      "main": [
+        [
+          {
+            "node": "Delete KB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Outbound Call": {
+      "main": [
+        []
+      ]
+    },
+    "Wait3": {
+      "main": [
+        [
+          {
+            "node": "Delete Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait5": {
+      "main": [
+        [
+          {
+            "node": "End Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start Time": {
+      "main": [
+        [
+          {
+            "node": "Wait5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "End Time": {
+      "main": [
+        [
+          {
+            "node": "Create an event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {
+    "Research Attendee (Agent)": [
+      {
+        "json": {
+          "output": "Dave Harris is Managing Consultant at iQlink, specialising in CRM and marketing-technology strategy and integrations for professional services. He joined iQlink in June 2024 and is regularly featured as the firm’s CRM expert. His work focuses on improving CRM adoption, behaviour-driven design and integrations for law firms and other service-led businesses.\n\nRecent items:\n- \"The psychology of using CRM\" — iQlink blog, 9 Apr 2025.  \n- iQlink partnership with InterAction+ for smarter CRM integration — Legal Support Network, 4 Jun 2025.\n\nLinks:\n- https://www.iqlink.com/our-consultants  \n- https://www.iqlink.com/blog/psychology-of-crm  \n- https://www.legalsupportnetwork.co.uk/resource/iqlink-partner-with-interaction-to-power-smarter-crm-integration-for-law-firms/"
+        }
+      },
+      {
+        "json": {
+          "output": "Bio: No verifiable public profile for Emily Jenkins was found on Alternative Events’ website, LinkedIn or major press using the provided address. The only confirmable detail is the supplied email (emily.jenkins@alternativeevents.co.uk); role and seniority were not published. Recommend confirming role/title ahead of the meeting.\n\nRecent items:\n- Web search conducted 1 Sep 2025 — no public profile or press mentions located for Emily Jenkins.\n- No staff listing found on alternativeevents.co.uk (search date 1 Sep 2025).\n\nLinks:\n- Company website: https://alternativeevents.co.uk\n- LinkedIn people search (may require login): https://www.linkedin.com/search/results/people/?keywords=Emily%20Jenkins%20Alternative%20Events"
+        }
+      },
+      {
+        "json": {
+          "output": "Bio: Fay Colegate — appears to be affiliated with Mills & Reeve (email at mills-reeve.com). A single public web search did not locate a verified Mills & Reeve biography, LinkedIn profile or press mention for Fay Colegate. Please confirm the contact’s role/title; I can run a broader search if you authorise further checks.\n\nRecent items:\n- Single web search (Perplexity) on 01 Sep 2025: no public profile found.\n- Email domain confirms affiliation with Mills & Reeve (company site).\n\nLinks:\n- Mills & Reeve — https://www.mills-reeve.com/\n- Mills & Reeve people directory — https://www.mills-reeve.com/people\n- LinkedIn people search for “Fay Colegate” — https://www.linkedin.com/search/results/people/?keywords=Fay%20Colegate"
+        }
+      },
+      {
+        "json": {
+          "output": "Bio: I could not locate a public profile for Karolina Labrenz‑Krzciuk in a single web search. The email domain (mills‑reeve.com) indicates an affiliation with Mills & Reeve, but no role, office or public biography was found in that search. Recommend checking the firm's internal directory or asking the meeting organiser for a short bio.\n\nRecent items:\n- Single web search (no public profile found) — 01 Sep 2025.\n- Suggested next step: check Mills & Reeve people directory — 01 Sep 2025.\n\nLinks:\n- Mills & Reeve — https://www.mills-reeve.com\n- Mills & Reeve people directory — https://www.mills-reeve.com/people\n- LinkedIn people search (name query) — https://www.linkedin.com/search/results/people/?keywords=Karolina%20Labrenz-Krzciuk"
+        }
+      },
+      {
+        "json": {
+          "output": "Bio (3–5 sentences)\nI could not find a verifiable public profile for Lee Curtis linked to the domain linarconsulting.com. The supplied email is lee@linarconsulting.com; there is no clear team page, LinkedIn listing, or Companies House entry that matches that name and company in public sources. Recommend confirming role/title before the meeting or asking Lee to share a LinkedIn profile or company bio.\n\nRecent checks\n- Searched public sources (company site, LinkedIn, Companies House, web) on 1 Sep 2025 — no matching public profile found.\n- No team page or clear company listing for “linarconsulting.com” identified on 1 Sep 2025.\n\nLinks\n- Company domain: https://linarconsulting.com\n- LinkedIn people search (recommended): https://www.linkedin.com/search/results/people/?keywords=Lee%20Curtis%20linar%20consulting\n- UK Companies House search: https://find-and-update.company-information.service.gov.uk/"
+        }
+      },
+      {
+        "json": {
+          "output": "Bio (summary)\nNo publicly verifiable professional profile was found for the email lee.a.curtis@gmail.com in a single web search performed on 1 Sep 2025. The address appears to be a personal Gmail account; no clear LinkedIn, company, Companies House or major‑press matches were returned. Recommend asking the contact for their current employer or LinkedIn before the meeting.\n\nRecent items\n- Single web search (Perplexity) performed 1 Sep 2025 — no credible professional matches found.\n\nUseful links to continue verification\n- LinkedIn people search: https://www.linkedin.com/search/results/people/?keywords=Lee%20A%20Curtis\n- Google search (quoted): https://www.google.com/search?q=%22lee.a.curtis%22+OR+%22Lee%20A%20Curtis%22"
+        }
+      },
+      {
+        "json": {
+          "output": "No verifiable public/professional profile was found for \"Lynda Nazer\" tied to lynda.nazer@gmail.com using a single Perplexity search (checked 2025-09-01). I could not locate a LinkedIn profile, company page or press mention that clearly matches that name and email.\n\nRecent items\n- Perplexity web search (single query) returned no clear match — 1 Sep 2025.\n- LinkedIn site search showed no unambiguous public profile for that name — 1 Sep 2025.\n\nLinks to verify yourself\n- LinkedIn people search: https://www.linkedin.com/search/results/people/?keywords=Lynda%20Nazer\n- Google site search for LinkedIn: https://www.google.com/search?q=site:linkedin.com+%22Lynda+Nazer%22\n\nSuggested next step: ask the contact for a LinkedIn profile or company website to confirm their role before the meeting."
+        }
+      },
+      {
+        "json": {
+          "output": "Ray Meiring — listed contact rmeiring@qorusdocs.com — is a contact at QorusDocs. A single web search (see notes) did not locate a public LinkedIn profile or leadership listing tied to that name on the QorusDocs site, so no verified job title or bio is available from public sources. For meeting prep, check your organiser, internal CRM or ask the host for Ray’s role and remit.\n\nRecent items\n- Single web search for \"Ray Meiring\" (with domain qorusdocs.com) returned no clear public profile — search conducted 1 Sep 2025.\n- QorusDocs company information checked 1 Sep 2025; no individual bio found for Ray Meiring.\n\nLinks\n- QorusDocs: https://qorusdocs.com\n- QorusDocs on LinkedIn: https://www.linkedin.com/company/qorusdocs"
+        }
+      },
+      {
+        "json": {
+          "output": "I ran one Perplexity search (as requested) for Rob Neal (rob.neal@mills-reeve.com) on 1 Sep 2025 and did not find a publicly verifiable Mills & Reeve profile or other credible public source linking that name to the provided email.\n\nBio (cannot produce): No public profile found to create a factual 3–5 sentence bio without further confirmation.\n\nRecent items:\n- No public items or profile located (search date: 1 Sep 2025).\n- Recommend confirming the spelling/email or permitting a further search.\n\nUseful links:\n- https://www.mills-reeve.com/\n- https://www.linkedin.com/company/mills-reeve/\n\nIf you’d like, I can run another search or try alternate sources (LinkedIn people search, company directory) — please confirm."
+        }
+      },
+      {
+        "json": {
+          "output": "Bio (3–5 sentences)\nI could not find a public professional profile for Stephanie Laurent tied to qorusdocs.com in a single Perplexity search performed 1 Sep 2025. The only direct contact provided is slaurent@qorusdocs.com; no role, team or public biography was returned. For meeting prep, check your internal directory or ask a quick calendar/meeting invite clarification to confirm role and responsibilities. Background on QorusDocs is available via the company pages below.\n\nRecent items\n- 01 Sep 2025 — Perplexity search: no LinkedIn, company bio or press mention found for Stephanie Laurent at qorusdocs.com.\n- 01 Sep 2025 — QorusDocs corporate website and LinkedIn contain company overview and contact pages (see links).\n\nLinks\n- https://qorusdocs.com/\n- https://www.linkedin.com/company/qorusdocs/"
+        }
+      }
+    ],
+    "Clean Calendar Data": [
+      {
+        "json": {
+          "id": "AAMkAGJmN2M2NGFhLWFjMjgtNGQ2MC05OGZiLWJjMWM4NmM0ZDAxZABGAAAAAAD2lI-8zWpTTqRWupsreAAzBwCH07UL5-UrRpyGuvviTyupAAAAAAENAACH07UL5-UrRpyGuvviTyupAAAiib02AAA=",
+          "subject": "Emily <> Lee (Legal Engine)",
+          "description": "Emily\r\n\r\nLook forward to speaking with you tomorrow.\r\n\r\nKind regards\r\n\r\nLee\r\n\r\nLee Curtis\r\nCo-founder\r\nLegal Engine\r\nM: 07889 758119\r\nE: lee@legalengine.co.uk\r\nW: www.legalengine.co.uk\r\n\r\nMaking EVERY conversation count.\r\n\r\n\r\n\r\n___________________________",
+          "isAllDay": false,
+          "start": {
+            "dateTime": "2025-09-02T08:30:00.0000000",
+            "timeZone": "UTC",
+            "epoch": 1756801800
+          },
+          "end": {
+            "dateTime": "2025-09-02T09:15:00.0000000",
+            "timeZone": "UTC",
+            "epoch": 1756804500
+          },
+          "durationMinutes": 45,
+          "organizer": {
+            "name": "Lee Curtis",
+            "email": "Lee@legalengine.co.uk"
+          },
+          "attendees": [
+            {
+              "name": "Lee Curtis",
+              "email": "Lee@legalengine.co.uk",
+              "type": "required",
+              "response": "none",
+              "respondedAt": "0001-01-01T00:00:00Z"
+            },
+            {
+              "name": "Emily Jenkins",
+              "email": "emily.jenkins@alternativeevents.co.uk",
+              "type": "required",
+              "response": "accepted",
+              "respondedAt": "2025-09-01T10:37:19Z"
+            }
+          ],
+          "location": {
+            "name": "",
+            "address": null,
+            "uri": null,
+            "type": null
+          },
+          "meetingLink": "https://outlook.office365.com/owa/?itemid=AAMkAGJmN2M2NGFhLWFjMjgtNGQ2MC05OGZiLWJjMWM4NmM0ZDAxZABGAAAAAAD2lI%2F8zWpTTqRWupsreAAzBwCH07UL5%2FUrRpyGuvviTyupAAAAAAENAACH07UL5%2FUrRpyGuvviTyupAAAiib02AAA%3D&exvsurl=1&path=/calendar/item",
+          "webLink": "https://outlook.office365.com/owa/?itemid=AAMkAGJmN2M2NGFhLWFjMjgtNGQ2MC05OGZiLWJjMWM4NmM0ZDAxZABGAAAAAAD2lI%2F8zWpTTqRWupsreAAzBwCH07UL5%2FUrRpyGuvviTyupAAAAAAENAACH07UL5%2FUrRpyGuvviTyupAAAiib02AAA%3D&exvsurl=1&path=/calendar/item",
+          "seriesMasterId": null,
+          "recurrence": null,
+          "sensitivity": null,
+          "importance": null,
+          "categories": []
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGJmN2M2NGFhLWFjMjgtNGQ2MC05OGZiLWJjMWM4NmM0ZDAxZABGAAAAAAD2lI-8zWpTTqRWupsreAAzBwCH07UL5-UrRpyGuvviTyupAAAAAAENAACH07UL5-UrRpyGuvviTyupAAAiib0zAAA=",
+          "subject": "Legal Engine <> QorusDocs",
+          "description": "________________________________________________________________________________\r\nMicrosoft Teams Need help?\r\nJoin the meeting now\r\nMeeting ID: 314 938 061 848 5\r\nPasscode: 6gL9yr7V\r\n________________________________\r\nDial in by phone\r\n+1 347-991-7138,,4",
+          "isAllDay": false,
+          "start": {
+            "dateTime": "2025-09-03T15:00:00.0000000",
+            "timeZone": "UTC",
+            "epoch": 1756911600
+          },
+          "end": {
+            "dateTime": "2025-09-03T15:30:00.0000000",
+            "timeZone": "UTC",
+            "epoch": 1756913400
+          },
+          "durationMinutes": 30,
+          "organizer": {
+            "name": "Ray Meiring",
+            "email": "RMeiring@qorusdocs.com"
+          },
+          "attendees": [
+            {
+              "name": "Ray Meiring",
+              "email": "RMeiring@qorusdocs.com",
+              "type": "required",
+              "response": "none",
+              "respondedAt": "0001-01-01T00:00:00Z"
+            },
+            {
+              "name": "Stephanie Laurent",
+              "email": "slaurent@qorusdocs.com",
+              "type": "required",
+              "response": "none",
+              "respondedAt": "0001-01-01T00:00:00Z"
+            },
+            {
+              "name": "Sam Stamp",
+              "email": "sam@legalengine.co.uk",
+              "type": "required",
+              "response": "none",
+              "respondedAt": "0001-01-01T00:00:00Z"
+            },
+            {
+              "name": "Eduardo Aguilar Pelaez",
+              "email": "edu@legalengine.co.uk",
+              "type": "required",
+              "response": "none",
+              "respondedAt": "0001-01-01T00:00:00Z"
+            },
+            {
+              "name": "Lee Curtis",
+              "email": "Lee@legalengine.co.uk",
+              "type": "required",
+              "response": "none",
+              "respondedAt": "0001-01-01T00:00:00Z"
+            }
+          ],
+          "location": {
+            "name": "",
+            "address": null,
+            "uri": null,
+            "type": null
+          },
+          "meetingLink": "https://outlook.office365.com/owa/?itemid=AAMkAGJmN2M2NGFhLWFjMjgtNGQ2MC05OGZiLWJjMWM4NmM0ZDAxZABGAAAAAAD2lI%2F8zWpTTqRWupsreAAzBwCH07UL5%2FUrRpyGuvviTyupAAAAAAENAACH07UL5%2FUrRpyGuvviTyupAAAiib0zAAA%3D&exvsurl=1&path=/calendar/item",
+          "webLink": "https://outlook.office365.com/owa/?itemid=AAMkAGJmN2M2NGFhLWFjMjgtNGQ2MC05OGZiLWJjMWM4NmM0ZDAxZABGAAAAAAD2lI%2F8zWpTTqRWupsreAAzBwCH07UL5%2FUrRpyGuvviTyupAAAAAAENAACH07UL5%2FUrRpyGuvviTyupAAAiib0zAAA%3D&exvsurl=1&path=/calendar/item",
+          "seriesMasterId": null,
+          "recurrence": null,
+          "sensitivity": null,
+          "importance": null,
+          "categories": []
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGJmN2M2NGFhLWFjMjgtNGQ2MC05OGZiLWJjMWM4NmM0ZDAxZABGAAAAAAD2lI-8zWpTTqRWupsreAAzBwCH07UL5-UrRpyGuvviTyupAAAAAAENAACH07UL5-UrRpyGuvviTyupAAAiib0mAAA=",
+          "subject": "Coffee - Emily M",
+          "description": "",
+          "isAllDay": false,
+          "start": {
+            "dateTime": "2025-09-03T15:30:00.0000000",
+            "timeZone": "UTC",
+            "epoch": 1756913400
+          },
+          "end": {
+            "dateTime": "2025-09-03T16:00:00.0000000",
+            "timeZone": "UTC",
+            "epoch": 1756915200
+          },
+          "durationMinutes": 30,
+          "organizer": {
+            "name": "Lee Curtis",
+            "email": "Lee@legalengine.co.uk"
+          },
+          "attendees": [
+            {
+              "name": "Lee Curtis",
+              "email": "Lee@legalengine.co.uk",
+              "type": "required",
+              "response": "none",
+              "respondedAt": "0001-01-01T00:00:00Z"
+            }
+          ],
+          "location": {
+            "name": "",
+            "address": null,
+            "uri": null,
+            "type": null
+          },
+          "meetingLink": "https://outlook.office365.com/owa/?itemid=AAMkAGJmN2M2NGFhLWFjMjgtNGQ2MC05OGZiLWJjMWM4NmM0ZDAxZABGAAAAAAD2lI%2F8zWpTTqRWupsreAAzBwCH07UL5%2FUrRpyGuvviTyupAAAAAAENAACH07UL5%2FUrRpyGuvviTyupAAAiib0mAAA%3D&exvsurl=1&path=/calendar/item",
+          "webLink": "https://outlook.office365.com/owa/?itemid=AAMkAGJmN2M2NGFhLWFjMjgtNGQ2MC05OGZiLWJjMWM4NmM0ZDAxZABGAAAAAAD2lI%2F8zWpTTqRWupsreAAzBwCH07UL5%2FUrRpyGuvviTyupAAAAAAENAACH07UL5%2FUrRpyGuvviTyupAAAiib0mAAA%3D&exvsurl=1&path=/calendar/item",
+          "seriesMasterId": null,
+          "recurrence": null,
+          "sensitivity": null,
+          "importance": null,
+          "categories": []
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGJmN2M2NGFhLWFjMjgtNGQ2MC05OGZiLWJjMWM4NmM0ZDAxZABGAAAAAAD2lI-8zWpTTqRWupsreAAzBwCH07UL5-UrRpyGuvviTyupAAAAAAENAACH07UL5-UrRpyGuvviTyupAAAiib0kAAA=",
+          "subject": "Alfie & Stevie start Yr 2",
+          "description": "",
+          "isAllDay": false,
+          "start": {
+            "dateTime": "2025-09-03T07:00:00.0000000",
+            "timeZone": "UTC",
+            "epoch": 1756882800
+          },
+          "end": {
+            "dateTime": "2025-09-03T08:30:00.0000000",
+            "timeZone": "UTC",
+            "epoch": 1756888200
+          },
+          "durationMinutes": 90,
+          "organizer": {
+            "name": "Lee Curtis",
+            "email": "Lee@legalengine.co.uk"
+          },
+          "attendees": [
+            {
+              "name": "Lee Curtis",
+              "email": "Lee@legalengine.co.uk",
+              "type": "required",
+              "response": "none",
+              "respondedAt": "0001-01-01T00:00:00Z"
+            },
+            {
+              "name": "Lynda Nazer",
+              "email": "lynda.nazer@gmail.com",
+              "type": "required",
+              "response": "none",
+              "respondedAt": "0001-01-01T00:00:00Z"
+            },
+            {
+              "name": "Lee Curtis",
+              "email": "lee@linarconsulting.com",
+              "type": "required",
+              "response": "none",
+              "respondedAt": "0001-01-01T00:00:00Z"
+            },
+            {
+              "name": "lee.a.curtis@gmail.com",
+              "email": "lee.a.curtis@gmail.com",
+              "type": "required",
+              "response": "none",
+              "respondedAt": "0001-01-01T00:00:00Z"
+            }
+          ],
+          "location": {
+            "name": "",
+            "address": null,
+            "uri": null,
+            "type": null
+          },
+          "meetingLink": "https://outlook.office365.com/owa/?itemid=AAMkAGJmN2M2NGFhLWFjMjgtNGQ2MC05OGZiLWJjMWM4NmM0ZDAxZABGAAAAAAD2lI%2F8zWpTTqRWupsreAAzBwCH07UL5%2FUrRpyGuvviTyupAAAAAAENAACH07UL5%2FUrRpyGuvviTyupAAAiib0kAAA%3D&exvsurl=1&path=/calendar/item",
+          "webLink": "https://outlook.office365.com/owa/?itemid=AAMkAGJmN2M2NGFhLWFjMjgtNGQ2MC05OGZiLWJjMWM4NmM0ZDAxZABGAAAAAAD2lI%2F8zWpTTqRWupsreAAzBwCH07UL5%2FUrRpyGuvviTyupAAAAAAENAACH07UL5%2FUrRpyGuvviTyupAAAiib0kAAA%3D&exvsurl=1&path=/calendar/item",
+          "seriesMasterId": null,
+          "recurrence": null,
+          "sensitivity": null,
+          "importance": null,
+          "categories": []
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGJmN2M2NGFhLWFjMjgtNGQ2MC05OGZiLWJjMWM4NmM0ZDAxZABGAAAAAAD2lI-8zWpTTqRWupsreAAzBwCH07UL5-UrRpyGuvviTyupAAAAAAENAACH07UL5-UrRpyGuvviTyupAAAiib0QAAA=",
+          "subject": "Legal Engine: Dave <> Lee catch up",
+          "description": "Dave\r\n\r\nGetting this in the diary.\r\n\r\nEnjoy Croatia.\r\n\r\nCheers\r\n\r\nLee\r\n\r\nLee Curtis\r\nCo-founder\r\nLegal Engine\r\nM: 07889 758119\r\nE: lee@legalengine.co.uk\r\nW: www.legalengine.co.uk\r\n\r\nMaking EVERY conversation count.",
+          "isAllDay": false,
+          "start": {
+            "dateTime": "2025-09-03T11:30:00.0000000",
+            "timeZone": "UTC",
+            "epoch": 1756899000
+          },
+          "end": {
+            "dateTime": "2025-09-03T13:00:00.0000000",
+            "timeZone": "UTC",
+            "epoch": 1756904400
+          },
+          "durationMinutes": 90,
+          "organizer": {
+            "name": "Lee Curtis",
+            "email": "Lee@legalengine.co.uk"
+          },
+          "attendees": [
+            {
+              "name": "Lee Curtis",
+              "email": "Lee@legalengine.co.uk",
+              "type": "required",
+              "response": "none",
+              "respondedAt": "0001-01-01T00:00:00Z"
+            },
+            {
+              "name": "dave.harris@iqlink.co.uk",
+              "email": "dave.harris@iqlink.co.uk",
+              "type": "required",
+              "response": "none",
+              "respondedAt": "0001-01-01T00:00:00Z"
+            }
+          ],
+          "location": {
+            "name": "",
+            "address": null,
+            "uri": null,
+            "type": null
+          },
+          "meetingLink": "https://outlook.office365.com/owa/?itemid=AAMkAGJmN2M2NGFhLWFjMjgtNGQ2MC05OGZiLWJjMWM4NmM0ZDAxZABGAAAAAAD2lI%2F8zWpTTqRWupsreAAzBwCH07UL5%2FUrRpyGuvviTyupAAAAAAENAACH07UL5%2FUrRpyGuvviTyupAAAiib0QAAA%3D&exvsurl=1&path=/calendar/item",
+          "webLink": "https://outlook.office365.com/owa/?itemid=AAMkAGJmN2M2NGFhLWFjMjgtNGQ2MC05OGZiLWJjMWM4NmM0ZDAxZABGAAAAAAD2lI%2F8zWpTTqRWupsreAAzBwCH07UL5%2FUrRpyGuvviTyupAAAAAAENAACH07UL5%2FUrRpyGuvviTyupAAAiib0QAAA%3D&exvsurl=1&path=/calendar/item",
+          "seriesMasterId": null,
+          "recurrence": null,
+          "sensitivity": null,
+          "importance": null,
+          "categories": []
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGJmN2M2NGFhLWFjMjgtNGQ2MC05OGZiLWJjMWM4NmM0ZDAxZABGAAAAAAD2lI-8zWpTTqRWupsreAAzBwCH07UL5-UrRpyGuvviTyupAAAAAAENAACH07UL5-UrRpyGuvviTyupAAAiib0GAAA=",
+          "subject": "Follow up: Legal Engine",
+          "description": "Rob / Karolina / Fay\r\n\r\nLook forward to catching up and continuing our Legal Engine discussion.\r\n\r\nKind regards\r\n\r\nLee\r\n\r\nLee Curtis\r\nCo-founder\r\nLegal Engine\r\nM: 07889 758119\r\nE: lee@legalengine.co.uk\r\nW: www.legalengine.co.uk\r\n\r\nMaking EVERY conversatio",
+          "isAllDay": false,
+          "start": {
+            "dateTime": "2025-09-03T10:00:00.0000000",
+            "timeZone": "UTC",
+            "epoch": 1756893600
+          },
+          "end": {
+            "dateTime": "2025-09-03T10:45:00.0000000",
+            "timeZone": "UTC",
+            "epoch": 1756896300
+          },
+          "durationMinutes": 45,
+          "organizer": {
+            "name": "Lee Curtis",
+            "email": "Lee@legalengine.co.uk"
+          },
+          "attendees": [
+            {
+              "name": "Lee Curtis",
+              "email": "Lee@legalengine.co.uk",
+              "type": "required",
+              "response": "none",
+              "respondedAt": "0001-01-01T00:00:00Z"
+            },
+            {
+              "name": "Rob Neal",
+              "email": "rob.neal@mills-reeve.com",
+              "type": "required",
+              "response": "none",
+              "respondedAt": "0001-01-01T00:00:00Z"
+            },
+            {
+              "name": "Karolina Labrenz-Krzciuk",
+              "email": "karolina.labrenz-krzciuk@mills-reeve.com",
+              "type": "required",
+              "response": "none",
+              "respondedAt": "0001-01-01T00:00:00Z"
+            },
+            {
+              "name": "Fay Colegate",
+              "email": "fay.colegate@mills-reeve.com",
+              "type": "required",
+              "response": "accepted",
+              "respondedAt": "2025-07-24T07:00:56Z"
+            },
+            {
+              "name": "Sam Stamp",
+              "email": "sam@legalengine.co.uk",
+              "type": "required",
+              "response": "declined",
+              "respondedAt": "2025-07-24T07:31:23.4383592Z"
+            }
+          ],
+          "location": {
+            "name": "",
+            "address": null,
+            "uri": null,
+            "type": null
+          },
+          "meetingLink": "https://outlook.office365.com/owa/?itemid=AAMkAGJmN2M2NGFhLWFjMjgtNGQ2MC05OGZiLWJjMWM4NmM0ZDAxZABGAAAAAAD2lI%2F8zWpTTqRWupsreAAzBwCH07UL5%2FUrRpyGuvviTyupAAAAAAENAACH07UL5%2FUrRpyGuvviTyupAAAiib0GAAA%3D&exvsurl=1&path=/calendar/item",
+          "webLink": "https://outlook.office365.com/owa/?itemid=AAMkAGJmN2M2NGFhLWFjMjgtNGQ2MC05OGZiLWJjMWM4NmM0ZDAxZABGAAAAAAD2lI%2F8zWpTTqRWupsreAAzBwCH07UL5%2FUrRpyGuvviTyupAAAAAAENAACH07UL5%2FUrRpyGuvviTyupAAAiib0GAAA%3D&exvsurl=1&path=/calendar/item",
+          "seriesMasterId": null,
+          "recurrence": null,
+          "sensitivity": null,
+          "importance": null,
+          "categories": []
+        }
+      }
+    ],
+    "Aggregate": [
+      {
+        "json": {
+          "data": [
+            {
+              "output": "Meeting: Emily <> Lee (Legal Engine)\n\nDate & time\n- Date: 2025-09-02 (today)\n- Start time: 08:30 (local time — please confirm timezone if different)\n- Meeting length: Not specified in calendar entry. Please confirm desired duration (suggest 30 or 60 minutes). If no preference, I will assume 30 minutes.\n\nAttendees\n- Emily Jenkins\n- Lee Curtis\n\nExternal contact (provided bio)\n- Dave Harris — Managing Consultant, iQlink\n  - Summary: Specialises in CRM and marketing-technology strategy and integrations for professional services, with particular experience working with law firms and other service-led businesses. Joined iQlink in June 2024 and is regularly featured as the firm’s CRM expert.\n  - Areas of focus: CRM adoption, behaviour-driven design, CRM integrations (incl. enterprise contact-management platforms).\n  - Recent relevant items:\n    - \"The psychology of using CRM\" — iQlink blog, 9 Apr 2025 (useful for adoption/behaviour-change discussion)\n    - iQlink partnership with InterAction+ for smarter CRM integration — Legal Support Network, 4 Jun 2025 (useful for integration/partner strategy)\n  - Links:\n    - Consultant page: https://www.iqlink.com/our-consultants\n    - Blog (psychology of CRM): https://www.iqlink.com/blog/psychology-of-crm\n    - Press: https://www.legalsupportnetwork.co.uk/resource/iqlink-partner-with-interaction-to-power-smarter-crm-integration-for-law-firms/\n\nNotes and preparation (to allow attendees to prepare)\n- Purpose / likely topics to cover (based on meeting title and bio):\n  - Discuss CRM strategy / adoption for Legal Engine (pain points, current tools, desired outcomes).\n  - Explore integration options and technical approach (possible InterAction+ involvement).\n  - Behaviour-driven design and user adoption tactics (training, incentives, UX).\n  - Next steps, responsibilities and timeline for any pilot or integration work.\n- Pre-read / links to review (high priority)\n  - iQlink consultant page: https://www.iqlink.com/our-consultants\n  - \"The psychology of using CRM\" (iQlink blog): https://www.iqlink.com/blog/psychology-of-crm\n  - iQlink + InterAction+ announcement (context on integration approach): https://www.legalsupportnetwork.co.uk/resource/iqlink-partner-with-interaction-to-power-smarter-crm-integration-for-law-firms/\n- Suggested agenda (30-minute meeting)\n  - 08:30–08:35 — Quick introductions & meeting objectives\n  - 08:35–08:45 — Current CRM status: what’s working / challenges (Emily / Lee)\n  - 08:45–08:55 — iQlink perspective: proposed approach to adoption & integrations (Dave / if attending)\n  - 08:55–09:00 — Agree next steps, owners, timeline\n- Documents / info to bring\n  - Current CRM platform name and basic architecture (screenshots or system diagram)\n  - Usage / adoption metrics (user counts, logins, recent activity)\n  - Key business processes that must integrate with CRM (e.g., matter intake, business development workflows)\n  - Any security/compliance constraints (esp. for law firm data)\n- Suggested questions to ask Dave (if he will attend)\n  - Which InterAction+ capabilities would be most relevant for Legal Engine?\n  - Typical timeline and resource requirements for an initial integration pilot.\n  - Proven tactics for improving CRM adoption among fee-earners in law firms.\n  - Examples/case studies of similar firms and measurable outcomes.\n\nLogistics / clarifying items I need from you\n- Confirm meeting length (30 or 60 minutes) or provide the scheduled duration.\n- Confirm whether Dave Harris will attend (bio provided but he is not listed as an attendee).\n- Confirm meeting location or dial-in/virtual link (not in calendar entry).\n- Confirm timezone if different from your default.\n\nIf you want, I can:\n- Draft a short agenda email to send to attendees (including the pre-reads and suggested questions).\n- Add the links and pre-read summary into the calendar event."
+            },
+            {
+              "output": "Meeting: Legal Engine <> QorusDocs\nDate & time: Wednesday, 3 Sep 2025 at 15:00 (3:00 PM) — time zone not specified in the invite (please confirm)\nMeeting length: Not specified in the invite. I assumed 60 minutes for planning — please confirm if different.\nAttendees (as listed on the invite):\n- Ray Meiring\n- Stephanie Laurent\n- Eduardo Aguilar Pelaez\n- Lee Curtis\n- (4 blank/empty entries present on the invite — please check for missing/failed imports)\n\nExternal attendee bios / verification notes\n- Emily Jenkins — No verifiable public profile found\n  - Summary: No verifiable public profile for Emily Jenkins was found on Alternative Events’ website, LinkedIn or major press using the provided address. The only confirmable detail is the supplied email (emily.jenkins@alternativeevents.co.uk); role and seniority were not published.\n  - Recent check: web search conducted 1 Sep 2025 — no public profile or press mentions located. No staff listing found on alternativeevents.co.uk (search date 1 Sep 2025).\n  - Recommendation: confirm Emily’s role/title and which organisation she represents ahead of the meeting.\n  - Links to follow up:\n    - Company website: https://alternativeevents.co.uk\n    - LinkedIn people search (may require login): https://www.linkedin.com/search/results/people/?keywords=Emily%20Jenkins%20Alternative%20Events\n\nPreparation checklist / recommended actions before the meeting\n- Confirm meeting duration and time zone so calendars are aligned.\n- Confirm full attendee list (there are four blank entries in the invite) and add missing external participant details (names, titles, companies, and brief bios).\n- Confirm agenda and objectives (e.g., integration discussion, SOW/contract review, demo, pricing).\n- If Emily Jenkins will attend, ask the organizer to confirm her role/title and which organisation she represents (no public profile found).\n- Share any materials in advance that will be discussed (contracts, demo links, slides, integration docs).\n- Ensure dial-in/VC link and access permissions are working for external guests.\n- Assign speaking roles/owners for agenda items (e.g., who will demo, who will discuss contracts, who will cover next steps).\n\nWould you like me to:\n- Reach out and confirm Emily Jenkins’s role/title and the missing attendees?\n- Pull short company summaries for Legal Engine and QorusDocs to include in prep materials?"
+            },
+            {
+              "output": "Meeting summary — Coffee with Emily M\n\n- Meeting name: Coffee — Emily M\n- Date: Wednesday, 3 September 2025\n- Start time: 15:30 (03:30 PM) — timezone not specified; please confirm timezone\n- Proposed length: 30 minutes (typical for a coffee meeting). Please confirm if you want 15/30/45/60 min.\n- Location: Not specified (coffee implies informal/in‑person). Please confirm location or video link.\n- Attendees (as provided):\n  - Lee Curtis\n  - [No other attendee names provided in the calendar entry]\n- External contact noted in your briefing: Fay Colegate (affiliated with Mills & Reeve) — see external bio below.\n\nExternal bio (to help attendees prepare)\n- Name: Fay Colegate\n- Affiliation: Mills & Reeve (email domain confirms affiliation)\n- Public profile/search status: A single public web search (Perplexity) on 01 Sep 2025 did not locate a verified Mills & Reeve biography, LinkedIn profile, or press mention for Fay Colegate.\n- Action requested: Please confirm Fay’s role/title and whether she will attend. I can run a broader search (deeper web, company directory contact, LinkedIn premium search, or email verification) if you authorize further checks.\n- Links:\n  - Mills & Reeve — https://www.mills-reeve.com/\n  - Mills & Reeve people directory — https://www.mills-reeve.com/people\n  - LinkedIn people search for “Fay Colegate” — https://www.linkedin.com/search/results/people/?keywords=Fay%20Colegate\n\nSuggested agenda (30-minute coffee)\n1. Quick introductions and roles (5 min)\n2. Goal of the meeting / what each party is hoping to achieve (5 min)\n3. Main discussion — topics to cover (15 min)\n   - If Fay represents Mills & Reeve: high-level overview of the legal/services areas relevant to you (e.g., corporate, real estate, employment, IP — confirm which applies)\n   - Clarify engagement model, typical timelines, fees or next steps\n4. Agree next steps and owners (5 min)\n\nSuggested prep / documents to bring\n- One‑page summary of the purpose of the meeting (what you want from Mills & Reeve or from Fay)\n- Any relevant background materials or documents you may want their view on (brief extracts rather than full packs)\n- Business cards (if in person) or a short slide with contact details if virtual\n\nSuggested questions to ask Fay\n- What is your role and which practice area(s) do you cover?\n- Can you describe recent similar engagements or experience relevant to our needs?\n- Who would be the working team and main point of contact?\n- Typical engagement terms, timing and estimated costs for initial scoping/advice?\n- Any immediate considerations or risks you would flag at a high level?\n\nLogistics / next actions for you\n- Confirm meeting duration and location (in person vs. virtual) and share details with attendees.\n- Confirm whether Fay Colegate is attending and her preferred contact details; if you want me to verify her title or run a broader search, reply “Please search Fay” and I will proceed.\n- If you want a customized brief or short slide deck to bring, tell me the meeting objective and I’ll prepare it.\n\nIf you’d like I can:\n- Verify Fay’s role/title with a broader search or by contacting Mills & Reeve.\n- Draft a short agenda email/invite to send to attendees.\n- Prepare a one‑page briefing or a 3‑slide pack for the meeting.\n\nWhich of those would you like me to do next?"
+            },
+            {
+              "output": "Meeting summary — Alfie & Stevie start Yr 2\n\n- Date & time\n  - Scheduled: 2025-09-03 at 07:00\n  - Note: time zone is not provided in the calendar entry — please confirm (UTC/local). If this is for tomorrow, confirm whether 07:00 is AM or PM in your local time.\n\n- Meeting length\n  - Not specified in the event details. Please confirm desired duration.\n  - Suggested default: 30 minutes (adjust to 45–60 minutes if you expect detailed planning).\n\n- Attendees (as listed)\n  - Lee Curtis\n  - Lynda Nazer\n  - lee.a.curtis@gmail.com (duplicate of Lee Curtis — please confirm if this is the intended address)\n  - There are several blank/empty attendee slots in the invite — please confirm the full guest list and add missing emails.\n\n- External attendee bio (provided)\n  - Karolina Labrenz‑Krzciuk\n    - Summary: No public profile was found in a single web search. The email domain (mills‑reeve.com) suggests affiliation with the law firm Mills & Reeve, but no role, office or public biography could be located.\n    - Recommended next steps for attendees: check Mills & Reeve internal people directory or ask the meeting organiser for a short professional bio and the attendee’s role/relevance to this meeting.\n    - Links for follow-up:\n      - Mills & Reeve: https://www.mills-reeve.com\n      - Mills & Reeve people directory: https://www.mills-reeve.com/people\n      - LinkedIn people search (name query): https://www.linkedin.com/search/results/people/?keywords=Karolina%20Labrenz-Krzciuk\n    - Recent search note: Single web search (no public profile found) — 01 Sep 2025.\n\n- Purpose (inferred from title)\n  - The title suggests this is a planning/coordination meeting for Alfie and Stevie starting Year 2 (school). If that inference is incorrect, please confirm the meeting objective.\n\n- Suggested preparation for attendees\n  - Confirm agenda and objectives (who will lead and what decisions/outputs are expected).\n  - Bring/prepare the following (if applicable):\n    - Child details: school name, class/teacher contacts, start date/times, timetable or term dates.\n    - Medical/Allergy/dietary info and emergency contacts.\n    - Transport/drop-off and pick-up arrangements (who will do what, keys, after-school clubs).\n    - Uniform, kit and stationery lists; laundry/labeling plan.\n    - Any special educational needs or support requirements and existing plans.\n    - Questions for the school/teacher and items that need to be actioned before term start.\n  - If Karolina (Mills & Reeve) will attend in a professional capacity, confirm her role and what legal/administrative input she will provide.\n\n- Pre-meeting actions I recommend you do now\n  - Confirm the meeting timezone and duration.\n  - Confirm the full attendee list and add any missing email addresses.\n  - Request a short bio/role from Karolina (or ask the organiser to supply one) if she will contribute externally.\n  - Send a brief agenda and any documents (school letters, forms, schedules) at least 24 hours before the meeting.\n  - If you want, I can:\n    - Update the calendar event with confirmed duration/timezone.\n    - Email attendees to request missing info and short bios.\n    - Draft an agenda for your approval.\n\nWould you like me to (pick one or more)?\n- Confirm timezone and set meeting length to 30 or 60 minutes.\n- Contact attendees to collect missing emails and short bios.\n- Draft and send a suggested agenda and pre-read checklist."
+            },
+            {
+              "output": "Meeting summary — Legal Engine: Dave <> Lee catch up\n\n1) Core details\n- Title: Legal Engine: Dave <> Lee catch up  \n- Date: 2025-09-03 (Wednesday)  \n- Start time: 11:30 (please confirm timezone)  \n- Duration: Not specified in calendar. Please confirm. Suggested/typical options:\n  - 30 minutes — End 12:00\n  - 60 minutes — End 12:30\n- Location / dial-in: Not provided — please add meeting link or dial-in.\n\n2) Confirmed attendees (from calendar)\n- Lee Curtis — listed as “Lee Curtis” (email on record: lee@linarconsulting.com — unverified) — external\n- Dave Harris — dave.harris@iqlink.co.uk — external\n\n(Note: there are several blank attendee slots in the event; please confirm if additional participants should be invited.)\n\n3) External bios / verification notes (3–5 sentences each) — for attendee prep\n\n- Lee Curtis (lee@linarconsulting.com) — verification status: not found in public sources  \n  I could not find a verifiable public profile for Lee Curtis linked to the domain linarconsulting.com. The supplied email is lee@linarconsulting.com; there is no clear team page, LinkedIn listing, or Companies House entry that matches that name and company in public sources. Recommend confirming Lee’s role/title before the meeting or asking Lee to share a LinkedIn profile or company bio so attendees know responsibilities and decision-making authority. (Searches performed 1 Sep 2025.)  \n  Useful links:\n  - Company domain: https://linarconsulting.com  \n  - LinkedIn people search (recommended): https://www.linkedin.com/search/results/people/?keywords=Lee%20Curtis%20linar%20consulting  \n  - UK Companies House search: https://find-and-update.company-information.service.gov.uk/\n\n- Dave Harris (dave.harris@iqlink.co.uk) — verification status: not checked/unknown  \n  I do not have a verifiable public profile for Dave from the supplied data. Please confirm Dave’s job title and role at IQLink (or the correct employer) so meeting attendees know his responsibilities and authority (e.g., legal lead, product owner, commercial contact). If helpful, ask Dave to share a LinkedIn URL or short company bio in advance.\n\n4) Suggested agenda (tailored to a “Legal Engine” catch-up)\n- Quick intros & roles (2–3 min) — confirm who is responsible for which area.  \n- Current status: what’s working and what’s outstanding on the Legal Engine project (5–10 min).  \n- Key legal/commercial issues to resolve (IP, licensing, data access, liability) (10–15 min).  \n- Next steps, responsibilities and timelines (5–10 min).  \n- AOB & confirm next meeting (2–3 min).\n\n5) Documents to attach / bring\n- Current contract or draft agreements (NDAs, SOW, licensing terms).  \n- One-page project summary / scope document.  \n- Technical spec or integration plan (if relevant).  \n- Risk log or open issues tracker.  \n- Any previous correspondence that outlines outstanding decisions.\n\n6) Prep recommended for attendees\n- Host / organizer: confirm meeting duration, timezone and add dial-in link; circulate agenda and key documents at least 24 hours before.  \n- Ask Lee and Dave to confirm role/title and decision authority in advance; request LinkedIn/company bio if available.  \n- Prepare the top 3 questions you need decisions on during this catch-up (e.g., timeline milestones, who signs agreement, data access constraints).  \n- If legal counsel will join later, list which clauses you’ll need their input on (IP, indemnity, data protection).\n\n7) Action items for you (suggested)\n- Confirm timezone and duration for the meeting.  \n- Add meeting link/dial-in and resend invite.  \n- Ask Lee and Dave to confirm title/role and optionally provide a one-line bio or LinkedIn link.  \n- Circulate the suggested agenda and attach any key documents.\n\nIf you’d like, I can:\n- Draft a short email to Lee and Dave requesting role/title and a LinkedIn/company bio, plus attach the agenda and docs.  \n- Assume a duration (30 or 60 minutes) and add an end time and dial-in to the calendar invite. Which would you prefer?"
+            },
+            {
+              "output": "Meeting: Follow up: Legal Engine\nDate & time: 2025-09-03 — 10:00 (start)\nAssumed meeting length: 60 minutes (no length provided; tell me if you want a different default)\nLocation/host link: none provided — recommend confirming conference link/dial-in with attendees ahead of time\n\nAttendees (as provided)\n- Lee Curtis\n- Rob Neal\n- Fay Colegate\n- Sam Stamp\n\nNotes on attendee list\n- The original attendee field contained several blank entries; I included only the named people above.\n- If there are additional invitees, please forward their names or calendar invite so I can include them and pull bios.\n\nExternal bios / verification (to help attendees prepare)\n1) Lee Curtis (email: lee.a.curtis@gmail.com)\n- Summary: No publicly verifiable professional profile was found for lee.a.curtis@gmail.com in a single web search (Perplexity) performed 1 Sep 2025. The address appears to be a personal Gmail account; no clear LinkedIn, company, Companies House or major‑press matches were returned.\n- Recommendation: Ask Lee to confirm current employer, job title, LinkedIn profile and decision-making authority prior to the meeting (or at the start of the call).\n- Recent verification item: Single web search (Perplexity) performed 1 Sep 2025 — no credible professional matches found.\n- Useful links to continue verification:\n  - LinkedIn people search: https://www.linkedin.com/search/results/people/?keywords=Lee%20A%20Curtis\n  - Google search (quoted): https://www.google.com/search?q=%22lee.a.curtis%22+OR+%22Lee%20A%20Curtis%22\n\n2) Rob Neal / Fay Colegate / Sam Stamp\n- No external bios or verification notes were provided for these three. If you would like, I can look up LinkedIn/company profiles and supply short bios for each — tell me whether to search and which sources you prefer.\n\nSuggested pre-meeting preparation (what attendees should have/read)\n- Previous meeting notes and list of open action items related to the Legal Engine workstream.\n- Current project plan/timeline and outstanding deliverables.\n- Any draft contracts, SOWs, IP or data‑privacy documentation relevant to the Legal Engine.\n- Demo or access credentials if a demo of the Legal Engine or a specific feature will be shown.\n- A one‑pager summary of decision points you expect to resolve in this follow-up.\n\nSuggested agenda (sample, edit as needed)\n1. Quick roll call and confirmation of attendee org/roles (2–3 min) — especially confirm Lee Curtis’ employer/authority.\n2. Review open action items from previous meeting (10–15 min)\n3. Status updates on development/legal review/compliance (15–20 min)\n4. Discuss outstanding risks, blockers and required decisions (15 min)\n5. Agree next steps, owners and timeline (5–10 min)\n\nSuggested questions to ask (particularly given incomplete verification)\n- Lee Curtis: Please confirm your current employer, role/title, and whether you are the decision‑maker for contractual/legal matters.\n- For all: Are there any outstanding legal/compliance items that could materially affect delivery or scope?\n- What are the critical milestones we must hit in the next 30/60 days, and who owns each?\n- Any changes to budget, data access, or scope since the last meeting?\n\nLogistics & actions I can do before the meeting (tell me which you want)\n- Verify LinkedIn/company profiles for Rob Neal, Fay Colegate and Sam Stamp and produce short bios.\n- Re-run a more exhaustive background search for Lee Curtis (additional sources).\n- Draft and send a short pre-meeting agenda + doc request to attendees.\n- Confirm meeting length and add a conference link or dial-in to the calendar invite.\n\nIf you want, I’ll proceed with background checks for the other attendees and draft the pre-read/agenda and a short message to request Lee’s employer/LinkedIn. Which of those should I do?"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "triggerCount": 0,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

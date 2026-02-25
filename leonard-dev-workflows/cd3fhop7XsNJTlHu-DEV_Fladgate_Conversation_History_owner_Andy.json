@@ -1,0 +1,1025 @@
+{
+  "name": "DEV - Fladgate Conversation History - owner Andy",
+  "nodes": [
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "156090cc-9c17-4309-89eb-1171f9745d19",
+              "leftValue": "={{ $('Search existing records').item.json[\"Conversation History\"] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "02c9fb25-20ed-4783-9f34-9dd4de44b315",
+              "leftValue": "={{ $json.output }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        960,
+        128
+      ],
+      "id": "e87ba6a2-983c-460a-946b-89ef4f13d4fb",
+      "name": "If",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        688,
+        352
+      ],
+      "id": "1cffaeb4-61eb-4c96-b783-c07ec1202f1a",
+      "name": "Google Vertex Chat Model2",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "base": {
+          "__rl": true,
+          "value": "https://airtable.com/appUvJyzSky12m4HA/tbl9NJsjg5hJRqpPx/viwImoxUDoxhhVvIx?blocks=hide",
+          "mode": "url"
+        },
+        "table": {
+          "__rl": true,
+          "value": "https://airtable.com/appUvJyzSky12m4HA/tbl9NJsjg5hJRqpPx/viwImoxUDoxhhVvIx?blocks=hide",
+          "mode": "url"
+        },
+        "id": "={{ $json.id }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -736,
+        128
+      ],
+      "id": "d809b2f8-9435-4c2c-9ab7-4b01a1e47d64",
+      "name": "Get new conversation",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appUvJyzSky12m4HA",
+          "mode": "list",
+          "cachedResultName": "Fladgate - Leonard Live Data",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl9NJsjg5hJRqpPx",
+          "mode": "list",
+          "cachedResultName": "fladgate_conversation_log",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA/tbl9NJsjg5hJRqpPx"
+        },
+        "filterByFormula": "={Email}='{{ $json.Email }}'",
+        "returnAll": false,
+        "limit": 1,
+        "options": {
+          "fields": [
+            "Call Transcript",
+            "Email",
+            "Full Name",
+            "First Name",
+            "Last Name",
+            "Date Last Updated",
+            "Call Length (s)",
+            "Conversation ID"
+          ]
+        },
+        "sort": {
+          "property": [
+            {
+              "field": "Date Last Updated"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -288,
+        128
+      ],
+      "id": "6ca417d1-8dc1-4001-9134-64efbd9aa029",
+      "name": "Search for new conv",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appUvJyzSky12m4HA",
+          "mode": "list",
+          "cachedResultName": "Fladgate - Leonard Live Data",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl3ADT2yOV8EJCnZ",
+          "mode": "list",
+          "cachedResultName": "FG - Conversation History by lawyer",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA/tbl3ADT2yOV8EJCnZ"
+        },
+        "filterByFormula": "={Email}='{{ $json.Email }}'",
+        "returnAll": false,
+        "limit": 1,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -64,
+        128
+      ],
+      "id": "40c9ecb9-8ffe-4510-befb-4ab47ea9fe1e",
+      "name": "Search existing records",
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=New Conversation Transcript: {{ $('Get new conversation').item.json['Call Transcript'] }}",
+        "options": {
+          "systemMessage": "You are an expert in conversation summaries and creating a version that will act as the knowledge base for a future conversation with an AI voice agent. When producing the output, just provide the summary, no introduction, in long prose and containing all pertinent details. Make sure to log all fact. "
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        608,
+        128
+      ],
+      "id": "babafe15-e06f-42b5-aaad-0290f3b6f386",
+      "name": "Create new single conv summary"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appUvJyzSky12m4HA",
+          "mode": "list",
+          "cachedResultName": "Fladgate - Leonard Live Data",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl3ADT2yOV8EJCnZ",
+          "mode": "list",
+          "cachedResultName": "FG - Conversation History by lawyer",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA/tbl3ADT2yOV8EJCnZ"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Email": "={{ $('Search for new conv').item.json.Email }}",
+            "Transcript ID": "={{ $('Search for new conv').item.json.id }}",
+            "First Name": "={{ $('Search for new conv').item.json[\"First Name\"] }}",
+            "Last Name": "={{ $('Search for new conv').item.json[\"Last Name\"] }}",
+            "Number of Calls": 0,
+            "Call Length": "={{ $('Search for new conv').item.json[\"Call Length (s)\"] }}",
+            "Conversation History": "={{ $json.output }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Transcript ID",
+              "displayName": "Transcript ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Created",
+              "displayName": "Created",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Last Modified",
+              "displayName": "Last Modified",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Conversation History",
+              "displayName": "Conversation History",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Call Length",
+              "displayName": "Call Length",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Number of Calls",
+              "displayName": "Number of Calls",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1184,
+        224
+      ],
+      "id": "1c74211d-73ea-4ecc-92df-6bb6fc6ebced",
+      "name": "Create new conv summary",
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        1712,
+        256
+      ],
+      "id": "4967f310-b1ba-4c68-9acf-357c5f24451b",
+      "name": "Google Vertex Chat Model3",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "value": "appUvJyzSky12m4HA",
+          "mode": "list",
+          "cachedResultName": "Fladgate - Leonard Live Data",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl3ADT2yOV8EJCnZ",
+          "mode": "list",
+          "cachedResultName": "FG - Conversation History by lawyer",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA/tbl3ADT2yOV8EJCnZ"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Email": "={{ $('Search for new conv').item.json.Email }}",
+            "Transcript ID": "={{ $('Search for new conv').item.json[\"Conversation ID\"] }}",
+            "Conversation History": "={{ $json.output }}",
+            "Call Length": "={{ $('Search for new conv').item.json[\"Call Length (s)\"] }}"
+          },
+          "matchingColumns": [
+            "Email"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Transcript ID",
+              "displayName": "Transcript ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Created",
+              "displayName": "Created",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Last Modified",
+              "displayName": "Last Modified",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Conversation History",
+              "displayName": "Conversation History",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Call Length",
+              "displayName": "Call Length",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Number of Calls",
+              "displayName": "Number of Calls",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1984,
+        32
+      ],
+      "id": "e5642147-7019-47e6-9550-30df2c676199",
+      "name": "Create new conv summary1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Latest Call Summary: {{ $('Create new single conv summary').item.json.output }}\nPrior call Summaries: {{ $('Search existing records').item.json['Conversation history'] }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You are an expert in taking a series of conversations summaries and consolidating them into a single output which is a consolidated version. This consolodated version will act as the knowledge base for a future AI voice agent. You should make sure to use as much detail as possible, prioritising information from the Latest Call Summary ({{ $('Create new single conv summary').item.json.output }}) over the Prior call Summaries ({{ $('Search existing records').item.json['Conversation history'] }}) to ensure the knowledge base has a bias for more up to date information. When producing the single output, just provide the summary, no introduction, in long prose and containing all pertinent details. Begin with details from the Latest Call Summary ({{ $('Create new single conv summary').item.json.output }}). Make sure to include as much detail as possible, linking relevant points to provide a robust history of the conversation. "
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1632,
+        32
+      ],
+      "id": "87aecc56-15d9-43ac-b996-4d00f34767bb",
+      "name": "Conv history agent"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "airtableTokenApi",
+        "baseId": {
+          "__rl": true,
+          "value": "https://airtable.com/appZVIzjrI2yMRYTT/tbli6Lbg7SwnxcmNj/viwBAYtcOMFkmZzhc?blocks=hide",
+          "mode": "url"
+        },
+        "tableId": {
+          "__rl": true,
+          "value": "https://airtable.com/appZVIzjrI2yMRYTT/tbli6Lbg7SwnxcmNj/viwBAYtcOMFkmZzhc?blocks=hide",
+          "mode": "url"
+        },
+        "triggerField": "Transcript ID",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.airtableTrigger",
+      "typeVersion": 1,
+      "position": [
+        -960,
+        1840
+      ],
+      "id": "1e105c47-e3b9-4caa-8d76-ac313549d32d",
+      "name": "Airtable Trigger1",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "735de4f1-f56b-44ff-a5ab-66e8fee102dc",
+              "leftValue": "={{ $('On New FG Conversation').item.json.fields[\"Call Length (s)\"] }}",
+              "rightValue": 45,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -512,
+        128
+      ],
+      "id": "7fdd1a45-2b2e-4ec8-8a4f-0614ac422172",
+      "name": "45s length"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2b0483ab-79c3-42f3-9fe0-e96e8e0e1a3f",
+              "name": "fields[\"First Name\"]",
+              "value": "={{ $('Edit Fields1').item.json.fields[\"First Name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "68e5fd4d-e927-41b8-b991-877a30a82c2e",
+              "name": "fields[\"Last Name\"]",
+              "value": "={{ $('Edit Fields1').item.json.fields[\"Last Name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "0614cd2c-de73-457d-9cee-f93d703c02d1",
+              "name": "fields.Email",
+              "value": "={{ $('Edit Fields1').item.json.fields.Email }}",
+              "type": "string"
+            },
+            {
+              "id": "27596fd5-ca72-48da-9eca-02d5edd96208",
+              "name": "fields[\"Call Summary\"]",
+              "value": "={{ $('Edit Fields1').item.json.fields[\"Call Summary\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "3972631b-f76f-4d53-aa2b-25bbd75a5a2f",
+              "name": "fields[\"Call Transcript\"]",
+              "value": "={{ $('Edit Fields1').item.json.fields[\"Call Transcript\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "847cc40e-5639-407c-a59b-3a6c31ff8732",
+              "name": "Email",
+              "value": "={{ $('Edit Fields1').item.json.Email }}",
+              "type": "string"
+            },
+            {
+              "id": "eb36d309-5ea8-4da6-9b8e-6a650b4fbf3b",
+              "name": "First Name",
+              "value": "={{ $('Edit Fields1').item.json[\"First Name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "2ca82292-39b1-43cc-97ca-4b3cee6340bc",
+              "name": "Last Name",
+              "value": "={{ $('Edit Fields1').item.json[\"Last Name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "da829b54-69a1-47cc-8560-2b31bc533783",
+              "name": "Call Transcript",
+              "value": "={{ $('Edit Fields1').item.json[\"Call Transcript\"] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1184,
+        32
+      ],
+      "id": "2e57ea5c-c89f-46d3-badf-98d15e7b5811",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f6a9374e-c2c2-48fc-9c23-5c15367ddaa2",
+              "name": "fields[\"First Name\"]",
+              "value": "={{ $('On New FG Conversation').item.json.fields[\"First Name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "8613186a-e478-4d48-b7f6-c824b481ab0b",
+              "name": "fields[\"Last Name\"]",
+              "value": "={{ $('On New FG Conversation').item.json.fields[\"Last Name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "9fd3ae64-b126-4683-9528-a7844cecc464",
+              "name": "fields.Email",
+              "value": "={{ $('On New FG Conversation').item.json.fields.Email }}",
+              "type": "string"
+            },
+            {
+              "id": "8d8c45e2-e16a-415e-97f6-ec9f257ee11a",
+              "name": "fields[\"Call Summary\"]",
+              "value": "={{ $('On New FG Conversation').item.json.fields[\"Call Summary\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "6be5813a-dc58-447a-b9ff-e19c28ae1798",
+              "name": "fields[\"Call Transcript\"]",
+              "value": "={{ $('On New FG Conversation').item.json.fields[\"Call Transcript\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "fac072bc-3a1b-4c03-80e4-d068b36ec5c2",
+              "name": "Email",
+              "value": "={{ $('Search for new conv').item.json.Email }}",
+              "type": "string"
+            },
+            {
+              "id": "abeb6ada-a847-4ccb-b987-37e4ae4877ea",
+              "name": "First Name",
+              "value": "={{ $('Search for new conv').item.json[\"First Name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "7b3e5846-8258-41ed-97c3-bd46740e71a2",
+              "name": "Last Name",
+              "value": "={{ $('Search for new conv').item.json[\"Last Name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "d7b394a3-d0b2-4913-b4a3-9e1cc63c05a3",
+              "name": "Call Transcript",
+              "value": "={{ $('Search for new conv').item.json[\"Call Transcript\"] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        160,
+        128
+      ],
+      "id": "8ac89977-af01-4d73-b850-09f54eb999ed",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "airtableTokenApi",
+        "baseId": {
+          "__rl": true,
+          "value": "appUvJyzSky12m4HA",
+          "mode": "id"
+        },
+        "tableId": {
+          "__rl": true,
+          "value": "tbl9NJsjg5hJRqpPx",
+          "mode": "id"
+        },
+        "triggerField": "Created",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.airtableTrigger",
+      "typeVersion": 1,
+      "position": [
+        -960,
+        128
+      ],
+      "id": "16f531b8-8e1f-44ee-8eec-57d1bac35e5e",
+      "name": "On New FG Conversation",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Google Vertex Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Create new single conv summary",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create new conv summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get new conversation": {
+      "main": [
+        [
+          {
+            "node": "45s length",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search for new conv": {
+      "main": [
+        [
+          {
+            "node": "Search existing records",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search existing records": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create new single conv summary": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Conv history agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Conv history agent": {
+      "main": [
+        [
+          {
+            "node": "Create new conv summary1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "45s length": {
+      "main": [
+        [
+          {
+            "node": "Search for new conv",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Conv history agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Create new single conv summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On New FG Conversation": {
+      "main": [
+        [
+          {
+            "node": "Get new conversation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": {
+    "node:New Conversation1": {
+      "lastTimeChecked": "2025-11-09T10:29:37Z"
+    },
+    "node:Airtable Trigger": {
+      "lastTimeChecked": "2025-10-27T12:25:02Z"
+    }
+  },
+  "pinData": {
+    "On New FG Conversation": [
+      {
+        "json": {
+          "id": "recA2TNeKawegnoLw",
+          "createdTime": "2025-10-29T01:28:38.000Z",
+          "fields": {
+            "Transcript ID": "conv_8401k98khj8rep7b8v6rcw15w1mc",
+            "Email": "andy@legalengine.co.uk",
+            "First Name": "Andy",
+            "Last Name": "Batty",
+            "Date Last Updated": "2025-10-29T01:28:38.599Z",
+            "Call Length (s)": 60,
+            "Call Length (m)": 0,
+            "Call Summary": "Andy asked Lenny (AI assistant) how long he had been working, correcting Lenny's initial miscalculation. Andy then mentioned he was going to bed soon. The conversation ended with Andy thanking Lenny. Lenny ended the call, also correcting Andy on Lenny's name.\n",
+            "Call Cost": 0.0009238000000000002,
+            "LLM Charge": 9,
+            "Call Charge": 700,
+            "Agent ID": "agent_0301k8ppxdaffegv4nmb1by40a1a",
+            "Termination Reason": "end_call tool was called.",
+            "Call Successful 11L?": "success",
+            "Email recipient": "iamandybatty@gmail.com",
+            "Call Transcript": "The conversation is between Andy (user) and Lenny (AI assistant). It comprises 13 turns over roughly one minute and focuses on Andy’s current time-of-day, how long he has been working, and his plan to go to bed soon. The agent opens with a friendly greeting and self-identification as “Lenny” and asks how it can help. Andy first states “it’s 12.50am and I’ve been on the go since 6am this morning,” prompting the agent to compute and reply that Andy had been working for twelve hours and fifty minutes. Andy immediately corrects that he meant he started at 6am yesterday and it is now 12.50am, clarifying that the work period spans from 6am the previous day to 12:50am the current day. The agent apologizes for the earlier miscalculation and corrects the duration to eighteen hours and fifty minutes, characterizing it as “certainly a marathon.” Andy then says he will probably go to bed within the next half hour; the agent acknowledges and says it will make a note. Andy thanks the agent; shortly afterwards he says “No, all good. Thanks, Mike,” inadvertently using the name “Mike” despite the agent’s earlier self-identification as Lenny. The transcript shows two tool calls and two tool results initiated by the agent near the end of the exchange, but there is no explicit spoken response in the transcript correcting the “Mike” address after the user’s final utterance. The exchange includes short ASR trailing latencies on several user turns. Throughout the interaction the salient topics are time reporting, correction of the assistant’s initial time calculation, the user’s immediate plan to sleep soon, and a user misnaming of the assistant at the close of the conversation.\n\nFacts logged:\n1. Fact: Participants are Andy (user) and Lenny (AI assistant).\n2. Fact: Total turns in the transcript = 13.\n3. Fact: Agent self-identifies as “Lenny” at t=0s.\n4. Fact: Andy’s initial statement (t=8s): “it’s 12.50am and I’ve been on the go since 6am this morning.” (ASR trailing latency recorded 0.115s for this turn.)\n5. Fact: Agent’s initial computation (t=22s): “twelve hours and fifty minutes.”\n6. Fact: Andy’s clarification (t=25s): he started at 6am yesterday and it is now 12.50am, changing the reference so the correct duration is longer. (ASR trailing latency recorded 0.179s for this turn.)\n7. Fact: Agent’s corrected computation (t=36s): “eighteen hours and fifty minutes,” with an apology for the earlier mistake.\n8. Fact: Andy’s plan (t=45s): he will probably go to bed in the next half hour. (ASR trailing latency recorded 0.237s for this turn.)\n9. Fact: Agent acknowledges and notes the user’s plan (t=52s).\n10. Fact: Andy expresses thanks twice: once at t=54s (“Thanks,” ASR trailing latency 0.177s) and again at t=54s (“No, all good. Thanks, Mike.” ASR trailing latency 0.105s), the latter containing a misnaming of the agent as “Mike.”\n11. Fact: The transcript shows two agent tool calls (at t=52s and t=56s) and two corresponding tool results; the transcript does not show an explicit spoken correction of the “Mike” misname after the user’s final utterance.\n12. Fact: The agent uses empathetic language about the long work period (“That’s a long day!” / “That’s certainly a marathon!”) and issues a direct apology for the calculation error.\n13. Fact: The final stated numeric duration of Andy’s work period, after correction, is 18 hours and 50 minutes (from 6:00am yesterday to 12:50am today).",
+            "Created": "2025-10-29T01:28:38.000Z"
+          }
+        }
+      }
+    ]
+  },
+  "triggerCount": 1,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

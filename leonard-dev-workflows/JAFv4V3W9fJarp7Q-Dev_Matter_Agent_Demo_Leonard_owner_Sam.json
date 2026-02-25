@@ -1,0 +1,333 @@
+{
+  "name": "Dev - Matter Agent Demo (Leonard) - owner Sam",
+  "nodes": [
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        -544,
+        144
+      ],
+      "id": "56851eab-ea70-4ae7-8277-7c16b3896b27",
+      "name": "Google Vertex Chat Model2",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toRecipients": "=sam@legalengine.co.uk, ",
+        "subject": "Leia Demo",
+        "bodyContent": "=<html>\n  <body style=\"font-family: Arial, sans-serif; color: #000000; line-height: 1.6;\">\n\n    <!-- Header logos -->\n    <div style=\"display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;\">\n      <img src=\"https://legalengine.co.uk/hs-fs/hubfs/e8ad0e08-aa6c-4d44-9053-cdcf7bbaec5b.png?width=1704&height=678&name=e8ad0e08-aa6c-4d44-9053-cdcf7bbaec5b.png\" alt=\"Legal Engine\" style=\"height: 40px;\">\n    </div>\n\n    <!-- Greeting -->\n    <p style=\"font-size: 16px; font-weight: bold;\">Thanks for speaking to me.</p>\n\n    <p style=\"font-size: 15px;\">Here’s your meeting summary based on the conversation with Luke:</p>\n\n    <!-- Context -->\n    <h3 style=\"font-size: 18px; color: #D35400; margin-top: 30px;\">Context</h3>\n    <p style=\"font-size: 14px;\">{{ $('Context Agent').item.json.output }}</p>\n\n    <!-- Next Steps -->\n    <h3 style=\"font-size: 18px; color: #D35400; margin-top: 30px;\">Next Steps</h3>\n    <ul style=\"font-size: 14px; padding-left: 20px; margin-top: 5px;\">\n      {{ $('Next Steps Agent').item.json.output.split('\\n').map(line => `<li>${line.trim()}</li>`).join('') }}\n    </ul>\n\n    <!-- BD/Marketing Opportunities -->\n    <h3 style=\"font-size: 18px; color: #D35400; margin-top: 30px;\">BD/Marketing Opportunities</h3>\n\n    <p style=\"font-size: 14px; margin-bottom: 10px;\">\n      <strong>Area to Explore:</strong><br>\n      {{ $json.areaToExplore }}\n    </p>\n\n    <p style=\"font-size: 14px; margin-bottom: 5px;\">\n      <strong>Potential Formats:</strong>\n    </p>\n    <ul style=\"font-size: 14px; padding-left: 20px; margin-top: 5px;\">\n      {{ $json.formattedFormatsHTML }}\n    </ul>\n\n    <p style=\"font-size: 14px; margin-top: 15px;\">\n      <strong>Suggested Use:</strong><br>\n      {{ $json.suggestedUse }}\n    </p>\n\n    <p style=\"font-size: 14px; margin-top: 15px;\">\n      <strong>Something to Think About:</strong><br>\n      {{ $json.somethingToThinkAbout }}\n    </p>\n\n    <!-- Footer -->\n    <hr style=\"margin: 30px 0; border: none; border-top: 1px solid #ccc;\" />\n\n    <p style=\"font-size: 14px;\">\n      That’s everything for now — hope it was helpful.\n      If you’d like to log another meeting straight away, you can do it\n      <a href=\"https://sumer.legalengine.co.uk/\" target=\"_blank\" style=\"color: #D35400; text-decoration: none;\">here</a>.\n    </p>\n\n    <p style=\"font-size: 14px; margin-top: 20px;\">– Luke</p>\n\n  </body>\n</html>",
+        "additionalFields": {
+          "bodyContentType": "html"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        1088,
+        -80
+      ],
+      "id": "d56f274d-d93c-4e36-abeb-1d9dd62e64fe",
+      "name": "Summary email - INTERNAL1",
+      "webhookId": "1b47dd46-ea8d-4a5d-bcd2-6605c88773af",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "ts6NAj26jL1iUdW2",
+          "name": "Microsoft Outlook - Info @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an AI assistant helping a lawyer record the key outcomes from a recent client meeting.\n\nYour task is to extract the core context of the meeting. You will receive a transcript summary (starting with “Here’s what I’ve captured:”) from a voice assistant debrief. Return just the plain-English context — no headings, no extra explanation.\n\nWrite 1–2 full sentences summarising what the meeting was about. Keep it professional and clear.\n\nIf it’s clear from the meeting what type of legal matter was discussed (e.g. employment dispute, compliance advisory), mention that in your summary.\n\nPlease make sure that all outputs are in *UK English* not American English, including all spelling and date formats.\n\nBefore generating your response, please check that any references to “Summer” (the season) are corrected to “Sumer” (the firm name), unless the context clearly indicates otherwise.\n\nHere is the full transcript:\n{{ $('Leia').item.json.body.data.transcript.map(t => t.message).filter(Boolean).join(' ') }}\n\nAnd here is the summary:\n{{ $('Leia').item.json.body.data.analysis.transcript_summary }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -544,
+        -80
+      ],
+      "id": "1374c094-7129-416a-9857-f7bd58adb11e",
+      "name": "Context Agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an AI assistant helping a lawyer summarise follow-up actions from a recent client meeting.\n\nYou will receive a transcript of a debrief conversation between the lawyer and an AI assistant named Luke. Luke ends by offering a structured summary starting with: “Here’s what I’ve captured:”.\n\nYour task is to extract the **Next Steps** section from Luke’s summary and rewrite it as a plain text list — one sentence per line.\n\nEach line should clearly state:\n- What the follow-up action is\n- Who is responsible\n- Any deadline or timeframe mentioned\n\nIf no timeframe is provided, mention that. If any actions seem vague or unclear, add a note suggesting the lawyer may want to confirm details.\n\nPlease make sure that all outputs are in *UK English* not American English, including all spelling and date formats.\n\nBefore generating your response, please check that any references to “Summer” (the season) are corrected to “Sumer” (the firm name), unless the context clearly indicates otherwise.\n\n⚠️ Output a plain text response using one line per action.  \nDo NOT use bullet points, markdown, or extra formatting.  \nEach line should be its own sentence.\n\n\n\nHere is the full transcript:\n{{ $('Leia').item.json.body.data.transcript.map(t => t.message).filter(Boolean).join(' ') }}\n\nAnd here is the summary:\n{{ $('Leia').item.json.body.data.analysis.transcript_summary }}\n\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -192,
+        -80
+      ],
+      "id": "04b8742e-e78a-4e03-bfc9-7fbe4caaab8f",
+      "name": "Next Steps Agent"
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        -192,
+        144
+      ],
+      "id": "ef5729ea-a4fd-4437-b0dc-9024922d5a12",
+      "name": "Google Vertex Chat Model3",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        160,
+        144
+      ],
+      "id": "a21411f9-81e2-4161-bb30-a20dd0fb18f9",
+      "name": "Google Vertex Chat Model4",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an AI assistant helping a lawyer reflect on potential business development or marketing opportunities after a client meeting.\n\nYou’ll receive a transcript of a short debrief between a lawyer and an AI assistant named Luke. Near the end of the conversation, Luke provides a structured summary that begins with the phrase: “Here’s what I’ve captured:”.\n\nYour task is to extract **only the BD or marketing insight** mentioned in that summary and rewrite it into a short, plain-English paragraph.\n\nBegin by briefly stating what the opportunity or insight is. Then, suggest how the lawyer might build on it — for example:\n- Mentioning it in a future conversation with another client\n- Exploring the theme further internally\n- Turning it into a short post or article\n\nAvoid suggesting specific content types (like “blog post” or “webinar”) unless the lawyer has already used those terms. Keep your tone light, suggestive, and reflective — you're offering a gentle nudge, not a directive.\n\nIf no BD or marketing insight was mentioned, write:  \n**Nothing specific noted.**\n\nPlease use *UK English* spelling and grammar throughout.\n\nBefore generating your response, please check that any references to “Summer” (the season) are corrected to “Sumer” (the firm name), unless the context clearly indicates otherwise.\n\nHere is the full transcript:\n{{ $('Leia').item.json.body.data.transcript.map(t => t.message).filter(Boolean).join(' ') }}\n\nAnd here is the summary:\n{{ $('Leia').item.json.body.data.analysis.transcript_summary }}\n\n\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        160,
+        -80
+      ],
+      "id": "5be6ba23-4ce2-45d5-b44d-cf39c490fe0d",
+      "name": "Insight Agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an expert marketing strategist supporting the team at Sumer Law. Your role is to take a business development or marketing insight captured by Luke — our BD assistant — and suggest how it could be explored further.\n\nThis isn’t about forcing the lawyer to create content. It’s about highlighting a potential area of interest and offering a few thoughtful nudges for how they might reflect on or act on it.\n\nReturn your response using the following format, with **clear labels and line breaks**. Do NOT use JSON, markdown, headings, or bold formatting. Use hyphenated bullets for lists only where shown:\n\nArea to Explore:\n[One or two sentences summarising the theme or shift identified — e.g. “CRM investment across law firms” or “M&A caution among mid-market clients”. Keep it grounded in the original insight.]\n\nPotential Formats:\n- [A concise format idea, like “Short LinkedIn post” or “BD Digest theme”]\n- [Another format idea, e.g. “Lunch & Learn” or “Discussion topic for internal strategy session”]\n\nSuggested Use:\n[Explain how and where this could be used — e.g. in conversations with other clients, to spark internal collaboration, or as a recurring theme across insights.]\n\nSomething to Think About:\n[A reflective, commercially intelligent question that encourages further curiosity — e.g. “Are other clients raising similar issues?”, “How might this trend shape demand across other sectors?”]\n\nPlease write in UK English and reflect Sumer Law’s tone of voice:\n- Clear over clever: use plain, active language.\n- Commercial and relatable: demonstrate business acumen and empathy.\n- Collaborative: sound like a peer, not a professor.\n- Forward-looking: embrace innovation and change with confidence.\n\nYour job is to **provoke useful curiosity**, not prescribe next steps.\n\nBefore generating your response, please check that any references to “Summer” (the season) are corrected to “Sumer” (the firm name), unless the context clearly indicates otherwise.\n\nPlease use *UK English* spelling and grammar throughout.\n\nIf no BD or marketing insight was mentioned, return the following:\n\nArea to Explore:\nNothing specific noted.\n\nPotential Formats:\n\nSuggested Use:\n\nSomething to Think About:\n\n---\n\nHere is the specific insight captured:\n{{ $json.output }}\n\nHere is the full transcript:\n{{ $('Leia').item.json.body.data.transcript.map(t => t.message).filter(Boolean).join(' ') }}\n\nAnd here is the summary:\n{{ $('Leia').item.json.body.data.analysis.transcript_summary }}\n\n\n\n\n\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        512,
+        -80
+      ],
+      "id": "a3d1a738-22a1-4344-9142-5213ae140399",
+      "name": "BD Content Agent"
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        512,
+        144
+      ],
+      "id": "df893833-f79f-4e64-8c6c-026c36239f9f",
+      "name": "Google Vertex Chat Model5",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the AI text\nconst text = $json.output || \"\";\n\n// Helper to extract each section by heading name\nfunction extractSection(name) {\n  const regex = new RegExp(`${name}:([\\\\s\\\\S]*?)(?=\\\\n[A-Z][^\\\\n]*:|$)`, \"i\");\n  const match = text.match(regex);\n  return match ? match[1].trim().replace(/^[-•]\\s*/gm, \"\") : \"\";\n}\n\n// Extract each section\nconst areaToExplore = extractSection(\"Area to Explore\");\nconst potentialFormatsRaw = extractSection(\"Potential Formats\");\nconst suggestedUse = extractSection(\"Suggested Use\");\nconst somethingToThinkAbout = extractSection(\"Something to Think About\");\n\n// Split potential formats into array and HTML list\nconst potentialFormats = potentialFormatsRaw\n  .split(/\\n+/)\n  .map(s => s.trim())\n  .filter(Boolean);\n\nconst formattedFormatsHTML = potentialFormats\n  .map(item => `<li>${item}</li>`)\n  .join(\"\");\n\nreturn [\n  {\n    json: {\n      areaToExplore,\n      potentialFormats,\n      formattedFormatsHTML,\n      suggestedUse,\n      somethingToThinkAbout\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        864,
+        -80
+      ],
+      "id": "061c47e8-14a8-43e4-9f10-12904419da72",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "path": "9ff6e6ba-ef2b-48cc-a2a6-602a315ff9b5",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -768,
+        -80
+      ],
+      "id": "66bc5ae7-5fa8-4ec0-a652-bebfc10a6958",
+      "name": "Leonard",
+      "webhookId": "9ff6e6ba-ef2b-48cc-a2a6-602a315ff9b5"
+    }
+  ],
+  "connections": {
+    "Google Vertex Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Context Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Context Agent": {
+      "main": [
+        [
+          {
+            "node": "Next Steps Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Next Steps Agent": {
+      "main": [
+        [
+          {
+            "node": "Insight Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Next Steps Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Insight Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insight Agent": {
+      "main": [
+        [
+          {
+            "node": "BD Content Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "BD Content Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "BD Content Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Summary email - INTERNAL1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leonard": {
+      "main": [
+        [
+          {
+            "node": "Context Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 1,
+  "meta": null
+}

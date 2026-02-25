@@ -1,0 +1,415 @@
+{
+  "name": "Airtable to Neo4j Knowledge Graph Sync - 001",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "YOUR_BASE_ID",
+          "mode": "list",
+          "cachedResultName": "Law Firm Knowledge Base"
+        },
+        "table": {
+          "__rl": true,
+          "value": "YOUR_TABLE_ID",
+          "mode": "list",
+          "cachedResultName": "Interviews"
+        },
+        "filterByFormula": "NOT({Synced to Neo4j})",
+        "options": {}
+      },
+      "id": "11fc507f-dbfa-4b75-becd-cfd694faeebd",
+      "name": "Airtable - Get Unsynced Interviews",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2,
+      "position": [
+        464,
+        -128
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Transform Airtable records into Neo4j-ready format\nconst items = $input.all();\n\nreturn items.map(item => {\n  const data = item.json;\n  const fields = data.fields || {};\n  \n  return {\n    json: {\n      lawyer: {\n        name: fields['Lawyer Name'] || '',\n        chambers: fields['Chambers'] || '',\n        email: fields['Lawyer Email'] || ''\n      },\n      client: {\n        name: fields['Client Name'] || '',\n        type: fields['Client Type'] || '',\n        industry: fields['Industry'] || ''\n      },\n      case: {\n        caseId: fields['Case ID'] || '',\n        title: fields['Case Title'] || '',\n        year: fields['Year'] || null,\n        outcome: fields['Outcome'] || '',\n        jurisdiction: fields['Jurisdiction'] || ''\n      },\n      interview: {\n        timestamp: fields['Interview Date'] || new Date().toISOString(),\n        transcriptUrl: fields['Transcript URL'] || '',\n        airtableRecordId: data.id\n      },\n      rationale: {\n        text: fields['LLM Rationale'] || '',\n        confidence: fields['Confidence Score'] || 0,\n        model: fields['Model Used'] || 'unknown'\n      },\n      airtableId: data.id\n    }\n  };\n});"
+      },
+      "id": "82dce521-423a-4fd9-9014-be4001af5661",
+      "name": "Transform Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        688,
+        -128
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "YOUR_BASE_ID",
+          "mode": "list",
+          "cachedResultName": "Law Firm Knowledge Base"
+        },
+        "table": {
+          "__rl": true,
+          "value": "YOUR_TABLE_ID",
+          "mode": "list",
+          "cachedResultName": "Interviews"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $json.airtableId }}",
+            "Synced to Neo4j": true,
+            "Sync Date": "={{ $now }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Synced to Neo4j",
+              "displayName": "Synced to Neo4j",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "Sync Date",
+              "displayName": "Sync Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "4eb8b936-e4d6-4e80-830d-cf2500e51f7b",
+      "name": "Airtable - Update Sync Status",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2,
+      "position": [
+        2256,
+        -128
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "id": "b02988de-c6c0-4fa7-88d6-31e422cbd8ae",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        240,
+        -128
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "<__PLACEHOLDER_VALUE__Neo4j HTTP API URL (e.g., https://your-instance.neo4j.io/db/neo4j/tx/commit)__>",
+        "authentication": "genericCredentialType",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"statements\": [\n    {\n      \"statement\": \"MATCH (c:Case {caseId: $caseId}) RETURN c\",\n      \"parameters\": {\n        \"caseId\": {{ $json.case.caseId }}\n      }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "id": "8d3501d4-1c43-4779-9478-5da2344f192e",
+      "name": "Neo4j - Check for Duplicate Case",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        912,
+        -128
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "id-1",
+              "leftValue": "={{ $json.results[0].data.length }}",
+              "rightValue": "0",
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "f3bfd4b2-fa6d-47e8-856d-626323f23dbb",
+      "name": "If Not Duplicate",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1136,
+        -128
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "<__PLACEHOLDER_VALUE__Neo4j HTTP API URL (e.g., https://your-instance.neo4j.io/db/neo4j/tx/commit)__>",
+        "authentication": "genericCredentialType",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"statements\": [\n    {\n      \"statement\": \"MERGE (l:Lawyer {email: $email}) SET l.name = $name, l.chambers = $chambers RETURN l\",\n      \"parameters\": {\n        \"email\": \"{{ $json.lawyer.email }}\",\n        \"name\": \"{{ $json.lawyer.name }}\",\n        \"chambers\": \"{{ $json.lawyer.chambers }}\"\n      }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "id": "7636d71d-fe33-4deb-9d96-92cbe478f5f9",
+      "name": "Neo4j - Create Lawyer Node",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1360,
+        -128
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "<__PLACEHOLDER_VALUE__Neo4j HTTP API URL (e.g., https://your-instance.neo4j.io/db/neo4j/tx/commit)__>",
+        "authentication": "genericCredentialType",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"statements\": [\n    {\n      \"statement\": \"MERGE (c:Client {name: $name}) SET c.type = $type, c.industry = $industry RETURN c\",\n      \"parameters\": {\n        \"name\": \"{{ $json.client.name }}\",\n        \"type\": \"{{ $json.client.type }}\",\n        \"industry\": \"{{ $json.client.industry }}\"\n      }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "id": "9b5c588e-504a-4640-8698-df7fbc8935d3",
+      "name": "Neo4j - Create Client Node",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1584,
+        -128
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "<__PLACEHOLDER_VALUE__Neo4j HTTP API URL (e.g., https://your-instance.neo4j.io/db/neo4j/tx/commit)__>",
+        "authentication": "genericCredentialType",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"statements\": [\n    {\n      \"statement\": \"CREATE (ca:Case {caseId: $caseId, title: $title, year: $year, outcome: $outcome, jurisdiction: $jurisdiction, transcriptUrl: $transcriptUrl, airtableRecordId: $airtableRecordId}) RETURN ca\",\n      \"parameters\": {\n        \"caseId\": {{ $json.case.caseId }},\n        \"title\": {{ $json.case.title }},\n        \"year\": {{ $json.case.year }},\n        \"outcome\": {{ $json.case.outcome }},\n        \"jurisdiction\": {{ $json.case.jurisdiction }},\n        \"transcriptUrl\": {{ $json.interview.transcriptUrl }},\n        \"airtableRecordId\": {{ $json.interview.airtableRecordId }}\n      }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "id": "81f42a5f-b13e-4141-a993-24e774b85719",
+      "name": "Neo4j - Create Case Node",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1808,
+        -128
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "<__PLACEHOLDER_VALUE__Neo4j HTTP API URL (e.g., https://your-instance.neo4j.io/db/neo4j/tx/commit)__>",
+        "authentication": "genericCredentialType",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"statements\": [\n    {\n      \"statement\": \"MATCH (l:Lawyer {name: $lawyerName}), (c:Client {name: $clientName}) MERGE (l)-[:REPRESENTED {timestamp: $timestamp}]->(c)\",\n      \"parameters\": {\n        \"lawyerName\": \"{{ $json.lawyer.name }}\",\n        \"clientName\": \"{{ $json.client.name }}\",\n        \"timestamp\": \"{{ $json.interview.timestamp }}\"\n      }\n    },\n    {\n      \"statement\": \"MATCH (l:Lawyer {name: $lawyerName}), (ca:Case {caseId: $caseId}) MERGE (l)-[:WORKED_ON {role: 'lead'}]->(ca)\",\n      \"parameters\": {\n        \"lawyerName\": \"{{ $json.lawyer.name }}\",\n        \"caseId\": \"{{ $json.case.caseId }}\"\n      }\n    },\n    {\n      \"statement\": \"MATCH (ca:Case {caseId: $caseId}) MERGE (ca)-[:HAS_RATIONALE {text: $rationaleText, confidence: $confidence, model: $model}]->(r:Rationale {text: $rationaleText})\",\n      \"parameters\": {\n        \"caseId\": \"{{ $json.case.caseId }}\",\n        \"rationaleText\": \"{{ $json.rationale.text }}\",\n        \"confidence\": \"{{ $json.rationale.confidence }}\",\n        \"model\": \"{{ $json.rationale.model }}\"\n      }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "id": "3a788ae2-bcc1-4386-94b4-ca421218c03f",
+      "name": "Neo4j - Create Relationships",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2032,
+        -128
+      ]
+    }
+  ],
+  "connections": {
+    "Airtable - Get Unsynced Interviews": {
+      "main": [
+        [
+          {
+            "node": "Transform Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Airtable - Get Unsynced Interviews",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transform Data": {
+      "main": [
+        [
+          {
+            "node": "Neo4j - Check for Duplicate Case",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Neo4j - Check for Duplicate Case": {
+      "main": [
+        [
+          {
+            "node": "If Not Duplicate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Not Duplicate": {
+      "main": [
+        [
+          {
+            "node": "Neo4j - Create Lawyer Node",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Neo4j - Create Lawyer Node": {
+      "main": [
+        [
+          {
+            "node": "Neo4j - Create Client Node",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Neo4j - Create Client Node": {
+      "main": [
+        [
+          {
+            "node": "Neo4j - Create Case Node",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Neo4j - Create Case Node": {
+      "main": [
+        [
+          {
+            "node": "Neo4j - Create Relationships",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Neo4j - Create Relationships": {
+      "main": [
+        [
+          {
+            "node": "Airtable - Update Sync Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 0,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

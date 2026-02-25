@@ -1,0 +1,950 @@
+{
+  "name": "HSFK UC 1.6 - Leadership Context Monitor",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## HSFK UC 1.6 - Leadership Context Monitor\n\n**Trigger:** Weekly schedule - Monday 04:00 UTC (`0 4 * * 1`)\n\n**Purpose:** Monitor leadership changes for people on the HSFK watchlist. Fetches public LinkedIn profile pages, compares with stored profiles, generates change summaries with implications, and posts Slack alerts.\n\n**Flow:**\n1. Schedule trigger (Mon 04:00 UTC)\n2. Load leadership watchlist from Airtable\n3. For each person (max 10, 2s delay): fetch LinkedIn public profile HTML\n4. LLM: compare current vs stored profile, detect changes\n5. If changes: Perplexity news search for context\n6. LLM: generate change summary with HSFK relationship implications\n7. Update Leadership Profiles in Airtable\n8. Write to Leadership Change Log in Airtable\n9. If changes: post Slack summary\n10. Audit log via shared-05\n\n**Sub-workflow IDs:**\n- shared-02 (Perplexity): `qT0uycTDyAM7zQJ5`\n- shared-04 (Vertex AI LLM): `AI3InmjY6gmJwdXg`\n- shared-05 (Airtable Audit): `zjwCkfCuH3GnW2qT`\n\n**Airtable base:** `app0QZAuhY8Zx4I54`\n- Leadership Profiles: `tblk3qfYbu1SmQPeA`\n- Leadership Change Log: `tblalurguVatJUNj2`\n\n**Note:** LinkedIn scraping is best-effort. The HTTP request fetches the public profile page HTML; the LLM extracts structured data. Rate limiting: 2s delay between fetches, max 10 profiles per run.",
+        "height": 600,
+        "width": 520,
+        "color": 6
+      },
+      "id": "sticky-note-docs",
+      "name": "Documentation",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 4 * * 1"
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger",
+      "name": "Weekly Schedule - Mon 04:00 UTC",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -80,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Initialise run context\nconst startTime = Date.now();\nreturn {\n  json: {\n    run_id: `uc16-${startTime}`,\n    started_at: new Date().toISOString(),\n    start_time: startTime,\n    max_profiles: 10,\n    delay_ms: 2000,\n    trigger_type: 'schedule'\n  }\n};"
+      },
+      "id": "init-run",
+      "name": "Initialise Run",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "app0QZAuhY8Zx4I54"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tblk3qfYbu1SmQPeA"
+        },
+        "filterByFormula": "AND({Active Monitoring} = 1, {LinkedIn URL} != '')",
+        "sort": [],
+        "maxRecords": 10,
+        "fields": [
+          "Full Name",
+          "Current Organisation",
+          "Current Role",
+          "LinkedIn URL",
+          "HSFK Relationship",
+          "HSFK Relationship Partner",
+          "Last Checked",
+          "LinkedIn Profile JSON",
+          "Notes"
+        ],
+        "options": {}
+      },
+      "id": "load-leadership-watchlist",
+      "name": "Load Leadership Watchlist",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        400,
+        240
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "AIRTABLE_TOKEN_CRED",
+          "name": "Airtable - Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Limit to max 10 profiles and attach run context\nconst profiles = $input.all();\nconst maxProfiles = 10;\n\nconst limited = profiles.slice(0, maxProfiles);\n\nreturn limited.map((item, idx) => ({\n  json: {\n    record_id: item.json.id,\n    full_name: item.json['Full Name'] || '',\n    current_organisation: item.json['Current Organisation'] || '',\n    current_role: item.json['Current Role'] || '',\n    linkedin_url: item.json['LinkedIn URL'] || '',\n    hsfk_relationship: item.json['HSFK Relationship'] || '',\n    hsfk_relationship_partner: item.json['HSFK Relationship Partner'] || '',\n    last_checked: item.json['Last Checked'] || null,\n    stored_profile_json: item.json['LinkedIn Profile JSON'] || '{}',\n    notes: item.json['Notes'] || '',\n    profile_index: idx,\n    total_profiles: limited.length\n  }\n}));"
+      },
+      "id": "prepare-profiles",
+      "name": "Prepare Profile List",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        640,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 2,
+        "unit": "seconds"
+      },
+      "id": "rate-limit-delay",
+      "name": "Rate Limit Delay (2s)",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        880,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $json.linkedin_url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "Accept-Language",
+              "value": "en-US,en;q=0.9"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 15000,
+          "redirect": {
+            "redirect": {
+              "followRedirects": true,
+              "maxRedirects": 3
+            }
+          },
+          "response": {
+            "response": {
+              "fullResponse": false,
+              "responseFormat": "text"
+            }
+          },
+          "allowUnauthorizedCerts": false
+        }
+      },
+      "id": "fetch-linkedin-profile",
+      "name": "Fetch LinkedIn Profile Page",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1120,
+        240
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Prepare LLM call to extract profile data and detect changes\n// Merge the HTTP response with the profile context from upstream\nconst profileData = $('Prepare Profile List').item.json;\nconst httpResponse = $json;\n\n// Get the HTML body (may be error if LinkedIn blocked)\nlet profileHtml = '';\nif (typeof httpResponse === 'string') {\n  profileHtml = httpResponse.substring(0, 8000); // Truncate to avoid token limit\n} else if (httpResponse && httpResponse.body) {\n  profileHtml = String(httpResponse.body).substring(0, 8000);\n} else if (httpResponse && httpResponse.error) {\n  profileHtml = `ERROR: ${httpResponse.error}`;\n}\n\nconst storedProfile = (() => {\n  try {\n    return JSON.parse(profileData.stored_profile_json || '{}');\n  } catch (e) {\n    return {};\n  }\n})();\n\nconst systemPrompt = `You are a professional intelligence analyst for a law firm. Your task is to:\n1. Extract structured profile data from LinkedIn HTML or page content\n2. Compare the extracted data with the stored profile\n3. Identify any meaningful changes (role changes, company changes, new appointments, promotions)\n\nReturn a JSON object with this exact structure:\n{\n  \"extracted_profile\": {\n    \"full_name\": \"string\",\n    \"current_role\": \"string\",\n    \"current_organisation\": \"string\",\n    \"headline\": \"string\",\n    \"location\": \"string\",\n    \"summary\": \"string\"\n  },\n  \"changes_detected\": true/false,\n  \"change_type\": \"role_change|company_change|new_appointment|promotion|no_change|extraction_failed\",\n  \"old_role\": \"string or null\",\n  \"old_organisation\": \"string or null\",\n  \"new_role\": \"string or null\",\n  \"new_organisation\": \"string or null\",\n  \"change_confidence\": 0.0-1.0,\n  \"extraction_notes\": \"string\"\n}`;\n\nconst userPrompt = `Person: ${profileData.full_name}\nLinkedIn URL: ${profileData.linkedin_url}\nHSFK Relationship: ${profileData.hsfk_relationship}\n\nStored profile (from last check):\n${JSON.stringify(storedProfile, null, 2)}\n\nCurrent stored role: ${profileData.current_role}\nCurrent stored organisation: ${profileData.current_organisation}\n\nPage content fetched from LinkedIn (may be partial or rate-limited):\n${profileHtml}\n\nExtract the current profile data and compare with stored data. If the page content indicates LinkedIn blocked the request or returned an error page, set extraction_notes accordingly and changes_detected to false.`;\n\nreturn {\n  json: {\n    profile_data: profileData,\n    profile_html_preview: profileHtml.substring(0, 200),\n    llm_input: {\n      system_prompt: systemPrompt,\n      user_prompt: userPrompt,\n      model: 'gemini-2.5-flash',\n      temperature: 0.1,\n      response_format: 'json',\n      max_tokens: 2048\n    }\n  }\n};"
+      },
+      "id": "build-profile-compare-prompt",
+      "name": "Build Profile Comparison Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1360,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "AI3InmjY6gmJwdXg"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "system_prompt": "={{ $json.llm_input.system_prompt }}",
+            "user_prompt": "={{ $json.llm_input.user_prompt }}",
+            "model": "={{ $json.llm_input.model }}",
+            "temperature": "={{ $json.llm_input.temperature }}",
+            "response_format": "={{ $json.llm_input.response_format }}",
+            "max_tokens": "={{ $json.llm_input.max_tokens }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "llm-compare-profiles",
+      "name": "LLM: Compare Profiles",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        1600,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse LLM response and decide if Perplexity context search is needed\nconst llmResult = $json;\nconst profileData = $('Build Profile Comparison Prompt').item.json.profile_data;\n\nlet comparison = null;\ntry {\n  if (llmResult.parsed_json) {\n    comparison = llmResult.parsed_json;\n  } else if (llmResult.text) {\n    comparison = JSON.parse(llmResult.text);\n  }\n} catch (e) {\n  comparison = {\n    changes_detected: false,\n    change_type: 'extraction_failed',\n    extraction_notes: `Parse error: ${e.message}`\n  };\n}\n\nconst changesDetected = comparison?.changes_detected === true;\n\nreturn {\n  json: {\n    profile_data: profileData,\n    comparison: comparison,\n    changes_detected: changesDetected,\n    needs_perplexity: changesDetected && (comparison?.change_confidence || 0) > 0.5,\n    perplexity_input: changesDetected ? {\n      entity_name: profileData.full_name,\n      entity_type: 'person',\n      date_range: 'last_30_days',\n      max_results: 5\n    } : null\n  }\n};"
+      },
+      "id": "parse-profile-comparison",
+      "name": "Parse Profile Comparison",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1840,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "changes-detected",
+              "leftValue": "={{ $json.needs_perplexity }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-changes-detected",
+      "name": "If Changes Detected",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2080,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "qT0uycTDyAM7zQJ5"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "entity_name": "={{ $json.perplexity_input.entity_name }}",
+            "entity_type": "={{ $json.perplexity_input.entity_type }}",
+            "date_range": "={{ $json.perplexity_input.date_range }}",
+            "max_results": "={{ $json.perplexity_input.max_results }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "perplexity-news-search",
+      "name": "Perplexity: News Context",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        2320,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Merge Perplexity results with comparison data for LLM summary generation\nconst newsData = $json;\nconst comparisonData = $('Parse Profile Comparison').item.json;\n\n// Build the articles summary for the LLM\nconst articles = newsData.articles || [];\nconst articlesSummary = articles\n  .slice(0, 5)\n  .map((a, i) => `${i + 1}. ${a.headline} (${a.source}, ${a.date}): ${a.summary}`)\n  .join('\\n');\n\nconst profileData = comparisonData.profile_data;\nconst comparison = comparisonData.comparison;\n\nconst systemPrompt = `You are a relationship intelligence analyst for HSFK, a leading law firm. Write a concise change summary for a leadership contact who has changed roles or company. The summary should help HSFK relationship partners understand the implications and recommended next steps.\n\nReturn JSON with this structure:\n{\n  \"summary_title\": \"string - one line, e.g. 'John Smith moves to Baker McKenzie as Managing Partner'\",\n  \"summary_body\": \"string - 2-3 sentences explaining the change and news context\",\n  \"hsfk_implications\": \"string - 1-2 sentences on what this means for HSFK's relationship\",\n  \"recommended_action\": \"string - one clear recommended next step for the relationship partner\",\n  \"urgency\": \"high|medium|low\"\n}`;\n\nconst userPrompt = `Leadership change detected for: ${profileData.full_name}\nHSFK Relationship: ${profileData.hsfk_relationship}\nRelationship Partner: ${profileData.hsfk_relationship_partner}\n\nChange details:\n- Old role: ${comparison.old_role || profileData.current_role}\n- Old organisation: ${comparison.old_organisation || profileData.current_organisation}\n- New role: ${comparison.new_role || 'Unknown'}\n- New organisation: ${comparison.new_organisation || 'Unknown'}\n- Change type: ${comparison.change_type}\n- Confidence: ${comparison.change_confidence}\n\nRecent news context:\n${articlesSummary || 'No recent news found.'}\n\nGenerate a concise intelligence summary for the HSFK relationship partner.`;\n\nreturn {\n  json: {\n    profile_data: profileData,\n    comparison: comparison,\n    news_articles: articles,\n    llm_input: {\n      system_prompt: systemPrompt,\n      user_prompt: userPrompt,\n      model: 'gemini-2.5-flash',\n      temperature: 0.3,\n      response_format: 'json',\n      max_tokens: 1024\n    }\n  }\n};"
+      },
+      "id": "build-summary-prompt",
+      "name": "Build Summary Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2560,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "AI3InmjY6gmJwdXg"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "system_prompt": "={{ $json.llm_input.system_prompt }}",
+            "user_prompt": "={{ $json.llm_input.user_prompt }}",
+            "model": "={{ $json.llm_input.model }}",
+            "temperature": "={{ $json.llm_input.temperature }}",
+            "response_format": "={{ $json.llm_input.response_format }}",
+            "max_tokens": "={{ $json.llm_input.max_tokens }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "llm-generate-summary",
+      "name": "LLM: Generate Change Summary",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        2800,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse the LLM change summary and prepare data for Airtable updates\nconst llmResult = $json;\nconst buildSummaryData = $('Build Summary Prompt').item.json;\nconst profileData = buildSummaryData.profile_data;\nconst comparison = buildSummaryData.comparison;\n\nlet changeSummary = null;\ntry {\n  if (llmResult.parsed_json) {\n    changeSummary = llmResult.parsed_json;\n  } else {\n    changeSummary = JSON.parse(llmResult.text || '{}');\n  }\n} catch (e) {\n  changeSummary = {\n    summary_title: `${profileData.full_name}: role/company change detected`,\n    summary_body: 'Change detected but summary generation failed.',\n    hsfk_implications: 'Manual review required.',\n    recommended_action: 'Review LinkedIn profile manually.',\n    urgency: 'medium'\n  };\n}\n\nconst extractedProfile = comparison.extracted_profile || {};\nconst now = new Date().toISOString();\n\nreturn {\n  json: {\n    profile_data: profileData,\n    comparison: comparison,\n    change_summary: changeSummary,\n    news_articles: buildSummaryData.news_articles || [],\n    // Fields for Airtable Leadership Profiles update\n    profile_update: {\n      record_id: profileData.record_id,\n      new_role: comparison.new_role || extractedProfile.current_role || profileData.current_role,\n      new_organisation: comparison.new_organisation || extractedProfile.current_organisation || profileData.current_organisation,\n      last_checked: now,\n      last_changed: now,\n      linkedin_profile_json: JSON.stringify(extractedProfile)\n    },\n    // Fields for Airtable Leadership Change Log\n    change_log_entry: {\n      detected_date: now,\n      change_type: comparison.change_type,\n      previous_organisation: comparison.old_organisation || profileData.current_organisation,\n      previous_role: comparison.old_role || profileData.current_role,\n      new_organisation: comparison.new_organisation || '',\n      new_role: comparison.new_role || '',\n      evidence_source: 'LinkedIn + Perplexity',\n      hsfk_implications: changeSummary.hsfk_implications || '',\n      person_record_id: profileData.record_id\n    },\n    slack_message: `:bell: *Leadership Change Detected*\\n\\n*${changeSummary.summary_title || profileData.full_name + ': change detected'}*\\n\\n${changeSummary.summary_body || ''}\\n\\n*HSFK implications:* ${changeSummary.hsfk_implications || ''}\\n\\n*Recommended action:* ${changeSummary.recommended_action || ''}\\n\\n*Urgency:* ${changeSummary.urgency || 'medium'}\\n*Relationship partner:* ${profileData.hsfk_relationship_partner || 'Unassigned'}`\n  }\n};"
+      },
+      "id": "parse-change-summary",
+      "name": "Parse Change Summary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3040,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// For profiles with no changes: pass through with minimal update (just last_checked)\nconst comparisonData = $json;\nconst profileData = comparisonData.profile_data;\nconst comparison = comparisonData.comparison || {};\nconst now = new Date().toISOString();\n\nreturn {\n  json: {\n    profile_data: profileData,\n    comparison: comparison,\n    change_summary: null,\n    news_articles: [],\n    profile_update: {\n      record_id: profileData.record_id,\n      new_role: profileData.current_role,\n      new_organisation: profileData.current_organisation,\n      last_checked: now,\n      last_changed: null,\n      linkedin_profile_json: profileData.stored_profile_json\n    },\n    change_log_entry: null,\n    slack_message: null\n  }\n};"
+      },
+      "id": "no-change-passthrough",
+      "name": "No Change: Update Last Checked",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2320,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "app0QZAuhY8Zx4I54"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tblk3qfYbu1SmQPeA"
+        },
+        "id": "={{ $json.profile_update.record_id }}",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Current Role": "={{ $json.profile_update.new_role }}",
+            "Current Organisation": "={{ $json.profile_update.new_organisation }}",
+            "Last Checked": "={{ $json.profile_update.last_checked }}",
+            "LinkedIn Profile JSON": "={{ $json.profile_update.linkedin_profile_json }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Current Role",
+              "displayName": "Current Role",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Current Organisation",
+              "displayName": "Current Organisation",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Last Checked",
+              "displayName": "Last Checked",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn Profile JSON",
+              "displayName": "LinkedIn Profile JSON",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "update-leadership-profile",
+      "name": "Update Leadership Profile",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        3280,
+        240
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "AIRTABLE_TOKEN_CRED",
+          "name": "Airtable - Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "has-change-log",
+              "leftValue": "={{ $json.change_log_entry !== null && $json.change_log_entry !== undefined }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-has-change-log",
+      "name": "If Has Change Log Entry",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        3520,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "app0QZAuhY8Zx4I54"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tblalurguVatJUNj2"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Detected Date": "={{ $json.change_log_entry.detected_date }}",
+            "Change Type": "={{ $json.change_log_entry.change_type }}",
+            "Previous Organisation": "={{ $json.change_log_entry.previous_organisation }}",
+            "Previous Role": "={{ $json.change_log_entry.previous_role }}",
+            "New Organisation": "={{ $json.change_log_entry.new_organisation }}",
+            "New Role": "={{ $json.change_log_entry.new_role }}",
+            "Evidence Source": "={{ $json.change_log_entry.evidence_source }}",
+            "HSFK Implications": "={{ $json.change_log_entry.hsfk_implications }}",
+            "Alert Sent": true,
+            "HSFK - Leadership Profiles": "={{ [$json.change_log_entry.person_record_id] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Detected Date",
+              "displayName": "Detected Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Change Type",
+              "displayName": "Change Type",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Previous Organisation",
+              "displayName": "Previous Organisation",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Previous Role",
+              "displayName": "Previous Role",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "New Organisation",
+              "displayName": "New Organisation",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "New Role",
+              "displayName": "New Role",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Evidence Source",
+              "displayName": "Evidence Source",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "HSFK Implications",
+              "displayName": "HSFK Implications",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Alert Sent",
+              "displayName": "Alert Sent",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "write-change-log",
+      "name": "Write Leadership Change Log",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        3760,
+        140
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "AIRTABLE_TOKEN_CRED",
+          "name": "Airtable - Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://slack.com/api/chat.postMessage",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({ channel: 'hsfk-intelligence', text: $('Parse Change Summary').item.json.slack_message, unfurl_links: false }) }}",
+        "options": {
+          "timeout": 10000,
+          "response": {
+            "response": {
+              "fullResponse": false,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "slack-post-alert",
+      "name": "Post Slack Alert",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4000,
+        140
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "SLACK_BOT_CRED",
+          "name": "Slack Bot - Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Aggregate results across all processed profiles for the audit log\n// This node runs once after all items are processed\nconst items = $input.all();\n\nconst totalProfiles = items.length;\nconst changesDetected = items.filter(i => i.json.change_log_entry !== null && i.json.change_log_entry !== undefined).length;\nconst noChanges = totalProfiles - changesDetected;\n\nreturn {\n  json: {\n    total_profiles_processed: totalProfiles,\n    changes_detected: changesDetected,\n    no_changes: noChanges,\n    completed_at: new Date().toISOString()\n  }\n};"
+      },
+      "id": "aggregate-results",
+      "name": "Aggregate Run Results",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4240,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "zjwCkfCuH3GnW2qT"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "workflow_name": "HSFK UC 1.6 - Leadership Context Monitor",
+            "use_case_id": "1.6",
+            "trigger_type": "schedule",
+            "input_summary": "={{ 'Weekly leadership scan: ' + $json.total_profiles_processed + ' profiles' }}",
+            "output_summary": "={{ $json.changes_detected + ' changes detected out of ' + $json.total_profiles_processed + ' profiles checked' }}",
+            "status": "success",
+            "duration_ms": 0
+          }
+        },
+        "options": {}
+      },
+      "id": "audit-log",
+      "name": "Audit Log via Shared-05",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        4480,
+        240
+      ]
+    }
+  ],
+  "connections": {
+    "Weekly Schedule - Mon 04:00 UTC": {
+      "main": [
+        [
+          {
+            "node": "Initialise Run",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Initialise Run": {
+      "main": [
+        [
+          {
+            "node": "Load Leadership Watchlist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Leadership Watchlist": {
+      "main": [
+        [
+          {
+            "node": "Prepare Profile List",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Profile List": {
+      "main": [
+        [
+          {
+            "node": "Rate Limit Delay (2s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rate Limit Delay (2s)": {
+      "main": [
+        [
+          {
+            "node": "Fetch LinkedIn Profile Page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch LinkedIn Profile Page": {
+      "main": [
+        [
+          {
+            "node": "Build Profile Comparison Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Profile Comparison Prompt": {
+      "main": [
+        [
+          {
+            "node": "LLM: Compare Profiles",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM: Compare Profiles": {
+      "main": [
+        [
+          {
+            "node": "Parse Profile Comparison",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Profile Comparison": {
+      "main": [
+        [
+          {
+            "node": "If Changes Detected",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Changes Detected": {
+      "main": [
+        [
+          {
+            "node": "Perplexity: News Context",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Change: Update Last Checked",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Perplexity: News Context": {
+      "main": [
+        [
+          {
+            "node": "Build Summary Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Summary Prompt": {
+      "main": [
+        [
+          {
+            "node": "LLM: Generate Change Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM: Generate Change Summary": {
+      "main": [
+        [
+          {
+            "node": "Parse Change Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Change Summary": {
+      "main": [
+        [
+          {
+            "node": "Update Leadership Profile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "No Change: Update Last Checked": {
+      "main": [
+        [
+          {
+            "node": "Update Leadership Profile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Leadership Profile": {
+      "main": [
+        [
+          {
+            "node": "If Has Change Log Entry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Has Change Log Entry": {
+      "main": [
+        [
+          {
+            "node": "Write Leadership Change Log",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Aggregate Run Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write Leadership Change Log": {
+      "main": [
+        [
+          {
+            "node": "Post Slack Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post Slack Alert": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Run Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate Run Results": {
+      "main": [
+        [
+          {
+            "node": "Audit Log via Shared-05",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:Weekly Schedule - Mon 04:00 UTC": {
+      "recurrenceRules": []
+    }
+  },
+  "pinData": {},
+  "triggerCount": 1,
+  "meta": null
+}

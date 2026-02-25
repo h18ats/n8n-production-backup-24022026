@@ -1,0 +1,273 @@
+{
+  "name": "BACKUP - 241125 - Fladgate - 11L History webhook - Andy",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "fef22101-cf1f-4266-85bb-ba38f6ccabb1",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "71ac894f-700e-48d6-ba13-19ecda7eaf16",
+      "name": "ElevenLabs Webhook1",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -240,
+        -96
+      ],
+      "webhookId": "fef22101-cf1f-4266-85bb-ba38f6ccabb1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ \"{\\n\" +\n\"  \\\"conversation_history\\\": \" + JSON.stringify($json[\"Conversation history\"]) + \",\\n\" +\n\"  \\\"clients\\\": \" + JSON.stringify($items('Search records1')[0].json.Clients) + \",\\n\" +\n\"  \\\"matters\\\": \" + JSON.stringify($items('Search records1')[0].json.Matters) + \"\\n\" +\n\"}\" }}\n",
+        "options": {}
+      },
+      "id": "62620199-8b50-48c1-8532-76b4d1c0519b",
+      "name": "Return to ElevenLabs1",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        656,
+        -96
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appUvJyzSky12m4HA",
+          "mode": "list",
+          "cachedResultName": "Fladgate - Leonard Live Data",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl3ADT2yOV8EJCnZ",
+          "mode": "list",
+          "cachedResultName": "FG - Conversation History by lawyer",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA/tbl3ADT2yOV8EJCnZ"
+        },
+        "filterByFormula": "={Email}='{{ $json.body.email }}'",
+        "options": {
+          "fields": [
+            "Email",
+            "Transcript ID",
+            "Full Name",
+            "First Name",
+            "Last Name",
+            "Last Modified",
+            "Conversation History",
+            "Clients",
+            "Matters",
+            "Previous Matters",
+            "Previous Clients",
+            "Previous Submissions"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        208,
+        -96
+      ],
+      "id": "fd089d82-5f7f-469a-8aa7-2dcf9a91783f",
+      "name": "Search records1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2247ff15-b8fe-43df-bb1d-f1663de23178",
+              "name": "First Name",
+              "value": "={{ $json[\"First Name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "ae71fb34-3630-429a-bf54-fbe6c654bd24",
+              "name": "Last Name",
+              "value": "={{ $json[\"Last Name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "4caf8e85-0a23-448c-a06e-131c6886edd1",
+              "name": "Conversation history",
+              "value": "={{ $json[\"Conversation History\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "07cc8775-1b97-4d1b-a1e3-bcaa95a87028",
+              "name": "Last Modified Time",
+              "value": "={{ $json[\"Last Modified\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "98344d5b-2a07-471b-b108-40b8b7e1c0f1",
+              "name": "Clients",
+              "value": "={{ $json.Clients }}",
+              "type": "string"
+            },
+            {
+              "id": "963ac931-4ce1-486e-b408-d6b6a55e15bd",
+              "name": "Matters",
+              "value": "={{ $json.Matters }}",
+              "type": "string"
+            },
+            {
+              "id": "e31bceac-2729-4c9a-830d-984ee0e7bd62",
+              "name": "previous_matters",
+              "value": "={{ $json[\"Previous Matters\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "e01a2442-28be-4b90-af28-563c3e71be29",
+              "name": "previous_clients",
+              "value": "={{ $json[\"Previous Clients\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "f3291926-e8c4-4b4e-af26-7b66b1889ee3",
+              "name": "previous_submissions",
+              "value": "={{ $json[\"Previous Submissions\"] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": "={{ false }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        432,
+        -96
+      ],
+      "id": "dcc709f5-ecf6-43c6-9886-e2a50fba6a1d",
+      "name": "Edit Fields1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Helper to walk any object/array and lowercase all \"email\" fields\nfunction lowercaseEmails(obj) {\n  if (obj == null || typeof obj !== 'object') {\n    return;\n  }\n\n  if (Array.isArray(obj)) {\n    for (const el of obj) {\n      lowercaseEmails(el);\n    }\n    return;\n  }\n\n  for (const key of Object.keys(obj)) {\n    const value = obj[key];\n\n    // If the property name is \"email\" and it is a string. lowercase it\n    if (key === 'email' && typeof value === 'string') {\n      obj[key] = value.toLowerCase();\n    }\n\n    // Recurse into nested objects or arrays\n    if (value && typeof value === 'object') {\n      lowercaseEmails(value);\n    }\n  }\n}\n\nreturn items.map(item => {\n  // Clone json so we do not accidentally break references\n  const out = {\n    ...item,\n    json: { ...item.json },\n  };\n\n  // This will hit body.email in your sample payload. plus any other email fields anywhere\n  lowercaseEmails(out.json);\n\n  return out;\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -16,
+        -96
+      ],
+      "id": "784b1cba-1e15-482e-9d30-467157d5efff",
+      "name": "Code in JavaScript",
+      "disabled": true
+    }
+  ],
+  "connections": {
+    "ElevenLabs Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search records1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Return to ElevenLabs1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Search records1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {
+    "ElevenLabs Webhook1": [
+      {
+        "json": {
+          "headers": {
+            "host": "leonard-dev.app.n8n.cloud",
+            "user-agent": "ElevenLabs/1.0",
+            "content-length": "168",
+            "accept": "*/*",
+            "accept-encoding": "gzip, br",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "34.77.234.246",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "BE",
+            "cf-ray": "9a28215302f2d118-CDG",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "x-forwarded-for": "34.77.234.246, 172.71.126.86",
+            "x-forwarded-host": "leonard-dev.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-52-6c4f4684d5-sbjk8",
+            "x-is-trusted": "yes",
+            "x-real-ip": "34.77.234.246"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "previous_submissions": "",
+            "conversation_history": "",
+            "Clients": "",
+            "previous_matters": "",
+            "email": "Lee@legalengine.co.uk",
+            "Matters": "",
+            "previous_clients": ""
+          },
+          "webhookUrl": "https://leonard-dev.app.n8n.cloud/webhook/history",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "triggerCount": 1,
+  "meta": null
+}

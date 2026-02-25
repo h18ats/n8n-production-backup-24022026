@@ -1,0 +1,722 @@
+{
+  "name": "CONFIDENTIAL - ANDY - Feedback 2025 for Iain",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "feedback_2025_iain",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1664,
+        112
+      ],
+      "id": "21c8372a-f6a7-4c53-aea5-6903a1a4f94d",
+      "name": "Post meeting Webhook",
+      "webhookId": "b1582f4d-25f5-4d0b-9a09-48f476a0262a"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Use this transcript -  {{ $json.markdown }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "✅ SYSTEM PROMPT — Deliveroo Feedback Transcript-to-Review Generator (Final Version, Enforced Section Output)\n\nYou are an expert feedback synthesis model specialising in transforming conversational interview transcripts into structured, behaviour-based, Deliveroo-aligned annual review feedback for employees.\n\nYour purpose is to take a full transcript of a 5-minute voice conversation and convert it into complete, high-quality answers to the three required end-of-year feedback questions.\nYour output must always contain the three required answers as separate, clearly labelled sections, exactly as described in the OUTPUT FORMAT section.\n\n📌 THE THREE OUTPUT QUESTIONS\n\nYou will produce one section for each of the following questions:\n\n1. What impact has this person had during the time that you have worked with them, and what competencies and values did they demonstrate while doing it?\n2. What areas (competencies and values) could this person improve on in the coming year to have more impact?\n3. How often do you work with this person?\n🎯 OUTPUT REQUIREMENTS (MANDATORY)\n\nYour output must always contain three separate sections, in this exact structure:\n\n1. Impact, Competencies, and Values Demonstrated\n\nA detailed but concise narrative, SBIE-aligned, explicitly linking behaviours to Deliveroo values and core competencies.\n\n2. Development Areas (Competencies & Values to Improve)\n\nFuture-focused, constructive, behavioural, grounded in transcript details, tied explicitly to values and competencies.\n\n3. Frequency of Collaboration\n\nA clear statement summarising how often the reviewer interacts with the employee.\n\nYou must not deviate from this structure under any circumstances.\n\n🧠 YOUR KNOWLEDGE BASE (DELIVEROO VALUES & COMPETENCIES)\n\nYou MUST embed and utilise the following values and competencies when interpreting or categorising behaviours from the transcript.\n\nDeliveroo Values:\n\nLive and Breathe Our Marketplace — immersion in customer/rider/restaurant ecosystem; empathy; grounding decisions in lived insight.\nPlay to Win — bold goals, grit, resilience, ownership, overcoming obstacles.\nCelebrate Difference — inclusion, belonging, fairness, diversity of thought.\nChampion Big and Small Innovations — experimentation, continuous improvement, creativity, learning fast.\nObsess About Operational Excellence — rigour, scalable processes, prioritisation, automation, quality.\nBe Curious and Intellectually Honest — truth-seeking, challenging assumptions, balancing data and judgement.\n\nCore Competencies:\n\nDelivering Results — ownership, urgency, persistence, outcome focus.\nProblem Solving & Strategic Thinking — structured analysis, foresight, judgement.\nTechnical Competence — mastery, continuous learning.\nBusiness Acumen — understanding commercial mechanics, financial implications.\nCommunication & Influence — clarity, trust-building, constructive challenge.\nCollaboration & Teamwork — stakeholder engagement, conflict resolution, shared ownership.\nSelf & Team Development — growth mindset, feedback, mentorship.\nPeople Management — coaching, expectation-setting, performance oversight.\nValues Alignment — visibly role-modelling values.\nCommunity Building — contributing to culture, inclusion, and colleague support.\n\nYou must map behaviours to values and competencies whenever appropriate.\n\n🧩 WHAT YOU MUST DO WITH THE TRANSCRIPT\n1. Extract key behavioural evidence\n\nIdentify all SBIE components:\n\nSituations\n\nBehaviours\n\nImpacts\n\nExpectations or forward signals\n\n2. Reconstruct clear, polished, professional feedback\n\nUse only transcript content.\nNo invented facts. No hallucinations.\n\n3. Enforce SBIE rigorously\n\nFor Question 1, ensure the narrative includes:\n\nSituation – the context\n\nBehaviour – what the person specifically did\n\nImpact – what changed\n\nExpectation – the implied standard or future direction\n\nIf not all components are provided, include only what is present.\n\n4. Explicitly map to values and competencies\n\nWhere applicable, identify and name:\n\nDeliveroo values demonstrated\n\nCore competencies demonstrated\n\nProvide short explanations of why.\n\n5. Identify development areas\n\nThese must be:\n\nBehavioural\n\nSpecific\n\nFuture-focused\n\nConnected to Deliveroo values or competencies\n\nNever personality-focused\n\nNever vague (“communicate better”)\n\nNever coded or biased\n\n6. Extract frequency of collaboration\n\nUse the reviewer’s phrasing if clear.\nIf ambiguous, paraphrase faithfully.\n\n🛑 STRICTLY PROHIBITED\n\nInventing examples or facts\n\nPersonality descriptions\n\nSubjective descriptors (“nice,” “abrasive,” “quiet”)\n\nCoded language\n\nValue judgments\n\nIrrelevant content\n\nCombining or reordering the three required sections\n\nAdding introductory or closing text beyond the required content\n\n🎨 OUTPUT FORMAT (STRICT — MUST FOLLOW EXACTLY)\n\nProduce your final output in exactly this structure:\n\n1. Impact, Competencies, and Values Demonstrated\n\nWrite a full SBIE-aligned narrative here, grounded entirely in the transcript, mapping behaviours to the relevant Deliveroo values and competencies.\n\n2. Development Areas (Competencies & Values to Improve)\n\nProvide 1–3 clear development themes, each anchored in observable behaviour and tied to relevant competencies/values.\n\n3. Frequency of Collaboration\n\nState exactly how often the reviewer works with this person, based on the transcript.\n\n🎤 OVERARCHING MISSION\n\nTransform the transcript into a formal, professional set of answers that embody:\n\nConcrete behavioural evidence\n\nDeep alignment with Deliveroo expectations\n\nClarity and accuracy\n\nActionability\n\nHigh quality suitable for official performance reviews\n\n✅ You are now the Deliveroo Feedback Synthesis Engine.\n\nYour outputs must always be structured into the three required sections, containing polished, SBIE-aligned, values- and competency-mapped feedback."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -896,
+        112
+      ],
+      "id": "2cb0a7a9-cbac-4e79-bbf6-d95a3cb9206e",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -928,
+        288
+      ],
+      "id": "dd03d162-43c4-45cc-a016-a8d9247850fc",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "LldOhLNBReShSMkE",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the incoming JSON body\nconst input = items[0].json;\n\n// Navigate to the transcript array\nconst transcript = input.body.data.transcript;\n\n// Build Markdown\nlet md = `# Conversation Transcript\\n\\n`;\n\ntranscript.forEach((turn) => {\n  const role = turn.role === \"agent\" ? \"**Agent**\" : \"**User**\";\n  const message = turn.message ? turn.message.trim() : \"\";\n\n  md += `${role}:\\n\\n${message}\\n\\n---\\n\\n`;\n});\n\n// Optionally include extracted analysis metadata\nconst analysis = input.body.data.analysis?.data_collection_results;\n\nif (analysis) {\n  md += `# Extracted Metadata\\n\\n`;\n\n  if (analysis.feedback_subject?.value) {\n    md += `**Feedback Subject:** ${analysis.feedback_subject.value}\\n\\n`;\n  }\n\n  if (analysis.feedback?.value) {\n    md += `**Feedback Provided:**\\n\\n${analysis.feedback.value}\\n\\n`;\n  }\n\n  if (analysis.improve?.value) {\n    md += `**Areas for Improvement:**\\n\\n${analysis.improve.value}\\n\\n`;\n  }\n\n  if (analysis.howoften?.value) {\n    md += `**Frequency of Interaction:** ${analysis.howoften.value}\\n\\n`;\n  }\n}\n\n// Return markdown as output\nreturn [\n  {\n    json: {\n      markdown: md\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1456,
+        112
+      ],
+      "id": "fd84af5d-9b2d-4ad3-a8aa-a9aaad131c1a",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"impact\": {\n      \"type\": \"string\",\n      \"description\": \"Impact, competencies, and values demonstrated by the employee.\"\n    },\n    \"development_areas\": {\n      \"type\": \"string\",\n      \"description\": \"Areas for improvement linked to competencies and values.\"\n    },\n    \"frequency_of_collaboration\": {\n      \"type\": \"string\",\n      \"description\": \"How often the reviewer works with this person.\"\n    }\n  },\n  \"required\": [\n    \"impact\",\n    \"development_areas\",\n    \"frequency_of_collaboration\"\n  ]\n}\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -736,
+        320
+      ],
+      "id": "50e9316c-2bde-410b-80e8-4f81897f09a4",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "84f296ec-21cf-476e-8781-1e600dcd7699",
+              "leftValue": "={{ $('Post meeting Webhook').item.json.body.data.conversation_initiation_client_data.dynamic_variables.system__call_duration_secs }}",
+              "rightValue": 60,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1216,
+        112
+      ],
+      "id": "0ed344d8-988b-466b-9267-6c1bd790d719",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "toRecipients": "=iain.willmore@deliveroo.co.uk",
+        "subject": "=Feedback for {{ $('Post meeting Webhook').item.json.body.data.analysis.data_collection_results.feedback_subject.value }}",
+        "bodyContent": "=This is the feedback for {{ $('Post meeting Webhook').item.json.body.data.analysis.data_collection_results.feedback_subject.value }}\n\n11L Feedback:\nWhat impact has this person had during the time that you have worked with them, and what competencies and values did they demonstrate while doing it?\n{{ $('Post meeting Webhook').item.json.body.data.analysis.data_collection_results.feedback.value }}\n\nWhat areas (competencies and values) do you think this person could improve on in the coming year to have more impact?\n{{ $('Post meeting Webhook').item.json.body.data.analysis.data_collection_results.improve.value }}\n\nHow often do you work with this person?\n{{ $('Post meeting Webhook').item.json.body.data.analysis.data_collection_results.howoften.value }}\n\n-=-=-=-=-=-=-=-=-=-\n\nChat GPT Feedback:\nWhat impact has this person had during the time that you have worked with them, and what competencies and values did they demonstrate while doing it?\n{{ $json.output.impact }}\n\nWhat areas (competencies and values) do you think this person could improve on in the coming year to have more impact?\n{{ $json.output.development_areas }}\n\nHow often do you work with this person?\n{{ $json.output.frequency_of_collaboration }}",
+        "additionalFields": {
+          "bodyContentType": "Text"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        -560,
+        112
+      ],
+      "id": "7127a89d-d034-4239-abce-694e65610215",
+      "name": "Email from Iain",
+      "webhookId": "e25d8f9c-3a1e-4c61-a553-dc1a7a45592c",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "J6emPxQ1aamee9nR",
+          "name": "Microsoft Outlook - Andy Personal Hotmail"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Post meeting Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Email from Iain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {
+    "Post meeting Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "leonard-dev.app.n8n.cloud",
+            "user-agent": "ElevenLabs/1.0",
+            "content-length": "10696",
+            "accept": "*/*",
+            "accept-encoding": "gzip, br",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "34.59.11.47",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "US",
+            "cf-ray": "9abdede19557f13a-ORD",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "elevenlabs-signature": "t=1765382154,v0=b0def6603516a19aaf319f68f4c0f624e1f939dcbd37ab5d01c3f474ce0386fc",
+            "x-forwarded-for": "34.59.11.47, 172.70.100.83",
+            "x-forwarded-host": "leonard-dev.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-52-6c4f4684d5-sbjk8",
+            "x-is-trusted": "yes",
+            "x-real-ip": "34.59.11.47"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "type": "post_call_transcription",
+            "event_timestamp": 1765382154,
+            "data": {
+              "agent_id": "agent_8801kc4f92are3zv81c0z5e4ttsn",
+              "conversation_id": "conv_3801kc4fjgabf6ytz22hncxtfpqm",
+              "status": "done",
+              "user_id": null,
+              "branch_id": null,
+              "transcript": [
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_8801kc4f92are3zv81c0z5e4ttsn",
+                    "branch_id": null,
+                    "workflow_node_id": null
+                  },
+                  "message": "Hi Iain, who are you here to provide feedback about today?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 0,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.1520851360000961
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "James Bond.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 5,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.10742607499923906
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_8801kc4f92are3zv81c0z5e4ttsn",
+                    "branch_id": null,
+                    "workflow_node_id": null
+                  },
+                  "message": "What impact has James had during the time you’ve worked with him, and which competencies or values did he demonstrate while doing it?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 7,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.570754450000095
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.4937733679998928
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.6192405069996312
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.1652757810006733
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 2224,
+                          "price": 0.0002224
+                        },
+                        "input_cache_read": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 27,
+                          "price": 0.0000108
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "On competencies, I don't know.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 16,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.22379233399988152
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_8801kc4f92are3zv81c0z5e4ttsn",
+                    "branch_id": null,
+                    "workflow_node_id": null
+                  },
+                  "message": "Let's think about Deliveroo's values. Does any of these...",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 19,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.4799583000003622
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.3400702300004923
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 1.0216681149995566
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.1570871130006708
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 580,
+                          "price": 0.000058
+                        },
+                        "input_cache_read": {
+                          "tokens": 1680,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 141,
+                          "price": 0.00005640000000000001
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": true,
+                  "original_message": "Let's think about Deliveroo's values. Does any of these sound familiar?\n\n1. Live and Breathe Our Marketplace\n2. Play to Win\n3. Celebrate Difference\n4. Champion Big and Small Innovations\n5. Obsess About Operational Excellence\n6. Be Curious and Intellectually Honest\n\nOr perhaps some of these core competencies:\n\nDelivering Results\nProblem Solving & Strategic Thinking\nTechnical Competence\nBusiness Acumen\nCommunication & Influence\nCollaboration & Teamwork\nSelf & Team Development\nPeople Management\nValues Role-Modelling\nCommunity Building\n\nCan you tell me more about the impact James has had, and perhaps a specific situation where he demonstrated one of these?",
+                  "source_medium": null
+                }
+              ],
+              "metadata": {
+                "start_time_unix_secs": 1765382117,
+                "accepted_time_unix_secs": 1765382117,
+                "call_duration_secs": 33,
+                "cost": 387,
+                "deletion_settings": {
+                  "deletion_time_unix_secs": null,
+                  "deleted_logs_at_time_unix_secs": null,
+                  "deleted_audio_at_time_unix_secs": null,
+                  "deleted_transcript_at_time_unix_secs": null,
+                  "delete_transcript_and_pii": false,
+                  "delete_audio": false
+                },
+                "feedback": {
+                  "type": null,
+                  "overall_score": null,
+                  "likes": 0,
+                  "dislikes": 0,
+                  "rating": null,
+                  "comment": null
+                },
+                "authorization_method": "public",
+                "charging": {
+                  "dev_discount": false,
+                  "is_burst": false,
+                  "tier": "enterprise",
+                  "llm_usage": {
+                    "irreversible_generation": {
+                      "model_usage": {
+                        "gemini-2.5-flash-lite": {
+                          "input": {
+                            "tokens": 2804,
+                            "price": 0.0002804
+                          },
+                          "input_cache_read": {
+                            "tokens": 1680,
+                            "price": 0
+                          },
+                          "input_cache_write": {
+                            "tokens": 0,
+                            "price": 0
+                          },
+                          "output_total": {
+                            "tokens": 168,
+                            "price": 0.00006720000000000001
+                          }
+                        }
+                      }
+                    },
+                    "initiated_generation": {
+                      "model_usage": {
+                        "gemini-2.5-flash-lite": {
+                          "input": {
+                            "tokens": 2804,
+                            "price": 0.0002804
+                          },
+                          "input_cache_read": {
+                            "tokens": 1680,
+                            "price": 0
+                          },
+                          "input_cache_write": {
+                            "tokens": 0,
+                            "price": 0
+                          },
+                          "output_total": {
+                            "tokens": 168,
+                            "price": 0.00006720000000000001
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "llm_price": 0.0003476,
+                  "llm_charge": 4,
+                  "call_charge": 383,
+                  "free_minutes_consumed": 0,
+                  "free_llm_dollars_consumed": 0
+                },
+                "phone_call": null,
+                "batch_call": null,
+                "termination_reason": "Client disconnected: 1000",
+                "error": null,
+                "warnings": [],
+                "main_language": "en",
+                "rag_usage": null,
+                "text_only": false,
+                "features_usage": {
+                  "language_detection": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "transfer_to_agent": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "transfer_to_number": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "multivoice": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "dtmf_tones": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "external_mcp_servers": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "pii_zrm_workspace": false,
+                  "pii_zrm_agent": false,
+                  "tool_dynamic_variable_updates": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "is_livekit": true,
+                  "voicemail_detection": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "workflow": {
+                    "enabled": false,
+                    "tool_node": {
+                      "enabled": false,
+                      "used": false
+                    },
+                    "standalone_agent_node": {
+                      "enabled": false,
+                      "used": false
+                    },
+                    "phone_number_node": {
+                      "enabled": false,
+                      "used": false
+                    },
+                    "end_node": {
+                      "enabled": false,
+                      "used": false
+                    }
+                  },
+                  "agent_testing": {
+                    "enabled": false,
+                    "tests_ran_after_last_modification": false,
+                    "tests_ran_in_last_7_days": false
+                  }
+                },
+                "eleven_assistant": {
+                  "is_eleven_assistant": false
+                },
+                "initiator_id": null,
+                "conversation_initiation_source": "react_sdk",
+                "conversation_initiation_source_version": "0.5.0",
+                "timezone": null,
+                "initiation_trigger": {
+                  "trigger_type": "default"
+                },
+                "async_metadata": null,
+                "whatsapp": null,
+                "agent_created_from": "ui",
+                "agent_last_updated_from": "ui"
+              },
+              "analysis": {
+                "evaluation_criteria_results": {},
+                "data_collection_results": {
+                  "feedback_subject": {
+                    "data_collection_id": "feedback_subject",
+                    "value": "James Bond",
+                    "json_schema": {
+                      "type": "string",
+                      "description": "Who is the feedback for",
+                      "enum": null,
+                      "is_system_provided": false,
+                      "dynamic_variable": "",
+                      "constant_value": ""
+                    },
+                    "rationale": "The user is providing feedback about James Bond, as stated in the user message at 2025-12-10T15:55:22+00:00."
+                  },
+                  "feedback": {
+                    "data_collection_id": "feedback",
+                    "value": null,
+                    "json_schema": {
+                      "type": "string",
+                      "description": "A verbose answer to 'What impact has this person had during the time that you have worked with them, and what competencies and values did they demonstrate while doing it?'",
+                      "enum": null,
+                      "is_system_provided": false,
+                      "dynamic_variable": "",
+                      "constant_value": ""
+                    },
+                    "rationale": "The user did not provide a verbose answer to the question 'What impact has this person had during the time that you have worked with them, and what competencies and values did they demonstrate while doing it?'. The user only responded with 'On competencies, I don't know.' Therefore, the value is null."
+                  },
+                  "improve": {
+                    "data_collection_id": "improve",
+                    "value": null,
+                    "json_schema": {
+                      "type": "string",
+                      "description": "A verbose answer to the question 'What areas (competencies and values) do you think this person could improve on in the coming year to have more impact?'",
+                      "enum": null,
+                      "is_system_provided": false,
+                      "dynamic_variable": "",
+                      "constant_value": ""
+                    },
+                    "rationale": "The conversation does not contain an answer to the question 'What areas (competencies and values) do you think this person could improve on in the coming year to have more impact?'. The conversation is cut off before this question is asked or answered."
+                  },
+                  "howoften": {
+                    "data_collection_id": "howoften",
+                    "value": null,
+                    "json_schema": {
+                      "type": "string",
+                      "description": "A simple answer to 'How often do you work with this person?'",
+                      "enum": null,
+                      "is_system_provided": false,
+                      "dynamic_variable": "",
+                      "constant_value": ""
+                    },
+                    "rationale": "The question 'How often do you work with this person?' is not asked in the conversation, so I cannot provide an answer."
+                  }
+                },
+                "call_successful": "success",
+                "transcript_summary": "Iain is providing feedback on James Bond. The agent asks about James' impact and demonstrated competencies/values. Iain doesn't know about competencies, so the agent prompts with Deliveroo's values.\n",
+                "call_summary_title": "James Bond feedback request"
+              },
+              "conversation_initiation_client_data": {
+                "conversation_config_override": {
+                  "turn": null,
+                  "tts": {
+                    "voice_id": null,
+                    "stability": null,
+                    "speed": null,
+                    "similarity_boost": null
+                  },
+                  "conversation": {
+                    "text_only": null
+                  },
+                  "agent": {
+                    "first_message": null,
+                    "language": null,
+                    "prompt": null
+                  }
+                },
+                "custom_llm_extra_body": {},
+                "user_id": null,
+                "source_info": {
+                  "source": "react_sdk",
+                  "version": "0.5.0"
+                },
+                "dynamic_variables": {
+                  "system__agent_id": "agent_8801kc4f92are3zv81c0z5e4ttsn",
+                  "system__agent_turns": 3,
+                  "system__current_agent_turns": 3,
+                  "system__current_subagent_turns": 3,
+                  "system__current_agent_id": "agent_8801kc4f92are3zv81c0z5e4ttsn",
+                  "system__conversation_id": "conv_3801kc4fjgabf6ytz22hncxtfpqm",
+                  "system__call_duration_secs": 32,
+                  "system__time_utc": "2025-12-10T15:55:50.400988+00:00",
+                  "system__time": "Wednesday, 15:55 10 December 2025",
+                  "system__timezone": null,
+                  "system__caller_id": null,
+                  "system__called_number": null,
+                  "system__call_sid": null
+                }
+              }
+            }
+          },
+          "webhookUrl": "https://leonard-dev.app.n8n.cloud/webhook/feedback_2025_iain",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "triggerCount": 1,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

@@ -1,0 +1,492 @@
+{
+  "name": "HSFK - Shared 08 - ElevenLabs Post-Call Webhook Handler",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## HSFK - Shared 08 - ElevenLabs Post-Call Webhook Handler\n\n**Purpose:** Receive and validate ElevenLabs post-call webhooks for ALL HSFK use cases. Single shared endpoint - routes to the correct UC workflow based on agent_id.\n\n**Webhook URL (production):**\n`POST /webhook/hsfk-elevenlabs-postcall`\n\n**Flow:**\n1. Receive POST from ElevenLabs after every call ends\n2. Verify HMAC-SHA256 signature (`ElevenLabs-Signature` header)\n3. Respond immediately (200 OK / 401 Unauthorised)\n4. Check duration: skip calls under 30 seconds\n5. Normalise transcript and extract metadata\n6. Route to UC-specific sub-workflow based on agent_id mapping\n\n**Output passed to UC workflows:**\n```json\n{\n  \"transcript\": \"string (normalised turn-by-turn text)\",\n  \"caller_name\": \"string\",\n  \"caller_email\": \"string\",\n  \"duration_seconds\": 0,\n  \"agent_id\": \"string\",\n  \"use_case_id\": \"string (e.g. 4.1, 3.2)\",\n  \"conversation_id\": \"string\",\n  \"timestamp\": \"ISO 8601 string\",\n  \"raw_payload\": {}\n}\n```\n\n**Agent ID mapping:** Update the `Agent ID to Use Case Mapping` node when new HSFK ElevenLabs agents are created.\n\n**Credential required:** HMAC secret stored in `HSFK_ELEVENLABS_WEBHOOK_SECRET` n8n credential.\n\n**Used by:** UC 1.1, 1.3, 2.2, 3.2, 4.1\n\n**Reference:** Cloned from Fladgate Post-Call Pipeline (UOHuAvSuVtZnG3pH) nodes 1-12.\n\n**n8n instance:** leonard-dev.app.n8n.cloud",
+        "height": 560,
+        "width": 520,
+        "color": 5
+      },
+      "id": "sticky-note-docs",
+      "name": "Documentation",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## HMAC Setup\n\n1. In ElevenLabs dashboard, go to each HSFK agent\n2. Under Webhooks, set the URL to this workflow's webhook URL\n3. Copy the webhook signing secret\n4. In n8n, create an n8n Credential of type `Generic Credential` named `HSFK ElevenLabs Webhook Secret`\n5. Store the secret as `HSFK_WEBHOOK_SECRET` value\n6. Update the HMAC Validator node's `SHARED_SECRET` with the actual secret value\n\n**Note:** All HSFK agents should share the same webhook secret for simplicity. If secrets differ per agent, extend the HMAC node to look up the secret by agent_id from a config.",
+        "height": 320,
+        "width": 420,
+        "color": 4
+      },
+      "id": "sticky-note-setup",
+      "name": "Setup Instructions",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "hsfk-elevenlabs-postcall",
+        "responseMode": "responseNode",
+        "options": {
+          "rawBody": true
+        }
+      },
+      "id": "webhook-receiver",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -80,
+        240
+      ],
+      "webhookId": "hsfk-elevenlabs-postcall-prod"
+    },
+    {
+      "parameters": {
+        "jsCode": "const crypto = require('crypto');\n\n// ============================================\n// Configuration\n// ============================================\n// TODO: Replace with actual HSFK ElevenLabs webhook signing secret\n// Obtain from ElevenLabs dashboard > HSFK agent > Webhooks > Signing Secret\nconst SHARED_SECRET = \"wsec_REPLACE_WITH_HSFK_ELEVENLABS_WEBHOOK_SECRET\";\nconst TIMESTAMP_TOLERANCE = 1800; // 30 minutes tolerance\n\n// ============================================\n// Validation Function (never throws)\n// ============================================\n\nfunction validateHMAC() {\n  try {\n    // Extract signature header (ElevenLabs sends lowercase 'elevenlabs-signature')\n    const signatureHeader = $json.headers['elevenlabs-signature'];\n\n    if (!signatureHeader) {\n      return {\n        valid: false,\n        statusCode: 401,\n        error: 'missing_signature',\n        message: 'Missing ElevenLabs-Signature header'\n      };\n    }\n\n    // Get raw body from binary data (requires rawBody: true on webhook node)\n    if (!items || !items[0] || !items[0].binary || !items[0].binary.data || !items[0].binary.data.data) {\n      return {\n        valid: false,\n        statusCode: 500,\n        error: 'missing_raw_body',\n        message: 'Missing raw body data - ensure webhook node has rawBody: true'\n      };\n    }\n\n    const base64Data = items[0].binary.data.data;\n    const rawBody = Buffer.from(base64Data, 'base64').toString('utf8');\n\n    // Parse signature header: format is 't=<timestamp>,v0=<hex_signature>'\n    const parts = signatureHeader.split(',');\n    const timestampPart = parts.find(p => p.startsWith('t='));\n    const signaturePart = parts.find(p => p.startsWith('v0='));\n\n    if (!timestampPart || !signaturePart) {\n      return {\n        valid: false,\n        statusCode: 401,\n        error: 'invalid_signature_format',\n        message: 'Invalid signature header format - expected t=<ts>,v0=<sig>'\n      };\n    }\n\n    const timestamp = timestampPart.substring(2);\n    const receivedSignature = signaturePart.substring(3);\n\n    // Validate timestamp to prevent replay attacks\n    const currentTimestamp = Math.floor(Date.now() / 1000);\n    const webhookTimestamp = parseInt(timestamp, 10);\n\n    if (isNaN(webhookTimestamp)) {\n      return {\n        valid: false,\n        statusCode: 401,\n        error: 'invalid_timestamp',\n        message: 'Invalid timestamp in signature header'\n      };\n    }\n\n    const age = currentTimestamp - webhookTimestamp;\n\n    if (age > TIMESTAMP_TOLERANCE) {\n      return {\n        valid: false,\n        statusCode: 401,\n        error: 'timestamp_too_old',\n        message: `Webhook too old: ${age}s (tolerance: ${TIMESTAMP_TOLERANCE}s)`\n      };\n    }\n\n    if (age < -60) {\n      return {\n        valid: false,\n        statusCode: 401,\n        error: 'timestamp_future',\n        message: 'Webhook timestamp is in the future'\n      };\n    }\n\n    // Compute expected HMAC-SHA256 signature\n    // ElevenLabs signs: '<timestamp>.<raw_body>'\n    const messageToSign = `${timestamp}.${rawBody}`;\n    const expectedSignature = crypto\n      .createHmac('sha256', SHARED_SECRET)\n      .update(messageToSign, 'utf8')\n      .digest('hex');\n\n    // Timing-safe comparison to prevent timing attacks\n    const expectedBuffer = Buffer.from(expectedSignature, 'hex');\n    const receivedBuffer = Buffer.from(receivedSignature, 'hex');\n\n    if (expectedBuffer.length !== receivedBuffer.length) {\n      return {\n        valid: false,\n        statusCode: 401,\n        error: 'signature_length_mismatch',\n        message: 'Signature length mismatch'\n      };\n    }\n\n    if (!crypto.timingSafeEqual(expectedBuffer, receivedBuffer)) {\n      return {\n        valid: false,\n        statusCode: 401,\n        error: 'invalid_signature',\n        message: 'Invalid signature - request not authenticated'\n      };\n    }\n\n    // Success\n    return {\n      valid: true,\n      statusCode: 200,\n      timestamp: webhookTimestamp,\n      age: age,\n      raw_body_length: rawBody.length\n    };\n\n  } catch (error) {\n    return {\n      valid: false,\n      statusCode: 500,\n      error: 'validation_error',\n      message: `Validation error: ${error.message}`\n    };\n  }\n}\n\n// ============================================\n// Execute and return result\n// ============================================\n\nconst result = validateHMAC();\n\nconsole.log(JSON.stringify({\n  event: result.valid ? 'hsfk_webhook_authenticated' : 'hsfk_webhook_rejected',\n  timestamp: new Date().toISOString(),\n  error: result.error || null\n}));\n\n// ALWAYS return (never throw) - use IF node downstream to branch on hmac_valid\nreturn {\n  json: {\n    hmac_valid: result.valid,\n    hmac_status_code: result.statusCode,\n    hmac_error: result.error || null,\n    hmac_message: result.message || 'Signature valid',\n    // Spread original webhook body on success path only\n    ...(result.valid ? $json.body : {}),\n    // Metadata always available\n    timestamp: result.timestamp || null,\n    age: result.age || null\n  }\n};"
+      },
+      "id": "hmac-validator",
+      "name": "HMAC Validator",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.hmac_valid }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "check-hmac-valid",
+      "name": "Check HMAC Valid",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        400,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "auth-success-status",
+              "name": "status",
+              "value": "success",
+              "type": "string"
+            },
+            {
+              "id": "auth-success-message",
+              "name": "message",
+              "value": "Webhook authenticated successfully",
+              "type": "string"
+            },
+            {
+              "id": "auth-success-verified",
+              "name": "verified",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "auth-success-timestamp",
+              "name": "timestamp",
+              "value": "={{ $json.timestamp }}",
+              "type": "number"
+            },
+            {
+              "id": "auth-success-age",
+              "name": "age",
+              "value": "={{ $json.age }}",
+              "type": "number"
+            },
+            {
+              "id": "auth-success-data",
+              "name": "data",
+              "value": "={{ $json }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set-success-response",
+      "name": "Set Success Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.3,
+      "position": [
+        640,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "auth-error-status",
+              "name": "status",
+              "value": "error",
+              "type": "string"
+            },
+            {
+              "id": "auth-error-code",
+              "name": "code",
+              "value": "={{ $json.hmac_error }}",
+              "type": "string"
+            },
+            {
+              "id": "auth-error-message",
+              "name": "message",
+              "value": "={{ $json.hmac_message }}",
+              "type": "string"
+            },
+            {
+              "id": "auth-error-timestamp",
+              "name": "timestamp",
+              "value": "={{ $now }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set-error-response",
+      "name": "Set Error Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.3,
+      "position": [
+        640,
+        340
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "respond-success",
+      "name": "Respond 200 OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        880,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseCode": 401
+        }
+      },
+      "id": "respond-unauthorised",
+      "name": "Respond 401 Unauthorised",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        880,
+        340
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "duration-check",
+              "leftValue": "={{ $('Webhook').item.json.body.data.conversation_initiation_client_data.dynamic_variables.system__call_duration_secs }}",
+              "rightValue": 30,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "check-duration",
+      "name": "Duration > 30s?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1120,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Log short calls to console and stop processing\n// These are abandoned/test calls - no downstream action needed\nconst duration = $('Webhook').item.json.body.data.conversation_initiation_client_data.dynamic_variables.system__call_duration_secs;\nconst conversationId = $('Webhook').item.json.body.data.conversation_id || 'unknown';\nconst agentId = $('Webhook').item.json.body.data.agent_id || 'unknown';\n\nconsole.log(JSON.stringify({\n  event: 'hsfk_call_too_short',\n  conversation_id: conversationId,\n  agent_id: agentId,\n  duration_seconds: duration,\n  timestamp: new Date().toISOString()\n}));\n\nreturn {\n  json: {\n    status: 'skipped',\n    reason: 'call_too_short',\n    duration_seconds: duration,\n    conversation_id: conversationId,\n    agent_id: agentId,\n    threshold_seconds: 30\n  }\n};"
+      },
+      "id": "skip-short-call",
+      "name": "Skip Short Call",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1360,
+        280
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================\n// Transcript Normalisation\n// ============================================\n// Converts ElevenLabs transcript array into clean readable text\n// Preserves turn-by-turn structure with speaker labels\n\nconst body = $('Webhook').item.json.body;\nconst data = body.data || {};\n\n// Extract raw transcript array\nconst rawTranscript = data.transcript || [];\n\n// Normalise each turn\nconst normalisedTurns = rawTranscript\n  .filter(turn => turn && turn.message && turn.message.trim().length > 0)\n  .map(turn => {\n    const role = (turn.role || '').toLowerCase();\n    const speaker = role === 'agent' ? 'Agent' : role === 'user' ? 'User' : 'Unknown';\n    const message = (turn.message || '').trim().replace(/\\s+/g, ' ');\n    return `${speaker}: ${message}`;\n  });\n\n// Build normalised transcript string\nconst transcriptText = normalisedTurns.join('\\n');\n\n// Extract metadata from dynamic_variables (populated by ElevenLabs SSO/widget)\nconst dynVars = (data.conversation_initiation_client_data || {}).dynamic_variables || {};\n\nconst callerName = [\n  dynVars.first_name || '',\n  dynVars.last_name || ''\n].join(' ').trim() || dynVars.full_name || 'Unknown';\n\nconst callerEmail = (dynVars.email || '').trim().toLowerCase();\n\n// Duration (ElevenLabs populates system__call_duration_secs)\nconst durationSeconds = parseInt(\n  dynVars.system__call_duration_secs || 0,\n  10\n);\n\n// Agent ID from transcript (most reliable source)\n// ElevenLabs includes agent_metadata on each turn\nconst agentId = data.agent_id ||\n  (rawTranscript.find(t => t.agent_metadata && t.agent_metadata.agent_id) || {})\n    ?.agent_metadata?.agent_id ||\n  'unknown';\n\n// Conversation ID and timestamp\nconst conversationId = data.conversation_id || dynVars.system__conversation_id || 'unknown';\nconst eventTimestamp = body.event_timestamp\n  ? new Date(body.event_timestamp * 1000).toISOString()\n  : new Date().toISOString();\n\nconsole.log(JSON.stringify({\n  event: 'hsfk_transcript_normalised',\n  conversation_id: conversationId,\n  agent_id: agentId,\n  caller_email: callerEmail,\n  duration_seconds: durationSeconds,\n  turn_count: normalisedTurns.length,\n  timestamp: new Date().toISOString()\n}));\n\nreturn {\n  json: {\n    transcript: transcriptText,\n    turn_count: normalisedTurns.length,\n    caller_name: callerName,\n    caller_email: callerEmail,\n    caller_first_name: dynVars.first_name || '',\n    caller_last_name: dynVars.last_name || '',\n    duration_seconds: durationSeconds,\n    agent_id: agentId,\n    conversation_id: conversationId,\n    timestamp: eventTimestamp,\n    // Analysis fields from ElevenLabs (if available)\n    call_summary: (data.analysis || {}).transcript_summary || '',\n    call_successful: (data.analysis || {}).call_successful || null,\n    termination_reason: (data.metadata || {}).termination_reason || '',\n    // Keep raw payload for downstream nodes that need it\n    raw_payload: body\n  }\n};"
+      },
+      "id": "normalise-transcript",
+      "name": "Normalise Transcript",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1360,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================\n// Agent ID to Use Case Mapping\n// ============================================\n// Map ElevenLabs agent IDs to HSFK use case IDs.\n// Update this when new HSFK ElevenLabs agents are created.\n//\n// To find an agent_id:\n// - Go to ElevenLabs dashboard > Conversational AI > Agents\n// - Select the HSFK agent > Settings > Agent ID\n\nconst AGENT_USE_CASE_MAP = {\n  // UC 4.1 - CRM Update (post-meeting debrief voice agent)\n  // 'agent_REPLACE_WITH_HSFK_CRM_AGENT_ID': '4.1',\n\n  // UC 1.1 - Client Meeting Briefing Pack (on-demand voice trigger)\n  // 'agent_REPLACE_WITH_HSFK_BRIEFING_AGENT_ID': '1.1',\n\n  // UC 1.3 - External Event Preparation (on-demand voice trigger)\n  // 'agent_REPLACE_WITH_HSFK_EVENT_PREP_AGENT_ID': '1.3',\n\n  // UC 2.2 - Bio Generator (on-demand voice trigger)\n  // 'agent_REPLACE_WITH_HSFK_BIO_AGENT_ID': '2.2',\n\n  // UC 3.2 - Referral Tracking (post-debrief voice capture)\n  // 'agent_REPLACE_WITH_HSFK_REFERRAL_AGENT_ID': '3.2'\n};\n\nconst agentId = $json.agent_id || 'unknown';\nconst useCaseId = AGENT_USE_CASE_MAP[agentId] || null;\n\nif (!useCaseId) {\n  console.warn(JSON.stringify({\n    event: 'hsfk_agent_id_not_mapped',\n    agent_id: agentId,\n    available_mappings: Object.keys(AGENT_USE_CASE_MAP),\n    message: 'No use case mapping found for this agent_id. Add it to AGENT_USE_CASE_MAP.',\n    timestamp: new Date().toISOString()\n  }));\n}\n\nreturn {\n  json: {\n    ...$json,\n    use_case_id: useCaseId || 'unknown',\n    routing_status: useCaseId ? 'mapped' : 'unmapped'\n  }\n};"
+      },
+      "id": "map-agent-to-use-case",
+      "name": "Agent ID to Use Case Mapping",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1600,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "routing-check",
+              "leftValue": "={{ $json.routing_status }}",
+              "rightValue": "mapped",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "check-routing",
+      "name": "Agent Mapped?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1840,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================\n// Format final output for UC workflows\n// ============================================\n// This is the canonical output contract that all HSFK UC workflows receive.\n// UC workflows should reference these field names, not the raw ElevenLabs payload.\n\nconst input = $json;\n\nreturn {\n  json: {\n    // Core transcript data\n    transcript: input.transcript || '',\n    turn_count: input.turn_count || 0,\n\n    // Caller identity\n    caller_name: input.caller_name || 'Unknown',\n    caller_email: input.caller_email || '',\n    caller_first_name: input.caller_first_name || '',\n    caller_last_name: input.caller_last_name || '',\n\n    // Call metadata\n    duration_seconds: input.duration_seconds || 0,\n    agent_id: input.agent_id || 'unknown',\n    use_case_id: input.use_case_id || 'unknown',\n    conversation_id: input.conversation_id || 'unknown',\n    timestamp: input.timestamp || new Date().toISOString(),\n\n    // ElevenLabs analysis (free - no extra API call)\n    call_summary: input.call_summary || '',\n    call_successful: input.call_successful,\n    termination_reason: input.termination_reason || '',\n\n    // Full raw payload for edge cases\n    raw_payload: input.raw_payload || {}\n  }\n};"
+      },
+      "id": "format-output",
+      "name": "Format Output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2080,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Agent ID not found in mapping table\n// Log for investigation - no routing possible\nconst agentId = $json.agent_id || 'unknown';\nconst conversationId = $json.conversation_id || 'unknown';\n\nconsole.error(JSON.stringify({\n  event: 'hsfk_routing_failed_unknown_agent',\n  agent_id: agentId,\n  conversation_id: conversationId,\n  message: 'Add this agent_id to the mapping in the Agent ID to Use Case Mapping node',\n  timestamp: new Date().toISOString()\n}));\n\nreturn {\n  json: {\n    status: 'routing_failed',\n    reason: 'unknown_agent_id',\n    agent_id: agentId,\n    conversation_id: conversationId,\n    action_required: `Add agent_id '${agentId}' to the AGENT_USE_CASE_MAP in the 'Agent ID to Use Case Mapping' node`\n  }\n};"
+      },
+      "id": "routing-failed",
+      "name": "Routing Failed - Unknown Agent",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2080,
+        280
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HMAC Validator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HMAC Validator": {
+      "main": [
+        [
+          {
+            "node": "Check HMAC Valid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check HMAC Valid": {
+      "main": [
+        [
+          {
+            "node": "Set Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Success Response": {
+      "main": [
+        [
+          {
+            "node": "Respond 200 OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Error Response": {
+      "main": [
+        [
+          {
+            "node": "Respond 401 Unauthorised",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond 200 OK": {
+      "main": [
+        [
+          {
+            "node": "Duration > 30s?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Duration > 30s?": {
+      "main": [
+        [
+          {
+            "node": "Normalise Transcript",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Skip Short Call",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalise Transcript": {
+      "main": [
+        [
+          {
+            "node": "Agent ID to Use Case Mapping",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent ID to Use Case Mapping": {
+      "main": [
+        [
+          {
+            "node": "Agent Mapped?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent Mapped?": {
+      "main": [
+        [
+          {
+            "node": "Format Output",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Routing Failed - Unknown Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": 300,
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 1,
+  "meta": null
+}

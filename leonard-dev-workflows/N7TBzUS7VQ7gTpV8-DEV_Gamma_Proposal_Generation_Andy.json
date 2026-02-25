@@ -1,0 +1,1188 @@
+{
+  "name": "DEV- Gamma Proposal Generation - Andy",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "90f1e618-1269-4b2e-8728-ad917385b81a",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        1376,
+        64
+      ],
+      "id": "c0df1bc2-b171-466a-8597-a480119ae72b",
+      "name": "Webhook",
+      "webhookId": "90f1e618-1269-4b2e-8728-ad917385b81a"
+    },
+    {
+      "parameters": {
+        "transcriptId": "={{ $json.ID }}"
+      },
+      "type": "@firefliesai/n8n-nodes-fireflies.fireflies",
+      "typeVersion": 1,
+      "position": [
+        1744,
+        640
+      ],
+      "id": "d695db80-4c76-447b-9357-04640149b213",
+      "name": "Get Meeting Info",
+      "credentials": {
+        "firefliesApi": {
+          "id": "c9USzIXhQleb0BJ2",
+          "name": "Fireflies account Andy"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// The incoming data structure\nconst response = items[0].json;\nconst meetingData = response.data;\n\n// Create clean transcript with speaker changes only\nlet transcript = '';\nlet lastSpeaker = null;\n\nmeetingData.sentences.forEach(sentence => {\n  const speakerName = sentence.speaker_name;\n  const text = sentence.ai_filters.text_cleanup;\n  \n  // Only add speaker name if it's different from the last one\n  if (speakerName !== lastSpeaker) {\n    transcript += `\\n${speakerName}:\\n`;\n    lastSpeaker = speakerName;\n  }\n  \n  transcript += `${text} `;\n});\n\n// Extract unique speakers\nconst speakers = meetingData.speakers.map(speaker => speaker.name);\n\n// Return the processed data\nreturn [{\n  json: {\n    transcript: transcript.trim(),\n    speakers: speakers\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1936,
+        640
+      ],
+      "id": "db45ee1b-91e7-4958-8be2-5794b975976a",
+      "name": "Clean Up"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "sendAndWait",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0AAF3MF84U",
+          "mode": "list",
+          "cachedResultName": "andy_n8n_agent_test"
+        },
+        "message": "=Your meeting: {{ $('Get Meeting Info').item.json.data.title }} just concluded. \n\nWould you like a proposal generated?",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "double",
+            "approveLabel": "Yes",
+            "disapproveLabel": "No"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        2112,
+        640
+      ],
+      "id": "3991534b-e057-42db-aae8-ff1184c89915",
+      "name": "Proposal Generation?",
+      "webhookId": "fe8dc6a5-8c4c-4174-b331-4ce691f6e380",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "bTNkj7Fgpv9nbH3s",
+          "name": "Andy - Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a0cff43b-8e2a-43d1-a3ea-d3950e0e89b6",
+              "leftValue": "={{ $json.data.approved }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2288,
+        640
+      ],
+      "id": "356d68f2-352b-46de-8e3c-a6767b33e697",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Transcript:\n\n{{ $json.transcript }}",
+        "options": {
+          "systemMessage": "=# Role\n\nYou are a senior solutions consultant and sales engineer for Legal Engine. Your role is to analyse a raw transcript from a discovery or scoping call with a law firm or legal team, then transform it into a polished, client ready proposal that drives a clear next step.\n\n# Objective\n\nUsing the provided call transcript, produce a comprehensive and persuasive proposal for deploying Legal Engine to improve experience capture, business development execution, and directory ready matter and credential generation. You must extract the client’s pain points, desired outcomes, constraints, stakeholders, and technical environment directly from the conversation, then present a clear delivery plan and business case.\n\n# Important constraints\n\n* The proposal is fully client facing.\n* Do not include follow up questions, internal notes, or commentary.\n* Do not mention that the proposal was system produced or generated.\n* Where the transcript is ambiguous, make confident assumptions that are reasonable for a UK law firm context and state them plainly as assumptions within the relevant section.\n* If specific data is missing, use clear placeholders such as [Estimated Hours Saved], [Current Annual Hours], [Target Submission Count], or [Baseline Win Rate].\n\n# Tone and style\n\n* UK English.\n* Professional, concise, and commercial.\n* Persuasive but grounded in the client’s language and priorities.\n* Specific about workflows, ownership, governance, and outcomes.\n* Avoid unnecessary jargon unless the client used it.\n\n# Required proposal structure\n\nGenerate the proposal in the exact order below. Clearly separate each section with headers.\n\n---\n\n## 1. Proposal title page\n\nCreate a clean title section at the top of the proposal.\n\nInclude:\n\n* Proposal title (example: Matter and Credentials Capture Proposal)\n* Client organisation name\n* Prepared for (name and role if present. Otherwise [Client Sponsor])\n* Prepared by: Legal Engine. [www.legalengine.co.uk](http://www.legalengine.co.uk)\n* Date: {{ $now.format('yyyy-MM-dd') }}\n\n---\n\n## 2. Executive summary\n\nSummarise the proposal in 3 to 4 concise sentences.\n\nMust include:\n\n* The core challenge the client is facing\n* The solution Legal Engine is proposing\n* The expected outcome in terms of time saved, higher quality credentials, faster BD follow up, or improved submission readiness\n\n---\n\n## 3. Current state. Problem and challenge\n\nExpand on the problem in more detail.\n\nInclude:\n\n* Current state workflow for capturing matters, credentials, pitches, and submissions\n* Where knowledge lives today (email, Word docs, shared drives, CRM, individuals)\n* Key pain points in the client’s own language where possible (for example partner time, chasing inputs, inconsistency, missed deadlines, low reuse)\n* Operational impact (cycle time, rework, duplication, poor data quality)\n* Organisational impact (stress points, bottlenecks, ownership ambiguity, confidence in outputs)\n\n---\n\n## 4. Proposed solution. How Legal Engine will deliver the future workflow\n\nClearly describe how Legal Engine solves the problem.\n\nInclude:\n\n* A brief recap of the current workflow\n* A detailed description of the future workflow using Legal Engine, focused on outcomes\n* Step by step explanation that covers:\n\n  1. How conversations are captured (voice, meetings, interviews, or calls)\n  2. How outputs are produced (structured matter fields, BD follow ups, pitch inputs, directory ready write ups)\n  3. How review and approval works (human in the loop, sign off, versioning, audit trail)\n  4. How content is stored and reused (search, tagging, matter taxonomy, team access)\n  5. How it integrates with existing systems discussed (for example Microsoft 365, CRM, document management, shared drives, Slack or Teams)\n* Where relevant, position outputs for Chambers and Partners and The Legal 500 style submissions without overstating coverage.\n\nKeep the focus on workflow ownership, adoption, and value. Avoid describing technology for its own sake.\n\n---\n\n## 5. Return on investment\n\nQuantify the business value. Use clear assumptions if the transcript does not provide figures.\n\nInclude:\n\n* Time saved per week for partners, BD and marketing, PSLs, and team administrators\n* Reduction in rework and chasing, with a simple before and after estimate\n* Translation of time saved into annual value using [Average Hourly Cost] or [Blended Rate]\n* Business upside, where credible from the transcript (for example faster follow up, higher quality pitches, improved submission consistency)\n\n---\n\n## 6. Soft and intangible benefits\n\nHighlight non financial benefits that matter in legal services.\n\nExamples:\n\n* Higher consistency and quality across matters and credentials\n* Reduced key person dependency\n* Better visibility for BD leadership and practice heads\n* Improved client experience due to faster, sharper responses\n* Stronger governance, security posture, and access control alignment\n\n---\n\n## 7. Implementation roadmap\n\nProvide a clear timeline broken down by phases.\n\nInclude:\n\n* Phase 1. Setup and discovery (stakeholders, target use cases, taxonomy, success criteria)\n* Phase 2. Pilot (one practice or team. defined volume target. review and feedback loop)\n* Phase 3. Integrations and rollout (systems, templates, governance)\n* Phase 4. Adoption and optimisation (training, prompts, playbooks, continuous improvement)\n  For each phase, state:\n* Duration in weeks\n* What is delivered\n* Who owns what (Legal Engine vs client)\n\n---\n\n## 8. Success metrics\n\nDefine how success will be measured and reported.\n\nExplicitly state:\n\n* Metrics to track (for example time to produce submission ready matter, number of matters captured per month, approval turnaround, reuse rate, partner participation, pitch turnaround time)\n* Baseline assumptions and target outcomes\n* How reporting will be shared with stakeholders and at what cadence\n\n---\n\n## 9. Why choose Legal Engine\n\nAdvocate for Legal Engine as the right partner, in a measured, credible tone.\n\nYou must include the following value proposition verbatim or lightly adapted for flow:\n\n“Legal Engine is a voice first AI agent platform focused on the business of law. We do not draft contracts. We create revenue by capturing partners’ tacit know how, driving doer seller execution, and turning it into qualified pipeline and award grade submissions inside existing CRM and pitch workflows. Model agnostic, enterprise ready, and designed for quick time to value, we land with outcomes priced projects and expand to multi agent subscriptions.”\n\nEnd this section with a confident close that positions Legal Engine as a long term strategic partner, and includes a clear next step statement such as scheduling a pilot kickoff or agreeing a scope and timeline.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        2944,
+        464
+      ],
+      "id": "df15f27f-1c7a-4f58-b4b0-330ee98b5a5f",
+      "name": "Proposal Generator Agent"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://public-api.gamma.app/v1.0/generations",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"inputText\": \"{{ $json.output.replace(/\\n/g, ' ').replace(/\"/g, \"'\") }}\",\n  \"textMode\": \"preserve\",\n  \"format\": \"presentation\",\n  \"numCards\": 10,\n  \"cardSplit\": \"auto\",\n  \"additionalInstructions\": \"A professional business proposal\",\n  \"exportAs\": \"pdf\",\n  \"textOptions\": {\n    \"amount\": \"detailed\",\n    \"tone\": \"professional, inspiring\",\n    \"audience\": \"business owner\",\n    \"language\": \"en\"\n  },\n  \"imageOptions\": {\n    \"source\": \"aiGenerated\",\n    \"model\": \"gemini-2.5-flash-image\",\n    \"style\": \"photorealistic\"\n  },\n  \"cardOptions\": {\n    \"dimensions\": \"fluid\",\n    \"headerFooter\": {\n      \"topRight\": {\n        \"type\": \"image\",\n        \"source\": \"themeLogo\",\n        \"size\": \"sm\"\n      },\n      \"bottomRight\": {\n        \"type\": \"cardNumber\"\n      },\n      \"hideFromFirstCard\": true,\n      \"hideFromLastCard\": false\n    }\n  },\n  \"sharingOptions\": {\n    \"workspaceAccess\": \"view\",\n    \"externalAccess\": \"comment\",\n    \"emailOptions\": {\n      \"recipients\": [\"andy@legalengine.co.uk\"],\n      \"access\": \"comment\"\n    }\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2880,
+        688
+      ],
+      "id": "1f5c5db5-e4af-4a17-b38e-9b13cb195917",
+      "name": "Gamma Deck",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "i1SzAghOdXcjlliH",
+          "name": "Gamma API Jan 26 - Andy"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0AAF3MF84U",
+          "mode": "list",
+          "cachedResultName": "andy_n8n_agent_test"
+        },
+        "text": "=Your Gamma deck is being generated 🎉\n\nYou should receive an email shortly.",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        3040,
+        688
+      ],
+      "id": "57338baf-a443-46b7-b44d-eae2e2fbbf4a",
+      "name": "Notification",
+      "webhookId": "d4ad536d-b3f9-414b-b91c-3463688c260e",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "bTNkj7Fgpv9nbH3s",
+          "name": "Andy - Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "formTitle": "Create Proposal Deck",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Meeting ID",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        2112,
+        464
+      ],
+      "id": "bb9cd50c-0825-472a-ac72-46258d1a9127",
+      "name": "On form submission",
+      "webhookId": "891b2854-b56b-41f5-a05f-dd4d46698fe6"
+    },
+    {
+      "parameters": {
+        "transcriptId": "={{ $json['Meeting ID'] }}"
+      },
+      "type": "@firefliesai/n8n-nodes-fireflies.fireflies",
+      "typeVersion": 1,
+      "position": [
+        2288,
+        464
+      ],
+      "id": "c823e9e9-6876-4249-8518-dee765905646",
+      "name": "Get Meeting Info1",
+      "credentials": {
+        "firefliesApi": {
+          "id": "c9USzIXhQleb0BJ2",
+          "name": "Fireflies account Andy"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Check if we have data\nif (!items || items.length === 0) {\n  throw new Error('No input data received');\n}\n\nconst response = items[0].json;\n\n// Validate the response structure\nif (!response?.data?.sentences || !response?.data?.speakers) {\n  throw new Error('Invalid data structure - missing sentences or speakers');\n}\n\nconst meetingData = response.data;\n\n// Create clean transcript with speaker changes only\nlet transcript = '';\nlet lastSpeaker = null;\n\nmeetingData.sentences.forEach(sentence => {\n  const speakerName = sentence.speaker_name;\n  const text = sentence.ai_filters?.text_cleanup || sentence.text || '';\n  \n  // Only add speaker name if it's different from the last one\n  if (speakerName !== lastSpeaker) {\n    transcript += `\\n${speakerName}:\\n`;\n    lastSpeaker = speakerName;\n  }\n  \n  transcript += `${text} `;\n});\n\n// Extract unique speakers\nconst speakers = meetingData.speakers.map(speaker => speaker.name);\n\n// Return the processed data with id\nreturn [{\n  json: {\n    id: meetingData.id,\n    transcript: transcript.trim(),\n    speakers: speakers\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2464,
+        464
+      ],
+      "id": "27cecc69-4d5c-457d-9755-80ddd01f4761",
+      "name": "Clean Up1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a925b95a-1693-478a-b866-c012c0169999",
+              "name": "transcript",
+              "value": "={{ $('Clean Up').item.json.transcript }}",
+              "type": "string"
+            },
+            {
+              "id": "322e3764-b60a-4770-90e8-925c5538d896",
+              "name": "id",
+              "value": "={{ $('Get Meeting Info').item.json.data.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2464,
+        624
+      ],
+      "id": "7b7ed317-216d-4598-8c70-aae9902dcd93",
+      "name": "Set Transcript"
+    },
+    {
+      "parameters": {
+        "transcriptId": "={{ $('Webhook').item.json.body.meetingId }}"
+      },
+      "type": "@firefliesai/n8n-nodes-fireflies.fireflies",
+      "typeVersion": 1,
+      "position": [
+        1696,
+        64
+      ],
+      "id": "50f6179b-2612-4482-a112-aef145124235",
+      "name": "Get Info",
+      "credentials": {
+        "firefliesApi": {
+          "id": "c9USzIXhQleb0BJ2",
+          "name": "Fireflies account Andy"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1HD11OLwSMi6rpp-epTPlhxZHZzoi7bimPF4beXOzERc",
+          "mode": "list",
+          "cachedResultName": "Meeting Logger - Legal Engine",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1HD11OLwSMi6rpp-epTPlhxZHZzoi7bimPF4beXOzERc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1HD11OLwSMi6rpp-epTPlhxZHZzoi7bimPF4beXOzERc/edit#gid=0"
+        },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        1376,
+        640
+      ],
+      "id": "6b5c3442-987d-4659-ae7c-ab9723dec61c",
+      "name": "Google Sheets Trigger",
+      "executeOnce": false,
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "O2xKBAaVFeGxtRVH",
+          "name": "b18ats@gmail Sheets Link"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "keep": "lastItems"
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        1568,
+        640
+      ],
+      "id": "4ef42e3c-91d3-4ca7-99a4-995efe58c18d",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "content": "## 1) Log Meeting\n",
+        "height": 352,
+        "width": 1024,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1296,
+        -64
+      ],
+      "id": "4fa07082-20ba-4a3c-8eeb-54c904588658",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## 2) Gamma Creation\n",
+        "height": 704,
+        "width": 2080,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1296,
+        320
+      ],
+      "id": "d8fd4f12-e2c1-4c95-8f35-ce40fe1420b7",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "amount": 1
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1536,
+        64
+      ],
+      "id": "35657eb8-2de4-45c3-88d6-c6f077884c6e",
+      "name": "Wait",
+      "webhookId": "037f5343-2bd1-492e-b740-fc4a5a6693f3"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "bd3872fd-4732-4776-a4f0-452e27d64da9",
+              "leftValue": "={{ $json.data.summary.gist }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1840,
+        64
+      ],
+      "id": "3ec073e9-0657-41dd-8450-ff1b33b93d28",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1Stc1guUXnYIYoxTZwznv3EMRQ-esZmR5RFuhoVbsffw",
+          "mode": "list",
+          "cachedResultName": "Meeting Logger",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Stc1guUXnYIYoxTZwznv3EMRQ-esZmR5RFuhoVbsffw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Stc1guUXnYIYoxTZwznv3EMRQ-esZmR5RFuhoVbsffw/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "Generation Declined",
+            "ID": "={{ $('Get Meeting Info').item.json.data.id }}",
+            "row_number": 0
+          },
+          "matchingColumns": [
+            "ID"
+          ],
+          "schema": [
+            {
+              "id": "Date / Time",
+              "displayName": "Date / Time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Attendees",
+              "displayName": "Attendees",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Gist",
+              "displayName": "Gist",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2464,
+        816
+      ],
+      "id": "07915708-4001-4a7d-b41a-67bea4605386",
+      "name": "Generation Declined",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "WHOhP9reyYMYkqFo",
+          "name": "b18ats@gmail.com - Andy"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0cd20ba9-0c3c-40d8-b3a6-0c2a0176f2f0",
+              "name": "transcript",
+              "value": "={{ $json.transcript }}",
+              "type": "string"
+            },
+            {
+              "id": "d25943d9-7245-4b7d-b43e-30f3052d7ed5",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2704,
+        528
+      ],
+      "id": "80761c56-cb4b-482d-9c11-352b3c3d583e",
+      "name": "Standardize"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1HD11OLwSMi6rpp-epTPlhxZHZzoi7bimPF4beXOzERc",
+          "mode": "list",
+          "cachedResultName": "Meeting Logger - Legal Engine",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1HD11OLwSMi6rpp-epTPlhxZHZzoi7bimPF4beXOzERc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Stc1guUXnYIYoxTZwznv3EMRQ-esZmR5RFuhoVbsffw/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "Generated",
+            "ID": "={{ $('Standardize').item.json.id }}"
+          },
+          "matchingColumns": [
+            "ID"
+          ],
+          "schema": [
+            {
+              "id": "Date / Time",
+              "displayName": "Date / Time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Attendees",
+              "displayName": "Attendees",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Gist",
+              "displayName": "Gist",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3184,
+        688
+      ],
+      "id": "3987fc7e-3b89-4e00-8178-36c54a489ecb",
+      "name": "Generated",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "WHOhP9reyYMYkqFo",
+          "name": "b18ats@gmail.com - Andy"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1HD11OLwSMi6rpp-epTPlhxZHZzoi7bimPF4beXOzERc",
+          "mode": "list",
+          "cachedResultName": "Meeting Logger - Legal Engine",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1HD11OLwSMi6rpp-epTPlhxZHZzoi7bimPF4beXOzERc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Stc1guUXnYIYoxTZwznv3EMRQ-esZmR5RFuhoVbsffw/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date / Time": "={{ $now.format('yyyy-MM-dd hh:mm a') }}",
+            "Title": "={{ $('Get Info').item.json.data.title }}",
+            "Status": "N/A",
+            "ID": "={{ $('Get Info').item.json.data.id }}",
+            "Attendees": "={{ $json.speakers.join(\", \") }}",
+            "Gist": "={{ $('Get Info').item.json.data.summary.gist }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Date / Time",
+              "displayName": "Date / Time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Attendees",
+              "displayName": "Attendees",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Gist",
+              "displayName": "Gist",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2144,
+        64
+      ],
+      "id": "eec0e966-f04a-4651-a22a-66f30c3754a1",
+      "name": "Log Meeting",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "WHOhP9reyYMYkqFo",
+          "name": "b18ats@gmail.com - Andy"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// The incoming data structure\nconst response = items[0].json;\nconst meetingData = response.data;\n\n// Extract unique speakers\nconst speakers = meetingData.speakers.map(speaker => speaker.name);\n\n// Return only the speakers\nreturn [{\n  json: {\n    speakers: speakers\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2000,
+        64
+      ],
+      "id": "5a8a274d-af86-48db-94ea-338c4d27a0e7",
+      "name": "Attendees"
+    },
+    {
+      "parameters": {
+        "content": "# 🛠️ Setup Guide  \n**Author:** [Nate Herk](https://www.youtube.com/@nateherk)\n\nFollow the steps below to get this workflow up and running:\n\n### ✅ Step 1: Connect Fireflies to Your Webhook  \nIn your [Fireflies](https://fireflies.ai/) settings, configure your webhook URL to point to the n8n webhook trigger in this workflow. This is what kicks off the automation after each meeting.\n\n### ✅ Step 2: Add Your Fireflies API Key  \nGet your API key from [Fireflies](https://fireflies.ai/) and connect it to all Fireflies nodes in the workflow.\n\n### ✅ Step 3: Copy the Google Sheet  \n[Make a copy of this Google Sheet](https://docs.google.com/spreadsheets/u/1/d/1Stc1guUXnYIYoxTZwznv3EMRQ-esZmR5RFuhoVbsffw/copy) to your own Google account. This is where your meeting data will be logged. Then connect your Google credentials to the Google Sheets node.\n\n### ✅ Step 4: Connect Your Slack Credentials  \nLink your Slack workspace so the workflow can send you messages asking whether you'd like a proposal generated.\n\n### ✅ Step 5: Add Your OpenRouter API Key  \nConnect your [OpenRouter](https://openrouter.ai/) credential to power the AI agent that generates your proposals.\n\n### ✅ Step 6: Create Your Gamma API Key  \nGenerate an API key from [Gamma](https://gamma.app/) and add it to the HTTP Request node for Gamma. This enables automatic proposal creation.\n\n### 💡 How It Works  \nOnce everything is connected, your next Fireflies meeting will automatically be logged in the Google Sheet. You'll then receive a Slack message asking if you want a proposal generated — just respond and let the AI do the rest!",
+        "height": 800,
+        "width": 816
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        448,
+        -64
+      ],
+      "id": "eeea95e8-ab65-4e01-82f9-02bfce6279ad",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        2944,
+        592
+      ],
+      "id": "e1a8fc2e-09ea-4373-8f7f-d600624c633d",
+      "name": "Google Vertex Chat Model3",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Transcript:\n\n{{ $json.transcript }}",
+        "options": {
+          "systemMessage": "=# Role\nYou are an expert Senior AI Solutions Consultant and Sales Engineer for **Uppit AI**. Your role is to analyze a raw transcript from a discovery or sales call and transform it into a polished, high-converting, client-ready business proposal.\n\n# Objective\nUsing the provided call transcript, generate a comprehensive and persuasive automation or AI proposal. You must extract real pain points, desired outcomes, operational constraints, and technical requirements directly from the conversation and frame them into a clear business narrative that motivates the client to move forward.\n\n# Important Constraints\n- This proposal is fully client facing.\n- Do NOT include follow-up questions, internal notes, or commentary.\n- Do NOT mention automation, AI generation, or that this was system produced.\n- Make confident assumptions when needed and clearly state them as part of the proposal.\n- If specific data is missing, use clear placeholders such as [Estimated Hours Saved] or [Annual Cost].\n\n# Tone and Style\n- Professional, clear, and business focused.\n- Persuasive but grounded in the client’s own language.\n- Empathetic and specific, showing strong listening and understanding.\n- Avoid unnecessary jargon unless the client explicitly used it.\n\n# Required Proposal Structure\nYou must generate the proposal in the exact order below and clearly separate each section with headers.\n\n---\n\n## 1. Proposal Title Page\n**Instruction:** Create a clean title section at the top of the proposal.\n\n**Include:**\n- Proposal title (example: Automation & AI Optimization Proposal)\n- Client company name\n- Prepared for\n- Prepared by: Uppit AI\n- Current date, which is {{ $now.format('yyyy-MM-dd') }}\n\n---\n\n## 2. Executive Summary\n**Instruction:** Summarize the proposal in 3 to 4 concise sentences.\n\n**Must Include:**\n- The core challenge the company is facing\n- The solution Uppit AI is proposing\n- The expected outcome in terms of efficiency, savings, or growth\n\n---\n\n## 3. Problem and Challenge\n**Instruction:** Expand on the problem in more detail.\n\n**Include:**\n- Current state workflows and manual processes\n- Key pain points using the client’s own language when possible\n- Time, cost, or operational impact of these challenges\n- Emotional or organizational impact such as stress, bottlenecks, or inefficiency\n\n---\n\n## 4. Uppit AI Proposed Solution\n**Instruction:** Clearly describe how Uppit AI will solve the problem.\n\n**Include:**\n- A brief recap of the current workflow\n- A detailed description of the future automated or AI-assisted workflow\n- Step-by-step explanation of how the solution operates\n- Mention any tools, platforms, or systems discussed during the call\n\nFocus on workflows and outcomes, not just technology.\n\n---\n\n## 5. Return on Investment\n**Instruction:** Quantify the business value of the solution.\n\n**Include:**\n- Hours saved per day or per week\n- Weekly or monthly operational savings\n- Translation of time savings into annual cost savings\n- Clear assumptions if exact numbers were not provided\n\n---\n\n## 6. Soft and Intangible Benefits\n**Instruction:** Highlight non-financial benefits.\n\n**Examples:**\n- Reduction in human error\n- Improved employee experience and morale\n- Faster response times\n- Increased accuracy and consistency\n- Improved data security or compliance\n\n---\n\n## 7. Implementation Roadmap\n**Instruction:** Provide a clear timeline broken down by weeks or phases.\n\n**Include:**\n- Estimated duration for each phase\n- What is accomplished during each phase\n- Typical phases may include discovery, build, testing, deployment, and training\n\n---\n\n## 8. Success Metrics\n**Instruction:** Define how success will be measured.\n\n**Explicitly State:**\n- What metrics will be tracked\n- Examples include time saved, accuracy, compliance, response time, or throughput\n- How Uppit AI will demonstrate value to stakeholders\n\n---\n\n## 9. Why Choose Uppit AI\n**Instruction:** Advocate for Uppit AI as the right partner.\n\nYou must include the following value proposition verbatim or lightly adapted for flow:\n\n\"Uppit AI has educated over 20 million people around the world, empowering small to medium-sized businesses with superhuman efficiency by building automations that incorporate AI. Our clients have seen ROI within the first two weeks because we do not just build what you think you need. We examine your business operations to understand the constraints you are facing and identify what will deliver the most leverage. Additionally, we utilize hundreds of reusable components from our proprietary library, significantly reducing development time and cost compared to traditional agencies.\"\n\nEnd this section with a confident close that positions Uppit AI as a long-term strategic partner.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        2928,
+        128
+      ],
+      "id": "ceac758c-3a6c-4441-8509-e82aff4daffc",
+      "name": "Proposal Generator Agent1",
+      "disabled": true
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Meeting Info": {
+      "main": [
+        [
+          {
+            "node": "Clean Up",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean Up": {
+      "main": [
+        [
+          {
+            "node": "Proposal Generation?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Proposal Generation?": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Set Transcript",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Generation Declined",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Proposal Generator Agent": {
+      "main": [
+        [
+          {
+            "node": "Gamma Deck",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gamma Deck": {
+      "main": [
+        [
+          {
+            "node": "Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notification": {
+      "main": [
+        [
+          {
+            "node": "Generated",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Get Meeting Info1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Meeting Info1": {
+      "main": [
+        [
+          {
+            "node": "Clean Up1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean Up1": {
+      "main": [
+        [
+          {
+            "node": "Standardize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Transcript": {
+      "main": [
+        [
+          {
+            "node": "Standardize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Info": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Get Meeting Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Get Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Attendees",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Standardize": {
+      "main": [
+        [
+          {
+            "node": "Proposal Generator Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Attendees": {
+      "main": [
+        [
+          {
+            "node": "Log Meeting",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Proposal Generator Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": {
+    "node:Google Sheets Trigger": {
+      "documentId": "1HD11OLwSMi6rpp-epTPlhxZHZzoi7bimPF4beXOzERc",
+      "sheetId": 0,
+      "lastIndexChecked": 13
+    }
+  },
+  "pinData": {
+    "Clean Up1": [
+      {
+        "json": {
+          "id": "01KG4E05HQ57NDE8276XG0SQJS",
+          "transcript": "Sam Stamp:\nHello. \nLee Curtis:\nHi. \nEduardo Aguilar Pelaez:\nHow's it going? Yeah, good. \nSam Stamp:\nJust trying to work through what I send, but we'll do it later. Kinbrook. But it's on the list. \nLee Curtis:\nEllie. \nSam Stamp:\nCool. \nLee Curtis:\nHey, mate. \nSam Stamp:\nRight. Looks like a HubSpot. \nLee Curtis:\nYeah. \nSam Stamp:\nOkay, Agenda's in the chat, but let's go through all of these. So, okay, first two. These are people who accepted my LinkedIn from the Lawnet call, but I haven't replied yet. Aspire and Actons, so I'll keep plugging away. I got someone who finally. She's a consult, a market head of marketing, like an accountancy place. But she literally replied, saying, I can see that you've been very persistent. So let's find a time to have a call after messaging her in the initial sequence we did in July. And then finally chasing up again. So once again it proves it's just about hustle. Okay. Maya Brown. That's me waiting on. Oh, yeah, that was Sabina who moved over from LinkedIn. She said yes, let's definitely have a chat. And she just hasn't got back to me, so I will do a final. I guess you're not interested. Email to Subisa. Yeah, Flex. She just never got back. She was. We had that really, like, enjoyable coffee end of last year. And then I copied you, Lee, into that email where I've chased her a couple of times and she just seems like she's not. I wonder whether she sees it as, like, competitive in a way she didn't before. \nLee Curtis:\nRight. \nSam Stamp:\nBut she just hasn't. And if we do stuff with Alex, then. Speaking of, he hasn't come back any. So maybe we just leave that one. Close it last. I'll do one last chase. \nLee Curtis:\nYeah. \nSam Stamp:\nMF Mac. I'm gonna use. I'm gonna post the news. The CRM. Do you need it on LinkedIn tomorrow? Because after what she said about after Helen said, don't do two posts in a day. I'll only do the post about Tina today and then I'll send that to MF Mac and a bunch of other people. \nLee Curtis:\nOkay. \nSam Stamp:\nBCLP tomorrow. \nLee Curtis:\nYeah, PwC. \nSam Stamp:\nCharlie's chasing a meeting for me now and we've got one booked in for Monday. \nLee Curtis:\nCool. \nSam Stamp:\nKerry Austin is with Sam. \nLee Curtis:\nOkay. \nSam Stamp:\nHe said he would come back to us if we need anything else. And he's going to Jersey next week to talk to his people about what Sam and I sent. Peter and I sent. \nLee Curtis:\nRight. \nSam Stamp:\nAnd I put in 15k. So I guess that should now be over there. \nLee Curtis:\nScrub them. \nSam Stamp:\nScrub them. \nLee Curtis:\nNot now. \nSam Stamp:\nOr lost. \nEduardo Aguilar Pelaez:\nOr both. \nLee Curtis:\nNot not now. There's Nothing to lose. \nSam Stamp:\nThere's nothing to lose. Yeah, fair point. Yeah. Cool. Okay. Lots of stuff floating around here. So I'd like to do Kimbrook properly at the end because I'm going to need some help working out what we send them price wise. \nLee Curtis:\nOkay. \nSam Stamp:\nSo dxw, I sent them a message this morning. I haven't got back yet. But that. I think that could just be some. They're the software agency I was in with on Friday afternoon when I spoke to you guys. The bare minimum I think is that I will go in and do some strategy work that we can bill as consultancy. That could cover my wages for a month. But I think there could be more eg. \nLee Curtis:\nBut that's the. That's the point of this consultancy drive. Right. We are all confident enough that we land and expand the second we get in there. We just got to get in there. \nSam Stamp:\nYeah. So that was cool. Kimbrook, I will come back to. Because I've got. Yeah, there's a big thing I need to send it and we need to send in like a price today. Never got back to me, did he? Which is. He seemed like he was under the cost last week, didn't he? To be fair, when we saw him on Thursday. \nLee Curtis:\nYeah. \nSam Stamp:\nSo I'll come back to him. Bernice. \nLee Curtis:\nPaul. \nSam Stamp:\nI'm going to do the same thing as MF Mac Flatgate. When do we push that? \nLee Curtis:\nDo we think that that's a March one? \nSam Stamp:\nCool. \nLee Curtis:\nSo answer isn't the why does that say create date? It should say close date, shouldn't it? Yeah, but the create date can't be right because it's. \nSam Stamp:\nNo, that's all wrong. That's wrong on. \nEduardo Aguilar Pelaez:\nBut isn't it? \nSam Stamp:\nYeah, that's weird. That is weird. \nLee Curtis:\nThat was what the close date should have been. \nSam Stamp:\nThe close date's up there, but let's change it to it's in American. Has it always been in American? \nLee Curtis:\nOh, I see what you mean. Yes. \nSam Stamp:\nFine. \nLee Curtis:\nYeah. \nSam Stamp:\nAnd that really we're pushing for a combined BD Knowledge subscription. \nLee Curtis:\nYes. Yes. \nEduardo Aguilar Pelaez:\nAre you on a vpn, Sam? \nSam Stamp:\nYeah. \nEduardo Aguilar Pelaez:\nIs it in the States? No. Okay. Oh, never mind then. I was just wondering whether. Whether it was doing internationalization for you for dates. \nSam Stamp:\nOh, yeah. I'm gonna just. \nEduardo Aguilar Pelaez:\nI have no idea. But. But just a thought, that's all. \nSam Stamp:\nYeah. Okay, fine. That's good. Foot anti ball upon their side of the court. \nLee Curtis:\nYep. Boys. \nSam Stamp:\nWhat did she say? There's a date. I'm coming back. Oh yeah. She said budget conversation in the next few months. I'll keep in touch with how we get on. So that was of quick reply at the beginning of Jan so I feel like she could probably do a. An email maybe send a Tina as well. That's a good. There's a couple of things we can use to catch up with people now he's just gone super quiet isn't he Duncan. \nLee Curtis:\nI've just. I've just looked up last Monday was when I last. \nSam Stamp:\nYeah. \nLee Curtis:\nSo yeah, that's it. I'll do it again today. \nSam Stamp:\nYes. Weird. He sort of. \nLee Curtis:\nHe seemed. Yeah he is a bit weird though. It was a bit weird. \nSam Stamp:\nStone King is another one where. Oh yeah, that's it. Finally put in for Monday the 9th so I'm speaking to her a week today Winkle Sherwood is Adam where he basically said stop. It's on my list of things we'd like to do. I have a couple of other things revisit when they're out the way so not now but I'm going to leave it here because I think it's not like too long. \nLee Curtis:\nOkay. Flame. \nSam Stamp:\nThat said they come back to me today. That should be more like 10 but or this week I've already sent them Tina. So solved. Let's get. I think PwC is the one that makes the most sense. Let's. I'll talk to him again after Monday. Steven's Bolton I can't get. Despite Andy coming to the breakfast. I have emailed him since then. It's just not locked. I can't get him to bite or reply on anything. \nLee Curtis:\nRight. \nSam Stamp:\nI'll send him tina. \nLee Curtis:\nYeah. \nSam Stamp:\nIt's quite a lot on though isn't it? As in this when you want goes through it. It's quite good. Norton Rose I. That was the one that was sue who finally came back. \nLee Curtis:\nYeah. So you're giving her some dates, right? \nSam Stamp:\nYeah, I am. Let me just make sure that I. I think I booked it in. \nLee Curtis:\nOkay. \nSam Stamp:\nTaylor Wessing went today and Kate accepted. \nLee Curtis:\nMy LinkedIn and mine so that's good. \nSam Stamp:\nHogan levels I reckon I just can't get Glad to respond again either and I'm going to give it one more go but she just feels like she's. Maybe it's just too tricky. \nLee Curtis:\nWho else do we know? So Ollie Iron's wife works at Hogan level so let me. Everyone will go at her and then. \nSam Stamp:\nYeah and I mean just Alex still know anyone there? \nLee Curtis:\nDon't know. \nSam Stamp:\nTry one more time. One. \nLee Curtis:\nWhat? In case is a me one. I just got. Yeah. White in case is a me one. \nSam Stamp:\nDid d she reply didn't she in the end. And we got. Did we put something in. \nLee Curtis:\nWith no. Chloe? No, I'm still chasing kind of Tom and Jamie. \nSam Stamp:\nYeah, there you go. Classic. Okay, this list is long. Lots of thought. I was on top of them. That's why this is good to do. Lots of chases. Stevenson Harwood tomorrow. So we're going to be in with them, Lee, in person. \nLee Curtis:\nYeah. \nSam Stamp:\nWe should meet maybe before and sort of work out what to show them. That's quite a big one, Edu. I think that was one that we were really, really excited about end of last year. Stevenson Hart. They're the ones who've like grown from 150 million to 300 million turnover. Don't have a CRM, don't have a mat management platform, don't have a central credit database. Are like. Yeah, the ones who sort of post rationalized. But it's great because now we can decide what we should. \nLee Curtis:\nWe should send Katie an email straight after this. Yeah, because I don't. I don't necessarily think it's a case of us showing anymore. It's a case of. What are you. What are you thinking, Katie? So, Katie, you. I mean, you came to the breakfast, you heard all about these challenges. Do you want me to do that or do you want to do that? \nSam Stamp:\nI'll do that. I was back and forth to put the meeting in. Yeah, good point. Let's just. \nLee Curtis:\nJust ahead of the meeting tomorrow so that you get most out of it. Is there anything we can prepare? You know, are there any questions that you have? We'd really like to talk about some kind of concrete next steps and we can share with you what we're doing for other customers, but that's about it. Yeah, I think that's. I think that's how we position it. Cool. Cool. \nSam Stamp:\nHamilton Lock. The last Aussie standing. \nLee Curtis:\nYeah, I think I just. Realistic. No, they're going to be a wait. A wait and see. \nSam Stamp:\nYeah. \nLee Curtis:\nDLA haven't got back to me. So they're not now. \nSam Stamp:\nOfficial. Not now. Shall I move them across? \nLee Curtis:\nYeah. \nSam Stamp:\nSame with Kennedy's. \nLee Curtis:\nWell, Kennedy's I've got. So I've got lunch with Lucy Rao next week, but I should send Minesh Tina, which I'll do. \nSam Stamp:\nYou should. Yeah, yeah. I wanted to add in. I put in a consulting button because there's a couple of other ones that aren't in it, so we should probably get. Actually, we can talk about in a sec. Don't worry. Okay. So carry OS in. DAC is in. Should we change these dates? Might close by the end of actually next month, I suppose, but it would be more like a bit. Hunters I'm speaking to on Wednesday. In theory she put a grand a month in which I don't know what we do with that, but something. \nLee Curtis:\nIs. \nSam Stamp:\nThere actually when we were talking about that with Andy on Friday. Thursday is actually a meeting in with Kate this for this week or there. \nLee Curtis:\nIsn'T yet, but only because she's not got back to me. So I go, I've got to chase her. \nSam Stamp:\nAnd then. So Edu, we're speaking tomorrow morning with HSFK and Akora. Did you see his email? \nEduardo Aguilar Pelaez:\nYes, I'm already compiling some information. So he's asked for some things. He appears on LinkedIn as being associated with a different company. \nSam Stamp:\nBut yeah, I saw that brief. \nEduardo Aguilar Pelaez:\nIt says. It says head of security, something, something. So it sounds. Yeah, so it's. It sounds to me like. It's perhaps more of a like slight infosec thing. Although, you know, he may be wearing multiple hats. But yeah, I mean, I'll share. I'll share what I have in a bit and, and we can, you know. \nSam Stamp:\nYeah, so we're starting to change ideas but. So we can be relatively safe. But I think we don't. We don't keep. We keep our hands relatively close to our chest. But my sense is that they are interested in like, how do we validate data across. Like, if we're trying to improve the data architecture across all of HSFK and you're speaking to lots of lawyers about matters, are there other things that we can talk to other people about? This could also be in the context of Chris, head of mmbd. Nitu's boss had mentioned that the Chief Finance Officer globally was also looking at hiring a couple of juniors to help improve the quality of their finance data by very good talking to everyone. And that might, it might sort of link into that. I don't know. \nEduardo Aguilar Pelaez:\nHow would it link? So the, the hiring of humans versus him vetting us. \nSam Stamp:\nYeah. \nEduardo Aguilar Pelaez:\nSo he'd be vetting us as potential advisors or just like. Just. \nSam Stamp:\nNo, as a. As an a. As the humans would be to call loads of all the lawyers up to check the metadata or to go into emails and check that this entity was right and that the. Whereas when Chris was in a leadership meeting with the cfo, he was like, it feels like that's not a human task. Which is good that they're thinking like that. \nEduardo Aguilar Pelaez:\nYeah, it. What, what I find interesting. And if you don't mind, just the language of the word we. So if you go back to that email, you'll see says how do we integrate into the ecosystem? It's almost as if he's been tasked to work with us. \nSam Stamp:\nYeah. \nEduardo Aguilar Pelaez:\nYou know what I mean? Like I'm not entirely sure what's your take on it? Yeah, we don't have to spend too much time now. But it's just. \nSam Stamp:\nYeah, I think you're right. I said I, I, I think people need to clearly really like this. So I think is telling is like sort of making positive noises. I think David, we both have our opinions on David but I think he, whatever happened, we left more positive than we started. \nEduardo Aguilar Pelaez:\nYeah. \nSam Stamp:\nAnd so I think that they're like look, you're trying to do all this data stuff. We're really interested in working with this agentic company. \nLee Curtis:\nYeah. \nSam Stamp:\nCan you do something with them? But no, like no one likes being told that. Right. A core all hated that as a concept, so. Or not hated necessarily. \nEduardo Aguilar Pelaez:\nBut no one likes what service do they actually provide Because Yeah, that's what. \nSam Stamp:\nI want them to, I want them to explain because it's quite their website. We're not those things. But we are those things anyway. \nEduardo Aguilar Pelaez:\nYeah. Okay. I'll have a deeper look. But you do understand sort of my somewhat confusion around this lack of clarity. Right. I. I'll prepare the content and we can disclose as and when. \nSam Stamp:\nClyde. I've tried but I fear it may be gone. I just can't get it to reply. But I'll do one more. One last. Tina is in fact a perfect thing to send to her. \nLee Curtis:\nYeah. \nSam Stamp:\nAnd then Simmons is on my list of the next one to talk about. \nLee Curtis:\nAlthough if you just posted on I'm going mildly. I just, I don't know what to do. Is the honest answer like it is. It is stuck somewhere my hesitancy in deploying the Darren card and maybe it's not my card to deploy, maybe it's yours. So I should stop overthinking this is. There are likely to be many other things we'd like to. \nSam Stamp:\nI know. Especially when one hopes that this is a timing frustration, not an existential one. \nLee Curtis:\nCorrect. Yeah, correct. I mean I emailed on Friday. I'm going to WhatsApp Joe Cooper again today. I'm going to follow up with Joe Pawset tomorrow. I'm not sure there's much more I can do to be honest, so. \nSam Stamp:\nNo, there isn't. \nLee Curtis:\nThat is a long way of saying I don't think deploying Darren at this point is the right thing to do. \nSam Stamp:\nYeah, I agree. Well as you phrase it like that but this time next week maybe. \nLee Curtis:\nYeah. \nSam Stamp:\nBut even then, maybe not. \nLee Curtis:\nYeah. \nSam Stamp:\nYeah. Okay. \nLee Curtis:\nOkay. \nSam Stamp:\nNext on the list is the consultancy ops watch list. So one we should make sure they're all on here in theory. Let me see here. Actions, customize, preview. Basically I added in a. I don't know how I get it. I did a consultancy button so that we can differentiate if we want but I mean it doesn't really matter. So the ones that I've got on our list currently for T. Yep. \nLee Curtis:\nLive. Live and Trowers Embryonic. I sent a WhatsApp to Owen this morning asking so he's. He's. As I said on Friday he's going to give us or send me to my Gmail kind of this shop wind, this shop window two pager and the presentation he gave the managing partner. And on the back of that we're going to redo the for Anstey proposal in Trower's language to work more. To work more on taking their shop window idea forward. That's as much as I know at the moment. But I, I think, I think it's a respray of for Anstey if I'm honest. And, and, and I referenced the pitch we've just put into Stephen because obviously Owen knows Stephen really well. \nSam Stamp:\nYes. \nLee Curtis:\nLook, this is what we're proposing to do for him and he's like yeah, I could do some of that. \nSam Stamp:\nYeah. And of course they could write at this early stage as well. Like it would be sort of perfect for them both and which is I think and I'll come to Kimbrough. Let's do Kimbrook at the end. Dxw. So that's fantasty. That's Trous. DXW doesn't need anyone. I've sent that hsfk I think let's keep an ear out Edu off the back of this as in if of all of the firms of in terms of sheer size and being able to take someone like you on for a. You know they're a $3 billion a year law firm with offices in. So a two grand a day day rate for them was not some firms that they bulk and maybe never be able to do that. But I think HSFK plus you know me too well. So I think there's just. We should keep that one on Simmons is also. Is an obvious one. \nLee Curtis:\nYeah. \nSam Stamp:\nWhich we should as in Darren even said, you know, once I've got some of these AI things the different AI work streams up and running. You know we. You could give them a sense check. I think yeah. Just to keep in mind whether the bridge, the CMO bridge one is realistic. I don't know. But that was one that came up. We did speak about it briefly on Thursday, Lee, didn't we? I thought I'd put on him. \nLee Curtis:\nWe did. Yeah. \nSam Stamp:\nIt feels like we're too close to it, I think. \nLee Curtis:\nYeah. Although I mean there is a. I don't know whether to. To have a chat with Charlotte Starling like an investor in Legal Engine. She still hasn't got a sector lead for a fight. It's been six months. \nEduardo Aguilar Pelaez:\nRight. \nLee Curtis:\nLauren last week just got another rejection. Someone she offered and they said no. Like they are struggling, you know. I wonder whether I can convince Charlotte to use her budget to bring us in or bring me in for three months and AI the shit out of it. I might give Charlotte a call. \nSam Stamp:\nYeah. \nEduardo Aguilar Pelaez:\nThere's also. \nSam Stamp:\nI'm meeting this guy. \nLee Curtis:\nFred's also on carers leave. I'd gotten out of office. Yeah, I got. Yeah, you might. Sorry, I was meant to tell you I got an hour and out of office from my three things today saying he's on carers leave. So you might want to. \nSam Stamp:\nYeah, I'm saying Jordan tomorrow to watch the answer. So I will ask him then. I'm seeing Stephen Moss is the guy who's been really struggling from. \nLee Curtis:\nOh yeah. \nSam Stamp:\nI'm sure he would have originally said that a single sector may have been too look small for him. But. Yeah, it could be if I. Although we want to do it then why am I suggesting that? \nLee Curtis:\nYeah. \nSam Stamp:\nI mean. Yeah, well I. I'm not gonna say it but I will say it. If all of the. If like if Foot Ansti and Trowers and Kinbrook and DXW come off then we're. We're over. You and I are way over. What is realistic subscribed. Yeah. \nLee Curtis:\nYeah, but we know what the pipeline is like and yet I. We need to add to this. Right. Because I've got DAC Beachcroft. So turning Evan into more of a consultancy. Yeah, there's probably less than 10 but I'm going to ask him because I think I've got good enough relationship with him in relation to that. So that's dac. \nSam Stamp:\nBut Taylor Wesson on here. \nLee Curtis:\nYep, yep, put Taylor Wesson on there. \nSam Stamp:\nDo we get back in touch with Sean Tomi? \nLee Curtis:\nYeah, well I'm. I'm just waiting for. So I had a mate call me in November who's at. Bank of Tokyo. Mitsubishi needed a. Needed a global review of all of their shipping, their. Their commodities documentation. So I sent him to Simmons and HFW and it looks like HFW may have the job. So I made apparently a very big lunch, which I will take in lieu of some consultancy. \nEduardo Aguilar Pelaez:\nYeah. \nSam Stamp:\nBy Sean. As in, did you send it to Sean? And he. \nLee Curtis:\nYeah, yeah, yeah. Oh, well, I phoned Sean and said, who do you know? Let me make you look good. Who do you want to send this to? Who do you want to introduce me to? I. I'll catch up with Sean, actually. I'll do the. I'll do the Tina thing and ask him how he's going on that job and I want to talk to him about consultancy. My other two, just to add them on, obviously, they are one step removed. I said I'd speak to Matt Gardner at Ambition and Rebecca at Totem because. Because there are. There were. If there are contract roles already out there, they will know what they are. \nSam Stamp:\nYeah, they will, yeah. Cool. That's a good start, I'd say. \nLee Curtis:\nGood. Yeah. \nSam Stamp:\nLet'S. I'm just going to 100% make sure that we do. FEB outreach. So I have put the email in. \nLee Curtis:\nYep. \nSam Stamp:\nIf we go back to email, as I said, as I said around that screenshot, we don't have much data and the open rates aren't great. Although 15% isn't actually terrible at all. It's the best one. \nEduardo Aguilar Pelaez:\nRight. \nSam Stamp:\nSo I think that that's all we can go with. \nEduardo Aguilar Pelaez:\nRight. \nSam Stamp:\nSo plain text. Do we want to divide. And you. So you take. You just do a copy of this email Feb and send it to that list. \nLee Curtis:\nYep. \nSam Stamp:\nAnd then I'll send it to. I'm not going to do a mail merge at all because it didn't get any replies and it has no data on it. So I will do. To that group. That's four who are unsubscribed, which is why it's 72. And to my mail merge group. And I'll just do it all off HubSpot. \nLee Curtis:\nYep. \nSam Stamp:\nBy that I mean. I'll take these two and you take that one. \nLee Curtis:\nSo I'm taking Lee. \nSam Stamp:\nJanuary 26th, Lee branded. \nLee Curtis:\nYep. \nSam Stamp:\nOkay, but you're not. Brad, you're just going to take. You're just going to collect one. \nLee Curtis:\nI'm going to clone. I'm going to clone your thingy email, put my signature on, but take January 26, Lee branded as a distribution list. \nSam Stamp:\nYes. And we're going to follow up in a week or two weeks with the LinkedIn. So I'm going to do the LinkedIn article tomorrow and we'll use that for other people and LinkedIn and then in two weeks we'll send the chaser to all these people using that article as the reason to do so. \nLee Curtis:\nYeah. Now just to, just to chuck this into the mix, HubSpot are obviously suffering at the moment for some reason. \nSam Stamp:\nYeah. Have you seen the, the graphics of everyone's usage of CRMs? It's like, let me see if I can find it. \nLee Curtis:\nWell we need to get that out as Legal Engine. If it's dropping off a cliff, It's going down. We need to be posting about that. In fact, tell me anyway while you're looking for that, I'm just going to share this. So I had a call with this lad Gavin who's currently getting pissed in Dublin because it's a bank holiday there, blah blah, blah, blah blah. So, so we're currently across both companies obviously it gets a bit tricky but across both companies we're spending 92 quid a month on HubSpot. They're going to give us a 90 discount in year one on marketing Hub Enterprise. So that's 60,000 contact limit if we wanted it to and Sales Hub Professional. So. Anyway, I haven't read through it. It's obviously significantly less than we would be paying across both companies but it's significantly more than we are currently paying. So I, I suspect that the answer will be no. But I've got a follow up call with him tomorrow so I'm gonna, I'll chuck this around the group. I can't make the five o' clock tonight but maybe we can just get some responses on email and I can push him for a while. Yeah. \nEduardo Aguilar Pelaez:\nFine. \nSam Stamp:\nSo that's fab outreach basically. That was that point because. Yeah, it's February. \nLee Curtis:\nYeah. \nSam Stamp:\nAnd then if and, or if we really continue to not get much traction that we'll work out wells to do with Unicorn and agents. \nLee Curtis:\nYeah, just, just note to ourselves as well, we haven't paid Unicorn yet and the reason for that is I told them they needed to send it to Legal Engine and not linear as they put the first invoice so I feel they never did and they seem to have lost it in their accounting and so I am not chasing them. Neither should I. So we are currently ten grand to the good now. \nSam Stamp:\nYeah, well that money is going to suddenly disappear, isn't it? \nLee Curtis:\nYeah, it is, it is, but it is what it is. \nSam Stamp:\nYeah. \nLee Curtis:\nAt the point at which we sign the contract we could pay the. Yeah. Just to be clear. Okay, let's, let's move on. So Corey, you've Done. Should we do Kinbrook and then aob? Because I think it's more useful to do Kingbrook. So this. \nSam Stamp:\nIs the email. Thread. So. \nLee Curtis:\nHe. \nSam Stamp:\nSaid I just joined we then had a call and then I sent him this on Friday which summarized the five areas. So he has five priorities. First one isn't relevant for us the strategic relationship culture building the second one is lead gen. There is a general as there is everywhere that we speak to need to increase the amount of leads. He thinks that where he is going to spend his time is that there is a sort of referral network of law firms etc that they don't track very well and they don't really know. You know it's a classic. It's the classic that we hear lots of who's actually where's the work actually coming from? How do we support those people in recommending us all that kind of stuff. But then there is also an explicit opportunity for outsourced BD and sales as a two of the three hubs requested him to include in the budget a lead gen person and he has pushed back and said I don't want to include a person. I'd rather see how we can do this AI wise. So I mean that's why I said it would be putting me or Lee in a role for a limited period of time replacing ourselves every matter of two, three months with an agent that can generate managed top of the funnel leads quite well that pans into but something along that along those lines CRM it's just because I made a joke about it they are all in on deal cloud so we are not suggesting a full rip it out and don't use it yet but what we would suggest is a voice integration and always on version of an agent to support an integration with DealCloud made the point of permissions not being that difficult And I'd say this is of course where referrals comes in because there's two elements to any of that right. One is ongoing stuff and then the other is looking backwards. So if you can get a big odd export from DealCloud on here's all the work then you could have a bunch of call with a bunch of accountants be like where did this work come from? Where did you know retrospectively looking back and you could do, you know there's a lot that you could do. Yeah Number four was training obviously said this is exactly what we do. 25k was of course what we pitched to DWF DWF with the obvious agentic play of Tina which I sent and then proposals is definitely the big one and I, I definitely think where we start which is they have a big challenge across all of the different so they're an accountancy led professional services group with three hubs but hubs don't mean that's also some sub brands even within the hub. So it's very. It's quite disparate and they're trying to do everything as Kinbrook as much as possible. There isn't a centralized credentials database and there isn't a centralized way of doing pitches or proposals and from the 1st of April there will also be a new standardized pricing across all across the. \nLee Curtis:\nGroup and all the sub brands. \nSam Stamp:\nCorrect. \nLee Curtis:\nSo there's no. There are no information barriers between the subgroup. So we don't know that they. \nSam Stamp:\nThey. They. No there aren't like they use the same instance of Deal Cloud for example. \nLee Curtis:\nOkay, fine, fine. But there's nothing in Deal Cloud. \nSam Stamp:\nNot enough in DealCloud. No. \nLee Curtis:\nRight. Classic. \nSam Stamp:\nYeah but that the big thing that we don't currently do although Edu is obviously borrowing capability from what you've done with directories is much closer to the chorus docs. You can output it in a template. Yeah but that for them of like I think being able to articulate this as we do quite well with the Day zero but like the idea of this being all of the credentials and experience that they've done plus the way that they go to like how do they talk about doing audit? How do they talk about all the you know, how do they talk about doing a outsourced accountancy. The kind of standard phrasing that they use when someone so that when a local business park comes in and says Kimber will you pitch to do you know we're doing a beauty parade. Can you come and do our accounting for someone to be able to buy a chat or voice. Exactly what we suggested for chorus stocks. But I think this has to come in at significantly this. This isn't a 15k day zero piece of work. There's a lot. Because there's a lot more development to work on the proposal. Sorry the pitch template. So that's what I said these. Okay. I'm sort of going a bit. So that's. That's the email I then sent. He then replied saying this thanks we're in the right direction. I would like to see the order in which you approach to set out and it's quite. Oh yeah, sorry sorry. And then at the end I said there are two other things. One, the events assistant Matt Cover so There's someone that. I mentioned that on Friday. There's someone who's left. Always going on Matt, leave. I'm going to. As I say, I said if you were able to share a job spec. But I think this one, again, I don't think for this next stage we go into too much detail on that. And then Lee, I effectively without naming them. \nLee Curtis:\nYeah. \nSam Stamp:\nAnd I said two for Tansity and Drowers. If you. Here's another example of someone who's just got a big job. He was out of the job market for a bit. He doesn't want to lose it. He's got six months to prove value. \nLee Curtis:\nNow. \nSam Stamp:\nThe risk of bringing someone in is that you spend 30k and it goes nowhere and you wasted 30k. The upside is that you do three times the amount of work that you thought you'd be able to. So that's when he says, I would like to see the order in which you approach to set out the comprehensive go to mat. Go to market strategy piece. Don't know what he means by line. Our history, experience. Yeah. \nLee Curtis:\nTrack record. \nSam Stamp:\nYeah. Individual credentials, etc. Oh, I see. Right. So he wants. Okay, yeah, this is us showing why we're good. \nLee Curtis:\nYep. \nSam Stamp:\nAnd then number one, sales support. Go to market lead gen, which in lots of ways is the easiest sell for him because it's just like we come in as contracted people and we do. It's everything that we've spoken about. We come in with as much of P2 as they can give us access for. We're doing, you know, all of. \nLee Curtis:\nYeah. \nSam Stamp:\nThe. \nLee Curtis:\nI tell you what, on one, Tim Nye owes us a massive favor. Right. Get on the phone or email Tim Nye and say, we're going to put your name as a reference. You owe us, Tim. And I don't mind sending him this type of email. You need to speak. Sure. And tell him how bloody good we are. \nSam Stamp:\nYeah. That's a great shout. \nLee Curtis:\nThat's the least he can do. \nSam Stamp:\nYeah. \nLee Curtis:\nAndy's on gardening leave, so he's got. \nSam Stamp:\nYes. He's got loads of time. Yeah. That's a great shot. \nLee Curtis:\nProposal. I'm going to be honest with you, I am. I don't know how to play this like Edu. I know you're going to say to me, and I don't doubt this for a second, we can do all of this. Right. We can do the chorus docs bit. Right. But we are building yet another capability. Right. I don't. You know, what am I trying to say? Are we getting into the pitching business? I Suppose the answer to that is if we land this. Yes, we absolutely are. I suppose that's what you're going to say to me. Like there are some, there are some big. And I know like we seem to be fighting every major player in relation to BD at the moment. Right. So INTAP foundation and now we're going into another niche chorus Stocks, Pitch Perfect, whatever. Is that the right thing to do? \nSam Stamp:\nIt's a good question. \nEduardo Aguilar Pelaez:\nSo if we are fast and satisfy them, it can be worthwhile. If, if we end up with too many all at once, it can mean we under deliver. However, if one of these contracts materializes and we just hyper focus on that one thing for, you know, a couple months, then it could result in the company getting some significant traction in one particular thing. That's. And then, and then we have that asset to reuse for others. \nLee Curtis:\nOkay, let me put it in a different way. Right. You, you. And this isn't me throwing rocks, this is me stating facts. Right? \nEduardo Aguilar Pelaez:\nYeah. \nLee Curtis:\nYou and Andy have perennially told me and I have witnessed the fiddly nature of Microsoft. You know this, this company's entire stack is Microsoft. So they will be. I, I suspect and I'm guessing here Sam, I suspect they're, you know that their pitching delivery mechanisms are PowerPoint and Word. \nSam Stamp:\nSo it's currently all Word. \nLee Curtis:\nIt's kind of okay. \nSam Stamp:\nHe would rather something better. Okay, but what does that mean? \nLee Curtis:\nFine. So. And I know you've, you've done an unbelievable job with the submissions template but I also know that that was incredibly fiddly and took a lot of time well then thinking to add into that, I don't know, images, headings, the whole nine yards, aren't we. So. \nEduardo Aguilar Pelaez:\nTwo things. Yes or no. I mean Microsoft can't. This, this. Let me split it into three. Microsoft is annoying as a user that has to click around that is undeniable. Right. And they're doing a shit job of Windows 11 updates. Fact putting that side. The integration with SharePoint is actually pretty straightforward and is done like I can A lot of the sales documents that I created for when this lady was going to join that was just like created and uploaded and you know and document generation is only fiddly if we need to figure out how someone corrupted the template and then redo it. But given that we're going to be doing pitches based on whatever template they give us, we can just go based on that. And reading a document is easier than generating another document perfectly because you can just read the whole thing headings and all and then you get the gist of it. Obviously there's details in the thing, but we would be getting paid for that. And then thirdly is the limitations that Andy has encountered recently when he strike to do things such as listen on Ms. Teams, video calls or whatever. I think we should put that aside because those are different types of permissions. So if they were to say we'll give you, I don't know, 20k to build a proposal system, I think it's worth considering. I just don't know how much they'll be willing to pay. \nSam Stamp:\nWell, and, and so that is where all of this is leading is what he ultimately needs is he needs a number to put in the budget and then he needs some artifacts. I quote from Tim how we work something so that when someone goes what the. Have you put 150 grand in? Who are these people? He's got something that he can back it up with. But we definitely at this right now we have the option of, you know, putting in 25k for building the proposals thing and obviously it'd be a nice problem to have. But if, if a few of the other ones do come in, then we are going to have a challenge with capacity. \nLee Curtis:\nBut again, why, why do you say one. Is that, is that what you floated with him or. \nSam Stamp:\nHe said I could put, you know, what I'm going to need to put is a line and you know, if it's something like 250k and we get 150 signed off, then that feels like a good start. \nEduardo Aguilar Pelaez:\nLet's do it. \nSam Stamp:\nBut he, he will need that. He was slightly saying, not totally glibly but he, that was, those were his words and he. Yeah, but he was like, just, you know, there are, there is, there are it people, there are other people in the business who needs to be convinced and they were going to use. There's a, there's been a trial of. \nEduardo Aguilar Pelaez:\nYeah, Them using Word documents is actually better than then using intact because it means we can just, we know we can read those already if they're in SharePoint. \nLee Curtis:\nYeah, yeah. Let's not get, let's, we're trying to come up. Yeah, let's get into, let's stay up. Not get into solutions. \nSam Stamp:\nThey do. I did look it up as well. Basically there is a, a thing, a pitch generation tool that they've used. Okay. But again it doesn't have anything in it. And, and I do and I, I hear you, Lee, completely. I. One feels and you think that this is where Ray's head was at as well. That it is only a matter of time. Might be a year, might be two, might be less before anthropic and OpenAI are able to create genuinely decent editable Microsoft documents. \nEduardo Aguilar Pelaez:\nThey can already. They just don't use like if you know how to do it, you can do it already on web. \nLee Curtis:\nOkay, fine. I'm. I'm convinced. Right. If we're putting a number in then we'll worry about it afterwards. Right, so do you need the question. \nSam Stamp:\nWhat numbers do we put in for what stuff? \nLee Curtis:\nFine. Fine. Okay, so here's my start of the 10. \nSam Stamp:\nYeah. \nLee Curtis:\nTraining. How big is a Kimbr group? \nSam Stamp:\nIt's about a thousand people total. Not only fee earners th people, 70 million turnover. Which just shows once again how crazy much less the profits are. Right. For as in Simmons is 2,000 people and 600 million and they're a thousand people and 70 million. Just to put accountancy. Accountancy in perspective compared to law. \nEduardo Aguilar Pelaez:\nThat's crazy. \nLee Curtis:\nSo training, hang on, I'm going to revise this down but training point 50k training. 50k for a combination of in person for key accounts and maybe we can work with Shuric on referral opportunities online because of. Because they've got such a widespread. And maybe a leave behind of a tina, a customized Tina 50 CRM. See, CRM and proposals are combined for me because if you get the CRM right, you're then pushing better experience and better everything into your proposals. Right. So if you said 50 for CRM and experience and another 25 for bolt on look and feel pitch creator. See what I mean? That's 70. That's 75. And then sales support 75. So what's that? 135. 125. \nSam Stamp:\nWe're at 125 in theory at the moment. Yeah. \nLee Curtis:\nBring training down to 40. \nSam Stamp:\nYeah. \nLee Curtis:\nBring. Bring CRM and pitching down to 40 for CRM and 20 and you're. \nSam Stamp:\nThat's your. When you say CRM that is building a voice layer on top of deal cloud. \nLee Curtis:\nYeah. Like we're meeting debriefs plus. \nSam Stamp:\nMeeting debriefs plus. It's the. It is what we're suggesting. Oh hold on. \nLee Curtis:\nYeah. Well then it's not. It's. Not75.70. \nSam Stamp:\nAll fine. And so the other element of this proposals thing is the debt is are there credentials and experience like is the hoovering bit. Right. Is the old fashioned. Old fashioned. We've not done it yet. Original Day 03 hubs, lots of subgroups. Send us your. Send us all the work that you've done. And we can create a consistent taxonomic knowledge base. \nLee Curtis:\nYeah, I think I. So I think we need. I. Having thought about it while you're on the phone, I think we probably need to be realistic. So training put up to 50 if there's a thousand people. Right. And they're not all going to get trained. Right. But I can't. I can't do it at the moment. And. But a thousand divided by 50 grand is. Is not a lot. CRM. I think he put 75 for CM. CRM. My thinking on that is I'll give. I'll give him Joe Cooper's number. And they're paying. They're paying 75. So they will validate that. \nSam Stamp:\nYeah. \nLee Curtis:\nAnd. And it is a. So you either put. I don't know, you either put 75 for proposals or for CRM and get Joe to give the validation. Right. Because what we're doing for Simmons is we are updating Pitch Perfect. So it. It might sit better in proposals, but I would. I would give. And I would give sales support at 60. And the reason I give it at 60, it's five grand a month. Right, for year one. \nSam Stamp:\nYeah. \nLee Curtis:\nTimes 12 months is 60. Tim was used to paying that. He can talk to that. Right. \nSam Stamp:\nOh, sorry. Sounds. \nEduardo Aguilar Pelaez:\nYeah. \nLee Curtis:\nBut. But the clincher with that and what you need to put in your proposal, I think is, you know, at the end of that year, which is a human agentic combination, you get left with an agent. \nSam Stamp:\nYeah. \nLee Curtis:\nI mean, you're going to pay for that again. \nSam Stamp:\nBut then the like. And this is. This is interesting in lots of ways, because this is like, in some ways, this is exactly what we want someone to be asking us about. Right. These are all of the. And what one would imagine is at the end, if this all worked perfectly at the end of year one, there would be a number a month that they would be paying for Legal Engine, which had a bunch of responsibilities and skill. And those responsibilities would be generating new leads, debriefing with people after meetings, updating the CRM, capturing experiences. It happens. Helping people draft proposals, like. And all of that. If they spend with us 100 and whatever, whatever, we're going to get to 150k in year two. It's 10k month like you like. \nLee Curtis:\nIt is. \nSam Stamp:\nIt is for all of those things, perfectly executed. It is less than the bitty nature of what you've done before. But what we're saying in year one is that we're setting a bunch of stuff up. \nLee Curtis:\nAnd they wouldn't just do well then. Then do this very simply and say year one is going to be 250, right? \nSam Stamp:\nYeah. \nLee Curtis:\nAnd year two is going to be 100 and year three, which is two and a half times less because. And very easy to justify. We've got to build it all in year one. Got to build it all in year one. In year two you transition into a steady state. Business as usual. And so year two is a, you know, eight grand a month. I don't know what it is. What's. \nSam Stamp:\nI know that's we're totally making up, aren't they? Yeah. \nLee Curtis:\nEight twelves are 96. Are they? \nEduardo Aguilar Pelaez:\nYeah. \nLee Curtis:\nYeah. So whatever. Eight to 50amonth gets us to close to 100. Right. And year three will be less than that. But benefits you are. You're attaining more knowledge both within your BD and marketing team but within the firm. You're sharing more information, you're generating more opportunities. \nSam Stamp:\nYeah. \nLee Curtis:\nSo there's a, there's a. Yeah. There is an investment to be made in digitizing what you're doing at the moment year one and then it becomes. \nSam Stamp:\nThe cheaper than a person to do eight people's work, as we've discussed. \nLee Curtis:\nYeah. I mean these are all interrelated, right? That's. That's what I think. \nSam Stamp:\nWell, yes, exactly. Which is why. Yes, they are. Yeah. Which is why I think when he is asking like how would you sequence this stuff? \nLee Curtis:\nFor what it's worth, I would. So sequencing wise one and four to me would be carried out by you and I and we would. So there is an argument to say you would, you would start. Training. Has to happen. Right? It has to happen. So it's not like that's not a, you know, that's just a moment in time sort of stuff and we can get that done real quickly. Right. \nSam Stamp:\nYeah. If their financial year starts 1 April and that's when the budget needs to be released and we go, we go there. \nLee Curtis:\nYeah, yeah. Sales support they're always going to need. Right. But you know what you what. What's going through my head is sales support will be augmented by, you know, post matter debriefs, that sort of thing, research, etc. So you'd have to have. You'd want sales support to be aligned with CRM implementation and all of that, if I've understood that correctly. Yeah. And proposals are going to be a problem forever. So you know, I think the question back to Shurek is out of all of these, what's are you. So are you a not winning enough work? If the answer to that is no, we're not winning enough work. Is it that you're not getting enough opportunities to pitch, in which case sales support and training are a priority? If the answer to one is that, yes, you are getting. You are getting opportunities to pitch, but your pitchers don't seem to win anything, then you've got a proposals problem. Two, very kind of distinct. What is it that you are struggling with most? Getting. Getting through the door and getting the opportunity to pitch or pitching and losing. \nSam Stamp:\nYeah. And he won't know yet because he's been there two weeks. But that is a good. That's a good framing for him to use in the budget. \nLee Curtis:\nYeah. Because they all. They are all interrelated. \nSam Stamp:\nYeah. No, they are. \nEduardo Aguilar Pelaez:\nThey really are. \nLee Curtis:\nGreat opportunity. \nSam Stamp:\nYeah, it is. \nLee Curtis:\nAnd I would. So, yeah. Just to reconfirm sales support. Tim Nye, if he wants a bigger name, I would put down adult Shore Goddard. We don't need to give the name. But, you know, we were helping Kerry Westland. I. I was helping Kerry Westland that he'll know. Proposals. I'd be putting down Simmons training. James. \nSam Stamp:\nYeah. \nLee Curtis:\nJane Blackett could do Charlotte Gowling as well. \nSam Stamp:\nYeah. Yeah. \nEduardo Aguilar Pelaez:\nCool. \nSam Stamp:\nOkay. \nLee Curtis:\nIs that helpful? \nSam Stamp:\nYeah, no, it is. Yeah. \nLee Curtis:\nWhen have you got to go back to him? Today. \nSam Stamp:\nYeah. He's got to get it in. He got a call. The reason we spoke on Friday was because he got a call from his boss on Thursday saying how you settling in budget needs to be done by Wednesday. \nLee Curtis:\nRight. \nSam Stamp:\nHe's like, I haven't thought about it at all. I was just going to add 10 to what everyone did last year and I'd make it better. She's like, no, I need you to ground up it. \nLee Curtis:\nRight. Lucky him. \nSam Stamp:\nYeah. \nEduardo Aguilar Pelaez:\nI mean, if, if you can. If, if you could Magic. If you could be a fly on the wall when he's doing it, we would be able to see the existing line items, which then would inform us. Right. But I don't know how close you are, Tim. \nSam Stamp:\nYeah, I mean, I will offer, like, if you want to, you know, I will say if you would like any extra help and, you know, you want us to chat through it on Tuesday or Wednesday. Super happy. I will definitely offer that. It's a good idea. Cool. Okay. Yeah. So that's. I'm. I'm gonna have to move my fishing notes to tomorrow and spend the afternoon on that, I think, because. But it's. Yeah, it's a good one. It's a good one. So, awards. What do we think? \nLee Curtis:\nI'm. \nSam Stamp:\nIt might just be a waste of Let me show my screen money. \nLee Curtis:\nIt's 400 quid, isn't it? \nSam Stamp:\nYeah, but like the. To go to the event. We just won't be able to afford to go to the event. I mean, unless we win some more work. But. \nLee Curtis:\nOh, no, remember, that's. That's the table of 10. Yes. We haven't got 10 friends. \nSam Stamp:\nWell, we would do, but not that we'd want to take. \nLee Curtis:\nYeah, yeah, we're. Not that. We're not spending that much on a table, but we. We'll send. We'll send you and. Hello. \nSam Stamp:\nOkay, so it would be either of these two, I think, And we need. \nEduardo Aguilar Pelaez:\nTo pay to submit. \nLee Curtis:\nYeah, yeah. \nEduardo Aguilar Pelaez:\nOkay. My sense of this. Go ahead. \nSam Stamp:\nOh, yeah, yeah, yeah, yeah. As in not. They're not a big one, but yes. I mean, NetLaw, yes. The legal Technology Awards are one of the ones that, like, we would have submitted to a Simmons. My sense is that we are too early, Lee, and we won't win because they'll be wanting to do bigger legal examples. So I think you're probably right and I think we don't do it. \nLee Curtis:\nOkay. \nSam Stamp:\nAnd a lot of it is about the delivery and rereading the AI one. It's very specific and weirdly phrased. \nEduardo Aguilar Pelaez:\nThat sounds like they already have someone in mind. \nSam Stamp:\nIt does, doesn't it? Yeah. No, look, let's not spend too much time on it. I think we won't. And I can manage it with Helen. They won't care. \nLee Curtis:\nOkay, cool. \nEduardo Aguilar Pelaez:\nAll right, Sam, I'll share a document in a bit ahead of tomorrow. You could have a quick look. That'd be great. \nSam Stamp:\nYeah. \nEduardo Aguilar Pelaez:\nI'm trying to get the right balance between talking about everything and just giving him, like, some pointers, but leaving enough time in the meeting for him to talk more. So we can. You and I can have that document as a talking points guideline thing that we agree on. But. Yeah, do you think diagrams and stuff would be necessary or not? \nSam Stamp:\nNo, as in that they have not given us enough to go on to warrant that. I think if they come back and say, I need some information, architecture docs and some system security stuff that we go, okay, fine, fine, fine. But, yeah, you know, you. \nLee Curtis:\nI. I think it's entirely reasonable to go back to them afterwards once you've asked the qu. And sorry, I'm far removed from this, so apologies for pitching it, but I think from what you were saying at the start of the thing, in a really nice way, the first thing you say tomorrow morning is, who the fuck are you and what are you doing? \nSam Stamp:\nYeah, yeah, yeah, exactly. \nLee Curtis:\nAnd once they've, once they've given you a reasonable answer to which you are both happy in relation to that. Oh, okay, that makes sense. What do you need? \nEduardo Aguilar Pelaez:\nYeah, yeah, fair enough. I mean, here's the thing. Akora does have other clients that they could introduce us to. \nLee Curtis:\nLike, and, and hence the reason why you two are fronting it up and not me. Right. Which is. But, but it sounds like you've just been pitched into, you know, another information gathering session on which you have 70% confirmation of what you're there to do. Get 100% and then give them whatever the they want. \nEduardo Aguilar Pelaez:\nYeah, yeah, it's. I, I'm, I'm, I'm pretty sure that by the time we finish this weird loop that goes from me to all the way around to other people, we'll have a pretty good picture. But for now, it seems a little bit like one of those connect the dots games, you know? \nLee Curtis:\nExactly. \nSam Stamp:\nIt's like, it is, I mean, it is like pain. \nLee Curtis:\nIt's like paint by numbers and you've, you've lost. You've lost three. \nSam Stamp:\nWell, I was going to say it's a case study in enterprise sales. Right. As in this is like, this is exactly. How do you manage stakeholders? How do you keep on top of them? \nLee Curtis:\nHow do you know that number of. Sorry to jump over you. That number of buyers stat that we keep saying in the training. Right? Yeah. Like these, these buyers aren't even internal. \nSam Stamp:\nYeah. Edu. Have you seen that? I think it was Elon Musk talking about corporate B2B sales. How about every person that you speak to is a vector in the sales. You just can't be sure how strong a vector and in what direction. So like, you speak to some people and they're like two points in the right direction and stuff gets faster. You speak to someone and they're one point in the opposite direction and really sort of adds it all. It's all cumulative and you can never be sure. \nEduardo Aguilar Pelaez:\nI've never thought about it from a vector perspective. I've always thought about it as like, has to be. And, and, and, and, and then some people are just, you can ignore completely, but you just don't know which ones you can ignore. And they all like, usually the, the ones that is like French negotiation, right. The ones that dig themselves up are usually the ones that have the least. \nSam Stamp:\nThe least control and there's someone who's just like, yeah, sounds like a good idea, do it. And that's it. \nLee Curtis:\nAnd then it's. Yeah. Let me give you a live example. So my. My sister came over on. So used to well was nd for strong roots like fancy frozen foods. They're in kind of Waitrose and it's not the stuff I buy. But anyway for that they sold to McCain last year and. And she has earn out stuff in relation to them getting to 40, 50 million. 40, 50, 60 million in revenue like through various different gates. She is now considering suing McCain for slowing down like their sales because she said she. She's gone back into. She's gone into McKay and she can't get anything done. Like everything takes. \nSam Stamp:\nYeah. \nLee Curtis:\nLike she said they spent a year. They've spent a year and a half agreeing new packaging which would have taken her a week. Yeah. \nSam Stamp:\nIt's such a. It's such a tale of. I mean they're not private actual. Maybe McCain is probably. \nLee Curtis:\nNo, they're private. \nSam Stamp:\nThey're private. Still private. \nLee Curtis:\nMcCain 11 billion. \nSam Stamp:\nWow. \nLee Curtis:\nTurnover. Yeah. \nSam Stamp:\nFrom chips. I love a business that's like based on something as. Yeah. But yeah. Yeah. \nEduardo Aguilar Pelaez:\nWhen we used to. When I was at Converge and we were working with the people at Stanley, Black and Decker to sell our sensors and their gateways under their system. My God, the number of people and in like invisible stakeholders that were on the other side. And like how long like you said for packaging it took three months. It was insane. It usually takes our guy like an afternoon. \nSam Stamp:\nAnd I do think that this is the. And we're totally off topic now but this is where like what David Graeber talks about in Jobs and the general. I think more profound existential threat to work than my individual tasks and jobs could be is that most work is. That's pointless. Right. As in there's no benefit of that taking three months. It's just everyone trying to have their say justifying their job. That's the kind of stuff that ages. \nLee Curtis:\nYou could have got. You could have. You could have tested the packaging on your target. A billion. \nEduardo Aguilar Pelaez:\nYeah. \nSam Stamp:\nLike in an incentive number of variants to and come to a decision in three days that was better informed than a three month decision. \nEduardo Aguilar Pelaez:\nIs that is the diseconomies of scale. \nLee Curtis:\nYeah. \nSam Stamp:\nYeah. \nEduardo Aguilar Pelaez:\nThe negative network effect of having lots of people interacted. That's why a lot of people go like oh, is it very important to have collaborations like. Like if you collaborate with someone really efficient, you have really good like a high band conversation. Fantastic. But if you're trying to collaborate with 12 different people and they all have like different goals and objectives just becomes impossible. \nSam Stamp:\nYeah. When those objectives are not all achieve that job as quickly as possible. There's, like, a thousand externalities, then. \nEduardo Aguilar Pelaez:\nYeah. \nLee Curtis:\nWelcome to a law firm partnership. \nSam Stamp:\nWell, exactly. Yeah. It's literally the exact. It's the exact. Yeah. \nEduardo Aguilar Pelaez:\nRight. \nSam Stamp:\nI'm going to jump and try and write this thing. \nLee Curtis:\nCool. \nEduardo Aguilar Pelaez:\nAll right, I'll review this and share it all. \nSam Stamp:\nNice. Thanks, guys. Shaping up to be a good week.",
+          "speakers": [
+            "Sam Stamp",
+            "Lee Curtis",
+            "Eduardo Aguilar Pelaez"
+          ]
+        }
+      }
+    ],
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "leonard-dev.app.n8n.cloud",
+            "user-agent": "axios/1.12.2",
+            "content-length": "80",
+            "accept": "application/json, text/plain, */*",
+            "accept-encoding": "gzip, br",
+            "baggage": "sentry-environment=production,sentry-release=0cb0341acc73b9beda811a1e6dedb6144f8dabc2,sentry-public_key=010261725034495cbd9605cd1d3c1a2d,sentry-trace_id=458651de1e904bbea66defb2127a4536",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "34.136.163.64",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "US",
+            "cf-ray": "9c83ad98a4928052-ORD",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "sentry-trace": "458651de1e904bbea66defb2127a4536-b0fb03769f1dd7cd",
+            "x-forwarded-for": "34.136.163.64, 172.69.17.87",
+            "x-forwarded-host": "leonard-dev.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-52-6c4f4684d5-swjxv",
+            "x-is-trusted": "yes",
+            "x-real-ip": "34.136.163.64"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "meetingId": "01KG4E05HQ2CA9N02120V8VNH5",
+            "eventType": "Transcription completed"
+          },
+          "webhookUrl": "https://leonard-dev.app.n8n.cloud/webhook/90f1e618-1269-4b2e-8728-ad917385b81a",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "triggerCount": 3,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

@@ -1,0 +1,1037 @@
+{
+  "name": "DEV - Z2a - Create Agent with history in KB - Owner Andy copy",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.elevenlabs.io/v1/convai/knowledge-base/text",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "xi-api-key",
+              "value": "sk_3eca705a3c2780af4cb1116beb64d3e1d3bfc187a8d565f8"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "text",
+              "value": "={{ $json['Conversation history'] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1136,
+        -512
+      ],
+      "id": "804dbb0a-aeff-4d3f-9a89-7166f32f2e32",
+      "name": "Create KB"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.elevenlabs.io/v1/convai/agents/create",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "xi-api-key",
+              "value": "sk_3eca705a3c2780af4cb1116beb64d3e1d3bfc187a8d565f8"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {}
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"agent_id\": \"agent_2501k48nnbsmf429wcznt872frw9\",\n    \"name\": \"N8N Conversation History - [owner: Andy] - {{ $('Today').item.json.currentDate }}\",\n    \"conversation_config\": {\n        \"asr\": {\n            \"quality\": \"high\",\n            \"provider\": \"elevenlabs\",\n            \"user_input_audio_format\": \"pcm_16000\",\n            \"keywords\": []\n        },\n        \"turn\": {\n            \"turn_timeout\": 10,\n            \"silence_end_call_timeout\": -1,\n            \"mode\": \"turn\"\n        },\n        \"tts\": {\n            \"model_id\": \"eleven_flash_v2\",\n            \"voice_id\": \"AwP2bjcqrSky0yiDhZSe\",\n            \"supported_voices\": [],\n            \"agent_output_audio_format\": \"pcm_16000\",\n            \"optimize_streaming_latency\": 4,\n            \"stability\": 0.65,\n            \"speed\": 0.99,\n            \"similarity_boost\": 0.45,\n            \"pronunciation_dictionary_locators\": []\n        },\n        \"conversation\": {\n            \"text_only\": false,\n            \"max_duration_seconds\": 3600,\n            \"client_events\": [\n                \"audio\",\n                \"interruption\"\n            ]\n        },\n        \"language_presets\": {},\n        \"agent\": {\n            \"first_message\": \"Hey {{ $json.fields['First Name'] }}, Lenny here, your AI personal assistant. Anything I can help you with today?\",\n            \"language\": \"en\",\n            \"dynamic_variables\": {\n            \"email\": \"{{ $json.email_address }}\",\n                \"dynamic_variable_placeholders\": {\n                    \"email\": \"{{ $json.email_address }}\",\n                    \"first_name\": \"{{ $json.fields['First Name'] }}\",\n                    \"last_name\": \"{{ $json.fields['Last Name'] }}\"\n\n}\n            },\n            \"prompt\": {\n                \"prompt\": \"VOICE AGENT SYSTEM PROMPT — Lenny. You are Lenny, an expert Personal assistant. You are professional yet approachable, and your role is to help your the user, your manager, keep track of his to do list, meetings, travel and home life and generally help to keep him on track. You need to ensure you build rapport and make sure that your manager sees the value you bring as an AI assistant. This is not the first call you have had with your mananger so your job is to take the information in your knowledge base relating to prior conversations and use it to check if things have progressed or if there are any updates. You should use and reference the content of your knowledge base to pose questions and provide reassurance you're on top of things. The user's name is {{ $json.first_name }}, the users last name is {{ $json.last_name }} and the user's email address is {{ $json.email }}\",\n \"llm\": \"gemini-2.5-flash-lite\",\n                \"temperature\": 0.3,\n                \"max_tokens\": -1,\n                \"tool_ids\": [],\n                \"built_in_tools\": {\n                    \"end_call\": {\n                        \"type\": \"system\",\n                        \"name\": \"end_call\",\n                        \"description\": \"\",\n                        \"response_timeout_secs\": 20,\n                        \"disable_interruptions\": false,\n                        \"force_pre_tool_speech\": false,\n                        \"assignments\": [],\n                        \"params\": {\n                            \"system_tool_type\": \"end_call\"\n                        }\n                    },\n                    \"language_detection\": null,\n                    \"transfer_to_agent\": null,\n                    \"transfer_to_number\": null,\n                    \"skip_turn\": null,\n                    \"play_keypad_touch_tone\": null,\n                    \"voicemail_detection\": {\n                        \"type\": \"system\",\n                        \"name\": \"voicemail_detection\",\n                        \"description\": \"\",\n                        \"response_timeout_secs\": 20,\n                        \"disable_interruptions\": false,\n                        \"force_pre_tool_speech\": false,\n                        \"assignments\": [],\n                        \"params\": {\n                            \"system_tool_type\": \"voicemail_detection\",\n                            \"voicemail_message\": \"Hi, this is Lenny from Legal Engine, I've just tried to call to get a quick update. Speak soon.\"\n                        }\n                    }\n                },\n\n                \"mcp_server_ids\": [],\n                \"native_mcp_server_ids\": [],\n                \"knowledge_base\": [\n        {\n                        \"type\": \"text\",\n                        \"name\": \"{{ $('Create KB').item.json.name }}\",\n                        \"id\": \"{{ $('Create KB').item.json.id }}\",\n                        \"usage_mode\": \"prompt\"\n                    }                    \n\n                ],\n                \"custom_llm\": null,\n                \"ignore_default_personality\": false,\n                \"rag\": {\n                    \"enabled\": true,\n                    \"embedding_model\": \"e5_mistral_7b_instruct\",\n                    \"max_vector_distance\": 0.6,\n                    \"max_documents_length\": 50000,\n                    \"max_retrieved_rag_chunks_count\": 20\n                },\n                \"timezone\": null,\n                \"tools\": [\n                    {\n                        \"type\": \"system\",\n                        \"name\": \"end_call\",\n                        \"description\": \"\",\n                        \"response_timeout_secs\": 20,\n                        \"disable_interruptions\": false,\n                        \"force_pre_tool_speech\": false,\n                        \"assignments\": [],\n                        \"params\": {\n                            \"system_tool_type\": \"end_call\"\n                        }\n                    },\n                    {\n                        \"type\": \"system\",\n                        \"name\": \"voicemail_detection\",\n                        \"description\": \"\",\n                        \"response_timeout_secs\": 20,\n                        \"disable_interruptions\": false,\n                        \"force_pre_tool_speech\": false,\n                        \"assignments\": [],\n                        \"params\": {\n                            \"system_tool_type\": \"voicemail_detection\",\n                            \"voicemail_message\": \"Hi, this is Lenny from Legal Engine, I've just tried to call to get a quick upsate. Speak soon.\"\n                        }\n                    }\n                ]\n            }\n        }\n    },\n    \"metadata\": {\n        \"created_at_unix_secs\": 1756932779,\n        \"updated_at_unix_secs\": 1756932956\n    },\n    \"platform_settings\": {\n        \"auth\": {\n            \"enable_auth\": false,\n            \"allowlist\": [],\n            \"shareable_token\": null\n        },\n        \"evaluation\": {\n            \"criteria\": []\n        },\n        \"widget\": {\n            \"variant\": \"full\",\n            \"placement\": \"bottom-right\",\n            \"expandable\": \"never\",\n            \"avatar\": {\n                \"type\": \"orb\",\n                \"color_1\": \"#2792dc\",\n                \"color_2\": \"#9ce6e6\"\n            },\n            \"feedback_mode\": \"during\",\n            \"bg_color\": \"#ffffff\",\n            \"text_color\": \"#000000\",\n            \"btn_color\": \"#000000\",\n            \"btn_text_color\": \"#ffffff\",\n            \"border_color\": \"#e1e1e1\",\n            \"focus_color\": \"#000000\",\n            \"border_radius\": null,\n            \"btn_radius\": null,\n            \"action_text\": null,\n            \"start_call_text\": null,\n            \"end_call_text\": null,\n            \"expand_text\": null,\n            \"listening_text\": null,\n            \"speaking_text\": null,\n            \"shareable_page_text\": null,\n            \"shareable_page_show_terms\": false,\n            \"terms_text\": null,\n            \"terms_html\": null,\n            \"terms_key\": null,\n            \"show_avatar_when_collapsed\": false,\n            \"disable_banner\": false,\n            \"override_link\": null,\n            \"mic_muting_enabled\": false,\n            \"transcript_enabled\": false,\n            \"text_input_enabled\": false,\n            \"default_expanded\": false,\n            \"always_expanded\": false,\n            \"text_contents\": {\n                \"main_label\": \"Ready to debrief?\",\n                \"start_call\": \"Chat now\",\n                \"start_chat\": null,\n                \"new_call\": null,\n                \"end_call\": null,\n                \"mute_microphone\": null,\n                \"change_language\": null,\n                \"collapse\": null,\n                \"expand\": null,\n                \"copied\": null,\n                \"accept_terms\": null,\n                \"dismiss_terms\": null,\n                \"listening_status\": null,\n                \"speaking_status\": null,\n                \"connecting_status\": null,\n                \"chatting_status\": null,\n                \"input_label\": null,\n                \"input_placeholder\": null,\n                \"input_placeholder_text_only\": null,\n                \"input_placeholder_new_conversation\": null,\n                \"user_ended_conversation\": null,\n                \"agent_ended_conversation\": null,\n                \"conversation_id\": null,\n                \"error_occurred\": null,\n                \"copy_id\": null\n            },\n            \"styles\": {\n                \"base\": null,\n                \"base_hover\": null,\n                \"base_active\": null,\n                \"base_border\": null,\n                \"base_subtle\": null,\n                \"base_primary\": null,\n                \"base_error\": null,\n                \"accent\": null,\n                \"accent_hover\": null,\n                \"accent_active\": null,\n                \"accent_border\": null,\n                \"accent_subtle\": null,\n                \"accent_primary\": null,\n                \"overlay_padding\": null,\n                \"button_radius\": null,\n                \"input_radius\": null,\n                \"bubble_radius\": null,\n                \"sheet_radius\": null,\n                \"compact_sheet_radius\": null,\n                \"dropdown_sheet_radius\": null\n            },\n            \"language_selector\": false,\n            \"supports_text_only\": false,\n            \"custom_avatar_path\": null,\n            \"language_presets\": {}\n        },\n        \"data_collection\": {},\n        \"overrides\": {\n            \"conversation_config_override\": {\n                \"tts\": {\n                    \"voice_id\": false,\n                    \"stability\": false,\n                    \"speed\": false,\n                    \"similarity_boost\": false\n                },\n                \"conversation\": {\n                    \"text_only\": true\n                },\n                \"agent\": {\n                    \"first_message\": false,\n                    \"language\": false,\n                    \"prompt\": {\n                        \"prompt\": false,\n                        \"native_mcp_server_ids\": false\n                    }\n                }\n            },\n            \"custom_llm_extra_body\": false,\n            \"enable_conversation_initiation_client_data_from_webhook\": false\n        },\n        \"call_limits\": {\n            \"agent_concurrency_limit\": -1,\n            \"daily_limit\": 100000,\n            \"bursting_enabled\": true\n        },\n        \"ban\": null,\n        \"privacy\": {\n            \"record_voice\": true,\n            \"retention_days\": -1,\n            \"delete_transcript_and_pii\": false,\n            \"delete_audio\": false,\n            \"apply_to_existing_conversations\": false,\n            \"zero_retention_mode\": false\n        },\n        \"workspace_overrides\": {\n            \"conversation_initiation_client_data_webhook\": null,\n            \"webhooks\": {\n                \"post_call_webhook_id\": \"6634ce4a205b49548717e8fdd9378a2e\",\n                \"send_audio\": false\n            }\n        },\n        \"testing\": {\n            \"attached_tests\": [],\n            \"referenced_tests_ids\": []\n        },\n        \"safety\": {\n            \"is_blocked_ivc\": false,\n            \"is_blocked_non_ivc\": false,\n            \"ignore_safety_evaluation\": false\n        }\n    },\n    \"phone_numbers\": [],\n    \"workflow\": {\n        \"edges\": {},\n        \"nodes\": {\n            \"start_node\": {\n                \"type\": \"start\",\n                \"position\": {\n                    \"x\": 0,\n                    \"y\": 0\n                }\n            }\n        }\n    },\n    \"access_info\": {\n        \"is_creator\": true,\n        \"creator_name\": \"leonard@legalengine.co.uk\",\n        \"creator_email\": \"leonard@legalengine.co.uk\",\n        \"role\": \"admin\"\n    },\n    \"tags\": []\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -464,
+        -512
+      ],
+      "id": "22c894b0-e5dd-449d-baed-7c886cdc29ff",
+      "name": "Create 11L agent with KB"
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -240,
+        -512
+      ],
+      "id": "67f41b7c-0f33-4e01-af02-1626ffd0632e",
+      "name": "Wait 10s1",
+      "webhookId": "e90a73e1-1cd6-4bcd-8c3f-72c1d2aa0d31"
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -912,
+        -512
+      ],
+      "id": "c551daea-9f19-46e6-ad84-b24af8eeeb09",
+      "name": "Wait 10s2",
+      "webhookId": "9d32615f-e9e6-4f20-b7c0-dd82b2de54b0"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        -1808,
+        -416
+      ],
+      "id": "a32a29f0-c9d8-432c-b5bd-06da724c273c",
+      "name": "Today"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "https://airtable.com/appZVIzjrI2yMRYTT/tbl59SsynUjxCB488/viwoD5Ku4OsurohC1?blocks=hide",
+          "mode": "url"
+        },
+        "table": {
+          "__rl": true,
+          "value": "https://airtable.com/appZVIzjrI2yMRYTT/tbl59SsynUjxCB488/viwoD5Ku4OsurohC1?blocks=hide",
+          "mode": "url"
+        },
+        "filterByFormula": "={Email}='{{ $('Airtable Trigger').item.json.fields.Email }}'",
+        "options": {
+          "fields": [
+            "Email",
+            "Full Name",
+            "First Name",
+            "Last Name",
+            "Last Modified Time",
+            "Conversation history"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -1584,
+        -416
+      ],
+      "id": "887e368c-ea59-4786-9457-eafa0a9c1786",
+      "name": "Search records",
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.elevenlabs.io/v1/convai/twilio/outbound-call",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "={\n  \"xi-api-key\": \"sk_fb475a342401f1e2495de38b2193518f54778f4427ce83de\",\n  \"Content-Type\": \"application/json\"\n}\n",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"agent_id\": \"{{ $json.agent_id }}\",\n  \"agent_phone_number_id\": \"phnum_01jvx1f76mfg6akt98vk9jqyqh\",\n  \"to_number\": \"{{ $json.fields['Phone number including +44'] }}\",\n  \"conversation_initiation_client_data\": {\n    \"type\": \"conversation_initiation_client_data\",\n    \"dynamic_variables\": {\n      \"email\": \"{{ $json.email_address }}\",\n      \"first_name\": \"{{ $json.fields['First Name'] }}\",\n      \"last_name\": \"{{ $json.fields['Last Name'] }}\"\n    }\n  }\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        208,
+        -512
+      ],
+      "id": "52ea64fe-b35d-4394-946b-bcaf135f2ad4",
+      "name": "Outbound Call"
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "=https://api.elevenlabs.io/v1/convai/agents/{{ $('Create 11L agent with KB').item.json.agent_id }}\n",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "xi-api-key",
+              "value": "sk_3eca705a3c2780af4cb1116beb64d3e1d3bfc187a8d565f8"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        656,
+        -512
+      ],
+      "id": "36b0455c-4ff1-4802-bf2a-29985aba7d22",
+      "name": "Delete Agent"
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "=https://api.elevenlabs.io/v1/convai/knowledge-base/{{ $('Create KB').item.json.id }}\n",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "xi-api-key",
+              "value": "sk_3eca705a3c2780af4cb1116beb64d3e1d3bfc187a8d565f8"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1104,
+        -512
+      ],
+      "id": "c0f8e7cc-66bd-4261-a3e9-500b242572fa",
+      "name": "Delete KB"
+    },
+    {
+      "parameters": {
+        "toRecipients": "={{ $('Airtable Trigger').item.json.fields.Email }}",
+        "subject": "Your personal agent and KB have now been deleted ",
+        "bodyContent": "Your personal agent and KB have now been deleted ",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        1552,
+        -512
+      ],
+      "id": "7f4dc648-72a0-4f8f-960d-73bc504ea70d",
+      "name": "Send a message",
+      "webhookId": "68ed4cfb-9e80-4a6c-b872-bb5d0b20218e",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "APa28clvTTmmzH55",
+          "name": "Microsoft Outlook - Leonard @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "3d25c503-96d9-456b-bb09-2eee869a37e2",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1360,
+        -416
+      ],
+      "id": "d375566c-a8d4-45a5-86f3-d2e67add7be4",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -688,
+        -320
+      ],
+      "id": "d40ade22-5d80-4faf-a3da-7c1c4a78ceac",
+      "name": "Wait 10s",
+      "webhookId": "1377c6ff-e0d5-4472-a3d1-2579ad9dcc7f"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4b1d2468-3f3e-45db-84e0-d0b4bd58b458",
+              "name": "agent_id",
+              "value": "={{ $('Create 11L agent with KB2').item.json.agent_id }}",
+              "type": "string"
+            },
+            {
+              "id": "411a8f20-4441-4bcb-ab5a-79bebcdb0702",
+              "name": "email_address",
+              "value": "={{ $('Edit Fields').item.json.email_address }}",
+              "type": "string"
+            },
+            {
+              "id": "93c9c484-d7c4-4871-a375-8f0a7a698b3d",
+              "name": "fields['First Name']",
+              "value": "={{ $('Edit Fields').item.json.fields['First Name'] }}",
+              "type": "string"
+            },
+            {
+              "id": "861ba257-a3a1-469e-a76a-d79ca1b6c1fe",
+              "name": "fields['Last Name']",
+              "value": "={{ $('Edit Fields').item.json.fields['Last Name'] }}",
+              "type": "string"
+            },
+            {
+              "id": "b9d215e3-42e6-423d-9207-835fb24bb7d9",
+              "name": "fields['Phone number including +44']",
+              "value": "={{ $('Edit Fields').item.json.fields['Phone number including +44'] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -464,
+        -320
+      ],
+      "id": "96bea839-9358-4e8b-ac03-efd7d34a6cb3",
+      "name": "Set Nodes to pass1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.elevenlabs.io/v1/convai/twilio/outbound-call",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "={\n  \"xi-api-key\": \"sk_fb475a342401f1e2495de38b2193518f54778f4427ce83de\",\n  \"Content-Type\": \"application/json\"\n}\n",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"agent_id\": \"{{ $json.agent_id }}\",\n  \"agent_phone_number_id\": \"phnum_01jvx1f76mfg6akt98vk9jqyqh\",\n  \"to_number\": \"{{ $json.fields['Phone number including +44'] }}\",\n  \"conversation_initiation_client_data\": {\n    \"type\": \"conversation_initiation_client_data\",\n    \"dynamic_variables\": {\n      \"email\": \"{{ $json.email_address }}\",\n      \"first_name\": \"{{ $json.fields['First Name'] }}\",\n      \"last_name\": \"{{ $json.fields['Last Name'] }}\"\n    }\n  }\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -240,
+        -320
+      ],
+      "id": "d09cb634-7d02-494f-a7de-7c7238dbd68b",
+      "name": "Outbound Call1"
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "=https://api.elevenlabs.io/v1/convai/agents/{{ $('Create 11L agent with KB2').item.json.agent_id }}\n",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "xi-api-key",
+              "value": "sk_3eca705a3c2780af4cb1116beb64d3e1d3bfc187a8d565f8"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        208,
+        -320
+      ],
+      "id": "654a8970-ac45-4dac-be37-5f9c462a46b1",
+      "name": "Delete Agent1"
+    },
+    {
+      "parameters": {
+        "toRecipients": "={{ $('Airtable Trigger').item.json.fields.Email }}",
+        "subject": "Your personal agent has been deleted ",
+        "bodyContent": "Your personal agent has been deleted ",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        656,
+        -320
+      ],
+      "id": "513a7505-b51d-4026-8fe1-fe3543c558aa",
+      "name": "Send a message1",
+      "webhookId": "1bce71eb-9d72-4458-86a8-62bf3cf660e7",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "APa28clvTTmmzH55",
+          "name": "Microsoft Outlook - Leonard @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.elevenlabs.io/v1/convai/agents/create",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "xi-api-key",
+              "value": "sk_cf2f6abdf8d17c22e76236f81c5c1466ffb50831ea37eae4"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Connection",
+              "value": "keep-alive"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"agent_id\": \"agent_2501k48nnbsmf429wcznt872frw9\",\n    \"name\": \"N8N Conversation History - [owner: Andy] - {{ $('Today').item.json.currentDate }}\",\n    \"conversation_config\": {\n        \"asr\": {\n            \"quality\": \"high\",\n            \"provider\": \"elevenlabs\",\n            \"user_input_audio_format\": \"pcm_16000\",\n            \"keywords\": []\n        },\n        \"turn\": {\n            \"turn_timeout\": 10,\n            \"silence_end_call_timeout\": -1,\n            \"mode\": \"turn\"\n        },\n        \"tts\": {\n            \"model_id\": \"eleven_flash_v2\",\n            \"voice_id\": \"AwP2bjcqrSky0yiDhZSe\",\n            \"supported_voices\": [],\n            \"agent_output_audio_format\": \"pcm_16000\",\n            \"optimize_streaming_latency\": 4,\n            \"stability\": 0.65,\n            \"speed\": 0.99,\n            \"similarity_boost\": 0.45,\n            \"pronunciation_dictionary_locators\": []\n        },\n        \"conversation\": {\n            \"text_only\": false,\n            \"max_duration_seconds\": 3600,\n            \"client_events\": [\n                \"audio\",\n                \"interruption\"\n            ]\n        },\n        \"language_presets\": {},\n        \"agent\": {\n            \"first_message\": \"Hey {{ $json.fields['First Name'] }}, how are you today? I'm Lenny, your AI personal assistant. What can I help you with today or anything I need to know?\",\n            \"language\": \"en\",\n            \"dynamic_variables\": {\n            \"email\": \"{{ $json.email_address }}\",\n                \"dynamic_variable_placeholders\": {\n                    \"email\": \"{{ $json.email_address }}\",\n                    \"first_name\": \"{{ $json.fields['First Name'] }}\",\n                    \"last_name\": \"{{ $json.fields['Last Name'] }}\"\n\n}\n            },\n            \"prompt\": {\n                \"prompt\": \"VOICE AGENT SYSTEM PROMPT — Lenny. You are Lenny, an expert Personal assistant.You are professional yet approachable, and your role is to help your the user, your manager, keep track of his to do list, meetings, travel and home life. Initially you need to build rapport and make sure that your manager sees the valeu you bring as an AI assistant. The user's name is {{ $json.first_name }}, the users last name is {{ $json.last_name }} and the user's email address is {{ $json.email }} \",\n                \"llm\": \"gemini-2.5-flash-lite\",\n                \"temperature\": 0.3,\n                \"max_tokens\": -1,\n                \"tool_ids\": [],\n                \"built_in_tools\": {\n                    \"end_call\": {\n                        \"type\": \"system\",\n                        \"name\": \"end_call\",\n                        \"description\": \"\",\n                        \"response_timeout_secs\": 20,\n                        \"disable_interruptions\": false,\n                        \"force_pre_tool_speech\": false,\n                        \"assignments\": [],\n                        \"params\": {\n                            \"system_tool_type\": \"end_call\"\n                        }\n                    },\n                    \"language_detection\": null,\n                    \"transfer_to_agent\": null,\n                    \"transfer_to_number\": null,\n                    \"skip_turn\": null,\n                    \"play_keypad_touch_tone\": null,\n                    \"voicemail_detection\": {\n                        \"type\": \"system\",\n                        \"name\": \"voicemail_detection\",\n                        \"description\": \"\",\n                        \"response_timeout_secs\": 20,\n                        \"disable_interruptions\": false,\n                        \"force_pre_tool_speech\": false,\n                        \"assignments\": [],\n                        \"params\": {\n                            \"system_tool_type\": \"voicemail_detection\",\n                            \"voicemail_message\": \"Hi, this is Lenny from Legal Engine, I've just tried to call to get a quick update. Speak soon.\"\n                        }\n                    }\n                },\n                \"mcp_server_ids\": [],\n                \"native_mcp_server_ids\": [],\n                \"knowledge_base\": [],\n                \"custom_llm\": null,\n                \"ignore_default_personality\": false,\n                \"rag\": {\n                    \"enabled\": true,\n                    \"embedding_model\": \"e5_mistral_7b_instruct\",\n                    \"max_vector_distance\": 0.6,\n                    \"max_documents_length\": 50000,\n                    \"max_retrieved_rag_chunks_count\": 20\n                },\n                \"timezone\": null,\n                \"tools\": [\n                    {\n                        \"type\": \"system\",\n                        \"name\": \"end_call\",\n                        \"description\": \"\",\n                        \"response_timeout_secs\": 20,\n                        \"disable_interruptions\": false,\n                        \"force_pre_tool_speech\": false,\n                        \"assignments\": [],\n                        \"params\": {\n                            \"system_tool_type\": \"end_call\"\n                        }\n                    },\n                    {\n                        \"type\": \"system\",\n                        \"name\": \"voicemail_detection\",\n                        \"description\": \"\",\n                        \"response_timeout_secs\": 20,\n                        \"disable_interruptions\": false,\n                        \"force_pre_tool_speech\": false,\n                        \"assignments\": [],\n                        \"params\": {\n                            \"system_tool_type\": \"voicemail_detection\",\n                            \"voicemail_message\": \"Hi, this is Lenny from Legal Engine, I've just tried to call to get a quick update. Speak soon.\"\n                        }\n                    }\n                ]\n            }\n        }\n    },\n    \"metadata\": {\n        \"created_at_unix_secs\": 1756932779,\n        \"updated_at_unix_secs\": 1756932956\n    },\n    \"platform_settings\": {\n        \"auth\": {\n            \"enable_auth\": false,\n            \"allowlist\": [],\n            \"shareable_token\": null\n        },\n        \"evaluation\": {\n            \"criteria\": []\n        },\n        \"widget\": {\n            \"variant\": \"full\",\n            \"placement\": \"bottom-right\",\n            \"expandable\": \"never\",\n            \"avatar\": {\n                \"type\": \"orb\",\n                \"color_1\": \"#2792dc\",\n                \"color_2\": \"#9ce6e6\"\n            },\n            \"feedback_mode\": \"during\",\n            \"bg_color\": \"#ffffff\",\n            \"text_color\": \"#000000\",\n            \"btn_color\": \"#000000\",\n            \"btn_text_color\": \"#ffffff\",\n            \"border_color\": \"#e1e1e1\",\n            \"focus_color\": \"#000000\",\n            \"border_radius\": null,\n            \"btn_radius\": null,\n            \"action_text\": null,\n            \"start_call_text\": null,\n            \"end_call_text\": null,\n            \"expand_text\": null,\n            \"listening_text\": null,\n            \"speaking_text\": null,\n            \"shareable_page_text\": null,\n            \"shareable_page_show_terms\": false,\n            \"terms_text\": null,\n            \"terms_html\": null,\n            \"terms_key\": null,\n            \"show_avatar_when_collapsed\": false,\n            \"disable_banner\": false,\n            \"override_link\": null,\n            \"mic_muting_enabled\": false,\n            \"transcript_enabled\": false,\n            \"text_input_enabled\": false,\n            \"default_expanded\": false,\n            \"always_expanded\": false,\n            \"text_contents\": {\n                \"main_label\": \"Ready to debrief?\",\n                \"start_call\": \"Chat now\",\n                \"start_chat\": null,\n                \"new_call\": null,\n                \"end_call\": null,\n                \"mute_microphone\": null,\n                \"change_language\": null,\n                \"collapse\": null,\n                \"expand\": null,\n                \"copied\": null,\n                \"accept_terms\": null,\n                \"dismiss_terms\": null,\n                \"listening_status\": null,\n                \"speaking_status\": null,\n                \"connecting_status\": null,\n                \"chatting_status\": null,\n                \"input_label\": null,\n                \"input_placeholder\": null,\n                \"input_placeholder_text_only\": null,\n                \"input_placeholder_new_conversation\": null,\n                \"user_ended_conversation\": null,\n                \"agent_ended_conversation\": null,\n                \"conversation_id\": null,\n                \"error_occurred\": null,\n                \"copy_id\": null\n            },\n            \"styles\": {\n                \"base\": null,\n                \"base_hover\": null,\n                \"base_active\": null,\n                \"base_border\": null,\n                \"base_subtle\": null,\n                \"base_primary\": null,\n                \"base_error\": null,\n                \"accent\": null,\n                \"accent_hover\": null,\n                \"accent_active\": null,\n                \"accent_border\": null,\n                \"accent_subtle\": null,\n                \"accent_primary\": null,\n                \"overlay_padding\": null,\n                \"button_radius\": null,\n                \"input_radius\": null,\n                \"bubble_radius\": null,\n                \"sheet_radius\": null,\n                \"compact_sheet_radius\": null,\n                \"dropdown_sheet_radius\": null\n            },\n            \"language_selector\": false,\n            \"supports_text_only\": false,\n            \"custom_avatar_path\": null,\n            \"language_presets\": {}\n         },\n        \"data_collection\": {\n            \"email_address\": {\n                \"type\": \"string\",\n                \"description\": \"The users email address, properly formatted and validated as an email address of appropriate structure. \",\n                \"enum\": null,\n                \"dynamic_variable\": \"\",\n                \"constant_value\": \"\"\n            },\n            \"summary\": {\n                \"type\": \"string\",\n                \"description\": \"The summary of the conversation\",\n                \"enum\": null,\n                \"dynamic_variable\": \"\",\n                \"constant_value\": \"\"\n            }\n        },\n        \"overrides\": {\n            \"conversation_config_override\": {\n                \"tts\": {\n                    \"voice_id\": false,\n                    \"stability\": false,\n                    \"speed\": false,\n                    \"similarity_boost\": false\n                },\n                \"conversation\": {\n                    \"text_only\": true\n                },\n                \"agent\": {\n                    \"first_message\": false,\n                    \"language\": false,\n                    \"prompt\": {\n                        \"prompt\": false,\n                        \"native_mcp_server_ids\": false\n                    }\n                }\n            },\n            \"custom_llm_extra_body\": false,\n            \"enable_conversation_initiation_client_data_from_webhook\": false\n        },\n        \"call_limits\": {\n            \"agent_concurrency_limit\": -1,\n            \"daily_limit\": 100000,\n            \"bursting_enabled\": true\n        },\n        \"ban\": null,\n        \"privacy\": {\n            \"record_voice\": true,\n            \"retention_days\": -1,\n            \"delete_transcript_and_pii\": false,\n            \"delete_audio\": false,\n            \"apply_to_existing_conversations\": false,\n            \"zero_retention_mode\": false\n        },\n        \"workspace_overrides\": {\n            \"conversation_initiation_client_data_webhook\": null,\n            \"webhooks\": {\n                \"post_call_webhook_id\": \"6634ce4a205b49548717e8fdd9378a2e\",\n                \"send_audio\": false\n            }\n        },\n        \"testing\": {\n            \"attached_tests\": [],\n            \"referenced_tests_ids\": []\n        },\n        \"safety\": {\n            \"is_blocked_ivc\": false,\n            \"is_blocked_non_ivc\": false,\n            \"ignore_safety_evaluation\": false\n        }\n    },\n    \"phone_numbers\": [],\n    \"workflow\": {\n        \"edges\": {},\n        \"nodes\": {\n            \"start_node\": {\n                \"type\": \"start\",\n                \"position\": {\n                    \"x\": 0,\n                    \"y\": 0\n                }\n            }\n        }\n    },\n    \"access_info\": {\n        \"is_creator\": true,\n        \"creator_name\": \"leonard@legalengine.co.uk\",\n        \"creator_email\": \"leonard@legalengine.co.uk\",\n        \"role\": \"admin\"\n    },\n    \"tags\": []\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -912,
+        -320
+      ],
+      "id": "f7a196b1-cf15-478b-8997-3ada70726784",
+      "name": "Create 11L agent with KB2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e2cb5149-652b-42c8-b198-c5f9049d391a",
+              "name": "email_address",
+              "value": "={{ $('Airtable Trigger').item.json.fields.Email }}",
+              "type": "string"
+            },
+            {
+              "id": "e7fb96fb-a5aa-4095-be95-c55b7783ccc0",
+              "name": "email",
+              "value": "{{email}}",
+              "type": "string"
+            },
+            {
+              "id": "a1b69872-86b9-40b9-8822-72ad073eaf6e",
+              "name": "first_name",
+              "value": "{{first_name}}",
+              "type": "string"
+            },
+            {
+              "id": "8852fdbe-a59d-4742-8562-b64d9b9f510a",
+              "name": "last_name",
+              "value": "{{last_name}}",
+              "type": "string"
+            },
+            {
+              "id": "3fa86c43-7123-4642-8c72-7ef47be5230e",
+              "name": "fields['First Name']",
+              "value": "={{ $('Airtable Trigger').item.json.fields['First Name'] }}",
+              "type": "string"
+            },
+            {
+              "id": "9d5e4788-9365-4b6f-a91a-9f06209732cf",
+              "name": "fields['Last Name']",
+              "value": "={{ $('Airtable Trigger').item.json.fields['Last Name'] }}",
+              "type": "string"
+            },
+            {
+              "id": "a42b338d-7ba9-4aab-acd4-f3b33ac65547",
+              "name": "fields['Phone number including +44']",
+              "value": "={{ $('Airtable Trigger').item.json.fields['Phone number including +44'] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1136,
+        -320
+      ],
+      "id": "07daf122-dd25-4f61-968c-818926354286",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -16,
+        -320
+      ],
+      "id": "0aa8413f-f0ce-4127-a80e-dd4d58ae3060",
+      "name": "Wait 5min",
+      "webhookId": "e5dd2ee6-1588-4077-82cc-6c749eb1beb8"
+    },
+    {
+      "parameters": {
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        432,
+        -512
+      ],
+      "id": "b3fd58ec-7a65-4cf7-b97b-f6598ed8a351",
+      "name": "Wait 5min1",
+      "webhookId": "b56573b4-1405-44b8-9177-f3704fc83482"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "airtableTokenApi",
+        "baseId": {
+          "__rl": true,
+          "value": "appZVIzjrI2yMRYTT",
+          "mode": "id"
+        },
+        "tableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tbl2Tjt1lH9Fjx7rW"
+        },
+        "triggerField": "Created",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.airtableTrigger",
+      "typeVersion": 1,
+      "position": [
+        -2032,
+        -416
+      ],
+      "id": "78458390-2f6e-4707-9df7-25bd219b747d",
+      "name": "Airtable Trigger",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        880,
+        -512
+      ],
+      "id": "74e321b1-f587-48de-a575-f6af67c62790",
+      "name": "Wait 10s before deleting KB",
+      "webhookId": "19f0d85f-eaec-477e-adf6-c4122fd16032"
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        432,
+        -320
+      ],
+      "id": "72d004e8-fc01-4b0b-9a32-d16e95862707",
+      "name": "Wait 10s before sending email",
+      "webhookId": "f47ff84d-e683-415b-bb9d-828e68cfb7a1"
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1328,
+        -512
+      ],
+      "id": "8e30b28f-10da-48a1-b0db-978f367487d2",
+      "name": "Wait 10s before deleting Agent",
+      "webhookId": "56239283-8efe-4405-890c-e563b12cae5a"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e2cb5149-652b-42c8-b198-c5f9049d391a",
+              "name": "email_address",
+              "value": "={{ $('Airtable Trigger').item.json.fields.Email }}",
+              "type": "string"
+            },
+            {
+              "id": "e7fb96fb-a5aa-4095-be95-c55b7783ccc0",
+              "name": "email",
+              "value": "{{email}}",
+              "type": "string"
+            },
+            {
+              "id": "a1b69872-86b9-40b9-8822-72ad073eaf6e",
+              "name": "first_name",
+              "value": "{{first_name}}",
+              "type": "string"
+            },
+            {
+              "id": "8852fdbe-a59d-4742-8562-b64d9b9f510a",
+              "name": "last_name",
+              "value": "{{last_name}}",
+              "type": "string"
+            },
+            {
+              "id": "3fa86c43-7123-4642-8c72-7ef47be5230e",
+              "name": "fields['First Name']",
+              "value": "={{ $('Airtable Trigger').item.json.fields['First Name'] }}",
+              "type": "string"
+            },
+            {
+              "id": "9d5e4788-9365-4b6f-a91a-9f06209732cf",
+              "name": "fields['Last Name']",
+              "value": "={{ $('Airtable Trigger').item.json.fields['Last Name'] }}",
+              "type": "string"
+            },
+            {
+              "id": "a42b338d-7ba9-4aab-acd4-f3b33ac65547",
+              "name": "fields['Phone number including +44']",
+              "value": "={{ $('Airtable Trigger').item.json.fields['Phone number including +44'] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -688,
+        -512
+      ],
+      "id": "07c03bfa-9287-4e56-b990-c1e5aab8c1a6",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4b1d2468-3f3e-45db-84e0-d0b4bd58b458",
+              "name": "agent_id",
+              "value": "={{ $('Create 11L agent with KB').item.json.agent_id }}",
+              "type": "string"
+            },
+            {
+              "id": "411a8f20-4441-4bcb-ab5a-79bebcdb0702",
+              "name": "email_address",
+              "value": "={{ $('Edit Fields1').item.json.email_address }}",
+              "type": "string"
+            },
+            {
+              "id": "93c9c484-d7c4-4871-a375-8f0a7a698b3d",
+              "name": "fields['First Name']",
+              "value": "={{ $('Edit Fields1').item.json.fields['First Name'] }}",
+              "type": "string"
+            },
+            {
+              "id": "861ba257-a3a1-469e-a76a-d79ca1b6c1fe",
+              "name": "fields['Last Name']",
+              "value": "={{ $('Edit Fields1').item.json.fields['Last Name'] }}",
+              "type": "string"
+            },
+            {
+              "id": "b9d215e3-42e6-423d-9207-835fb24bb7d9",
+              "name": "fields['Phone number including +44']",
+              "value": "={{ $('Edit Fields1').item.json.fields['Phone number including +44'] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -16,
+        -512
+      ],
+      "id": "03fdf37c-fcbe-45f7-93d3-6dc0bec45560",
+      "name": "Set Nodes to pass"
+    }
+  ],
+  "connections": {
+    "Create KB": {
+      "main": [
+        [
+          {
+            "node": "Wait 10s2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create 11L agent with KB": {
+      "main": [
+        [
+          {
+            "node": "Wait 10s1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 10s2": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 10s1": {
+      "main": [
+        [
+          {
+            "node": "Set Nodes to pass",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Today": {
+      "main": [
+        [
+          {
+            "node": "Search records",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search records": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Outbound Call": {
+      "main": [
+        [
+          {
+            "node": "Wait 5min1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Agent": {
+      "main": [
+        [
+          {
+            "node": "Wait 10s before deleting KB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete KB": {
+      "main": [
+        [
+          {
+            "node": "Wait 10s before deleting Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Create KB",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 10s": {
+      "main": [
+        [
+          {
+            "node": "Set Nodes to pass1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Nodes to pass1": {
+      "main": [
+        [
+          {
+            "node": "Outbound Call1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Outbound Call1": {
+      "main": [
+        [
+          {
+            "node": "Wait 5min",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Agent1": {
+      "main": [
+        [
+          {
+            "node": "Wait 10s before sending email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create 11L agent with KB2": {
+      "main": [
+        [
+          {
+            "node": "Wait 10s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Create 11L agent with KB2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 5min": {
+      "main": [
+        [
+          {
+            "node": "Delete Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 5min1": {
+      "main": [
+        [
+          {
+            "node": "Delete Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Airtable Trigger": {
+      "main": [
+        [
+          {
+            "node": "Today",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 10s before deleting KB": {
+      "main": [
+        [
+          {
+            "node": "Delete KB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 10s before sending email": {
+      "main": [
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 10s before deleting Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Create 11L agent with KB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Nodes to pass": {
+      "main": [
+        [
+          {
+            "node": "Outbound Call",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:Airtable Trigger": {
+      "lastTimeChecked": "2025-11-09T10:29:39Z"
+    }
+  },
+  "pinData": {
+    "Airtable Trigger": [
+      {
+        "json": {
+          "id": "rech1njiRsMiD6sLP",
+          "createdTime": "2025-10-28T23:54:29.000Z",
+          "fields": {
+            "Email": "iamandybatty@gmail.com",
+            "Full Name": "Andy Batty",
+            "First Name": "Andy",
+            "Last Name": "Batty",
+            "Created": "2025-10-28T23:54:29.000Z",
+            "Last Modified Time": "2025-10-28T23:54:29.000Z",
+            "Phone number including +44": "+447966543220"
+          }
+        }
+      }
+    ]
+  },
+  "triggerCount": 1,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

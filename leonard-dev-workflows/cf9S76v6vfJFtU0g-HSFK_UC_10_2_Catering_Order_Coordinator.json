@@ -1,0 +1,406 @@
+{
+  "name": "HSFK UC 10.2 - Catering Order Coordinator",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "hsfk-uc-10.2",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "6e5e8e6a-edfd-47c3-96cd-f0bd338b05fd",
+      "name": "ElevenLabs Post-Call",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "f6b0c22f-c242-413a-9113-37c5452653a8"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "20f026bc-c11a-4834-928d-db220d241911",
+              "name": "meetingDate",
+              "value": "={{ $json.body.extracted_data.meetingDate }}",
+              "type": "string"
+            },
+            {
+              "id": "9ea36c08-118f-47dc-9010-37ad64d8b7f8",
+              "name": "roomRef",
+              "value": "={{ $json.body.extracted_data.roomRef }}",
+              "type": "string"
+            },
+            {
+              "id": "34fb50dd-046d-416d-a742-b497f6b627bb",
+              "name": "attendeeCount",
+              "value": "={{ $json.body.extracted_data.attendeeCount }}",
+              "type": "number"
+            },
+            {
+              "id": "5f956c07-f2ad-47af-87a1-bf1ea58f0cdd",
+              "name": "dietaryRequirements",
+              "value": "={{ $json.body.extracted_data.dietaryRequirements }}",
+              "type": "string"
+            },
+            {
+              "id": "83cc0594-c22b-4af9-a4c5-6bbfb9de7c2b",
+              "name": "menuPreferences",
+              "value": "={{ $json.body.extracted_data.menuPreferences }}",
+              "type": "string"
+            },
+            {
+              "id": "0d2cff34-f461-4989-aa06-0b0b68e22335",
+              "name": "budgetHolder",
+              "value": "={{ $json.body.extracted_data.budgetHolder }}",
+              "type": "string"
+            },
+            {
+              "id": "d151f517-0f71-4e26-856b-0bf0e53a49c4",
+              "name": "chargeCode",
+              "value": "={{ $json.body.extracted_data.chargeCode }}",
+              "type": "string"
+            },
+            {
+              "id": "88004633-7fca-4413-a64f-9c21123d6027",
+              "name": "lunchApprovalGranted",
+              "value": "={{ $json.body.extracted_data.lunchApprovalGranted }}",
+              "type": "boolean"
+            },
+            {
+              "id": "98027296-b369-408e-b34b-156c86212d35",
+              "name": "conversation_id",
+              "value": "={{ $json.body.conversation_id }}",
+              "type": "string"
+            },
+            {
+              "id": "9475d57c-9fe5-4175-a250-a56c9e1fec78",
+              "name": "agent_id",
+              "value": "={{ $json.body.agent_id }}",
+              "type": "string"
+            },
+            {
+              "id": "adac58dd-7488-46a8-a0b8-a3f5dbaff90a",
+              "name": "duration_seconds",
+              "value": "={{ $json.body.duration_seconds }}",
+              "type": "string"
+            },
+            {
+              "id": "63f51dd1-90a0-4e10-a3ad-db6f399821f0",
+              "name": "caller_name",
+              "value": "={{ $json.body.metadata?.first_name || 'Unknown' }}",
+              "type": "string"
+            },
+            {
+              "id": "5d49a672-8853-4652-bfb3-68c1a53cf85a",
+              "name": "caller_email",
+              "value": "={{ $json.body.metadata?.email || '' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      },
+      "id": "eb882487-8bf4-4b6b-bd4f-073048f93c1e",
+      "name": "Extract Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        240,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "combinator": "and"
+          },
+          "conditions": [
+            {
+              "id": "aff9a700-0b59-4bde-9d6f-96c663a3fe65",
+              "leftValue": "={{ $json.meetingDate }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            },
+            {
+              "id": "6e853b23-e3c8-416a-8b92-02edf776c17e",
+              "leftValue": "={{ $json.roomRef }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            },
+            {
+              "id": "1dc7b56e-6397-4037-9249-1b0dcc20b5e8",
+              "leftValue": "={{ $json.menuPreferences }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "5adb940e-49b8-4575-82d4-f85677e9002b",
+      "name": "Data Complete?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        480,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "044e9d2b-1232-459f-bb6c-d4a7b75df191",
+              "name": "summary",
+              "value": "={{ \"## HSFK UC 10.2 - Catering Order Coordinator\\n\\n**Caller:** \" + ($json.caller_name || \"Unknown\") + \" (\" + ($json.caller_email || \"no email\") + \")\\n**Duration:** \" + ($json.duration_seconds || \"?\") + \"s\\n**Conversation ID:** \" + ($json.conversation_id || \"?\") + \"\\n\\n### Captured Data\\n\\n- **meetingDate**: \" + ($json.meetingDate || \"N/A\") + \"\\n- **roomRef**: \" + ($json.roomRef || \"N/A\") + \"\\n- **attendeeCount**: \" + ($json.attendeeCount || \"N/A\") + \"\\n- **dietaryRequirements**: \" + ($json.dietaryRequirements || \"N/A\") + \"\\n- **menuPreferences**: \" + ($json.menuPreferences || \"N/A\") + \"\\n- **budgetHolder**: \" + ($json.budgetHolder || \"N/A\") + \"\\n- **chargeCode**: \" + ($json.chargeCode || \"N/A\") + \"\\n- **lunchApprovalGranted**: \" + ($json.lunchApprovalGranted || \"N/A\") + \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "93220de9-eb39-4eeb-b36c-781018e5b5fb",
+              "name": "ucId",
+              "value": "10.2",
+              "type": "string"
+            },
+            {
+              "id": "de67f449-69eb-4e88-abda-6effec77e685",
+              "name": "agentName",
+              "value": "Catering Order Coordinator",
+              "type": "string"
+            },
+            {
+              "id": "f8d1ea28-fb14-41a3-8784-e609af2c0584",
+              "name": "timestamp",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "cd78e671-7793-4f2c-8fc2-4781e5a46922",
+      "name": "Format Summary",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        720,
+        -60
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "app0QZAuhY8Zx4I54",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl8hV2nYEoRS8Gif",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "UC ID": "={{ $json.ucId }}",
+            "Agent Name": "={{ $json.agentName }}",
+            "Caller": "={{ $json.caller_name }}",
+            "Email": "={{ $json.caller_email }}",
+            "Summary": "={{ $json.summary }}",
+            "Conversation ID": "={{ $json.conversation_id }}",
+            "Duration": "={{ parseInt($json.duration_seconds) || 0 }}",
+            "Timestamp": "={{ $json.timestamp }}",
+            "Data Complete": true,
+            "Raw Extracted Data": "={{ JSON.stringify($json) }}"
+          },
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "aadbe3d9-8159-4d10-9125-78df1bbabba0",
+      "name": "Log to Airtable",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        960,
+        -60
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "57nd5p5f6kuW4Xs0",
+          "name": "HSFK Airtable"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://slack.com/api/chat.postMessage",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ channel: \"C098F8Z4P1U\", text: \"New voice conversation for UC 10.2 (Catering Order Coordinator):\\nCaller: \" + ($(\"Format Summary\").item.json.caller_name || \"Unknown\") + \" (\" + ($(\"Format Summary\").item.json.caller_email || \"no email\") + \")\\nDuration: \" + ($(\"Format Summary\").item.json.duration_seconds || \"?\") + \"s\\nConversation: \" + ($(\"Format Summary\").item.json.conversation_id || \"?\") }) }}",
+        "options": {}
+      },
+      "id": "620cad6c-2f50-492f-8466-faccba6bc458",
+      "name": "Notify Slack",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1200,
+        -60
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "rYd0mT6IhOLBmosk",
+          "name": "HSFK Slack Bot (Header Auth)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ status: \"ok\", message: \"Data captured and logged\" }) }}",
+        "options": {}
+      },
+      "id": "f221b250-0441-4b50-adcc-a63545671261",
+      "name": "Respond OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1440,
+        -60
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ status: \"incomplete\", message: \"Some required fields missing, logged for review\" }) }}",
+        "options": {
+          "responseCode": 202
+        }
+      },
+      "id": "59b13b82-52b1-4c0b-85f4-42d94bf389a1",
+      "name": "Respond Incomplete",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        720,
+        120
+      ]
+    }
+  ],
+  "connections": {
+    "ElevenLabs Post-Call": {
+      "main": [
+        [
+          {
+            "node": "Extract Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Data": {
+      "main": [
+        [
+          {
+            "node": "Data Complete?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Complete?": {
+      "main": [
+        [
+          {
+            "node": "Format Summary",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Incomplete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Summary": {
+      "main": [
+        [
+          {
+            "node": "Log to Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log to Airtable": {
+      "main": [
+        [
+          {
+            "node": "Notify Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Slack": {
+      "main": [
+        [
+          {
+            "node": "Respond OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 1,
+  "meta": null
+}

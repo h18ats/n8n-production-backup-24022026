@@ -1,0 +1,261 @@
+{
+  "name": "DEV - Day 0 - Lookup Relevant Experience V0 - Andy",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "day_0_lookup_relevant_exp",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "8dd9e50a-cc70-46b6-b4f1-4528c2db4e4e",
+      "name": "ElevenLabs Webhook1",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1424,
+        -80
+      ],
+      "webhookId": "09a62f69-54d0-445d-a7ea-b65d4c2b8501"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7b023aea-7579-45d0-acdd-e3ac147f550b",
+              "leftValue": "={{ $json.Matter_name }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -480,
+        16
+      ],
+      "id": "40a63d5a-9a00-4eca-b51b-6f2c6dd822d1",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{\n  \"{\\n\" +\n  \"  \\\"matters\\\": \" + JSON.stringify(\n    ($items() ?? []).map(i => ({\n      Matter_name: i.json?.[\"Matter name\"] ?? null,\n      Short_Matter_Summary: i.json?.[\"Short_Matter_Summary\"] ?? null\n    }))\n  ) + \"\\n\" +\n  \"}\"\n}}\n",
+        "options": {}
+      },
+      "id": "ecaa5236-e964-4233-b74e-22e81ff9139b",
+      "name": "Return Conv History to ElevenLabs",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -256,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -1424,
+        112
+      ],
+      "id": "4c80ca83-58e8-46c0-9303-00acab5d5572",
+      "name": "When chat message received",
+      "webhookId": "52f4b730-75fc-4287-86d3-d11e43037558"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2c7ea5a3-9298-4d62-91ac-b22ef3027fb3",
+              "name": "Matter_name",
+              "value": "={{ $json['Matter name'] }}",
+              "type": "string"
+            },
+            {
+              "id": "046e566c-d7f5-400d-82c9-efc627f2846a",
+              "name": "Short_Matter_Summary",
+              "value": "={{ $json[\"Short Matter Summary\"] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -960,
+        16
+      ],
+      "id": "6606b2b8-0016-4932-81d9-754e909111d1",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appZrcHtsKa2j9fc8",
+          "mode": "list",
+          "cachedResultName": "Legal Engine Day 0 Base",
+          "cachedResultUrl": "https://airtable.com/appZrcHtsKa2j9fc8"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblesRZ5rVdULpo77",
+          "mode": "list",
+          "cachedResultName": "Matter Upload Template Dev",
+          "cachedResultUrl": "https://airtable.com/appZrcHtsKa2j9fc8/tblesRZ5rVdULpo77"
+        },
+        "filterByFormula": "=",
+        "options": {
+          "fields": [
+            "Short Matter Summary",
+            "Matter name"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -1168,
+        16
+      ],
+      "id": "c9eaebba-7a6c-41bc-96cf-50264fd13c6a",
+      "name": "Search records",
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "ElevenLabs Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Search records",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Return Conv History to ElevenLabs",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Search records",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search records": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {
+    "ElevenLabs Webhook1": [
+      {
+        "json": {
+          "headers": {
+            "host": "leonard-dev.app.n8n.cloud",
+            "user-agent": "ElevenLabs/1.0",
+            "content-length": "273",
+            "accept": "*/*",
+            "accept-encoding": "gzip, br",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "34.77.234.246",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "BE",
+            "cf-ray": "9bb0486db6e4d482-CDG",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "x-forwarded-for": "34.77.234.246, 172.71.232.119",
+            "x-forwarded-host": "leonard-dev.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-52-6c4f4684d5-dxhms",
+            "x-is-trusted": "yes",
+            "x-real-ip": "34.77.234.246"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "Matter_Name": "Black Lantern",
+            "Lead_Lawyer_Name": "Sarah Chen",
+            "Client_type": "Corporate",
+            "Sector": "Technology",
+            "Short_Matter_Summary": "Complex technology licensing dispute involving AI intellectual property rights and cross-border enforcement.",
+            "Matter_ID": "11"
+          },
+          "webhookUrl": "https://leonard-dev.app.n8n.cloud/webhook/day_0_exp_search",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "triggerCount": 2,
+  "meta": null
+}

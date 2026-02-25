@@ -1,0 +1,451 @@
+{
+  "name": "DEV - FF Luke 5 - Delete Agent & KB with FF",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "=https://api.elevenlabs.io/v1/convai/agents/{{ $json.agent_id }}\n",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "xi-api-key",
+              "value": "sk_3eca705a3c2780af4cb1116beb64d3e1d3bfc187a8d565f8"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -304,
+        -208
+      ],
+      "id": "65749cbe-acf2-46c7-b9d9-fb9961a71e58",
+      "name": "Delete Agent"
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "=https://api.elevenlabs.io/v1/convai/knowledge-base/{{ $('When Executed by Another Workflow').item.json.id1 }}\n",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "xi-api-key",
+              "value": "sk_3eca705a3c2780af4cb1116beb64d3e1d3bfc187a8d565f8"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        144,
+        -208
+      ],
+      "id": "ca793c0d-5eaf-4de6-ae3d-92bea65667c1",
+      "name": "Delete KB"
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -80,
+        -208
+      ],
+      "id": "e4485a50-71ee-4a66-97e1-b6f78a073500",
+      "name": "Wait 10s before deleting KB",
+      "webhookId": "9db16834-0669-48b2-a7e6-0fb9d55262ee"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -752,
+        -208
+      ],
+      "id": "1e60a724-f44d-47eb-a810-929060e6fad9",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "toRecipients": "={{ $('When Executed by Another Workflow').item.json.org_email }}",
+        "subject": "={{ $('When Executed by Another Workflow').item.json.org_firstname }} - Post Meeting Agent Update ",
+        "bodyContent": "={{ $('When Executed by Another Workflow').item.json.org_firstname }}, your Post Meeting Agent and KBs have now been deleted. \n\nBest regards,\n\nLuke\nLegal Engine AI Agent",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        1040,
+        -304
+      ],
+      "id": "5968f80b-d3a7-4aa1-825c-7a4a7ee37793",
+      "name": "Send a message",
+      "webhookId": "431d5767-bc93-4337-b909-8eee4f0dc284",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "APa28clvTTmmzH55",
+          "name": "Microsoft Outlook - Leonard @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "=https://api.elevenlabs.io/v1/convai/knowledge-base/{{ $('When Executed by Another Workflow').item.json.id2 }}\n",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "xi-api-key",
+              "value": "sk_3eca705a3c2780af4cb1116beb64d3e1d3bfc187a8d565f8"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        368,
+        -208
+      ],
+      "id": "c1458ca4-3666-4521-855f-3ef47467c486",
+      "name": "Delete KB1"
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "=https://api.elevenlabs.io/v1/convai/knowledge-base/{{ $('When Executed by Another Workflow').item.json.id3 }}\n",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "xi-api-key",
+              "value": "sk_3eca705a3c2780af4cb1116beb64d3e1d3bfc187a8d565f8"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        592,
+        -208
+      ],
+      "id": "e6bffb72-aa3a-4128-aa8b-f687fb16eb45",
+      "name": "Delete KB2"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "cJmII5bLw4R3saei",
+          "mode": "list",
+          "cachedResultName": "DEV - FF Luke Post Call With Fireflies Input - Andy"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1040,
+        -112
+      ],
+      "id": "dbc3f911-f5bf-49b0-95a2-c6f9e1337e4d",
+      "name": "Execute Workflow"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "560d4da2-5842-4c16-a2cc-0696c57bbb2d",
+              "name": "org_firstname",
+              "value": "={{ $('When Executed by Another Workflow').item.json.org_firstname }}",
+              "type": "string"
+            },
+            {
+              "id": "aaab8506-e9e4-4044-acb3-8b390c4eeed1",
+              "name": "org_fullname",
+              "value": "={{ $('When Executed by Another Workflow').item.json.org_fullname }}",
+              "type": "string"
+            },
+            {
+              "id": "980b63fc-4a34-46da-805a-9ceee314b51e",
+              "name": "org_biz",
+              "value": "={{ $('When Executed by Another Workflow').item.json.org_biz }}",
+              "type": "string"
+            },
+            {
+              "id": "a5c4f63e-1f3c-49a4-b0b9-35c798bf45f7",
+              "name": "org_email",
+              "value": "={{ $('When Executed by Another Workflow').item.json.org_email }}",
+              "type": "string"
+            },
+            {
+              "id": "9b6ca080-78a6-4a13-9e73-ab5257754baf",
+              "name": "data[2].data.summary.action_items",
+              "value": "={{ $('When Executed by Another Workflow').item.json.data[2].data.summary.action_items }}",
+              "type": "string"
+            },
+            {
+              "id": "30ad2871-a184-4623-8e43-d82d0aff27ea",
+              "name": "data[2].data.summary.shorthand_bullet",
+              "value": "={{ $('When Executed by Another Workflow').item.json.data[2].data.summary.shorthand_bullet }}",
+              "type": "string"
+            },
+            {
+              "id": "e8189368-a7c4-4bc8-a6fe-7e1bfffd3981",
+              "name": "data[2].data.summary.overview",
+              "value": "={{ $('When Executed by Another Workflow').item.json.data[2].data.summary.overview }}",
+              "type": "string"
+            },
+            {
+              "id": "edfa0a96-46b5-44f7-a994-17c733cfc89b",
+              "name": "data[2].data.summary.bullet_gist",
+              "value": "={{ $('When Executed by Another Workflow').item.json.data[2].data.summary.bullet_gist }}",
+              "type": "string"
+            },
+            {
+              "id": "a1c0d53a-d163-488d-8009-7ec71525676d",
+              "name": "data[2].data.summary.gist",
+              "value": "={{ $('When Executed by Another Workflow').item.json.data[2].data.summary.gist }}",
+              "type": "string"
+            },
+            {
+              "id": "896fd6a3-d28a-4e66-91f8-3dfce921f1c3",
+              "name": "data[2].data.summary.short_summary",
+              "value": "={{ $('When Executed by Another Workflow').item.json.data[2].data.summary.short_summary }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        816,
+        -112
+      ],
+      "id": "f09add53-4527-40ca-8324-f1d1541b4cdf",
+      "name": "Set Nodes to pass1"
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        816,
+        -304
+      ],
+      "id": "ad464a86-27ab-4015-951a-64a86ce50016",
+      "name": "Wait 10s before sending",
+      "webhookId": "b8ecccb2-34b9-4481-992e-79a989f6d4f9"
+    },
+    {
+      "parameters": {
+        "amount": 10,
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -528,
+        -208
+      ],
+      "id": "cfffccd7-dfae-4f25-816a-815539610422",
+      "name": "Wait 10m before deleting KB1",
+      "webhookId": "9db16834-0669-48b2-a7e6-0fb9d55262ee"
+    }
+  ],
+  "connections": {
+    "Delete Agent": {
+      "main": [
+        [
+          {
+            "node": "Wait 10s before deleting KB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 10s before deleting KB": {
+      "main": [
+        [
+          {
+            "node": "Delete KB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Wait 10m before deleting KB1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Set Nodes to pass1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete KB": {
+      "main": [
+        [
+          {
+            "node": "Delete KB1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete KB1": {
+      "main": [
+        [
+          {
+            "node": "Delete KB2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete KB2": {
+      "main": [
+        [
+          {
+            "node": "Wait 10s before sending",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        []
+      ]
+    },
+    "Set Nodes to pass1": {
+      "main": [
+        [
+          {
+            "node": "Execute Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 10s before sending": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 10m before deleting KB1": {
+      "main": [
+        [
+          {
+            "node": "Delete Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "agent_id": "agent_7701k4tbxgjvenxba82mvf3x4kj4",
+          "org_firstname": "Lee",
+          "org_fullname": "Lee Curtis",
+          "org_biz": "Legalengine",
+          "org_email": "lee@legalengine.co.uk",
+          "id1": "yHhVNMdMCxmbMVVZnP8H",
+          "id2": "YUwX5Hvm09dUC72RioRZ",
+          "id3": "8qRFJw59nbcd6fyc7ODD",
+          "data": [
+            null,
+            null,
+            {
+              "data": {
+                "summary": {
+                  "action_items": "\n**Andy Batty**\nComplete building Ghost Core Luke agent with prior meeting context integration (09:07)\nStrip back diary call flow and pass meeting organizer information to 11Labs agent for contextual greetings (10:32)\nShare S2-S5 parent/child workflows with Eduardo for N8N access (14:01)\nCoordinate with Lee on final demo requirements for Monday presentation (12:23)\nContinue ChatGPT voice API evaluation when time permits (18:33)\n\n**Eduardo Aguilar Pelaez**\nResearch and implement Single Sign-On solution using Microsoft credentials (15:37)\nFollow up on AirTable integration status with Heather (18:03)\nContinue monitoring OpenAI voice API developments for competitive analysis (19:51)\n\n**Unassigned**\nFinalize MVP requirements definition for Simmons demo (11:40)\nPlan agent migration to EU infrastructure (17:29)\n",
+                  "shorthand_bullet": "🔧 **Technical Progress & Workflow Development** (01:52 - 05:40)\nSuccessfully implemented Luke to outbound call Lee workflow with on-demand triggering.\nResolved Outlook calendar credential issue where calendar selection resets when changing email credentials, requiring manual reselection from dropdown.\nCompleted all sub-workflow integrations using multiple set nodes as variable reset mechanisms to pass data between parent and child workflows.\nDeveloped sequential workflow structure (S1, S2, S3) with bottom-up configuration where parent workflows know which child workflows to trigger.\nCreated knowledge base transmission system between multiple workflows using set nodes to capture and pass variables forward.\n🛠️ **Workflow Cloning & Architecture Challenges** (06:35 - 09:07)\nIdentified cloning limitations where parent workflows maintain connections to original child workflows, requiring child workflows to be cloned and renamed first.\nDiscovered hidden webhook connections in cloned 11Labs agents that weren't visible in the interface but continued calling Luke's webhooks.\nResolved issue by creating clean agent clone using Postman to extract exact JSON code and copying knowledge base configurations.\n🤖 **AI Agent Development & Context Integration** (09:07 - 11:20)\nStarted building Ghost Core Luke agent with prior meeting context using diary call functionality.\nImplemented calendar integration that filters external meeting invites and identifies most recent meetings for contextual greetings.\nPlanned enhancement to include meeting organizer information and external domain lookup for personalized agent interactions.\n📊 **Product Development Strategy** (11:20 - 12:23)\nClarified MVP requirements for Simmons demo with three tiers: MVP, MVP Plus, and higher levels requiring resource and time assessment.\nEmphasized need for reusable component development and prioritization based on biggest impact potential.\n🔒 **Technical Challenges & Access Issues** (13:24 - 16:20)\nSingle Sign-On (SSO) integration remains unsolved for using Microsoft credentials throughout entire workflow.\nN8N access permissions need resolution - Eduardo missing S2-S5 parent/child workflows despite having S1 and other Luke-related workflows.\nCurrent workaround involves hard-coding credentials or creating individual agents per person.\n🌍 **11Labs Implementation & Infrastructure** (16:36 - 17:45)\nAchieved rapid internal adoption with 5-minute agent deployment impressing internal teams.\nConfirmed EU domain compliance with delivery instance showing EU flag and domain structure.\nIdentified need for agent migration to EU infrastructure as discussed previously.\n🔗 **Integration Status & Future Considerations** (17:46 - 20:02)\nAirTable integration pending with no response from Heather yet.\nChatGPT Voice API evaluation shows usability challenges requiring more coding but provides business risk mitigation against 11Labs pricing changes.\nOpenAI voice model offers multi-agent handoff capabilities and competitive de-risking with 50% probability of widespread voice integration across major websites within six months.\nIdentified competitive threat where direct diary API integration could replicate current functionality.\n",
+                  "overview": "- Successfully implemented the outbound call workflow from Luke to Lee, enabling on-demand triggering for enhanced functionality.\n- Resolved the Outlook calendar credential issue, which previously required manual reselection due to credential changes.\n- Completed all sub-workflow integrations, establishing variable reset mechanisms to efficiently pass data between parent and child workflows.\n- Developed a sequential workflow structure with parent-child functionality for streamlined execution of multiple workflows.\n- Identified cloning limitations where parent workflows retain original connections, necessitating cloning and renaming of child workflows first.\n- Resolved hidden webhook connections in cloned 11Labs agents by extracting JSON via Postman to ensure clean migrations.\n- Initiated the development of the Ghost Core Luke agent, incorporating prior meeting context for enhanced personalization.\n- Clarified MVP requirements for Simmons demo, establishing tiered levels while emphasizing reusable component development for maximum impact.\n- Encountered ongoing challenges with Single Sign-On integration for Microsoft credentials and N8N access permissions for certain workflows.\n- Achieved rapid internal adoption of agent deployment in 5 minutes and confirmed EU compliance with delivery instances.",
+                  "bullet_gist": "📞 Outbound Call Workflow: Successfully implemented a new outbound call workflow to enhance functionality.\n🔑 Credential Issues Resolved: Fixed Outlook calendar credential problems, eliminating manual reselection.\n🔄 Sub-Workflow Integrations: Completed integrations with mechanisms for efficient data transfer.\n⚙️ Sequential Workflow Structure: Developed a new structure for streamlined execution of workflows.\n✅ Rapid Deployment: Achieved internal adoption of agent deployment in just 5 minutes.",
+                  "gist": "The meeting focused on workflow improvements, integration issues, and agent development for enhanced functionality and compliance.",
+                  "short_summary": "Significant progress was made in implementing an outbound call workflow from Luke to Lee, which allows for on-demand triggering to enhance functionality. The team resolved the Outlook calendar credential issue that required manual reselection, and completed all sub-workflow integrations, establishing efficient variable reset mechanisms for data transfer between workflows. A sequential workflow structure with parent-child functionality was developed for streamlined execution. Challenges with cloning limitations were identified, requiring the renaming of child workflows to retain connections. Hidden webhook connections in cloned 11Labs agents were resolved, and the development of the Ghost Core Luke agent was initiated for improved personalization. MVP requirements for the Simmons demo were clarified to emphasize reusable components, while ongoing challenges with Single Sign-On integration and access permissions were noted. Notably, the internal agent deployment achieved rapid adoption within 5 minutes and confirmed compliance with EU regulations."
+                }
+              }
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "triggerCount": 0,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

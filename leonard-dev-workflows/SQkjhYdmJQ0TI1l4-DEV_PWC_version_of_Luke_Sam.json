@@ -1,0 +1,1239 @@
+{
+  "name": "DEV - PWC version of Luke - Sam",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an AI processor inside an n8n workflow.\nYour job is not to behave like an assistant, but prepare an output from the transcript you receive and generate a small structured JSON object that will be inserted into a pre-written PwC weekly client report.\n\nYour output will be consumed by an automated email workflow.\nTherefore:\n\nDo not generate prose beyond what is explicitly asked.\n\nDo not invent updates or actions.\n\nKeep everything concise and factual.\n\nYour Tasks\n1. Extract the Partner’s High-Level Summary (1–3 sentences)\n\nFrom the transcript, produce a brief neutral summary describing:\n\nHow the CFO/primary client contact reacted\n\nAny material points the Partner raised\n\nAny situational context that would belong in a weekly client file\n\nDo not summarise the Tax or Cyber alerts — those are hard-coded elsewhere.\n\n2. Extract any New Opportunity Mentioned\n\nIf the Partner mentions a new opportunity (e.g. acquisition of a port in Rhodes), extract it as one short sentence.\n\nIf there is no opportunity mentioned, return an empty string.\n\n3. Extract the Client Name\n\nThis will almost always be Meridian Global Shipping, but extract what is actually said.",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -64,
+        256
+      ],
+      "id": "fed8034e-0e39-400e-9d42-0056537fe958",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {
+          "numberOfItems": -1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserItemList",
+      "typeVersion": 1,
+      "position": [
+        72,
+        480
+      ],
+      "id": "8002b817-9697-4c0a-8113-0778da6351f8",
+      "name": "Item List Output Parser"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -288,
+        256
+      ],
+      "id": "6b2c6c8b-3104-4025-803a-d8e9e5337dbb",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        -736,
+        256
+      ],
+      "id": "3a5f02d6-1690-430e-be21-282f83f604fd",
+      "name": "Date & Time8"
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- Function node code ---\n// Get the first item (same pattern you used)\nconst inputDate = new Date($input.first().json.currentDate);   // \"2025-05-26T10:22:34.868+01:00\"\n\n// Helper to zero-pad to two digits\nconst pad = n => n.toString().padStart(2, '0');\n\n// Date  →  MM/DD/YYYY\nconst formattedDate = `${pad(inputDate.getMonth() + 1)}/${pad(inputDate.getDate())}/${inputDate.getFullYear()}`;\n\n// Time  →  HH:mm:ss   (24-hour clock)\nconst formattedTime = `${pad(inputDate.getHours())}:${pad(inputDate.getMinutes())}:${pad(inputDate.getSeconds())}`;\n\nreturn [\n  {\n    json: {\n      formattedDate,   // e.g. \"05/26/2025\"\n      formattedTime    // e.g. \"09:22:34\"\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -512,
+        256
+      ],
+      "id": "0cd9c4c4-dbec-41bd-8ec7-b13199599498",
+      "name": "Date Format"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "pwc_luke",
+        "responseMode": "responseNode",
+        "options": {
+          "rawBody": true
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -960,
+        256
+      ],
+      "id": "a623cee6-c988-4992-aa48-622ffc20789c",
+      "name": "Webhook",
+      "webhookId": "dfbfdc72-2795-4e94-aad0-de50b08a1632"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Your role is to produce a html formatted version of this text that will be embedded into an html email. I just need the output to be a paragaph of formatted text in html and not a full html template\n\nText here: {{ $json['0'] }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -960,
+        688
+      ],
+      "id": "a18b5ca5-2f98-48d3-9b5b-0f4d37c0f570",
+      "name": "HTML Creator"
+    },
+    {
+      "parameters": {
+        "toRecipients": "=sam@legalengine.co.uk",
+        "subject": "=Meridian Global Shipping – Weekly wrap-up (demo)",
+        "bodyContent": "={{ `\n<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" \n       style=\"font-family: Arial, sans-serif; font-size: 14px; color: #222;\">\n  <tr>\n    <td align=\"left\" style=\"padding: 8px 0;\">\n      <img src=\"https://images.seeklogo.com/logo-png/61/1/pricewaterhousecoopers-pwc-logo-png_seeklogo-619359.png\"\n           alt=\"PwC\" style=\"display:block; height:45px;\">\n    </td>\n    <td align=\"right\" style=\"padding: 8px 0; font-size: 12px; color: #666;\">\n      Client Intelligence – Weekly Wrap-Up\n    </td>\n  </tr>\n</table>\n\n<hr style=\"border:none; border-top:1px solid #ddd; margin: 10px 0 20px 0;\">\n\n<p>Hi Sam,</p>\n\n<p>\n  Below is a sample end-of-week client report for <strong>Meridian Global Shipping</strong>,\n  generated following your debrief with <strong>KAM Engine</strong>.\n</p>\n\n<!-- Metadata block -->\n<table width=\"100%\" cellpadding=\"10\" cellspacing=\"0\" \n       style=\"border-collapse:collapse; margin-top:10px; background:#fafafa; border:1px solid #eee;\">\n  <tr>\n    <td style=\"font-size:13px; color:#444;\">\n      <strong>Client:</strong> Meridian Global Shipping<br>\n      <strong>Week ending:</strong> 4 December 2025<br>\n      <strong>Lead Partner:</strong> Sam Stamp\n    </td>\n  </tr>\n</table>\n\n<!-- Section 1: Highlights (Style C) -->\n<p style=\"margin-top:22px; font-size:16px; font-weight:bold;\">1. This week’s highlights</p>\n\n<table width=\"100%\" cellpadding=\"12\" cellspacing=\"0\" \n       style=\"border-collapse:collapse; background:#ffffff; border:1px solid #eee;\">\n  <tr>\n    <td style=\"font-size:13px; color:#444;\">\n\n      <p style=\"margin:0 0 10px 0;\">\n        <strong>Finance Enablement Progress</strong><br>\n        Strong engagement from the CFO and Finance leadership. AI Enablement roadmap validated with minor sequencing adjustments.\n      </p>\n\n      <p style=\"margin:0 0 10px 0;\">\n        <strong>Stakeholder Alignment</strong><br>\n        Clear alignment achieved across Finance, Tax, and Cyber stakeholders on the upcoming phases of the AI programme.\n      </p>\n\n      <p style=\"margin:0;\">\n        <strong>PWC Cross-Service Positioning</strong><br>\n        Positive feedback from Meridian teams on PwC’s ability to integrate insight across service lines and provide a joined-up client view.\n      </p>\n\n    </td>\n  </tr>\n</table>\n\n<!-- Section 2: Key Risks -->\n<p style=\"margin-top:22px; font-size:16px; font-weight:bold;\">2. Key risks</p>\n\n<table width=\"100%\" cellpadding=\"12\" cellspacing=\"0\" \n       style=\"border-collapse:collapse; background:#fff7f5; border:1px solid #f2c7bf;\">\n  <tr>\n    <td style=\"font-size:13px; color:#444;\">\n\n      <!-- Risk 1 -->\n      <p style=\"margin:0 0 6px 0;\">\n        <span style=\"display:inline-block; background:#e0301e; color:#fff; padding:2px 8px;\n                     border-radius:10px; font-size:11px; margin-right:6px;\">\n          High\n        </span>\n        <strong>Carbon Credits Compliance Risk</strong>\n      </p>\n      <p style=\"margin:0 0 14px 0;\">\n        Elena has flagged an exposure relating to carbon tax credit treatment for the new fleet.\n        Urgent CFO alignment required to avoid misreporting.\n      </p>\n\n      <!-- Risk 2 -->\n      <p style=\"margin:0 0 6px 0;\">\n        <span style=\"display:inline-block; background:#e0301e; color:#fff; padding:2px 8px;\n                     border-radius:10px; font-size:11px; margin-right:6px;\">\n          High\n        </span>\n        <strong>Cyber Vulnerability – Thessaloniki Port</strong>\n      </p>\n      <p style=\"margin:0;\">\n        Marcus’s assessment of the port systems is <strong>critical</strong>. Prioritised remediation steps recommended immediately.\n      </p>\n\n    </td>\n  </tr>\n</table>\n\n<!-- Section 3: Salesforce / CRM updates -->\n<p style=\"margin-top:22px; font-size:16px; font-weight:bold;\">3. Salesforce / CRM updates</p>\n\n<p style=\"font-size:13px; color:#555; margin-bottom:10px;\">\n  Please forward the table below to <a href=\"mailto:salesforce@pwc.com\">salesforce@pwc.com</a>\n  and it will be added to the client file.\n</p>\n\n<table width=\"100%\" cellpadding=\"8\" cellspacing=\"0\" \n       style=\"border-collapse:collapse; font-size:13px; border:1px solid #ddd; background:#fff;\">\n  <tr style=\"background:#f5f5f5;\">\n    <th align=\"left\" style=\"border-bottom:1px solid #ddd; padding:8px;\">Field</th>\n    <th align=\"left\" style=\"border-bottom:1px solid #ddd; padding:8px;\">Value</th>\n  </tr>\n\n  <tr>\n    <td style=\"border-bottom:1px solid #eee; width:180px;\"><strong>Account</strong></td>\n    <td style=\"border-bottom:1px solid #eee;\">Meridian Global Shipping</td>\n  </tr>\n\n  <tr>\n    <td style=\"border-bottom:1px solid #eee;\"><strong>Reporting Period</strong></td>\n    <td style=\"border-bottom:1px solid #eee;\">Week ending 4 December 2025</td>\n  </tr>\n\n  <tr>\n    <td style=\"border-bottom:1px solid #eee;\"><strong>Key Contact</strong></td>\n    <td style=\"border-bottom:1px solid #eee;\">CFO – Finance &amp; AI Enablement</td>\n  </tr>\n\n  <tr>\n    <td style=\"border-bottom:1px solid #eee;\"><strong>Relationship Note</strong></td>\n    <td style=\"border-bottom:1px solid #eee;\">\n      Positive response to AI Enablement roadmap; alignment achieved across service lines.\n    </td>\n  </tr>\n\n  <tr>\n    <td style=\"border-bottom:1px solid #eee;\"><strong>Risk – Tax</strong></td>\n    <td style=\"border-bottom:1px solid #eee;\">\n      Carbon credit compliance risk flagged; CFO alignment required.\n    </td>\n  </tr>\n\n  <tr>\n    <td style=\"border-bottom:1px solid #eee;\"><strong>Risk – Cyber</strong></td>\n    <td style=\"border-bottom:1px solid #eee;\">\n      Thessaloniki port systems rated critical; remediation planning required.\n    </td>\n  </tr>\n\n  <tr>\n    <td style=\"border-bottom:1px solid #eee;\"><strong>New Opportunity</strong></td>\n    <td style=\"border-bottom:1px solid #eee;\">\n      ${$json.new_opportunity_description || 'No new opportunity recorded this week.'}\n    </td>\n  </tr>\n</table>\n\n<!-- Section 4: Fee progress -->\n<p style=\"margin-top:22px; font-size:16px; font-weight:bold;\">4. Fee progress (illustrative)</p>\n\n<p style=\"font-size:13px; color:#555; margin-top:0;\">\n  Example view of budget vs. spend for the current FY.\n</p>\n\n<table width=\"100%\" cellpadding=\"4\" cellspacing=\"0\" style=\"border-collapse:collapse; font-size:13px;\">\n  <tr>\n    <td>Budget</td>\n    <td align=\"right\"><strong>€500,000</strong></td>\n  </tr>\n  <tr>\n    <td>Fees billed to date</td>\n    <td align=\"right\"><strong>€320,000</strong></td>\n  </tr>\n  <tr>\n    <td colspan=\"2\" style=\"padding-top:6px;\">\n      <div style=\"background:#eeeeee; border-radius:4px; overflow:hidden; height:10px;\">\n        <div style=\"width:64%; background:#F25C05; height:10px;\"></div>\n      </div>\n      <div style=\"font-size:12px; color:#666; margin-top:4px;\">\n        64% of budget used this FY\n      </div>\n    </td>\n  </tr>\n</table>\n\n<p style=\"margin-top:26px;\">\n  Best,<br>\n  KAM Engine<br>\n  PwC’s Account Management Assistant\n</p>\n\n` }}\n",
+        "additionalFields": {
+          "bodyContentType": "html"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        512,
+        256
+      ],
+      "id": "79fb8b15-ad05-4b6f-8404-4b6bd76882df",
+      "name": "Email from Leonard to Sam",
+      "webhookId": "eca43c5e-592f-4a16-98cb-26d419974abd",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "OAftwNOqCIYj8Src",
+          "name": "Microsoft Outlook - New Dec 2025 Leonard account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        -56,
+        480
+      ],
+      "id": "5186562e-4875-4b49-af8b-73eeaba86d30",
+      "name": "Google Vertex Chat Model",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        -888,
+        912
+      ],
+      "id": "33ba4ba6-56c2-4d26-8d0b-4f2ebd266063",
+      "name": "Google Vertex Chat Model1",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// This node normalises the AI Agent output into:\n// { partner_short_summary: string, new_opportunity_description: string }\n//\n// It is defensive:\n// - If the AI returned double-wrapped JSON, we parse it.\n// - If parsing fails (e.g. \"Please provide...\" text), we just use the raw text as the summary.\n\nconst out = [];\n\nfor (const item of $input.all()) {\n  let value = item.json[\"0\"]; // What the AI Agent returned in field \"0\"\n  let partner_short_summary = '';\n  let new_opportunity_description = '';\n\n  // Helper to try to extract from a parsed JSON object\n  const extractFromInner = (inner) => {\n    return {\n      partner_short_summary:\n        inner.partner_short_summary ||\n        inner.partner_high_level_summary ||\n        '',\n      new_opportunity_description:\n        inner.new_opportunity_description ||\n        inner.new_opportunity ||\n        '',\n    };\n  };\n\n  try {\n    if (typeof value === 'string') {\n      // First attempt: value is a JSON string like \"{\\\"text\\\":\\\"{...}\\\"}\"\n      let outer;\n      try {\n        outer = JSON.parse(value);\n      } catch {\n        outer = null;\n      }\n\n      if (outer && typeof outer.text === 'string') {\n        // outer.text might itself be JSON or just plain text\n        try {\n          const inner = JSON.parse(outer.text);\n          const extracted = extractFromInner(inner);\n          partner_short_summary = extracted.partner_short_summary;\n          new_opportunity_description = extracted.new_opportunity_description;\n        } catch {\n          // outer.text was NOT JSON – treat as plain summary\n          partner_short_summary = outer.text;\n          new_opportunity_description = '';\n        }\n      } else {\n        // value might be the inner JSON directly\n        try {\n          const inner = JSON.parse(value);\n          const extracted = extractFromInner(inner);\n          partner_short_summary = extracted.partner_short_summary;\n          new_opportunity_description = extracted.new_opportunity_description;\n        } catch {\n          // Not JSON at all – treat full string as summary\n          partner_short_summary = value;\n          new_opportunity_description = '';\n        }\n      }\n    } else if (value && typeof value === 'object') {\n      // In case the AI node already gave us an object instead of a string\n      if (typeof value.text === 'string') {\n        try {\n          const inner = JSON.parse(value.text);\n          const extracted = extractFromInner(inner);\n          partner_short_summary = extracted.partner_short_summary;\n          new_opportunity_description = extracted.new_opportunity_description;\n        } catch {\n          partner_short_summary = value.text;\n          new_opportunity_description = '';\n        }\n      } else {\n        const extracted = extractFromInner(value);\n        partner_short_summary = extracted.partner_short_summary;\n        new_opportunity_description = extracted.new_opportunity_description;\n      }\n    } else {\n      // Fallback – unexpected format\n      partner_short_summary = '';\n      new_opportunity_description = '';\n    }\n  } catch (e) {\n    // Absolute fallback – never kill the workflow, just emit empty fields\n    partner_short_summary = '';\n    new_opportunity_description = '';\n  }\n\n  out.push({\n    json: {\n      partner_short_summary,\n      new_opportunity_description,\n    },\n  });\n}\n\nreturn out;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        288,
+        256
+      ],
+      "id": "9c2642c4-4574-4fd7-88cb-9c1cc2c92c35",
+      "name": "Code in JavaScript"
+    }
+  ],
+  "connections": {
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Item List Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Time8": {
+      "main": [
+        [
+          {
+            "node": "Date Format",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date Format": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Date & Time8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML Creator": {
+      "main": [
+        []
+      ]
+    },
+    "Google Vertex Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "HTML Creator",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Email from Leonard to Sam",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "leonard-dev.app.n8n.cloud",
+            "user-agent": "ElevenLabs/1.0",
+            "content-length": "18391",
+            "accept": "*/*",
+            "accept-encoding": "gzip, br",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "34.77.234.246",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "BE",
+            "cf-ray": "9a7449f9139df9af-CDG",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "elevenlabs-signature": "t=1764609980,v0=636b6127a995f470f04b879af0100e4d86b3d87c5a940e1000867443db81f9f8",
+            "x-forwarded-for": "34.77.234.246, 172.71.232.118",
+            "x-forwarded-host": "leonard-dev.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-52-6c4f4684d5-swjxv",
+            "x-is-trusted": "yes",
+            "x-real-ip": "34.77.234.246"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "type": "post_call_transcription",
+            "event_timestamp": 1764609980,
+            "data": {
+              "agent_id": "agent_5801kbdewq0mfmd8vhxw2s10jsf2",
+              "conversation_id": "conv_9101kbdf4ttdev4vzd6ckdfkphje",
+              "status": "done",
+              "user_id": "KbAOsJUuhMgO0L07qF6lM8TmFjX2",
+              "branch_id": null,
+              "transcript": [
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_5801kbdewq0mfmd8vhxw2s10jsf2",
+                    "branch_id": null,
+                    "workflow_node_id": null
+                  },
+                  "message": "Hello, ready for a quick debrief?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 0,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.3146040030005679
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "Yes, I am.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 3,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.16176008799993724
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_5801kbdewq0mfmd8vhxw2s10jsf2",
+                    "branch_id": null,
+                    "workflow_node_id": null
+                  },
+                  "message": "Great. Who was the meeting with?\n",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 5,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.44795133099978557
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.3750398049996875
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.4479239529991901
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.24424268600159849
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 2408,
+                          "price": 0.0002408
+                        },
+                        "input_cache_read": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 9,
+                          "price": 0.0000036000000000000003
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "Brian.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 8,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.10403132499959611
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_5801kbdewq0mfmd8vhxw2s10jsf2",
+                    "branch_id": null,
+                    "workflow_node_id": null
+                  },
+                  "message": "Got it. And how did the meeting go? What were the key things you want to remember?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 10,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.3103414150009485
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.23106135099988023
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.3103213560007134
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.27728912599923206
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 728,
+                          "price": 0.0000728
+                        },
+                        "input_cache_read": {
+                          "tokens": 1691,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 21,
+                          "price": 0.000008400000000000001
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "Yeah, I want to remember that they've just closed their biggest ever deal and there's definitely an opportunity for us to go in hard with the upsell of our Luke product.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 14,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.11151987700031896
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_5801kbdewq0mfmd8vhxw2s10jsf2",
+                    "branch_id": null,
+                    "workflow_node_id": null
+                  },
+                  "message": "That's fantastic news! So, to confirm, you want to remember that they've just closed their biggest deal ever, and there's a clear opportunity to upsell your Luke product. Is that right?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 26,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.47164914199856867
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.3747751189985138
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.5593824440002209
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.22621288600021217
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 785,
+                          "price": 0.0000785
+                        },
+                        "input_cache_read": {
+                          "tokens": 1692,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 44,
+                          "price": 0.0000176
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "Correct",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 37,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.16641167699890502
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_5801kbdewq0mfmd8vhxw2s10jsf2",
+                    "branch_id": null,
+                    "workflow_node_id": null
+                  },
+                  "message": "Thanks. What do you need to do next, and who’s going to take each action?\n",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 38,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.33681268299915246
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.2574707509993459
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.3738310279986763
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.18315548399914405
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 2522,
+                          "price": 0.0002522
+                        },
+                        "input_cache_read": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 21,
+                          "price": 0.000008400000000000001
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "I need to set up a meeting on the 3rd of December at 11am.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 42,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.1648788999991666
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_5801kbdewq0mfmd8vhxw2s10jsf2",
+                    "branch_id": null,
+                    "workflow_node_id": null
+                  },
+                  "message": "And who will be responsible for setting up that meeting?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 48,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.33676819699940097
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.26729930699912074
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.33674965699901804
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.2662842339996132
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 872,
+                          "price": 0.0000872
+                        },
+                        "input_cache_read": {
+                          "tokens": 1691,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 11,
+                          "price": 0.0000044
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "I will.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 51,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.12197730600018986
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_5801kbdewq0mfmd8vhxw2s10jsf2",
+                    "branch_id": null,
+                    "workflow_node_id": null
+                  },
+                  "message": "Got it. Can you add a bit more detail to make that clearer? For example, who...",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 53,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.7038627069996437
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.7021467750000738
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.7864068140006566
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.3751126179995481
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 2577,
+                          "price": 0.0002577
+                        },
+                        "input_cache_read": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 26,
+                          "price": 0.0000104
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": true,
+                  "original_message": "Got it. Can you add a bit more detail to make that clearer? For example, who should be invited to the meeting?",
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "No I don't have time sorry goodbye.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 56,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.16805353599920636
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_5801kbdewq0mfmd8vhxw2s10jsf2",
+                    "branch_id": null,
+                    "workflow_node_id": null
+                  },
+                  "message": "No problem at all! Glad I could help with capturing those key points. Have a great day!\n",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 60,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 1.1038955669991992
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.9847847319997527
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 1.1393123620000551
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.28743486699931964
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_5801kbdewq0mfmd8vhxw2s10jsf2",
+                    "branch_id": null,
+                    "workflow_node_id": null
+                  },
+                  "message": null,
+                  "multivoice_message": null,
+                  "tool_calls": [
+                    {
+                      "type": "system",
+                      "request_id": "end_call_1143468cfb7e4781b70b341217d21e7f",
+                      "tool_name": "end_call",
+                      "params_as_json": "{\"system__message_to_speak\": \"Thanks for chatting! Take care!\", \"reason\": \"User indicated the end of the conversation by saying \\\"goodbye\\\" and expressing they don't have time. The agent confirmed understanding and provided a polite closing statement.\"}",
+                      "tool_has_been_called": true,
+                      "tool_details": null
+                    }
+                  ],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 60,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 1.1038955669991992
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.9847847319997527
+                      },
+                      "convai_llm_tool_request_generation_latency": {
+                        "elapsed_time": 0.5274654259992531
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 1.1393123620000551
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.28743486699931964
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_5801kbdewq0mfmd8vhxw2s10jsf2",
+                    "branch_id": null,
+                    "workflow_node_id": null
+                  },
+                  "message": null,
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [
+                    {
+                      "request_id": "end_call_1143468cfb7e4781b70b341217d21e7f",
+                      "tool_name": "end_call",
+                      "result_value": "{\"result_type\":\"end_call_success\",\"status\":\"success\",\"reason\":\"User indicated the end of the conversation by saying \\\"goodbye\\\" and expressing they don't have time. The agent confirmed understanding and provided a polite closing statement.\",\"message\":null}",
+                      "is_error": false,
+                      "tool_has_been_called": true,
+                      "tool_latency_secs": 0.5015138090002438,
+                      "dynamic_variable_updates": [],
+                      "type": "system",
+                      "result": {
+                        "result_type": "end_call_success",
+                        "status": "success",
+                        "reason": "User indicated the end of the conversation by saying \"goodbye\" and expressing they don't have time. The agent confirmed understanding and provided a polite closing statement.",
+                        "message": null
+                      }
+                    }
+                  ],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 65,
+                  "conversation_turn_metrics": null,
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 2607,
+                          "price": 0.0002607
+                        },
+                        "input_cache_read": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 71,
+                          "price": 0.000028400000000000003
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                }
+              ],
+              "metadata": {
+                "start_time_unix_secs": 1764609911,
+                "accepted_time_unix_secs": 1764609911,
+                "call_duration_secs": 65,
+                "cost": 394,
+                "deletion_settings": {
+                  "deletion_time_unix_secs": null,
+                  "deleted_logs_at_time_unix_secs": null,
+                  "deleted_audio_at_time_unix_secs": null,
+                  "deleted_transcript_at_time_unix_secs": null,
+                  "delete_transcript_and_pii": false,
+                  "delete_audio": false
+                },
+                "feedback": {
+                  "type": null,
+                  "overall_score": null,
+                  "likes": 0,
+                  "dislikes": 0,
+                  "rating": null,
+                  "comment": null
+                },
+                "authorization_method": "authorization_header",
+                "charging": {
+                  "dev_discount": true,
+                  "is_burst": false,
+                  "tier": "enterprise",
+                  "llm_usage": {
+                    "irreversible_generation": {
+                      "model_usage": {
+                        "gemini-2.5-flash-lite": {
+                          "input": {
+                            "tokens": 12499,
+                            "price": 0.0012499
+                          },
+                          "input_cache_read": {
+                            "tokens": 5074,
+                            "price": 0
+                          },
+                          "input_cache_write": {
+                            "tokens": 0,
+                            "price": 0
+                          },
+                          "output_total": {
+                            "tokens": 203,
+                            "price": 0.00008120000000000001
+                          }
+                        }
+                      }
+                    },
+                    "initiated_generation": {
+                      "model_usage": {
+                        "gemini-2.5-flash-lite": {
+                          "input": {
+                            "tokens": 12499,
+                            "price": 0.0012499
+                          },
+                          "input_cache_read": {
+                            "tokens": 5074,
+                            "price": 0
+                          },
+                          "input_cache_write": {
+                            "tokens": 0,
+                            "price": 0
+                          },
+                          "output_total": {
+                            "tokens": 203,
+                            "price": 0.00008120000000000001
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "llm_price": 0.0013311,
+                  "llm_charge": 13,
+                  "call_charge": 381,
+                  "free_minutes_consumed": 0,
+                  "free_llm_dollars_consumed": 0
+                },
+                "phone_call": null,
+                "batch_call": null,
+                "termination_reason": "end_call tool was called.",
+                "error": null,
+                "warnings": [],
+                "main_language": "en",
+                "rag_usage": null,
+                "text_only": false,
+                "features_usage": {
+                  "language_detection": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "transfer_to_agent": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "transfer_to_number": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "multivoice": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "dtmf_tones": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "external_mcp_servers": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "pii_zrm_workspace": false,
+                  "pii_zrm_agent": false,
+                  "tool_dynamic_variable_updates": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "is_livekit": false,
+                  "voicemail_detection": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "workflow": {
+                    "enabled": false,
+                    "tool_node": {
+                      "enabled": false,
+                      "used": false
+                    },
+                    "standalone_agent_node": {
+                      "enabled": false,
+                      "used": false
+                    },
+                    "phone_number_node": {
+                      "enabled": false,
+                      "used": false
+                    },
+                    "end_node": {
+                      "enabled": false,
+                      "used": false
+                    }
+                  },
+                  "agent_testing": {
+                    "enabled": false,
+                    "tests_ran_after_last_modification": false,
+                    "tests_ran_in_last_7_days": false
+                  }
+                },
+                "eleven_assistant": {
+                  "is_eleven_assistant": false
+                },
+                "initiator_id": "KbAOsJUuhMgO0L07qF6lM8TmFjX2",
+                "conversation_initiation_source": "react_sdk",
+                "conversation_initiation_source_version": "0.5.0",
+                "timezone": "Europe/London",
+                "initiation_trigger": {
+                  "trigger_type": "default"
+                },
+                "async_metadata": null,
+                "whatsapp": null,
+                "agent_created_from": "ui",
+                "agent_last_updated_from": "ui"
+              },
+              "analysis": {
+                "evaluation_criteria_results": {},
+                "data_collection_results": {},
+                "call_successful": "success",
+                "transcript_summary": "The user debriefed with the agent after a meeting with Brian. The key takeaway was that Brian's company closed a major deal, presenting an upsell opportunity for the \"Luke\" product. The user needs to schedule a follow-up meeting for December 3rd at 11am and will be responsible for this task. The user ended the conversation abruptly.\n",
+                "call_summary_title": "Meeting Debrief and Actions"
+              },
+              "conversation_initiation_client_data": {
+                "conversation_config_override": {
+                  "turn": null,
+                  "tts": {
+                    "voice_id": null,
+                    "stability": null,
+                    "speed": null,
+                    "similarity_boost": null
+                  },
+                  "conversation": {
+                    "text_only": null
+                  },
+                  "agent": {
+                    "first_message": null,
+                    "language": null,
+                    "prompt": null
+                  }
+                },
+                "custom_llm_extra_body": {},
+                "user_id": "KbAOsJUuhMgO0L07qF6lM8TmFjX2",
+                "source_info": {
+                  "source": "react_sdk",
+                  "version": "0.5.0"
+                },
+                "dynamic_variables": {
+                  "system__agent_id": "agent_5801kbdewq0mfmd8vhxw2s10jsf2",
+                  "system__agent_turns": 8,
+                  "system__current_agent_turns": 8,
+                  "system__current_subagent_turns": 8,
+                  "system__current_agent_id": "agent_5801kbdewq0mfmd8vhxw2s10jsf2",
+                  "system__conversation_id": "conv_9101kbdf4ttdev4vzd6ckdfkphje",
+                  "system__call_duration_secs": 65,
+                  "system__time_utc": "2025-12-01T17:26:16.862849+00:00",
+                  "system__time": "Monday, 17:26 01 December 2025",
+                  "system__timezone": "Europe/London",
+                  "system__caller_id": null,
+                  "system__called_number": null,
+                  "system__call_sid": null
+                }
+              }
+            }
+          },
+          "webhookUrl": "https://leonard-dev.app.n8n.cloud/webhook/pwc_luke",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "triggerCount": 1,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

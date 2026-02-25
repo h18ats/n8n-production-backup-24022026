@@ -1,0 +1,520 @@
+{
+  "name": "HSFK UC 1.1 - Client Meeting Briefing Pack Generator",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## HSFK UC 1.1 - Client Meeting Briefing Pack Generator\n\n**Purpose:** Generate a comprehensive briefing pack for an upcoming client meeting. Combines Perplexity news search with Airtable client metadata and historical articles, then synthesises into a structured document via Vertex AI (Claude Opus).\n\n**Trigger:** Webhook POST `/webhook/hsfk-briefing-pack`\n\n**Request body:**\n```json\n{\n  \"client_name\": \"string\",\n  \"meeting_date\": \"YYYY-MM-DD\",\n  \"meeting_context\": \"string (optional - describe purpose/agenda)\",\n  \"recipient_email\": \"string\"\n}\n```\n\n**Response body (200):**\n```json\n{\n  \"status\": \"success\",\n  \"pack_id\": \"string\",\n  \"client_name\": \"string\",\n  \"meeting_date\": \"string\",\n  \"briefing_pack\": {\n    \"client_overview\": \"string\",\n    \"recent_news\": \"string\",\n    \"key_topics\": \"string\",\n    \"talking_points\": \"string\"\n  },\n  \"airtable_record_id\": \"string\",\n  \"generated_at\": \"ISO 8601 string\"\n}\n```\n\n**Sub-workflows called:**\n- `qT0uycTDyAM7zQJ5` - shared-02 Perplexity News Search\n- `AI3InmjY6gmJwdXg` - shared-04 Vertex AI LLM Call (Claude Opus)\n- `zjwCkfCuH3GnW2qT` - shared-05 Airtable Audit Log\n\n**Airtable base:** `app0QZAuhY8Zx4I54`\n- Client Watchlist: `tblpDq8Ulb6e9GjUh`\n- News Archive: `tbl5UHN4q7SjGgrTd`\n- Briefing Pack Log: `tblJLIBMnRzEWzMGi`\n\n**Slack channel:** `#customer-hsfk`\n\n**UC spec:** n8n-workflows.json ucId 1.1\n**Phase:** 2 (requires Outlook Calendar + SharePoint - omitted until access granted)\n**n8n instance:** leonard-dev.app.n8n.cloud",
+        "height": 620,
+        "width": 540,
+        "color": 5
+      },
+      "id": "sticky-note-docs",
+      "name": "Documentation",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "hsfk-briefing-pack",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -80,
+        240
+      ],
+      "webhookId": "hsfk-briefing-pack-001"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract and validate request fields\nconst body = $json.body || $json;\n\nconst clientName = (body.client_name || '').trim();\nconst meetingDate = (body.meeting_date || '').trim();\nconst meetingContext = (body.meeting_context || 'General client meeting').trim();\nconst recipientEmail = (body.recipient_email || '').trim();\n\n// Validate required fields\nif (!clientName) {\n  throw new Error('Missing required field: client_name');\n}\nif (!meetingDate) {\n  throw new Error('Missing required field: meeting_date');\n}\nif (!recipientEmail) {\n  throw new Error('Missing required field: recipient_email');\n}\n\n// Generate execution ID for correlation across all steps\nconst executionId = `BP-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;\n\nreturn {\n  json: {\n    client_name: clientName,\n    meeting_date: meetingDate,\n    meeting_context: meetingContext,\n    recipient_email: recipientEmail,\n    execution_id: executionId,\n    started_at: new Date().toISOString()\n  }\n};"
+      },
+      "id": "extract-request",
+      "name": "Extract & Validate Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": "qT0uycTDyAM7zQJ5",
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "entity_name": "={{ $json.client_name }}",
+            "entity_type": "client",
+            "date_range": "last_30_days",
+            "max_results": 10
+          }
+        }
+      },
+      "id": "call-perplexity-news",
+      "name": "Call Perplexity News Search",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1,
+      "position": [
+        400,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Store Perplexity results and pass through original request data\nconst perplexityResult = $json;\nconst requestData = $('Extract & Validate Request').first().json;\n\nreturn {\n  json: {\n    // Pass through original request\n    client_name: requestData.client_name,\n    meeting_date: requestData.meeting_date,\n    meeting_context: requestData.meeting_context,\n    recipient_email: requestData.recipient_email,\n    execution_id: requestData.execution_id,\n    started_at: requestData.started_at,\n\n    // Perplexity news results\n    perplexity_articles: perplexityResult.articles || [],\n    perplexity_total: perplexityResult.total_found || 0,\n    perplexity_status: perplexityResult.status || 'no_results'\n  }\n};"
+      },
+      "id": "store-perplexity-results",
+      "name": "Store Perplexity Results",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        640,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://api.airtable.com/v0/app0QZAuhY8Zx4I54/tblpDq8Ulb6e9GjUh",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "filterByFormula",
+              "value": "=SEARCH(LOWER('{{ $json.client_name }}'), LOWER({Client Name}))"
+            },
+            {
+              "name": "maxRecords",
+              "value": "1"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": false,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "query-client-watchlist",
+      "name": "Query Client Watchlist",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        880,
+        240
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "AIRTABLE_API_CRED",
+          "name": "Airtable API - Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://api.airtable.com/v0/app0QZAuhY8Zx4I54/tbl5UHN4q7SjGgrTd",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "filterByFormula",
+              "value": "=SEARCH(LOWER('{{ $('Store Perplexity Results').first().json.client_name }}'), LOWER({Client}))"
+            },
+            {
+              "name": "maxRecords",
+              "value": "10"
+            },
+            {
+              "name": "sort[0][field]",
+              "value": "Retrieved Date"
+            },
+            {
+              "name": "sort[0][direction]",
+              "value": "desc"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": false,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "query-news-archive",
+      "name": "Query News Archive",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1120,
+        240
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "AIRTABLE_API_CRED",
+          "name": "Airtable API - Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Merge all data sources and build LLM prompt\nconst prevData = $('Store Perplexity Results').first().json;\nconst watchlistResult = $('Query Client Watchlist').first().json;\nconst newsArchiveResult = $json;\n\n// Extract client metadata from watchlist (first matching record)\nconst watchlistRecords = watchlistResult.records || [];\nconst clientMeta = watchlistRecords.length > 0 ? watchlistRecords[0].fields : {};\n\n// Extract historical articles from news archive\nconst archiveRecords = (newsArchiveResult.records || []).map(r => ({\n  headline: r.fields['Headline'] || '',\n  url: r.fields['URL'] || '',\n  source: r.fields['Source'] || '',\n  date: r.fields['Published Date'] || r.fields['Retrieved Date'] || '',\n  summary: r.fields['AI Summary'] || ''\n}));\n\n// Format recent Perplexity articles for LLM\nconst recentArticles = (prevData.perplexity_articles || []).map(a =>\n  `- [${a.date}] ${a.headline} (${a.source})\\n  ${a.summary}\\n  URL: ${a.url}`\n).join('\\n\\n');\n\n// Format historical articles for LLM\nconst historicalArticles = archiveRecords.map(a =>\n  `- [${a.date}] ${a.headline} (${a.source})\\n  ${a.summary}`\n).join('\\n\\n');\n\n// Build comprehensive LLM system prompt\nconst systemPrompt = `You are an expert legal business development analyst preparing a client briefing pack for HSFK (a leading law firm). Your task is to synthesise available information about a client into a structured, actionable briefing pack that will help a partner or fee-earner prepare for their meeting.\n\nThe briefing pack must be professional, concise, and focused on what matters in a legal business development context: client challenges, recent developments, relationship history, and strategic opportunities.\n\nReturn a JSON object with exactly these four keys:\n{\n  \"client_overview\": \"3-4 sentences covering who the client is, their industry, key facts, and HSFK's relationship with them. If limited data is available, note what is known and what would be useful to gather.\",\n  \"recent_news\": \"Bulleted summary of the most relevant recent news items (last 30 days). Focus on items that affect the client's legal needs, financial position, or strategic direction. Format: bullet points with date and source.\",\n  \"key_topics\": \"3-5 likely topics for the meeting based on the meeting context and recent news. Each topic as a short heading with 1-2 sentence rationale.\",\n  \"talking_points\": \"5-7 specific, prepared talking points the fee-earner could use. These should be concrete, not generic. Include at least one that references a specific recent news item.\"\n}`;\n\n// Build user prompt with all data\nconst userPrompt = `Prepare a briefing pack for a meeting with: ${prevData.client_name}\nMeeting date: ${prevData.meeting_date}\nMeeting context: ${prevData.meeting_context}\n\n--- CLIENT METADATA (from HSFK client watchlist) ---\nIndustry: ${clientMeta['Industry'] || 'Not recorded'}\nRelationship Partner: ${clientMeta['Relationship Partner'] || 'Not recorded'}\nSearch Keywords: ${clientMeta['Search Keywords'] || 'None'}\nNotes: ${clientMeta['Notes'] || 'None'}\n\n--- RECENT NEWS (last 30 days, from Perplexity) ---\n${recentArticles || 'No recent articles found.'}\n\n--- HISTORICAL NEWS ARCHIVE (from HSFK records) ---\n${historicalArticles || 'No historical articles in archive.'}\n\nSynthesize this into a briefing pack JSON as specified. Be specific and actionable.`;\n\nreturn {\n  json: {\n    // Pass through request data\n    client_name: prevData.client_name,\n    meeting_date: prevData.meeting_date,\n    meeting_context: prevData.meeting_context,\n    recipient_email: prevData.recipient_email,\n    execution_id: prevData.execution_id,\n    started_at: prevData.started_at,\n\n    // Data for LLM\n    system_prompt: systemPrompt,\n    user_prompt: userPrompt,\n    model: 'claude-opus-4-5',\n    temperature: 0.4,\n    response_format: 'json',\n    max_tokens: 4096,\n\n    // Source data for audit\n    client_meta: clientMeta,\n    perplexity_articles_count: prevData.perplexity_total,\n    historical_articles_count: archiveRecords.length\n  }\n};"
+      },
+      "id": "merge-data-build-prompt",
+      "name": "Merge Data & Build LLM Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1360,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": "AI3InmjY6gmJwdXg",
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "system_prompt": "={{ $json.system_prompt }}",
+            "user_prompt": "={{ $json.user_prompt }}",
+            "model": "={{ $json.model }}",
+            "temperature": "={{ $json.temperature }}",
+            "response_format": "={{ $json.response_format }}",
+            "max_tokens": "={{ $json.max_tokens }}"
+          }
+        }
+      },
+      "id": "call-llm-synthesise",
+      "name": "Call LLM - Synthesise Briefing Pack",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1,
+      "position": [
+        1600,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract LLM result and structure the final briefing pack\nconst llmResult = $json;\nconst requestData = $('Merge Data & Build LLM Prompt').first().json;\n\nlet briefingPack = {\n  client_overview: '',\n  recent_news: '',\n  key_topics: '',\n  talking_points: ''\n};\n\nif (llmResult.json_valid && llmResult.parsed_json) {\n  const parsed = llmResult.parsed_json;\n  briefingPack.client_overview = parsed.client_overview || '';\n  briefingPack.recent_news = parsed.recent_news || '';\n  briefingPack.key_topics = parsed.key_topics || '';\n  briefingPack.talking_points = parsed.talking_points || '';\n} else {\n  // Fallback: use raw text if JSON parse failed\n  briefingPack.client_overview = llmResult.text || 'LLM response could not be parsed. Please retry.';\n}\n\n// Generate pack ID for Airtable record\nconst packId = `BP-${requestData.client_name.replace(/\\s+/g, '').substring(0, 8).toUpperCase()}-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}`;\n\nreturn {\n  json: {\n    // Identifiers\n    pack_id: packId,\n    execution_id: requestData.execution_id,\n\n    // Request data\n    client_name: requestData.client_name,\n    meeting_date: requestData.meeting_date,\n    meeting_context: requestData.meeting_context,\n    recipient_email: requestData.recipient_email,\n    started_at: requestData.started_at,\n\n    // Briefing pack content\n    briefing_pack: briefingPack,\n\n    // Audit metadata\n    llm_model: llmResult.model_used || 'claude-opus-4-5',\n    llm_tokens: llmResult.total_tokens || 0,\n    llm_duration_ms: llmResult.duration_ms || 0,\n    json_valid: llmResult.json_valid || false,\n    data_sources_used: [\n      `Perplexity (${requestData.perplexity_articles_count || 0} articles)`,\n      `Airtable Client Watchlist`,\n      `Airtable News Archive (${requestData.historical_articles_count || 0} articles)`\n    ].join(', '),\n    generated_at: new Date().toISOString()\n  }\n};"
+      },
+      "id": "structure-briefing-pack",
+      "name": "Structure Briefing Pack",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1840,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.airtable.com/v0/app0QZAuhY8Zx4I54/tblJLIBMnRzEWzMGi",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({\n  fields: {\n    'Client Name': $json.client_name,\n    'Meeting Date': $json.meeting_date,\n    'Meeting Title': $json.meeting_context,\n    'Trigger Type': 'webhook',\n    'Recipient': $json.recipient_email,\n    'Generated At': $json.generated_at,\n    'Data Sources Used': $json.data_sources_used,\n    'Status': $json.json_valid ? 'success' : 'partial',\n    'Workflow Execution ID': $json.execution_id\n  }\n}) }}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": false,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "log-to-airtable",
+      "name": "Log to Briefing Pack Log",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2080,
+        240
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "AIRTABLE_API_CRED",
+          "name": "Airtable API - Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Store Airtable record ID and pass through all data\nconst airtableResult = $json;\nconst packData = $('Structure Briefing Pack').first().json;\n\nconst airtableRecordId = airtableResult.id || '';\n\nreturn {\n  json: {\n    ...packData,\n    airtable_record_id: airtableRecordId\n  }\n};"
+      },
+      "id": "store-airtable-id",
+      "name": "Store Airtable Record ID",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2320,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://slack.com/api/chat.postMessage",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({\n  channel: '#customer-hsfk',\n  text: `Briefing pack generated for *${$json.client_name}* meeting on *${$json.meeting_date}*`,\n  blocks: [\n    {\n      type: 'section',\n      text: {\n        type: 'mrkdwn',\n        text: `:briefcase: *Briefing Pack Ready* | UC 1.1\\n\\n*Client:* ${$json.client_name}\\n*Meeting Date:* ${$json.meeting_date}\\n*Recipient:* ${$json.recipient_email}\\n*Data Sources:* ${$json.data_sources_used}\\n*Generated:* ${$json.generated_at}`\n      }\n    },\n    {\n      type: 'section',\n      text: {\n        type: 'mrkdwn',\n        text: `*Status:* ${$json.json_valid ? ':white_check_mark: Complete' : ':warning: Partial (JSON parse issue)'}\\n*Execution ID:* \\`${$json.execution_id}\\``\n      }\n    }\n  ]\n}) }}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": false,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "post-slack-notification",
+      "name": "Post Slack Notification",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2560,
+        240
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "SLACK_API_CRED",
+          "name": "Slack API - Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({\n  status: 'success',\n  pack_id: $('Store Airtable Record ID').first().json.pack_id,\n  client_name: $('Store Airtable Record ID').first().json.client_name,\n  meeting_date: $('Store Airtable Record ID').first().json.meeting_date,\n  briefing_pack: $('Store Airtable Record ID').first().json.briefing_pack,\n  airtable_record_id: $('Store Airtable Record ID').first().json.airtable_record_id,\n  data_sources_used: $('Store Airtable Record ID').first().json.data_sources_used,\n  generated_at: $('Store Airtable Record ID').first().json.generated_at,\n  execution_id: $('Store Airtable Record ID').first().json.execution_id\n}) }}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "id": "webhook-response",
+      "name": "Webhook Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        2800,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": "zjwCkfCuH3GnW2qT",
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "workflow_name": "HSFK UC 1.1 - Client Meeting Briefing Pack Generator",
+            "use_case_id": "1.1",
+            "trigger_type": "webhook",
+            "started_at": "={{ $('Store Airtable Record ID').first().json.started_at }}",
+            "finished_at": "={{ new Date().toISOString() }}",
+            "status": "={{ $('Store Airtable Record ID').first().json.json_valid ? 'success' : 'partial' }}",
+            "input_summary": "={{ `client=${$('Store Airtable Record ID').first().json.client_name}, date=${$('Store Airtable Record ID').first().json.meeting_date}` }}",
+            "output_summary": "={{ `Briefing pack generated. Sources: ${$('Store Airtable Record ID').first().json.data_sources_used}` }}",
+            "triggered_by": "={{ $('Store Airtable Record ID').first().json.recipient_email }}",
+            "execution_id": "={{ $('Store Airtable Record ID').first().json.execution_id }}",
+            "llm_tokens_used": "={{ $('Store Airtable Record ID').first().json.llm_tokens }}"
+          }
+        }
+      },
+      "id": "call-audit-log",
+      "name": "Log via Shared-05 Audit",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1,
+      "position": [
+        3040,
+        240
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Extract & Validate Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract & Validate Request": {
+      "main": [
+        [
+          {
+            "node": "Call Perplexity News Search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Perplexity News Search": {
+      "main": [
+        [
+          {
+            "node": "Store Perplexity Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Perplexity Results": {
+      "main": [
+        [
+          {
+            "node": "Query Client Watchlist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query Client Watchlist": {
+      "main": [
+        [
+          {
+            "node": "Query News Archive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query News Archive": {
+      "main": [
+        [
+          {
+            "node": "Merge Data & Build LLM Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Data & Build LLM Prompt": {
+      "main": [
+        [
+          {
+            "node": "Call LLM - Synthesise Briefing Pack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call LLM - Synthesise Briefing Pack": {
+      "main": [
+        [
+          {
+            "node": "Structure Briefing Pack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structure Briefing Pack": {
+      "main": [
+        [
+          {
+            "node": "Log to Briefing Pack Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log to Briefing Pack Log": {
+      "main": [
+        [
+          {
+            "node": "Store Airtable Record ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Airtable Record ID": {
+      "main": [
+        [
+          {
+            "node": "Post Slack Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post Slack Notification": {
+      "main": [
+        [
+          {
+            "node": "Webhook Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Response": {
+      "main": [
+        [
+          {
+            "node": "Log via Shared-05 Audit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 1,
+  "meta": null
+}

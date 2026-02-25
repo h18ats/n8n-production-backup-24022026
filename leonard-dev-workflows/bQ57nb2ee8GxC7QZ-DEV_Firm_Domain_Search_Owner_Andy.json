@@ -1,0 +1,1699 @@
+{
+  "name": "DEV - Firm Domain Search - Owner Andy",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "4fe9f67d-2e25-4995-b2b3-4027bc3ffcb9",
+      "name": "When clicking Test workflow1",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -2208,
+        1216
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "8096cb89-bb8a-47e8-a1bf-ce6193fe7f0b",
+      "name": "Loop Over Emails",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -896,
+        1264
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputDate = new Date($input.first().json.currentDate); // replace with actual field name\n\nconst formattedDate = `${inputDate.getMonth() + 1}/${inputDate.getDate()}/${inputDate.getFullYear()}`;\n\nreturn [\n  {\n    json: {\n      formattedDate\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1840,
+        1216
+      ],
+      "id": "a8a264e5-f96d-486a-a6f3-8dd934522652",
+      "name": "Date Format1"
+    },
+    {
+      "parameters": {
+        "jsCode": "let content = $json.choices[0].message.content;\n\n// Clean the Markdown formatting\ncontent = content.replace(/```json|```/g, '').trim();\n\nlet parsed;\n\n// Try parsing the content safely\ntry {\n  parsed = JSON.parse(content);\n} catch (error) {\n  parsed = { message: \"No info found\" };\n}\n\n// Check if all values in the expected structure are null, empty arrays, or empty strings\nconst hasUsefulData = Object.values(parsed).some(value => {\n  if (value === null || value === \"\" || (Array.isArray(value) && value.length === 0)) return false;\n  if (typeof value === \"object\" && !Array.isArray(value)) {\n    // Check nested objects (like `rankings`)\n    return Object.values(value).some(sub => {\n      if (typeof sub === \"object\") {\n        return Object.values(sub).some(v => v !== null && v !== \"\");\n      }\n      return sub !== null && sub !== \"\";\n    });\n  }\n  return true;\n});\n\nif (!hasUsefulData) {\n  parsed = { message: \"No info found\" };\n}\n\n// Return a single flat object instead of an array\nreturn parsed;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        144,
+        1312
+      ],
+      "id": "4ac257c4-ec6a-4055-8b9c-02942757deb0",
+      "name": "PP Flattening2",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        -2000,
+        1216
+      ],
+      "id": "15a1639f-f3fa-4949-8f30-fdabe5524189",
+      "name": "Date & Time"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "https://airtable.com/appnbpO20uWlcjTf5/tbl0FYAZn2gLFuD4F/viwUXIUqswTOTz16b?blocks=hide",
+          "mode": "url"
+        },
+        "table": {
+          "__rl": true,
+          "value": "https://airtable.com/appnbpO20uWlcjTf5/tbl0FYAZn2gLFuD4F/viwUXIUqswTOTz16b?blocks=hide",
+          "mode": "url"
+        },
+        "options": {},
+        "sort": {
+          "property": [
+            {
+              "field": "Company Name"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -1648,
+        1216
+      ],
+      "id": "06d24417-f6de-4473-a12e-5102674e838c",
+      "name": "Airtable Source",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "value": "https://airtable.com/appnbpO20uWlcjTf5/tbl0FYAZn2gLFuD4F/viwUXIUqswTOTz16b?blocks=hide",
+          "mode": "url"
+        },
+        "table": {
+          "__rl": true,
+          "value": "https://airtable.com/appnbpO20uWlcjTf5/tbl0FYAZn2gLFuD4F/viwUXIUqswTOTz16b?blocks=hide",
+          "mode": "url"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [
+            "Company Name"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Company Name",
+              "displayName": "Company Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Company Domain",
+              "displayName": "Company Domain",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Company Website PP",
+              "displayName": "Company Website PP",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "CMO",
+              "displayName": "CMO",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Head of Busniess Development",
+              "displayName": "Head of Busniess Development",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "COO",
+              "displayName": "COO",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        304,
+        1312
+      ],
+      "id": "66025225-b898-44eb-896b-b4c5d6f15250",
+      "name": "Airtable Write",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "69676b6c-2bf4-4312-b916-4316c66421a8",
+              "leftValue": "={{ $json.error.message }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -336,
+        1008
+      ],
+      "id": "10677f14-8973-4d8b-a279-5da8f1dff08b",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "jsCode": "let content = $json.choices[0].message.content;\n\n// Clean the Markdown formatting\ncontent = content.replace(/```json|```/g, '').trim();\n\nlet parsed;\n\n// Try parsing the content safely\ntry {\n  parsed = JSON.parse(content);\n} catch (error) {\n  parsed = { message: \"No info found\" };\n}\n\n// Check if all values in the expected structure are null, empty arrays, or empty strings\nconst hasUsefulData = Object.values(parsed).some(value => {\n  if (value === null || value === \"\" || (Array.isArray(value) && value.length === 0)) return false;\n  if (typeof value === \"object\" && !Array.isArray(value)) {\n    // Check nested objects (like `rankings`)\n    return Object.values(value).some(sub => {\n      if (typeof sub === \"object\") {\n        return Object.values(sub).some(v => v !== null && v !== \"\");\n      }\n      return sub !== null && sub !== \"\";\n    });\n  }\n  return true;\n});\n\nif (!hasUsefulData) {\n  parsed = { message: \"No info found\" };\n}\n\n// Return a single flat object instead of an array\nreturn parsed;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        144,
+        1008
+      ],
+      "id": "baff9e48-453e-431b-8df6-621a0ff31722",
+      "name": "PP Flattening"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "value": "https://airtable.com/appnbpO20uWlcjTf5/tbl0FYAZn2gLFuD4F/viwUXIUqswTOTz16b?blocks=hide",
+          "mode": "url"
+        },
+        "table": {
+          "__rl": true,
+          "value": "https://airtable.com/appnbpO20uWlcjTf5/tbl0FYAZn2gLFuD4F/viwUXIUqswTOTz16b?blocks=hide",
+          "mode": "url"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Company Name": "={{ $('Airtable Source').item.json[\"Company Name\"] }}",
+            "Implied Firm Name": "={{ $json.firmName }}"
+          },
+          "matchingColumns": [
+            "Company Name"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Company Name",
+              "displayName": "Company Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Company Domain",
+              "displayName": "Company Domain",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Company Website PP",
+              "displayName": "Company Website PP",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Implied Firm Name",
+              "displayName": "Implied Firm Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "DM1",
+              "displayName": "DM1",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "DM1 Email",
+              "displayName": "DM1 Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "DM1 JT",
+              "displayName": "DM1 JT",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "DM1 Relevance",
+              "displayName": "DM1 Relevance",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "DM1 Linkedin",
+              "displayName": "DM1 Linkedin",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "DM2",
+              "displayName": "DM2",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "DM2 Email",
+              "displayName": "DM2 Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "DM2 JT",
+              "displayName": "DM2 JT",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "DM2 Relevance",
+              "displayName": "DM2 Relevance",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "DM2 Linkedin",
+              "displayName": "DM2 Linkedin",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "DM3",
+              "displayName": "DM3",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "DM3 EMail",
+              "displayName": "DM3 EMail",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "DM3 JT",
+              "displayName": "DM3 JT",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "DM3 Relevance",
+              "displayName": "DM3 Relevance",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "DM3 Linkedin",
+              "displayName": "DM3 Linkedin",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "DM4",
+              "displayName": "DM4",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "DM4 EMail",
+              "displayName": "DM4 EMail",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "DM4 JT",
+              "displayName": "DM4 JT",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "DM4 Relevance",
+              "displayName": "DM4 Relevance",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "DM4 Linkedin",
+              "displayName": "DM4 Linkedin",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "DM5",
+              "displayName": "DM5",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "DM5 EMail",
+              "displayName": "DM5 EMail",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "DM5 JT",
+              "displayName": "DM5 JT",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "DM5 Relevance",
+              "displayName": "DM5 Relevance",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "DM5 Linkedin",
+              "displayName": "DM5 Linkedin",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        304,
+        1008
+      ],
+      "id": "e9356ebc-236d-40f0-993d-66956ff15128",
+      "name": "Airtable Write1",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "value": "appnbpO20uWlcjTf5",
+          "mode": "list",
+          "cachedResultName": "Legal Document Automation",
+          "cachedResultUrl": "https://airtable.com/appnbpO20uWlcjTf5"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblSST6CxAGR7PBlw",
+          "mode": "list",
+          "cachedResultName": "TEST - Clients from Ch Scrape",
+          "cachedResultUrl": "https://airtable.com/appnbpO20uWlcjTf5/tblSST6CxAGR7PBlw"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Client Name": "={{ $('Airtable Source').item.json[\"Client Name\"] }}",
+            "Company Name": "={{ $json.actualCompanyName }}",
+            "Address": "={{ $json.location }}",
+            "Practice Area": "={{ $('Airtable Source').item.json[\"Practice Area\"] }}",
+            "LinkedIn Profile": "={{ $json.bio }}",
+            "Chambers Ranking": "={{ $json.rankings.chambers.ranking }}",
+            "Legal 500 Ranking": "={{ $json.rankings.legal500.ranking }}",
+            "Job Title": "={{ $json.jobTitle }}",
+            "Full Name (PP Search)": "={{ $json.fullName }}",
+            "Date Joined": "={{ $('Date Format1').item.json.formattedDate }}",
+            "Phone Number": "={{ $json.telephone }}",
+            "Relevant Experience Clients 1": "={{ $json.expertiseClients[0] }}",
+            "Relevant Experience Indiv 1": "={{ $json.expertiseIndividuals[0] }}",
+            "Relevant Experience Indiv 2": "={{ $json.expertiseIndividuals[1] }}",
+            "Relevant Experience Clients 2": "={{ $json.expertiseClients[1] }}",
+            "Relevant Experience Clients 3": "={{ $json.expertiseClients[2] }}",
+            "Relevant Experience Clients 4": "={{ $json.expertiseClients[3] }}",
+            "Relevant Experience Clients 5": "={{ $json.expertiseClients[4] }}",
+            "Relevant Experience Indiv 3": "={{ $json.expertiseIndividuals[2] }}",
+            "Relevant Experience Indiv 4": "={{ $json.expertiseIndividuals[3] }}",
+            "Relevant Experience Indiv 5": "={{ $json.expertiseIndividuals[4] }}",
+            "Publications and Insight 1": "={{ $json.publicationsAndInsights[0] }}",
+            "Publications and Insight 2": "={{ $json.publicationsAndInsights[1] }}",
+            "News and Client Work 1": "={{ $json.newsAndClientWork[0] }}",
+            "News and Client Work 2": "={{ $json.newsAndClientWork[1] }}",
+            "Award 1": "={{ $json.awards[0] }}",
+            "Award 2": "={{ $json.awards[1] }}",
+            "Contact Email": "={{ $json.email }}",
+            "id": "={{ $('Airtable Source').item.json.id }}",
+            "Practice Area 2": "={{ $json.practiceAreas[1] }}",
+            "Practice Area 3": "={{ $json.practiceAreas[2] }}",
+            "Practice Area 4": "={{ $json.practiceAreas[3] }}",
+            "Practice Area 1": "={{ $json.practiceAreas[0] }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Client Name",
+              "displayName": "Client Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Contact Email",
+              "displayName": "Contact Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Phone Number",
+              "displayName": "Phone Number",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Address",
+              "displayName": "Address",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Company Name",
+              "displayName": "Company Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Preferred Contact Method",
+              "displayName": "Preferred Contact Method",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Email",
+                  "value": "Email"
+                },
+                {
+                  "name": "Phone",
+                  "value": "Phone"
+                },
+                {
+                  "name": "Mail",
+                  "value": "Mail"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Associated Documents",
+              "displayName": "Associated Documents",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Profile Picture",
+              "displayName": "Profile Picture",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Date Joined",
+              "displayName": "Date Joined",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Account Status",
+              "displayName": "Account Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Active",
+                  "value": "Active"
+                },
+                {
+                  "name": "Inactive",
+                  "value": "Inactive"
+                },
+                {
+                  "name": "Pending",
+                  "value": "Pending"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Matters",
+              "displayName": "Matters",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Practice Area",
+              "displayName": "Practice Area",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Practice Area 1",
+              "displayName": "Practice Area 1",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Practice Area 2",
+              "displayName": "Practice Area 2",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Practice Area 3",
+              "displayName": "Practice Area 3",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Practice Area 4",
+              "displayName": "Practice Area 4",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn Profile",
+              "displayName": "LinkedIn Profile",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Relevant Experience Clients 1",
+              "displayName": "Relevant Experience Clients 1",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Relevant Experience Clients 2",
+              "displayName": "Relevant Experience Clients 2",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Relevant Experience Clients 3",
+              "displayName": "Relevant Experience Clients 3",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Relevant Experience Clients 4",
+              "displayName": "Relevant Experience Clients 4",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Relevant Experience Clients 5",
+              "displayName": "Relevant Experience Clients 5",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Relevant Experience Indiv 1",
+              "displayName": "Relevant Experience Indiv 1",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Relevant Experience Indiv 2",
+              "displayName": "Relevant Experience Indiv 2",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Relevant Experience Indiv 3",
+              "displayName": "Relevant Experience Indiv 3",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Relevant Experience Indiv 4",
+              "displayName": "Relevant Experience Indiv 4",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Relevant Experience Indiv 5",
+              "displayName": "Relevant Experience Indiv 5",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Publications and Insight 1",
+              "displayName": "Publications and Insight 1",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Publications and Insight 2",
+              "displayName": "Publications and Insight 2",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "News and Client Work 1",
+              "displayName": "News and Client Work 1",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "News and Client Work 2",
+              "displayName": "News and Client Work 2",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Legal 500 Ranking",
+              "displayName": "Legal 500 Ranking",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Chambers Ranking",
+              "displayName": "Chambers Ranking",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Job Title",
+              "displayName": "Job Title",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Full Name (PP Search)",
+              "displayName": "Full Name (PP Search)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Expertise Sectors 1",
+              "displayName": "Expertise Sectors 1",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Expertise Sectors 2",
+              "displayName": "Expertise Sectors 2",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Expertise Sectors 3",
+              "displayName": "Expertise Sectors 3",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Expertise Sectors 4",
+              "displayName": "Expertise Sectors 4",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Expertise Sectors 5",
+              "displayName": "Expertise Sectors 5",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Expertise Services 1",
+              "displayName": "Expertise Services 1",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Expertise Services 2",
+              "displayName": "Expertise Services 2",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Expertise Services 3",
+              "displayName": "Expertise Services 3",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Expertise Services 4",
+              "displayName": "Expertise Services 4",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Expertise Services 5",
+              "displayName": "Expertise Services 5",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Award 1",
+              "displayName": "Award 1",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Award 2",
+              "displayName": "Award 2",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Chambers Band",
+              "displayName": "Chambers Band",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Chambers Link",
+              "displayName": "Chambers Link",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Company Domain",
+              "displayName": "Company Domain",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        288,
+        752
+      ],
+      "id": "fa481736-b2aa-49ec-a82d-d2ad47a25b00",
+      "name": "Airtable Write2",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "69676b6c-2bf4-4312-b916-4316c66421a8",
+              "leftValue": "={{ $json.error.message }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -336,
+        1280
+      ],
+      "id": "10f17d99-f630-44ba-ab1a-9cfcf4c1ae31",
+      "name": "If1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.perplexity.ai/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"sonar\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are an expert legal sector researcher specializing in identifying executive-level contacts within UK law firms. Search comprehensively across ALL available sources including: LinkedIn profiles, company websites, legal directories (Legal 500, Chambers UK), professional networks, press releases, news articles, corporate announcements, and business databases. Cross-reference multiple sources to verify accuracy. Prioritize recently updated information. Return only raw JSON with the exact schema provided.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Research the following law firm across ALL available professional platforms:\\n\\n- Company Name: {{ $('Airtable Source').item.json['Company Name'] }}\\n- Company Website: {{ $('Airtable Source').item.json['Company Website PP'] }}\\n- Company Domain: {{ $('Airtable Source').item.json['Company Domain'] }}\\n\\nSEARCH SOURCES TO USE:\\n1. LinkedIn: Search for current employees with relevant titles at this firm\\n2. Company website: Check 'Our People', 'Team', 'Leadership', 'About Us' sections\\n3. Legal directories: Legal 500, Chambers UK, LawCareers.Net\\n4. Press releases and news: Recent appointments, promotions, announcements\\n5. Professional databases: RocketReach, ZoomInfo, legal sector publications\\n6. Company LinkedIn page: Check 'People' tab for current employees\\n\\nFor each executive category, find the most senior individual using these title variations (search across all platforms):\\n\\n- CMO/Marketing: Chief Marketing Officer, Director of Marketing, Head of Marketing, Marketing Partner, Head of Client Development, Director of Communications, Head of Brand\\n- Business Development: Chief Business Development Officer, Director of Business Development, Head of Business Development, Client Development Director, Growth Director, Head of Client Services\\n- COO/Operations: Chief Operating Officer, Operations Director, Director of Operations, Chief Administrative Officer, Head of Operations, Managing Director Operations\\n\\nFor email addresses:\\n- Check the firm's website for published contact details\\n- If not directly available, infer using the firm's standard email format (usually first.last@domain.com or firstinitiallast@domain.com)\\n- Verify format by checking other published emails from the same firm\\n- Only include inferred emails if you can confirm the firm's email pattern from at least one published example\\n\\nReturn a JSON object with this exact structure. Use 'no info' when information cannot be found or verified across multiple sources. Never return null, empty strings, or explanatory text:\\n\\n{\\n  \\\"fullName\\\": \\\"string or 'no info'\\\",\\n  \\\"actualCompanyName\\\": \\\"string or 'no info'\\\",\\n  \\\"CMOname\\\": \\\"string or 'no info'\\\",\\n  \\\"CMOemail\\\": \\\"string or 'no info'\\\",\\n  \\\"CMOtitle\\\": \\\"string or 'no info'\\\",\\n  \\\"CMOsource\\\": \\\"string or 'no info'\\\",\\n  \\\"HoBDname\\\": \\\"string or 'no info'\\\",\\n  \\\"HoBDemail\\\": \\\"string or 'no info'\\\",\\n  \\\"HoBDtitle\\\": \\\"string or 'no info'\\\",\\n  \\\"HoBDsource\\\": \\\"string or 'no info'\\\",\\n  \\\"COOname\\\": \\\"string or 'no info'\\\",\\n  \\\"COOemail\\\": \\\"string or 'no info'\\\",\\n  \\\"COOtitle\\\": \\\"string or 'no info'\\\",\\n  \\\"COOsource\\\": \\\"string or 'no info'\\\",\\n  \\\"website\\\": \\\"string or 'no info'\\\",\\n  \\\"lastUpdated\\\": \\\"string or 'no info'\\\"\\n}\\n\\nReturn ONLY the raw JSON object with no Markdown, code fences, or additional commentary.\"\n    }\n  ],\n  \"max_tokens\": 3000,\n  \"temperature\": 0.2,\n  \"search_domain_filter\": [],\n  \"return_images\": false,\n  \"return_related_questions\": false,\n  \"search_recency_filter\": \"month\",\n  \"top_p\": 0.9,\n  \"presence_penalty\": 0,\n  \"frequency_penalty\": 1\n}\n",
+        "options": {}
+      },
+      "id": "95018ae9-9fcc-4dbc-ad52-c616643e1c40",
+      "name": "Perplexity Research Sonar Pro",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -608,
+        1280
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "Ok9KPJP4UMw6OLgP",
+          "name": "Unnamed credential"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "base": {
+          "__rl": true,
+          "value": "https://airtable.com/appnbpO20uWlcjTf5/tbl0FYAZn2gLFuD4F/viwUXIUqswTOTz16b?blocks=hide",
+          "mode": "url"
+        },
+        "table": {
+          "__rl": true,
+          "value": "https://airtable.com/appnbpO20uWlcjTf5/tbl0FYAZn2gLFuD4F/viwUXIUqswTOTz16b?blocks=hide",
+          "mode": "url"
+        },
+        "id": "={{ $json.id }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -1440,
+        1216
+      ],
+      "id": "5aa4f5af-6d1b-4940-b2b4-fe62ae8f2bf8",
+      "name": "Airtable Source1",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "69676b6c-2bf4-4312-b916-4316c66421a8",
+              "leftValue": "={{ $json[\"Company Domain\"] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "451b09f6-46cb-4093-b560-efb1b5c908a3",
+              "leftValue": "={{ $json[\"Company Domain\"] }}",
+              "rightValue": "=no info",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1200,
+        1248
+      ],
+      "id": "bdfddc17-3e05-4134-92ea-1d5a11703722",
+      "name": "If2",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.perplexity.ai/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"sonar\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are an elite UK legal sector researcher. Your task is to accurately infer and return the official name of the law firm associated with a given website or email domain. Use all available professional, business, and legal sector sources to map the domain to the actual firm name. Cross-reference sources for reliability.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Given the following website or email domain, research across all major professional sources to identify and return the official name of the law firm that owns or uses this domain. Search exhaustively and cross-check:\\n\\nInput domain: {{ $json['Company Domain'] }}\\n\\nSEARCH STRATEGY:\\n- Search Google '[domain] law firm', '[domain] solicitors', 'site:domain'\\n- Check LinkedIn for company profiles with this domain in their website or employee emails\\n- Search Legal 500, Chambers UK, and LawCareers.Net for firm profile matching the domain\\n- Check Law Society directory for registered domain or associated firm\\n- Review Companies House for firm websites and domains\\n- Search RocketReach, ZoomInfo, and Hunter.io for people or company records using this domain\\n- Look for press releases, legal industry news, or contact pages mentioning the domain\\n- Use employee LinkedIn profiles to infer firm's name from email patterns or profile employers\\n\\nOUTPUT REQUIREMENTS:\\n- Only return the official law firm name (e.g., 'A&L Goodbody', 'Herbert Smith Freehills')\\n- If multiple firms use the domain, return the PRIMARY/major firm\\n- If no conclusive match found after full search, return 'no info'\\n\\nJSON output (single field):\\n{\\n  \\\"firmName\\\": \\\"Full official law firm name or 'no info'\\\"\\n}\\n\\nEXAMPLES:\\nInput: 'algoodbody.com' → Output: { \\\"firmName\\\": \\\"A&L Goodbody\\\" }\\nInput: 'hsf.com' → Output: { \\\"firmName\\\": \\\"Herbert Smith Freehills\\\" }\\nInput: 'slaughterandmay.com' → Output: { \\\"firmName\\\": \\\"Slaughter and May\\\" }\\nInput: 'abclegal.co.uk' → Output: { \\\"firmName\\\": \\\"no info\\\" }\\n\\nCRITICAL RULES:\\n- Always research thoroughly across ALL listed sources\\n- Only return the law firm's actual official name\\n- Never return null, empty, or multiple fields\\n- Return ONLY the raw JSON object, never Markdown or code blocks\\n- If you cannot confidently identify the firm, return 'no info'\\n\\nReturn ONLY the raw JSON object.\"\n    }\n  ],\n  \"max_tokens\": 1000,\n  \"temperature\": 0.15,\n  \"search_domain_filter\": [\n    \"google.com\",\n    \"linkedin.com\",\n    \"legal500.com\",\n    \"chambers.com\",\n    \"lawcareers.net\",\n    \"rocketreach.co\",\n    \"zoominfo.com\",\n    \"hunter.io\",\n    \"companieshouse.gov.uk\",\n    \"lawsociety.org.uk\"\n  ],\n  \"search_recency_filter\": \"year\",\n  \"top_p\": 0.95,\n  \"presence_penalty\": 0,\n  \"frequency_penalty\": 1\n}\n",
+        "options": {}
+      },
+      "id": "05d3a98e-2679-4095-9dd9-ba2441f35158",
+      "name": "Perplexity Website domain",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -608,
+        992
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "Ok9KPJP4UMw6OLgP",
+          "name": "Unnamed credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.perplexity.ai/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"sonar\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are an expert researcher specializing in UK law firm digital infrastructure. Your task is to find the official website URL and email domain for law firms. Search comprehensively across all available sources including legal directories, LinkedIn, company databases, and professional networks. Cross-reference multiple sources to verify accuracy. Always return robust, verified results with proper formatting.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Find the official website URL and email domain for this law firm:\\n\\nFirm Name: {{ $json['Company Name'] }}\\n\\nSEARCH STRATEGY:\\n1. Search LinkedIn company page for official website link\\n2. Check Legal 500 UK firm directory for verified website\\n3. Search Chambers UK directory for firm website\\n4. Check Law Society directory for registered firm website\\n5. Search Google for '[Firm Name] official website' or '[Firm Name] solicitors'\\n6. Check RocketReach, ZoomInfo, or Hunter.io for email domain patterns\\n7. Look for published employee email addresses on firm website, LinkedIn profiles, or legal directories\\n8. Check Companies House for registered website if available\\n9. Search legal news and press releases mentioning the firm's website\\n\\nOUTPUT REQUIREMENTS:\\n\\n**Website URL**: \\n- Find the firm's primary official website\\n- Format as: www.domain.com (with www. prefix)\\n- Remove http:// or https:// but KEEP www.\\n- Example: www.algoodbody.com\\n\\n**Email Domain**:\\n- Find the domain used in employee email addresses\\n- Format as: domain.com (without www. prefix)\\n- Example: algoodbody.com OR hsf.com (if abbreviated)\\n- Verify by finding at least one published employee email if possible\\n- If not found separately, derive from website by removing www.\\n\\nNOTE: Some firms use different domains for website vs email (e.g., website: www.herbertsmithfreehills.com, email: hsf.com). Search specifically for employee email examples to catch this.\\n\\nReturn this exact JSON structure:\\n\\n{\\n  \\\"firmName\\\": \\\"Full official firm name or 'no info'\\\",\\n  \\\"websiteURL\\\": \\\"www.domain.com format or 'no info'\\\",\\n  \\\"emailDomain\\\": \\\"domain.com format (no www.) or 'no info'\\\",\\n  \\\"emailPattern\\\": \\\"firstname.lastname@domain.com or other pattern or 'no info'\\\",\\n  \\\"source\\\": \\\"Primary source where information was verified or 'no info'\\\",\\n  \\\"lastUpdated\\\": \\\"YYYY-MM-DD or 'no info'\\\"\\n}\\n\\nEXAMPLES:\\n\\nExample 1 - Same domain:\\n{\\n  \\\"firmName\\\": \\\"Slaughter and May\\\",\\n  \\\"websiteURL\\\": \\\"www.slaughterandmay.com\\\",\\n  \\\"emailDomain\\\": \\\"slaughterandmay.com\\\",\\n  \\\"emailPattern\\\": \\\"firstname.lastname@slaughterandmay.com\\\",\\n  \\\"source\\\": \\\"Legal 500 and LinkedIn company page\\\",\\n  \\\"lastUpdated\\\": \\\"2025-11-01\\\"\\n}\\n\\nExample 2 - Different domains:\\n{\\n  \\\"firmName\\\": \\\"Herbert Smith Freehills\\\",\\n  \\\"websiteURL\\\": \\\"www.herbertsmithfreehills.com\\\",\\n  \\\"emailDomain\\\": \\\"hsf.com\\\",\\n  \\\"emailPattern\\\": \\\"firstname.lastname@hsf.com\\\",\\n  \\\"source\\\": \\\"Legal 500 website, RocketReach for email domain\\\",\\n  \\\"lastUpdated\\\": \\\"2025-11-01\\\"\\n}\\n\\nExample 3 - A&L Goodbody:\\n{\\n  \\\"firmName\\\": \\\"A&L Goodbody\\\",\\n  \\\"websiteURL\\\": \\\"www.algoodbody.com\\\",\\n  \\\"emailDomain\\\": \\\"algoodbody.com\\\",\\n  \\\"emailPattern\\\": \\\"firstinitiallastname@algoodbody.com\\\",\\n  \\\"source\\\": \\\"Firm website and employee LinkedIn profiles\\\",\\n  \\\"lastUpdated\\\": \\\"2025-11-01\\\"\\n}\\n\\nCRITICAL RULES:\\n- Use multiple sources to verify - do not rely on a single source\\n- Website URL MUST have www. prefix (e.g., www.cliffordchance.com)\\n- Email Domain MUST NOT have www. prefix (e.g., cliffordchance.com)\\n- Search exhaustively across all listed sources before returning 'no info'\\n- Include email pattern if you can determine it from examples\\n- All fields must be present - never return null or omit fields\\n- Return ONLY the JSON object with no Markdown, explanations, or code blocks\\n\\nReturn ONLY the raw JSON object.\"\n    }\n  ],\n  \"max_tokens\": 2000,\n  \"temperature\": 0.2,\n  \"search_domain_filter\": [\n    \"linkedin.com\",\n    \"legal500.com\",\n    \"chambers.com\",\n    \"lawcareers.net\",\n    \"rocketreach.co\",\n    \"zoominfo.com\",\n    \"hunter.io\",\n    \"companieshouse.gov.uk\",\n    \"lawsociety.org.uk\",\n    \"google.com\"\n  ],\n  \"search_recency_filter\": \"year\",\n  \"top_p\": 0.9,\n  \"presence_penalty\": 0,\n  \"frequency_penalty\": 1\n}\n",
+        "options": {}
+      },
+      "id": "a95f53a2-9dae-4459-9bd7-69a5fcafce07",
+      "name": "Perplexity Website domain1",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -640,
+        688
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "Ok9KPJP4UMw6OLgP",
+          "name": "Unnamed credential"
+        }
+      },
+      "disabled": true
+    }
+  ],
+  "connections": {
+    "When clicking Test workflow1": {
+      "main": [
+        [
+          {
+            "node": "Date & Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Emails": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Perplexity Website domain",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Perplexity Research Sonar Pro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date Format1": {
+      "main": [
+        [
+          {
+            "node": "Airtable Source",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PP Flattening2": {
+      "main": [
+        [
+          {
+            "node": "Airtable Write",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Time": {
+      "main": [
+        [
+          {
+            "node": "Date Format1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Airtable Source": {
+      "main": [
+        [
+          {
+            "node": "Airtable Source1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Airtable Write": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Emails",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Emails",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "PP Flattening",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PP Flattening": {
+      "main": [
+        [
+          {
+            "node": "Airtable Write1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Airtable Write1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Emails",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Emails",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "PP Flattening2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Perplexity Research Sonar Pro": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Airtable Source1": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Emails",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Perplexity Website domain": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 0,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

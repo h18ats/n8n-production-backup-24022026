@@ -1,0 +1,488 @@
+{
+  "name": "HSFK UC 1.3 - Event Preparation Brief",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## HSFK UC 1.3 - Event Preparation Brief\n\n**Purpose:** Generate a comprehensive preparation brief for an external event (conference, dinner, speaking engagement, client event). Extends the UC 1.1 briefing pack pattern with per-attendee enrichment via Perplexity.\n\n**Trigger:** Webhook POST `/webhook/hsfk-event-prep`\n\n**Request body:**\n```json\n{\n  \"event_name\": \"string\",\n  \"event_type\": \"conference|dinner|speaking|client_event|other\",\n  \"attendees\": \"Firstname Lastname, Firstname Lastname, ...\",\n  \"event_date\": \"YYYY-MM-DD\",\n  \"context\": \"string (optional - purpose, theme, HSFK role)\"\n}\n```\n\n**Response body (200):**\n```json\n{\n  \"status\": \"success\",\n  \"pack_id\": \"string\",\n  \"event_name\": \"string\",\n  \"event_date\": \"string\",\n  \"brief\": {\n    \"event_overview\": \"string\",\n    \"attendee_briefings\": [\n      {\n        \"name\": \"string\",\n        \"who_they_are\": \"string\",\n        \"recent_news\": \"string\",\n        \"connection_to_hsfk\": \"string\",\n        \"conversation_starters\": \"string\"\n      }\n    ],\n    \"topics_to_avoid\": \"string\",\n    \"hsfk_talking_points\": \"string\"\n  },\n  \"airtable_record_id\": \"string\",\n  \"generated_at\": \"ISO 8601 string\"\n}\n```\n\n**Sub-workflows called:**\n- `qT0uycTDyAM7zQJ5` - shared-02 Perplexity News Search (called once per attendee + once for event)\n- `AI3InmjY6gmJwdXg` - shared-04 Vertex AI LLM Call (Claude Opus)\n- `zjwCkfCuH3GnW2qT` - shared-05 Airtable Audit Log\n\n**Airtable base:** `app0QZAuhY8Zx4I54`\n- Briefing Pack Log: `tblJLIBMnRzEWzMGi` (reused with trigger_type = event_prep)\n\n**Slack channel:** `#customer-hsfk`\n\n**UC spec:** n8n-workflows.json ucId 1.3\n**Extends:** UC 1.1 (same briefing pattern, adds attendee enrichment layer)\n**Phase:** 2\n**n8n instance:** leonard-dev.app.n8n.cloud\n\n**Note on attendee loop:** n8n does not natively loop sub-workflow calls in a single Code node. This workflow uses a SplitInBatches node to iterate over attendees, calling Perplexity once per attendee, then a final merge node reassembles results before the synthesis LLM call.",
+        "height": 680,
+        "width": 560,
+        "color": 6
+      },
+      "id": "sticky-note-docs",
+      "name": "Documentation",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -580,
+        -220
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "hsfk-event-prep",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -80,
+        240
+      ],
+      "webhookId": "hsfk-event-prep-001"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract and validate event prep request\nconst body = $json.body || $json;\n\nconst eventName = (body.event_name || '').trim();\nconst eventType = (body.event_type || 'other').trim();\nconst attendeesRaw = (body.attendees || '').trim();\nconst eventDate = (body.event_date || '').trim();\nconst context = (body.context || '').trim();\n\n// Validate required fields\nif (!eventName) {\n  throw new Error('Missing required field: event_name');\n}\nif (!eventDate) {\n  throw new Error('Missing required field: event_date');\n}\n\n// Parse comma-separated attendees into an array, filtering empty entries\nconst attendeeList = attendeesRaw\n  ? attendeesRaw.split(',').map(a => a.trim()).filter(a => a.length > 0)\n  : [];\n\nif (attendeeList.length === 0) {\n  throw new Error('Missing required field: attendees (provide at least one name)');\n}\n\n// Generate correlation ID\nconst executionId = `EP-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;\n\n// Emit one item per attendee so SplitInBatches can iterate\n// We also embed event context on each item for access in downstream nodes\nreturn attendeeList.map(attendeeName => ({\n  json: {\n    attendee_name: attendeeName,\n    event_name: eventName,\n    event_type: eventType,\n    event_date: eventDate,\n    event_context: context,\n    all_attendees: attendeeList,\n    execution_id: executionId,\n    started_at: new Date().toISOString()\n  }\n}));"
+      },
+      "id": "extract-request",
+      "name": "Extract & Validate Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "id": "split-attendees",
+      "name": "Split Attendees (one per batch)",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        400,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": "qT0uycTDyAM7zQJ5",
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "entity_name": "={{ $json.attendee_name }}",
+            "entity_type": "person",
+            "date_range": "last_90_days",
+            "max_results": 5
+          }
+        }
+      },
+      "id": "call-perplexity-attendee",
+      "name": "Call Perplexity - Attendee Profile",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1,
+      "position": [
+        640,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Package each attendee's Perplexity result alongside their name and event context\nconst perplexityResult = $json;\nconst attendeeData = $('Split Attendees (one per batch)').first().json;\n\nreturn {\n  json: {\n    attendee_name: attendeeData.attendee_name,\n    event_name: attendeeData.event_name,\n    event_type: attendeeData.event_type,\n    event_date: attendeeData.event_date,\n    event_context: attendeeData.event_context,\n    all_attendees: attendeeData.all_attendees,\n    execution_id: attendeeData.execution_id,\n    started_at: attendeeData.started_at,\n\n    // Perplexity results for this attendee\n    attendee_articles: perplexityResult.articles || [],\n    attendee_articles_count: perplexityResult.total_found || 0,\n    perplexity_status: perplexityResult.status || 'no_results'\n  }\n};"
+      },
+      "id": "package-attendee-result",
+      "name": "Package Attendee Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "attendee_results",
+        "options": {}
+      },
+      "id": "merge-attendee-results",
+      "name": "Merge All Attendee Results",
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": "qT0uycTDyAM7zQJ5",
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "entity_name": "={{ $json.attendee_results[0].event_name }}",
+            "entity_type": "industry",
+            "date_range": "last_30_days",
+            "max_results": 8
+          }
+        }
+      },
+      "id": "call-perplexity-event",
+      "name": "Call Perplexity - Event Context",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Merge event news with attendee results and build the LLM synthesis prompt\nconst eventNewsResult = $json;\nconst aggregatedData = $('Merge All Attendee Results').first().json;\nconst attendeeResults = aggregatedData.attendee_results || [];\n\n// Extract common event metadata from first attendee record\nconst firstRecord = attendeeResults[0] || {};\nconst eventName = firstRecord.event_name || '';\nconst eventType = firstRecord.event_type || 'event';\nconst eventDate = firstRecord.event_date || '';\nconst eventContext = firstRecord.event_context || '';\nconst allAttendees = firstRecord.all_attendees || [];\nconst executionId = firstRecord.execution_id || '';\nconst startedAt = firstRecord.started_at || new Date().toISOString();\n\n// Format event news for LLM\nconst eventArticles = (eventNewsResult.articles || []).map(a =>\n  `- [${a.date}] ${a.headline} (${a.source})\\n  ${a.summary}`\n).join('\\n\\n');\n\n// Format per-attendee data for LLM\nconst attendeeSections = attendeeResults.map(r => {\n  const articles = (r.attendee_articles || []).map(a =>\n    `  - [${a.date}] ${a.headline} (${a.source}): ${a.summary}`\n  ).join('\\n');\n  return `### ${r.attendee_name}\\nRecent news/profile (${r.attendee_articles_count} results):\\n${articles || '  No recent articles found.'}`;\n}).join('\\n\\n');\n\n// Build LLM system prompt\nconst systemPrompt = `You are an expert legal business development analyst preparing an event briefing for HSFK (a leading law firm). Your task is to create a comprehensive, actionable event preparation brief.\n\nThe brief must help a HSFK partner or fee-earner:\n1. Understand the event and its strategic relevance to HSFK\n2. Know who they will be meeting and have prepared talking points for each person\n3. Know which topics to avoid (sensitive matters, conflicts, etc.)\n4. Leave the event with clear relationship development actions\n\nReturn a JSON object with exactly these keys:\n{\n  \"event_overview\": \"3-4 sentences on the event: what it is, why HSFK is attending, strategic context, and key objectives for the firm at this event.\",\n  \"attendee_briefings\": [\n    {\n      \"name\": \"Full name of attendee\",\n      \"who_they_are\": \"2-3 sentences: current role, organisation, seniority, relevance to HSFK.\",\n      \"recent_news\": \"Key recent developments about this person (last 90 days). Format as bullet points with dates.\",\n      \"connection_to_hsfk\": \"What is or could be the relationship with HSFK? Existing client? Prospect? Referral source? Competitor? Be specific if known, speculative if not.\",\n      \"conversation_starters\": \"2-3 specific, prepared opening lines or questions for this person based on their recent news and context.\"\n    }\n  ],\n  \"topics_to_avoid\": \"Any sensitive areas to avoid based on the attendee profiles and event context. If none are obvious, say so.\",\n  \"hsfk_talking_points\": \"5 firm-level talking points HSFK representatives should be prepared to deliver at this event. These should reflect HSFK's strengths and current strategic positioning.\"\n}`;\n\n// Build user prompt\nconst userPrompt = `Prepare an event brief for: ${eventName}\nEvent type: ${eventType}\nDate: ${eventDate}\nContext: ${eventContext || 'No additional context provided'}\nAttendees: ${allAttendees.join(', ')}\n\n--- EVENT CONTEXT NEWS (from Perplexity) ---\n${eventArticles || 'No event-specific news found.'}\n\n--- PER-ATTENDEE RESEARCH (from Perplexity) ---\n${attendeeSections}\n\nSynthesize this into the event briefing JSON as specified. For attendee_briefings, include one entry per attendee in the order listed. Be specific and actionable.`;\n\nreturn {\n  json: {\n    // Event metadata\n    event_name: eventName,\n    event_type: eventType,\n    event_date: eventDate,\n    event_context: eventContext,\n    all_attendees: allAttendees,\n    attendee_count: attendeeResults.length,\n    execution_id: executionId,\n    started_at: startedAt,\n\n    // LLM inputs\n    system_prompt: systemPrompt,\n    user_prompt: userPrompt,\n    model: 'claude-opus-4-5',\n    temperature: 0.4,\n    response_format: 'json',\n    max_tokens: 6144,\n\n    // Audit metadata\n    event_articles_count: eventNewsResult.total_found || 0,\n    total_attendee_articles: attendeeResults.reduce((sum, r) => sum + (r.attendee_articles_count || 0), 0)\n  }\n};"
+      },
+      "id": "build-synthesis-prompt",
+      "name": "Build Synthesis Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1600,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": "AI3InmjY6gmJwdXg",
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "system_prompt": "={{ $json.system_prompt }}",
+            "user_prompt": "={{ $json.user_prompt }}",
+            "model": "={{ $json.model }}",
+            "temperature": "={{ $json.temperature }}",
+            "response_format": "={{ $json.response_format }}",
+            "max_tokens": "={{ $json.max_tokens }}"
+          }
+        }
+      },
+      "id": "call-llm-synthesise",
+      "name": "Call LLM - Synthesise Event Brief",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1,
+      "position": [
+        1840,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Structure the final event brief from LLM output\nconst llmResult = $json;\nconst requestData = $('Build Synthesis Prompt').first().json;\n\nlet brief = {\n  event_overview: '',\n  attendee_briefings: [],\n  topics_to_avoid: '',\n  hsfk_talking_points: ''\n};\n\nif (llmResult.json_valid && llmResult.parsed_json) {\n  const parsed = llmResult.parsed_json;\n  brief.event_overview = parsed.event_overview || '';\n  brief.attendee_briefings = parsed.attendee_briefings || [];\n  brief.topics_to_avoid = parsed.topics_to_avoid || '';\n  brief.hsfk_talking_points = parsed.hsfk_talking_points || '';\n} else {\n  // Fallback: wrap raw text in event_overview\n  brief.event_overview = llmResult.text || 'LLM response could not be parsed. Please retry.';\n}\n\n// Generate pack ID\nconst packId = `EP-${requestData.event_name.replace(/[^A-Za-z0-9]/g, '').substring(0, 8).toUpperCase()}-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}`;\n\n// Build data sources summary\nconst dataSourcesSummary = [\n  `Perplexity event context (${requestData.event_articles_count} articles)`,\n  `Perplexity per-attendee (${requestData.total_attendee_articles} articles across ${requestData.attendee_count} attendees)`\n].join(', ');\n\nreturn {\n  json: {\n    // Identifiers\n    pack_id: packId,\n    execution_id: requestData.execution_id,\n\n    // Event data\n    event_name: requestData.event_name,\n    event_type: requestData.event_type,\n    event_date: requestData.event_date,\n    event_context: requestData.event_context,\n    all_attendees: requestData.all_attendees,\n    attendee_count: requestData.attendee_count,\n    started_at: requestData.started_at,\n\n    // Brief content\n    brief: brief,\n\n    // Audit metadata\n    llm_model: llmResult.model_used || 'claude-opus-4-5',\n    llm_tokens: llmResult.total_tokens || 0,\n    llm_duration_ms: llmResult.duration_ms || 0,\n    json_valid: llmResult.json_valid || false,\n    data_sources_used: dataSourcesSummary,\n    generated_at: new Date().toISOString()\n  }\n};"
+      },
+      "id": "structure-event-brief",
+      "name": "Structure Event Brief",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2080,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.airtable.com/v0/app0QZAuhY8Zx4I54/tblJLIBMnRzEWzMGi",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({\n  fields: {\n    'Client Name': $json.event_name,\n    'Meeting Date': $json.event_date,\n    'Meeting Title': `[${$json.event_type.toUpperCase()}] ${$json.event_name}`,\n    'Trigger Type': 'event_prep',\n    'Recipient': $json.all_attendees.join(', '),\n    'Generated At': $json.generated_at,\n    'Data Sources Used': $json.data_sources_used,\n    'Status': $json.json_valid ? 'success' : 'partial',\n    'Workflow Execution ID': $json.execution_id\n  }\n}) }}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": false,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "log-to-airtable",
+      "name": "Log to Briefing Pack Log",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2320,
+        240
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "AIRTABLE_API_CRED",
+          "name": "Airtable API - Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Store Airtable record ID alongside all brief data\nconst airtableResult = $json;\nconst briefData = $('Structure Event Brief').first().json;\n\nreturn {\n  json: {\n    ...briefData,\n    airtable_record_id: airtableResult.id || ''\n  }\n};"
+      },
+      "id": "store-airtable-id",
+      "name": "Store Airtable Record ID",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2560,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://slack.com/api/chat.postMessage",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({\n  channel: '#customer-hsfk',\n  text: `Event brief generated for *${$json.event_name}* on *${$json.event_date}*`,\n  blocks: [\n    {\n      type: 'section',\n      text: {\n        type: 'mrkdwn',\n        text: `:calendar: *Event Brief Ready* | UC 1.3\\n\\n*Event:* ${$json.event_name}\\n*Type:* ${$json.event_type}\\n*Date:* ${$json.event_date}\\n*Attendees (${$json.attendee_count}):* ${$json.all_attendees.join(', ')}\\n*Data Sources:* ${$json.data_sources_used}\\n*Generated:* ${$json.generated_at}`\n      }\n    },\n    {\n      type: 'section',\n      text: {\n        type: 'mrkdwn',\n        text: `*Status:* ${$json.json_valid ? ':white_check_mark: Complete' : ':warning: Partial (JSON parse issue)'}\\n*Execution ID:* \\`${$json.execution_id}\\``\n      }\n    }\n  ]\n}) }}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": false,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "post-slack-notification",
+      "name": "Post Slack Notification",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2800,
+        240
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "SLACK_API_CRED",
+          "name": "Slack API - Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({\n  status: 'success',\n  pack_id: $('Store Airtable Record ID').first().json.pack_id,\n  event_name: $('Store Airtable Record ID').first().json.event_name,\n  event_date: $('Store Airtable Record ID').first().json.event_date,\n  brief: $('Store Airtable Record ID').first().json.brief,\n  airtable_record_id: $('Store Airtable Record ID').first().json.airtable_record_id,\n  data_sources_used: $('Store Airtable Record ID').first().json.data_sources_used,\n  attendee_count: $('Store Airtable Record ID').first().json.attendee_count,\n  generated_at: $('Store Airtable Record ID').first().json.generated_at,\n  execution_id: $('Store Airtable Record ID').first().json.execution_id\n}) }}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "id": "webhook-response",
+      "name": "Webhook Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        3040,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": "zjwCkfCuH3GnW2qT",
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "workflow_name": "HSFK UC 1.3 - Event Preparation Brief",
+            "use_case_id": "1.3",
+            "trigger_type": "webhook",
+            "started_at": "={{ $('Store Airtable Record ID').first().json.started_at }}",
+            "finished_at": "={{ new Date().toISOString() }}",
+            "status": "={{ $('Store Airtable Record ID').first().json.json_valid ? 'success' : 'partial' }}",
+            "input_summary": "={{ `event=${$('Store Airtable Record ID').first().json.event_name}, date=${$('Store Airtable Record ID').first().json.event_date}, attendees=${$('Store Airtable Record ID').first().json.attendee_count}` }}",
+            "output_summary": "={{ `Event brief generated. Sources: ${$('Store Airtable Record ID').first().json.data_sources_used}` }}",
+            "triggered_by": "webhook",
+            "execution_id": "={{ $('Store Airtable Record ID').first().json.execution_id }}",
+            "llm_tokens_used": "={{ $('Store Airtable Record ID').first().json.llm_tokens }}"
+          }
+        }
+      },
+      "id": "call-audit-log",
+      "name": "Log via Shared-05 Audit",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1,
+      "position": [
+        3280,
+        240
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Extract & Validate Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract & Validate Request": {
+      "main": [
+        [
+          {
+            "node": "Split Attendees (one per batch)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Attendees (one per batch)": {
+      "main": [
+        [
+          {
+            "node": "Call Perplexity - Attendee Profile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Perplexity - Attendee Profile": {
+      "main": [
+        [
+          {
+            "node": "Package Attendee Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Package Attendee Result": {
+      "main": [
+        [
+          {
+            "node": "Merge All Attendee Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge All Attendee Results": {
+      "main": [
+        [
+          {
+            "node": "Call Perplexity - Event Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Perplexity - Event Context": {
+      "main": [
+        [
+          {
+            "node": "Build Synthesis Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Synthesis Prompt": {
+      "main": [
+        [
+          {
+            "node": "Call LLM - Synthesise Event Brief",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call LLM - Synthesise Event Brief": {
+      "main": [
+        [
+          {
+            "node": "Structure Event Brief",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structure Event Brief": {
+      "main": [
+        [
+          {
+            "node": "Log to Briefing Pack Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log to Briefing Pack Log": {
+      "main": [
+        [
+          {
+            "node": "Store Airtable Record ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Airtable Record ID": {
+      "main": [
+        [
+          {
+            "node": "Post Slack Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post Slack Notification": {
+      "main": [
+        [
+          {
+            "node": "Webhook Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Response": {
+      "main": [
+        [
+          {
+            "node": "Log via Shared-05 Audit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 1,
+  "meta": null
+}

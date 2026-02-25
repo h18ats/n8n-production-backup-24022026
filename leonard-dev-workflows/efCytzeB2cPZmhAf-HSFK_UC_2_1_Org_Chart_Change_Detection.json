@@ -1,0 +1,242 @@
+{
+  "name": "HSFK UC 2.1 - Org Chart Change Detection",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## HSFK UC 2.1 - Org Chart Change Detection\n\n**Trigger:** Weekly schedule - Monday 03:00 UTC (`0 3 * * 1`)\n\n**Purpose:** Placeholder workflow until HR/People system API access is granted. Reads the Org Structure table from Airtable, checks data freshness (Last HR Sync field), and posts a Slack reminder if data is stale (>7 days old). Logs execution via shared-05.\n\n**Flow:**\n1. Schedule trigger (Mon 03:00 UTC)\n2. Load all records from Org Structure table\n3. Check data freshness: find records where Last HR Sync is >7 days old\n4. Build Slack reminder message (how many records, max staleness)\n5. Post reminder to Slack\n6. Audit log via shared-05\n\n**Sub-workflow IDs:**\n- shared-05 (Airtable Audit): `zjwCkfCuH3GnW2qT`\n\n**Airtable base:** `app0QZAuhY8Zx4I54`\n- Org Structure: `tblxBbGWi492p1Kjc`\n\n**LE Fit Score:** 2/5 (lowest fit). This is a placeholder until HR API access is confirmed. Visual org chart rendering is out of scope for LE workflows.\n\n**Note:** When HR/People system API credentials are available, extend this workflow to: pull delta from HR API, compare with Airtable, detect changes (new hires, departures, role changes, reporting line changes), and call shared-04 LLM for change summary.",
+        "height": 520,
+        "width": 500,
+        "color": 6
+      },
+      "id": "sticky-note-docs",
+      "name": "Documentation",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 3 * * 1"
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger",
+      "name": "Weekly Schedule - Mon 03:00 UTC",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -80,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Initialise run context\nconst startTime = Date.now();\nreturn {\n  json: {\n    run_id: `uc21-${startTime}`,\n    started_at: new Date().toISOString(),\n    start_time: startTime,\n    trigger_type: 'schedule',\n    staleness_threshold_days: 7\n  }\n};"
+      },
+      "id": "init-run",
+      "name": "Initialise Run",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "app0QZAuhY8Zx4I54"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tblxBbGWi492p1Kjc"
+        },
+        "filterByFormula": "",
+        "sort": [],
+        "fields": [
+          "Employee Name",
+          "Current Role",
+          "Department",
+          "Last HR Sync"
+        ],
+        "options": {}
+      },
+      "id": "load-org-structure",
+      "name": "Load Org Structure Records",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        400,
+        240
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "AIRTABLE_TOKEN_CRED",
+          "name": "Airtable - Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Aggregate all org records and check data freshness\n// Find records where Last HR Sync is >7 days old or missing\nconst items = $input.all();\nconst now = new Date();\nconst thresholdMs = 7 * 24 * 60 * 60 * 1000; // 7 days in ms\n\nconst totalRecords = items.length;\nlet staleRecords = 0;\nlet oldestSyncMs = 0;\nlet oldestSyncDate = null;\n\nitems.forEach(item => {\n  const lastSync = item.json['Last HR Sync'];\n  if (!lastSync) {\n    // No sync date at all - treat as maximally stale\n    staleRecords++;\n    oldestSyncMs = Math.max(oldestSyncMs, now.getTime()); // all time\n  } else {\n    const syncDate = new Date(lastSync);\n    const ageMs = now.getTime() - syncDate.getTime();\n    if (ageMs > thresholdMs) {\n      staleRecords++;\n      if (ageMs > oldestSyncMs) {\n        oldestSyncMs = ageMs;\n        oldestSyncDate = lastSync;\n      }\n    }\n  }\n});\n\nconst oldestDays = oldestSyncMs > 0\n  ? Math.floor(oldestSyncMs / (24 * 60 * 60 * 1000))\n  : 0;\n\nconst needsReminder = staleRecords > 0;\n\n// Build the Slack message\nlet slackMessage;\nif (needsReminder) {\n  slackMessage = `:building_construction: *HSFK Org Chart Data Check*\\n\\n`;\n  slackMessage += `The org structure data in Airtable requires a manual update.\\n\\n`;\n  slackMessage += `• *Total records in system:* ${totalRecords}\\n`;\n  slackMessage += `• *Records with stale HR sync (>7 days):* ${staleRecords}\\n`;\n  if (oldestDays > 0) {\n    slackMessage += `• *Oldest sync:* ~${oldestDays} days ago\\n`;\n  }\n  slackMessage += `\\nNo HR API access is configured yet. Please update the <https://airtable.com/app0QZAuhY8Zx4I54/tblxBbGWi492p1Kjc|HSFK Org Structure> table manually, or raise access to the HR/People system with the HSFK IT team.`;\n} else {\n  slackMessage = `:white_check_mark: *HSFK Org Chart Data Check*\\n\\nAll ${totalRecords} org structure records have been synced within the last 7 days. No action required.`;\n}\n\nreturn {\n  json: {\n    total_records: totalRecords,\n    stale_records: staleRecords,\n    oldest_sync_days: oldestDays,\n    needs_reminder: needsReminder,\n    slack_message: slackMessage,\n    checked_at: now.toISOString()\n  }\n};"
+      },
+      "id": "check-data-freshness",
+      "name": "Check Data Freshness",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        640,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://slack.com/api/chat.postMessage",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({ channel: 'hsfk-intelligence', text: $json.slack_message, unfurl_links: false }) }}",
+        "options": {
+          "timeout": 10000,
+          "response": {
+            "response": {
+              "fullResponse": false,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "slack-post-reminder",
+      "name": "Post Slack Reminder",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        880,
+        240
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "SLACK_BOT_CRED",
+          "name": "Slack Bot - Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "zjwCkfCuH3GnW2qT"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "workflow_name": "HSFK UC 2.1 - Org Chart Change Detection",
+            "use_case_id": "2.1",
+            "trigger_type": "schedule",
+            "input_summary": "={{ 'Weekly org structure freshness check: ' + $('Check Data Freshness').first().json.total_records + ' records scanned' }}",
+            "output_summary": "={{ $('Check Data Freshness').first().json.stale_records + ' stale records found (>' + $('Check Data Freshness').first().json.oldest_sync_days + ' days). Slack reminder sent: ' + $('Check Data Freshness').first().json.needs_reminder }}",
+            "status": "success",
+            "duration_ms": 0
+          }
+        },
+        "options": {}
+      },
+      "id": "audit-log",
+      "name": "Audit Log via Shared-05",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        1120,
+        240
+      ]
+    }
+  ],
+  "connections": {
+    "Weekly Schedule - Mon 03:00 UTC": {
+      "main": [
+        [
+          {
+            "node": "Initialise Run",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Initialise Run": {
+      "main": [
+        [
+          {
+            "node": "Load Org Structure Records",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Org Structure Records": {
+      "main": [
+        [
+          {
+            "node": "Check Data Freshness",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Data Freshness": {
+      "main": [
+        [
+          {
+            "node": "Post Slack Reminder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post Slack Reminder": {
+      "main": [
+        [
+          {
+            "node": "Audit Log via Shared-05",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:Weekly Schedule - Mon 03:00 UTC": {
+      "recurrenceRules": []
+    }
+  },
+  "pinData": {},
+  "triggerCount": 1,
+  "meta": null
+}

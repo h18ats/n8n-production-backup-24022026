@@ -1,0 +1,268 @@
+{
+  "name": "DEV - Taxi Luke 4 - Outbound Call with Agent ID set",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -672,
+        -80
+      ],
+      "id": "dfebb41e-ed1c-4687-90d1-d4db10b0a8ef",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "amount": 1,
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        -80
+      ],
+      "id": "bb254caf-0eef-4f7b-b5d0-d12e81424263",
+      "name": "Wait 1min",
+      "webhookId": "d461a333-a65d-4167-97a3-d477c7557058"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "uaPX2R6gYpLB9nXn",
+          "mode": "list",
+          "cachedResultName": "DEV - Taxi Luke 5 - Delete Agent & KB"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        448,
+        -80
+      ],
+      "id": "620f40e8-8e57-4422-b0d0-193d8726bfc7",
+      "name": "Execute Workflow"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a7518b23-e670-4c5b-b688-be09a1e6a1ec",
+              "name": "agent_id",
+              "value": "={{ $json.agent_id }}",
+              "type": "string"
+            },
+            {
+              "id": "04dd8171-07a9-4301-87af-c04cfde78325",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "d0497ea3-1b22-4b93-bd85-c71f56cf8442",
+              "name": "org_fullname",
+              "value": "={{ $json.org_fullname }}",
+              "type": "string"
+            },
+            {
+              "id": "b1911457-47fe-4e5c-9fab-0a8f247495fd",
+              "name": "org_firstname",
+              "value": "={{ $json.org_firstname }}",
+              "type": "string"
+            },
+            {
+              "id": "8fefcb8f-fa15-473b-8577-5a7f609b1d56",
+              "name": "org_biz",
+              "value": "={{ $json.org_biz }}",
+              "type": "string"
+            },
+            {
+              "id": "919c9553-a624-4186-9599-d816881563d8",
+              "name": "org_email",
+              "value": "={{ $json.org_email }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -448,
+        -80
+      ],
+      "id": "a455bda1-1f27-44a7-82c2-4cd9241dc3b7",
+      "name": "Set Nodes to pass"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a7518b23-e670-4c5b-b688-be09a1e6a1ec",
+              "name": "agent_id",
+              "value": "={{ $('Set Nodes to pass').item.json.agent_id }}",
+              "type": "string"
+            },
+            {
+              "id": "04dd8171-07a9-4301-87af-c04cfde78325",
+              "name": "id",
+              "value": "={{ $('Set Nodes to pass').item.json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "560d4da2-5842-4c16-a2cc-0696c57bbb2d",
+              "name": "org_firstname",
+              "value": "={{ $('When Executed by Another Workflow').item.json.org_firstname }}",
+              "type": "string"
+            },
+            {
+              "id": "aaab8506-e9e4-4044-acb3-8b390c4eeed1",
+              "name": "org_fullname",
+              "value": "={{ $('When Executed by Another Workflow').item.json.org_fullname }}",
+              "type": "string"
+            },
+            {
+              "id": "980b63fc-4a34-46da-805a-9ceee314b51e",
+              "name": "org_biz",
+              "value": "={{ $('When Executed by Another Workflow').item.json.org_biz }}",
+              "type": "string"
+            },
+            {
+              "id": "a5c4f63e-1f3c-49a4-b0b9-35c798bf45f7",
+              "name": "org_email",
+              "value": "={{ $('When Executed by Another Workflow').item.json.org_email }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        224,
+        -80
+      ],
+      "id": "0c3e9bfa-f681-4d88-8b94-73aad7bbe245",
+      "name": "Set Nodes to pass1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.elevenlabs.io/v1/convai/twilio/outbound-call",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "={\n  \"xi-api-key\": \"sk_fb475a342401f1e2495de38b2193518f54778f4427ce83de\",\n  \"Content-Type\": \"application/json\"\n}\n",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n\"agent_id\": \"{{ $json.agent_id }}\",\n  \"agent_phone_number_id\": \"phnum_01jvx1f76mfg6akt98vk9jqyqh\",\n  \"to_number\": \"+447889758119\",\n  \"conversation_initiation_client_data\": {\n    \"client_name\": \"Legal Engine Ltd\",\n    \"matter_ref\": \"M-2025-001\"\n  }\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -224,
+        -80
+      ],
+      "id": "5e37bdd9-8bff-4f8e-b765-439032a29cc6",
+      "name": "Outbound Call - 447889758119"
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Set Nodes to pass",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 1min": {
+      "main": [
+        [
+          {
+            "node": "Set Nodes to pass1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Nodes to pass": {
+      "main": [
+        [
+          {
+            "node": "Outbound Call - 447889758119",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Nodes to pass1": {
+      "main": [
+        [
+          {
+            "node": "Execute Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Outbound Call - 447889758119": {
+      "main": [
+        [
+          {
+            "node": "Wait 1min",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": {
+    "node:Schedule Trigger": {
+      "recurrenceRules": []
+    }
+  },
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "agent_id": "agent_0901k4nme0wyfnwvkvsxfevqxw4c",
+          "id": "aRqBNqXA4Y6QkHbu2OCQ",
+          "org_fullname": "Lara Howie",
+          "org_firstname": "Lara",
+          "org_biz": "Legalengine",
+          "org_email": "lara@legalengine.co.uk"
+        }
+      }
+    ]
+  },
+  "triggerCount": 1,
+  "meta": null
+}

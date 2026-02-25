@@ -1,0 +1,674 @@
+{
+  "name": "ADAPTIVE - Email Processor",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "workflow-trigger",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        240,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Unpack email data from the trigger input\nconst input = $input.first().json;\n\nconst emailData = {\n  message_id: input.message_id || '',\n  subject: input.subject || '',\n  body: input.body || '',\n  body_preview: (input.body || '').substring(0, 500),\n  from_email: (input.from_email || '').toLowerCase().trim(),\n  from_name: input.from_name || '',\n  received_at: input.received_at || new Date().toISOString(),\n  thread_id: input.thread_id || '',\n};\n\nif (!emailData.from_email) {\n  throw new Error('Email data missing from_email field');\n}\n\nreturn [{ json: emailData }];"
+      },
+      "id": "unpack-email",
+      "name": "Unpack Email Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "={{ $vars.ADAPTIVE_AIRTABLE_BASE_ID }}",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "Consultants",
+          "mode": "name"
+        },
+        "filterByFormula": "=LOWER({Email})='{{ $json.from_email }}'",
+        "returnAll": false,
+        "limit": 1,
+        "options": {}
+      },
+      "id": "lookup-consultant",
+      "name": "Lookup Consultant in Airtable",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2,
+      "position": [
+        640,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Check if consultant was found, merge context\nconst emailData = $('Unpack Email Data').first().json;\nconst records = $input.all();\n\nlet consultant = null;\nlet is_new_consultant = false;\n\nif (records && records.length > 0 && records[0].json?.id) {\n  consultant = {\n    record_id: records[0].json.id,\n    name: records[0].json.fields?.Name || 'Unknown',\n    email: records[0].json.fields?.Email || emailData.from_email,\n    current_stage: records[0].json.fields?.['Current Stage'] || 'Welcome',\n    status: records[0].json.fields?.Status || 'Active',\n    assigned_operator: records[0].json.fields?.['Assigned Operator'] || 'Esther Blake',\n    verified: records[0].json.fields?.Verified || false,\n    client: records[0].json.fields?.Client || '',\n    placement_role: records[0].json.fields?.['Placement Role'] || '',\n    start_date: records[0].json.fields?.['Start Date'] || '',\n  };\n} else {\n  is_new_consultant = true;\n  consultant = {\n    record_id: null,\n    name: emailData.from_name || emailData.from_email.split('@')[0],\n    email: emailData.from_email,\n    current_stage: 'Welcome',\n    status: 'Active',\n    assigned_operator: 'Esther Blake',\n    verified: false,\n    client: '',\n    placement_role: '',\n    start_date: '',\n  };\n}\n\nreturn [{ json: { ...emailData, consultant, is_new_consultant } }];"
+      },
+      "id": "check-consultant-exists",
+      "name": "Check if Consultant Exists",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        840,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "is-new",
+              "leftValue": "={{ $json.is_new_consultant }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "is-new-consultant",
+      "name": "New Consultant?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1040,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "={{ $vars.ADAPTIVE_AIRTABLE_BASE_ID }}",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "Consultants",
+          "mode": "name"
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "Name",
+              "fieldValue": "={{ $json.consultant.name }}"
+            },
+            {
+              "fieldId": "Email",
+              "fieldValue": "={{ $json.consultant.email }}"
+            },
+            {
+              "fieldId": "Current Stage",
+              "fieldValue": "Welcome"
+            },
+            {
+              "fieldId": "Status",
+              "fieldValue": "Active"
+            },
+            {
+              "fieldId": "Assigned Operator",
+              "fieldValue": "Esther Blake"
+            },
+            {
+              "fieldId": "Verified",
+              "fieldValue": false
+            },
+            {
+              "fieldId": "Notes",
+              "fieldValue": "Auto-created from inbound email {{ $json.received_at }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "create-consultant-record",
+      "name": "Create New Consultant Record",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2,
+      "position": [
+        1240,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Merge new record ID back into context\nconst emailData = $('Check if Consultant Exists').first().json;\nconst newRecord = $input.first().json;\n\nconst updatedConsultant = {\n  ...emailData.consultant,\n  record_id: newRecord.id,\n  current_stage: 'Welcome',\n};\n\nreturn [{ json: { ...emailData, consultant: updatedConsultant, is_new_consultant: true } }];"
+      },
+      "id": "merge-new-record",
+      "name": "Merge New Record ID",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1440,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "AI3InmjY6gmJwdXg",
+          "mode": "id"
+        },
+        "source": "passthrough",
+        "responseData": "lastNode",
+        "options": {}
+      },
+      "id": "classify-intent",
+      "name": "Classify Intent (Vertex AI)",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1,
+      "position": [
+        1640,
+        400
+      ],
+      "notes": "Calls HSFK Shared 04 - Vertex AI LLM Call sub-workflow"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Prepare LLM input for intent classification\n// This node runs BEFORE the Vertex AI call - sets system/user prompts\nconst ctx = $input.first().json;\n\n// Build the user prompt for intent classification\nconst systemPrompt = `You are an intelligent email classifier for Simmons Adaptive, a contract lawyer placement firm. Classify incoming emails from consultants during onboarding.\n\nReturn ONLY valid JSON with fields: intent, confidence, reasoning, suggested_action, escalation_trigger.\n\nIntent categories: FAQ_QUESTION, FORM_SUBMISSION, STAGE_PROGRESSION, COMPLAINT, CONTRACT_QUERY, ESCALATION_NEEDED, GENERAL, UNKNOWN\n\nEscalation triggers: complaint, legal, clause, dispute, unfair, discriminat, harass, wrong, IP clause, restrictive covenant, counter-offer\n\nBe conservative - when in doubt, choose ESCALATION_NEEDED.`;\n\nconst userPrompt = `Classify this email:\n\nConsultant: ${ctx.consultant.name}\nStage: ${ctx.consultant.current_stage}\nSubject: ${ctx.subject}\nBody:\n---\n${ctx.body.substring(0, 2000)}\n---\n\nReturn JSON: {\"intent\": \"...\", \"confidence\": 0.0, \"reasoning\": \"...\", \"suggested_action\": \"...\", \"escalation_trigger\": null}`;\n\nreturn [{\n  json: {\n    // Pass through all context\n    ...ctx,\n    // Vertex AI sub-workflow inputs\n    system_prompt: systemPrompt,\n    user_prompt: userPrompt,\n    model: 'gemini-2.5-flash',\n    temperature: 0.1,\n    response_format: 'json',\n    max_tokens: 500,\n  }\n}];"
+      },
+      "id": "prepare-classification-prompt",
+      "name": "Prepare Classification Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1440,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse LLM classification response and merge with context\nconst ctx = $('Prepare Classification Prompt').first().json;\nconst llmOutput = $input.first().json;\n\nlet classification = {\n  intent: 'UNKNOWN',\n  confidence: 0.0,\n  reasoning: 'LLM response parse failed',\n  suggested_action: 'Escalate to human operator',\n  escalation_trigger: null,\n};\n\ntry {\n  // The Vertex AI sub-workflow returns text in 'output' or similar field\n  const rawOutput = llmOutput.output || llmOutput.text || llmOutput.response || JSON.stringify(llmOutput);\n  const parsed = typeof rawOutput === 'string' ? JSON.parse(rawOutput) : rawOutput;\n  classification = {\n    intent: parsed.intent || 'UNKNOWN',\n    confidence: parsed.confidence || 0.0,\n    reasoning: parsed.reasoning || '',\n    suggested_action: parsed.suggested_action || '',\n    escalation_trigger: parsed.escalation_trigger || null,\n  };\n} catch (e) {\n  console.log('Failed to parse LLM response:', e.message);\n  // Default to escalation on parse failure\n  classification.intent = 'ESCALATION_NEEDED';\n  classification.reasoning = `LLM parse error: ${e.message}`;\n}\n\n// Force escalation for certain intents regardless of LLM output\nconst auto_escalate = ['COMPLAINT', 'CONTRACT_QUERY', 'ESCALATION_NEEDED'];\nconst should_escalate = auto_escalate.includes(classification.intent);\n\nreturn [{\n  json: {\n    ...ctx,\n    classification,\n    should_escalate,\n  }\n}];"
+      },
+      "id": "parse-classification",
+      "name": "Parse Classification Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1840,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "should-escalate",
+              "leftValue": "={{ $json.should_escalate }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "route-escalation",
+      "name": "Should Escalate?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2040,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "is-faq",
+              "leftValue": "={{ $json.classification.intent }}",
+              "rightValue": "FAQ_QUESTION",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "route-faq",
+      "name": "Is FAQ?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2240,
+        600
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Handle escalation: forward email to operator with context\nconst ctx = $input.first().json;\n\nconst operatorEmail = 'edu@legalengine.co.uk'; // fallback: esther.blake@simmons-simmons.com for production\nconst consultantName = ctx.consultant.name;\nconst consultantEmail = ctx.consultant.email;\nconst stage = ctx.consultant.current_stage;\nconst intent = ctx.classification.intent;\nconst reasoning = ctx.classification.reasoning;\nconst trigger = ctx.classification.escalation_trigger;\n\nconst escalationSubject = `[ADAPTIVE ESCALATION] ${intent}: ${ctx.subject} - ${consultantName}`;\nconst escalationBody = `An inbound email has been escalated to you for personal attention.\n\n---\n\nConsultant: ${consultantName} (${consultantEmail})\nOnboarding Stage: ${stage}\nEscalation Reason: ${intent}\nClassification: ${reasoning}\n${trigger ? `Trigger phrase: \"${trigger}\"` : ''}\n\n---\n\nOriginal Email Subject: ${ctx.subject}\nReceived: ${ctx.received_at}\n\nOriginal Email Body:\n\n${ctx.body}\n\n---\n\nPlease respond directly to the consultant at: ${consultantEmail}\n\nThis escalation was generated automatically by the Simmons Adaptive Onboarding Assistant.`;\n\nreturn [{\n  json: {\n    ...ctx,\n    escalation_email: {\n      to: operatorEmail,\n      subject: escalationSubject,\n      body: escalationBody,\n    },\n    // Response to consultant\n    consultant_response: {\n      to: consultantEmail,\n      subject: `Re: ${ctx.subject}`,\n      body: `Dear ${consultantName.split(' ')[0]},\\n\\nThank you for your message. Your query has been reviewed and forwarded to ${ctx.consultant.assigned_operator} for personal attention.\\n\\nYou can expect a response during business hours (Monday to Friday, 09:30 to 17:30). We aim to respond to all forwarded queries within 4 working hours.\\n\\nYou do not need to resend your message - we have everything we need and your query is in good hands.\\n\\nBest regards,\\nAdaptive Onboarding Assistant\\nSimmons Adaptive`,\n    },\n    log_entry: {\n      consultant_email: consultantEmail,\n      direction: 'Inbound',\n      channel: 'Email',\n      subject: ctx.subject,\n      body_preview: ctx.body_preview,\n      full_body: ctx.body,\n      classification: 'Escalation',\n      llm_confidence: ctx.classification.confidence,\n      escalated: true,\n      response_sent: true,\n      email_message_id: ctx.message_id,\n      timestamp: ctx.received_at,\n    }\n  }\n}];"
+      },
+      "id": "prepare-escalation",
+      "name": "Prepare Escalation",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2240,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Handle FAQ response: load FAQs, build LLM prompt\nconst ctx = $input.first().json;\n\n// FAQ KB would be loaded from Airtable in production.\n// For now, include inline to avoid another Airtable call in the hot path.\n// In production: fetch from Airtable FAQ Knowledge Base table.\nconst faqKbJson = '[{\"id\":\"FAQ_001\",\"question\":\"When do I get paid?\",\"keywords\":\"pay,payment,salary,wages,payday\"},{\"id\":\"FAQ_002\",\"question\":\"How do I change my address?\",\"keywords\":\"address,change address,moved\"},{\"id\":\"FAQ_003\",\"question\":\"When does my placement start?\",\"keywords\":\"start date,start,begin,first day\"},{\"id\":\"FAQ_004\",\"question\":\"How do I claim expenses?\",\"keywords\":\"expenses,claim,receipt,travel\"},{\"id\":\"FAQ_005\",\"question\":\"What is the dress code?\",\"keywords\":\"dress code,attire,clothing\"},{\"id\":\"FAQ_006\",\"question\":\"How do I get IT access?\",\"keywords\":\"IT,systems,access,login,computer\"},{\"id\":\"FAQ_007\",\"question\":\"Where do I submit my NI number?\",\"keywords\":\"NI number,national insurance\"},{\"id\":\"FAQ_008\",\"question\":\"How do I provide my bank details?\",\"keywords\":\"bank details,sort code,account number\"},{\"id\":\"FAQ_009\",\"question\":\"What are the contract terms?\",\"keywords\":\"contract,notice period,terms\"},{\"id\":\"FAQ_010\",\"question\":\"How much holiday entitlement do I have?\",\"keywords\":\"holiday,annual leave,vacation\"},{\"id\":\"FAQ_011\",\"question\":\"What happens if I am ill?\",\"keywords\":\"sick,illness,sick leave\"},{\"id\":\"FAQ_012\",\"question\":\"Should I use an umbrella company or PAYE?\",\"keywords\":\"umbrella,PAYE,tax,IR35\"},{\"id\":\"FAQ_013\",\"question\":\"What references are required?\",\"keywords\":\"references,reference check\"},{\"id\":\"FAQ_014\",\"question\":\"Is a DBS check required?\",\"keywords\":\"DBS,criminal record,background check\"},{\"id\":\"FAQ_015\",\"question\":\"Is there a pension scheme?\",\"keywords\":\"pension,retirement,auto-enrolment\"},{\"id\":\"FAQ_016\",\"question\":\"Is there parking available?\",\"keywords\":\"parking,car park,transport\"},{\"id\":\"FAQ_017\",\"question\":\"How do I get building access on my first day?\",\"keywords\":\"building access,entry,security,first day\"},{\"id\":\"FAQ_018\",\"question\":\"What equipment will I be provided with?\",\"keywords\":\"equipment,laptop,computer\"},{\"id\":\"FAQ_019\",\"question\":\"What is the probation period?\",\"keywords\":\"probation,probationary,trial period\"},{\"id\":\"FAQ_020\",\"question\":\"Who is my main point of contact?\",\"keywords\":\"contact,help,support,who to ask\"}]';\n\nconst systemPrompt = `You are a helpful onboarding assistant for Simmons Adaptive. Match the consultant question to the FAQ knowledge base and generate a natural, professional response in British English.\n\nReturn ONLY valid JSON: {\"matched_faq_id\": \"FAQ_XXX or null\", \"confidence\": 0.0, \"response_text\": \"...\", \"needs_escalation\": false, \"escalation_reason\": null}`;\n\nconst userPrompt = `Consultant: ${ctx.consultant.name} (stage: ${ctx.consultant.current_stage})\nQuestion: ${ctx.body.substring(0, 1000)}\n\nFAQ Knowledge Base (abbreviated): ${faqKbJson}\n\nGenerate a helpful response. If confidence < 0.6, set needs_escalation=true.`;\n\nreturn [{\n  json: {\n    ...ctx,\n    system_prompt: systemPrompt,\n    user_prompt: userPrompt,\n    model: 'gemini-2.5-flash',\n    temperature: 0.3,\n    response_format: 'json',\n    max_tokens: 800,\n  }\n}];"
+      },
+      "id": "prepare-faq-prompt",
+      "name": "Prepare FAQ Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2440,
+        600
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "AI3InmjY6gmJwdXg",
+          "mode": "id"
+        },
+        "source": "passthrough",
+        "responseData": "lastNode",
+        "options": {}
+      },
+      "id": "faq-llm-call",
+      "name": "FAQ LLM Call (Vertex AI)",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1,
+      "position": [
+        2640,
+        600
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse FAQ LLM response and build email response\nconst ctx = $('Prepare FAQ Prompt').first().json;\nconst llmOutput = $input.first().json;\n\nconst consultantName = ctx.consultant.name;\nconst firstName = consultantName.split(' ')[0];\n\nlet faqResult = {\n  matched_faq_id: null,\n  confidence: 0.0,\n  response_text: null,\n  needs_escalation: true,\n  escalation_reason: 'LLM parse failed',\n};\n\ntry {\n  const rawOutput = llmOutput.output || llmOutput.text || llmOutput.response || JSON.stringify(llmOutput);\n  const parsed = typeof rawOutput === 'string' ? JSON.parse(rawOutput) : rawOutput;\n  faqResult = parsed;\n} catch (e) {\n  console.log('FAQ LLM parse error:', e.message);\n}\n\nif (faqResult.needs_escalation || faqResult.confidence < 0.6) {\n  // Cannot answer - escalate\n  return [{\n    json: {\n      ...ctx,\n      faq_result: faqResult,\n      should_escalate: true,\n      classification: { ...ctx.classification, intent: 'ESCALATION_NEEDED' },\n    }\n  }];\n}\n\n// Build response email\nconst responseBody = `Dear ${firstName},\\n\\nThank you for your question.\\n\\n${faqResult.response_text}\\n\\nIf this does not fully answer your question, or if you need further assistance, please reply and we will ensure your query reaches the right person.\\n\\nBest regards,\\nAdaptive Onboarding Assistant\\nSimmons Adaptive`;\n\nreturn [{\n  json: {\n    ...ctx,\n    faq_result: faqResult,\n    should_escalate: false,\n    consultant_response: {\n      to: ctx.consultant.email,\n      subject: `Re: ${ctx.subject}`,\n      body: responseBody,\n    },\n    log_entry: {\n      consultant_email: ctx.consultant.email,\n      direction: 'Inbound',\n      channel: 'Email',\n      subject: ctx.subject,\n      body_preview: ctx.body_preview,\n      full_body: ctx.body,\n      classification: 'FAQ',\n      llm_confidence: faqResult.confidence,\n      escalated: false,\n      response_sent: true,\n      email_message_id: ctx.message_id,\n      timestamp: ctx.received_at,\n    }\n  }\n}];"
+      },
+      "id": "parse-faq-response",
+      "name": "Parse FAQ Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2840,
+        600
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Handle non-FAQ, non-escalation intents\n// Covers: FORM_SUBMISSION, STAGE_PROGRESSION, GENERAL, UNKNOWN\nconst ctx = $input.first().json;\nconst intent = ctx.classification.intent;\nconst firstName = ctx.consultant.name.split(' ')[0];\n\nlet responseBody = '';\nlet classification_label = 'Unknown';\n\nif (intent === 'STAGE_PROGRESSION') {\n  classification_label = 'Stage Progression';\n  responseBody = `Dear ${firstName},\\n\\nThank you for confirming. We have noted your response and your onboarding is progressing well.\\n\\nWe will be in touch shortly with the next steps in your onboarding process.\\n\\nBest regards,\\nAdaptive Onboarding Assistant\\nSimmons Adaptive`;\n} else if (intent === 'FORM_SUBMISSION') {\n  classification_label = 'Form Submission';\n  // Form submissions are validated separately - for now acknowledge receipt\n  responseBody = `Dear ${firstName},\\n\\nThank you for submitting your information. We are processing your details now and will confirm once everything has been verified.\\n\\nIf there are any issues with the information provided, we will be in touch.\\n\\nBest regards,\\nAdaptive Onboarding Assistant\\nSimmons Adaptive`;\n} else {\n  // GENERAL, UNKNOWN - acknowledge and offer help\n  classification_label = 'Unknown';\n  responseBody = `Dear ${firstName},\\n\\nThank you for your message. We have received your email and will review it shortly.\\n\\nIf you have a specific question about your onboarding, please reply and our assistant will do its best to help. For complex queries, we will connect you with your dedicated operator, ${ctx.consultant.assigned_operator}.\\n\\nBest regards,\\nAdaptive Onboarding Assistant\\nSimmons Adaptive`;\n}\n\nreturn [{\n  json: {\n    ...ctx,\n    consultant_response: {\n      to: ctx.consultant.email,\n      subject: `Re: ${ctx.subject}`,\n      body: responseBody,\n    },\n    log_entry: {\n      consultant_email: ctx.consultant.email,\n      direction: 'Inbound',\n      channel: 'Email',\n      subject: ctx.subject,\n      body_preview: ctx.body_preview,\n      full_body: ctx.body,\n      classification: classification_label,\n      llm_confidence: ctx.classification.confidence,\n      escalated: false,\n      response_sent: true,\n      email_message_id: ctx.message_id,\n      timestamp: ctx.received_at,\n    }\n  }\n}];"
+      },
+      "id": "handle-other-intents",
+      "name": "Handle Other Intents",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2440,
+        800
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "={{ $vars.ADAPTIVE_AIRTABLE_BASE_ID }}",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "Interactions Log",
+          "mode": "name"
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "Consultant Email",
+              "fieldValue": "={{ $json.log_entry.consultant_email }}"
+            },
+            {
+              "fieldId": "Direction",
+              "fieldValue": "={{ $json.log_entry.direction }}"
+            },
+            {
+              "fieldId": "Channel",
+              "fieldValue": "={{ $json.log_entry.channel }}"
+            },
+            {
+              "fieldId": "Subject",
+              "fieldValue": "={{ $json.log_entry.subject }}"
+            },
+            {
+              "fieldId": "Body Preview",
+              "fieldValue": "={{ $json.log_entry.body_preview }}"
+            },
+            {
+              "fieldId": "Full Body",
+              "fieldValue": "={{ $json.log_entry.full_body }}"
+            },
+            {
+              "fieldId": "Classification",
+              "fieldValue": "={{ $json.log_entry.classification }}"
+            },
+            {
+              "fieldId": "LLM Confidence",
+              "fieldValue": "={{ $json.log_entry.llm_confidence }}"
+            },
+            {
+              "fieldId": "Response Sent",
+              "fieldValue": "={{ $json.log_entry.response_sent }}"
+            },
+            {
+              "fieldId": "Escalated",
+              "fieldValue": "={{ $json.log_entry.escalated }}"
+            },
+            {
+              "fieldId": "Email Message ID",
+              "fieldValue": "={{ $json.log_entry.email_message_id }}"
+            },
+            {
+              "fieldId": "Timestamp",
+              "fieldValue": "={{ $json.log_entry.timestamp }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "log-interaction",
+      "name": "Log Interaction to Airtable",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2,
+      "position": [
+        3040,
+        600
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// This is a placeholder for sending email via Microsoft Outlook Graph API\n// In production: use the Microsoft Outlook n8n node with Graph API credentials\n// For now: log what would be sent\n\nconst ctx = $input.first().json;\nconst response = ctx.consultant_response;\nconst escalation = ctx.escalation_email;\n\nconsole.log('Would send email to:', response?.to);\nconsole.log('Subject:', response?.subject);\nconsole.log('Body preview:', response?.body?.substring(0, 200));\n\nif (escalation) {\n  console.log('Would send escalation to:', escalation.to);\n  console.log('Escalation subject:', escalation.subject);\n}\n\n// Return success - actual Outlook send will be wired up once Graph API\n// credentials are configured in n8n\nreturn [{\n  json: {\n    ...ctx,\n    email_send_status: 'logged_for_send',\n    send_target: response?.to,\n    send_subject: response?.subject,\n  }\n}];"
+      },
+      "id": "send-email-placeholder",
+      "name": "Send Email (Outlook - Placeholder)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3040,
+        400
+      ],
+      "notes": "TODO: Replace with Microsoft Outlook node once Graph API credentials are configured. See README for setup."
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Unpack Email Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Unpack Email Data": {
+      "main": [
+        [
+          {
+            "node": "Lookup Consultant in Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lookup Consultant in Airtable": {
+      "main": [
+        [
+          {
+            "node": "Check if Consultant Exists",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if Consultant Exists": {
+      "main": [
+        [
+          {
+            "node": "New Consultant?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "New Consultant?": {
+      "main": [
+        [
+          {
+            "node": "Create New Consultant Record",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare Classification Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create New Consultant Record": {
+      "main": [
+        [
+          {
+            "node": "Merge New Record ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge New Record ID": {
+      "main": [
+        [
+          {
+            "node": "Prepare Classification Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Classification Prompt": {
+      "main": [
+        [
+          {
+            "node": "Classify Intent (Vertex AI)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classify Intent (Vertex AI)": {
+      "main": [
+        [
+          {
+            "node": "Parse Classification Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Classification Response": {
+      "main": [
+        [
+          {
+            "node": "Should Escalate?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Should Escalate?": {
+      "main": [
+        [
+          {
+            "node": "Prepare Escalation",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Is FAQ?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is FAQ?": {
+      "main": [
+        [
+          {
+            "node": "Prepare FAQ Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Handle Other Intents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Escalation": {
+      "main": [
+        [
+          {
+            "node": "Send Email (Outlook - Placeholder)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare FAQ Prompt": {
+      "main": [
+        [
+          {
+            "node": "FAQ LLM Call (Vertex AI)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FAQ LLM Call (Vertex AI)": {
+      "main": [
+        [
+          {
+            "node": "Parse FAQ Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse FAQ Response": {
+      "main": [
+        [
+          {
+            "node": "Log Interaction to Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Handle Other Intents": {
+      "main": [
+        [
+          {
+            "node": "Log Interaction to Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Interaction to Airtable": {
+      "main": [
+        [
+          {
+            "node": "Send Email (Outlook - Placeholder)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "errorWorkflow": "",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 0,
+  "meta": null
+}

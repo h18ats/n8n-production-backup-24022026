@@ -1,0 +1,200 @@
+{
+  "name": "DEV - W5 - Delete Agent & KB",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "=https://api.elevenlabs.io/v1/convai/agents/{{ $json.agent_id }}\n",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "xi-api-key",
+              "value": "sk_3eca705a3c2780af4cb1116beb64d3e1d3bfc187a8d565f8"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -528,
+        -304
+      ],
+      "id": "720afa8a-6eb7-4244-8f1a-05c4e532db42",
+      "name": "Delete Agent"
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "=https://api.elevenlabs.io/v1/convai/knowledge-base/{{ $('When Executed by Another Workflow').item.json.id }}\n",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "xi-api-key",
+              "value": "sk_3eca705a3c2780af4cb1116beb64d3e1d3bfc187a8d565f8"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -80,
+        -304
+      ],
+      "id": "aced220c-97d1-4d5b-9cef-9fa18bd429ba",
+      "name": "Delete KB"
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -304,
+        -304
+      ],
+      "id": "96141969-5c79-4db8-a3c9-ecb6527c1506",
+      "name": "Wait 10s before deleting KB",
+      "webhookId": "c4d3734d-f569-4cf7-a17d-7206ca218ec9"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -752,
+        -304
+      ],
+      "id": "56ddffbd-50e6-464e-8851-00026bc05fa9",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "toRecipients": "andy@legalengine.co.uk",
+        "subject": "Post Meeting Agent Update",
+        "bodyContent": "Your Post Meeting Agent and KB have now been deleted ",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        368,
+        -304
+      ],
+      "id": "fa58cdf7-746d-43b3-8f32-835f8b21e7ce",
+      "name": "Send a message",
+      "webhookId": "30dba841-d714-4dee-a466-1e498b7e115c",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "APa28clvTTmmzH55",
+          "name": "Microsoft Outlook - Leonard @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        144,
+        -304
+      ],
+      "id": "a9351947-d8f8-4b6d-a72a-f629e68f19e1",
+      "name": "Wait 5m before sending",
+      "webhookId": "5df61b50-42b7-4b58-a76c-51cd9e1b2dd5"
+    }
+  ],
+  "connections": {
+    "Delete Agent": {
+      "main": [
+        [
+          {
+            "node": "Wait 10s before deleting KB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 10s before deleting KB": {
+      "main": [
+        [
+          {
+            "node": "Delete KB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Delete Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete KB": {
+      "main": [
+        [
+          {
+            "node": "Wait 5m before sending",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 5m before sending": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "agent_id": "agent_5301k48jatm1f3fbnqt3c5d97bvt",
+          "id": "StTLYACCDShjUk3Zg0U2"
+        }
+      }
+    ]
+  },
+  "triggerCount": 0,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

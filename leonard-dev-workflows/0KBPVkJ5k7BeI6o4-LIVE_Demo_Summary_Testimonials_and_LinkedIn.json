@@ -1,0 +1,402 @@
+{
+  "name": "LIVE - Demo - Summary, Testimonials and LinkedIn",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "livedemo",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1580,
+        1040
+      ],
+      "id": "700e0f2c-c1fd-4eed-99bd-5df6e612b074",
+      "name": "Webhook",
+      "webhookId": "649c7e8a-fa63-4d63-8b2b-e3bee21e3c02"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "email": "={{ $('Webhook').item.json.body.user_email }}",
+        "additionalFields": {
+          "firstName": "={{ $('Webhook').item.json.body.user_name }}"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.hubspot",
+      "typeVersion": 2.1,
+      "position": [
+        -842,
+        540
+      ],
+      "id": "21a4f5ab-ecee-48ad-ae70-c27a82e08927",
+      "name": "HubSpot1",
+      "credentials": {
+        "hubspotOAuth2Api": {
+          "id": "4ZWRbZ2jFaCFRgGS",
+          "name": "HubSpot account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "chatMessage",
+        "chatId": {
+          "__rl": true,
+          "value": "19:3b774197e8f540238b983f2e1cfa5f0f@thread.v2",
+          "mode": "list",
+          "cachedResultName": "sandbox-demo.legalengine.co.uk (group)",
+          "cachedResultUrl": "https://teams.microsoft.com/l/chat/19%3A3b774197e8f540238b983f2e1cfa5f0f%40thread.v2/0?tenantId=fad5c68f-d169-4373-bed7-55243bd99c7b"
+        },
+        "message": "=New REAL demo session completed by {{ $('Webhook').item.json.body.user_name }} - {{ $('Webhook').item.json.body.user_email }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftTeams",
+      "typeVersion": 2,
+      "position": [
+        -842,
+        740
+      ],
+      "id": "99378a1d-9498-4b70-9798-2c662913cd60",
+      "name": "Microsoft Teams",
+      "webhookId": "653395d3-6d6e-41df-918d-039b3954f4a9",
+      "credentials": {
+        "microsoftTeamsOAuth2Api": {
+          "id": "qyoIpk534c3Uq1X6",
+          "name": "Microsoft Teams account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "64e25ed9-18b6-490d-ac24-2160a8be7d91",
+      "name": "OpenAI Model3",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        -892,
+        1260
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "LldOhLNBReShSMkE",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "\"session-id\""
+      },
+      "id": "27950512-9254-4738-b39a-bfed91b7996b",
+      "name": "Memory3",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -772,
+        1260
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Client testimonial\nPrompt Writing as an expert in business development, sales and pitching for UK law firms and professional services in a B2B environment, draft a short email to the client from the stated [user name], and using the matter summary:\n1. thank them for the opportunity to work on such a great matter\n2. Ask for feedback\n3. Ask whether they would be willing to provide a client testimonial on the work performed. Let them know this testimonial would be used on the corporate website and it future marketing materials.\n4. draft them two different client testimonials which are taken from the matter summary.\n\nShort form pitch credential\nPrompt: Using the same details, and writing as an expert in business development, sales and pitching for UK law firms and professional services in a B2B environment, please write me a version of a credential that can be used in future pitches. This needs to be a two sentence (max 50 words) description of the matter in the form \"[user name] advised client name on [matter summary]\".\n\nLinkedIn Post\nPrompt: Writing as an expert in UK viral marketing and the latest social media trends within professional services, draft a viral LinkedIn Post of no more than 100 words, to be shared by [user name] with the world on their personal LinkedIn account to say that they have tested this revolutionary new AI Agent called \"Leonard\" from \"Legal Engine\", who can help to take the pain out of directory submissions, by harnessing the power of voice and AI. The aim is to highlight to fellow lawyers that this legal marketing tech saves massive amounts of time and hassle and that they should try it asap. People should visit https://demo.legalengine.co.uk to try it out. Feel free to be creative as this is all about making Leonard viral, emojis and hashtags are also welcome.\n\n\nINPUT:\nThe summary of the matter is:{{ $('Webhook').item.json.body.summary }}\nThe user is:{{ $('Webhook').item.json.body.user_name }}\nThe user's email is:{{ $('Webhook').item.json.body.user_email }}\nHere is the date and time: {{ $now }}\n",
+        "options": {
+          "systemMessage": "=Client testimonial\nPrompt Writing as an expert in business development, sales and pitching for UK law firms and professional services in a B2B environment, draft a short email to the client from the stated [user name], and using the matter summary:\n1. thank them for the opportunity to work on such a great matter\n2. Ask for feedback\n3. Ask whether they would be willing to provide a client testimonial on the work performed. Let them know this testimonial would be used on the corporate website and it future marketing materials.\n4. draft them two different client testimonials which are taken from the matter summary.\n\nShort form pitch credential\nPrompt: Using the same details, and writing as an expert in business development, sales and pitching for UK law firms and professional services in a B2B environment, please write me a version of a credential that can be used in future pitches. This needs to be a two sentence (max 50 words) description of the matter in the form \"[user name] advised client name on [matter summary]\".\n\nLinkedIn Post\nPrompt: Writing as an expert in UK viral marketing and the latest social media trends within professional services, draft a viral LinkedIn Post of no more than 100 words, to be shared by [user name] with the world on their personal LinkedIn account to say that they have tested this revolutionary new AI Agent called \"Leonard\" from \"Legal Engine\", who can help to take the pain out of directory submissions, by harnessing the power of voice and AI. The aim is to highlight to fellow lawyers that this legal marketing tech saves massive amounts of time and hassle and that they should try it asap. People should visit https://demo.legalengine.co.uk to try it out. Feel free to be creative as this is all about making Leonard viral, emojis and hashtags are also welcome.\n\n\nINPUT:\nThe summary of the matter is:{{ $('Webhook').item.json.body.summary }}\nThe user is:{{ $('Webhook').item.json.body.user_name }}\nThe user's email is:{{ $('Webhook').item.json.body.user_email }}\nHere is the date and time: {{ $now }}\n"
+        }
+      },
+      "id": "d464f5fc-6fb6-456e-9ca7-3dca25d522d6",
+      "name": "AI Agent all Assets",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -920,
+        1040
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "16l173d911bPTCr4ZILLXwUfGNw7QOySOgVb0TNePPCE",
+          "mode": "list",
+          "cachedResultName": "Leonard Demo User & Output Tracker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16l173d911bPTCr4ZILLXwUfGNw7QOySOgVb0TNePPCE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Demo Outputs",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16l173d911bPTCr4ZILLXwUfGNw7QOySOgVb0TNePPCE/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date/Time": "={{ $('Date & Time').item.json.currentDate }}",
+            "User Email": "={{ $('Webhook').item.json.body.user_email }}",
+            "Summary": "={{ $('Webhook').item.json.body.summary }}",
+            "Transcript": "={{ $('Webhook').item.json.body.transcript }}",
+            "IP Address": "={{ $('Webhook').item.json.headers['x-real-ip'] }}",
+            "Email": "={{ $json.output }}",
+            "User Name": "={{ $('Webhook').item.json.body.user_name }}"
+          },
+          "matchingColumns": [
+            "Date/Time"
+          ],
+          "schema": [
+            {
+              "id": "Date/Time",
+              "displayName": "Date/Time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "User Name",
+              "displayName": "User Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "User Email",
+              "displayName": "User Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Summary",
+              "displayName": "Summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Transcript",
+              "displayName": "Transcript",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "IP Address",
+              "displayName": "IP Address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -400,
+        1280
+      ],
+      "id": "8fec25fb-4a70-4fa0-be8e-902cf9ae2d4b",
+      "name": "Sandbox Webhook Tracker",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ideYdPgaT4pRzHvx",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toRecipients": "={{ $('Webhook').item.json.body.user_email }}",
+        "subject": "=Legal Engine assets update for {{ $('Webhook').item.json.body.user_name }} ",
+        "bodyContent": "=Hi {{ $('Webhook').item.json.body.user_name }},\n\nThanks for taking the time to test our Legal Engine demo. I hope you found our conversation interesting and insightful, I've enclosed below the matter summary as agreed on the call:\n\n---\n\n{{ $('Webhook').item.json.body.summary }}\n\n---\n\nTo demonstrate what else I’m capable of, I’ve also taken the content of our chat and created a couple of additional marketing assets below you will find useful.  \n\nYou'll also see that I've been a bit cheeky and created a LinkedIn post for you to promote awareness of my existence amongst your fellow lawyers. If you share and tag @legal engine, I’ll happily send you some free Leonard credits so we can chat again. \n\n---\n\n{{ $json.output }}\n\n---\n\nThis is also only a snapshot of what I can do. The team are building more agents like me to support marketing and BD teams with events, pitches, client teams and much more.  Visit https://legalengine.co.uk for more information on our product suite.  \n\nIf you need further support or have additional questions please contact my team at info@legalengine.co.uk.\n\nCheers,\n\nLeonard\n\nLegal Engine AI Agent\n\n",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        -420,
+        1040
+      ],
+      "id": "4eb77955-ce27-466d-97de-33e36cf521a9",
+      "name": "Email from Leonard - all assets",
+      "webhookId": "078b33ed-2393-4ea0-8e93-2d970dcdccb6",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "APa28clvTTmmzH55",
+          "name": "Microsoft Outlook account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        -1380,
+        1040
+      ],
+      "id": "a4fce552-2748-4bb9-93d0-8dfe60acb434",
+      "name": "Date & Time"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Date & Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent all Assets",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memory3": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent all Assets",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent all Assets": {
+      "main": [
+        [
+          {
+            "node": "Email from Leonard - all assets",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Sandbox Webhook Tracker",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sandbox Webhook Tracker": {
+      "main": [
+        []
+      ]
+    },
+    "Date & Time": {
+      "main": [
+        [
+          {
+            "node": "AI Agent all Assets",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Microsoft Teams",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HubSpot1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "leonard-dev.app.n8n.cloud",
+            "user-agent": "Python/3.12 aiohttp/3.11.16",
+            "content-length": "7462",
+            "accept": "*/*",
+            "accept-encoding": "gzip, br",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "34.67.146.145",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "US",
+            "cf-ray": "9315393647a6d646-CDG",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "x-forwarded-for": "34.67.146.145, 172.71.130.233",
+            "x-forwarded-host": "leonard-dev.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-52-6c4f4684d5-xjzqs",
+            "x-is-trusted": "yes",
+            "x-real-ip": "34.67.146.145"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "user_email": "leonard@legalengine.co.uk",
+            "summary": "The matter was between Sheffield Wednesday and Nottingham Forest, dating back to a seven-one game in the early nineties. The main challenge was addressing mental scarring from childhood bullying due to supporting Sheffield Wednesday. The client sought recompense for this bullying and came to you because of your connection to both parties, leading to a fantastic outcome for the litigator. The advice cost five pounds fifty, with an estimated saving of twenty-five pounds in heartache. Simon Martin, a childhood friend and fellow victim, was a key team member. The case was based in the UK, with social considerations highlighting Nottingham High School as a difficult place for Sheffield Wednesday fans, and the novelty involved using childhood friendship for torturing other pupils. The matter is ongoing, with the client still facing ridicule for their team allegiance. There was local coverage in the Nottingham Evening Post at the time.",
+            "user_name": "Leonard",
+            "transcript": "Hi there Leonard, it's great to meet you, I'm Leonard, here to show you how I can make your Directories submission seamless and easy using the power of voice and AI. Once we've completed our conversation I'll send you a summary to leonard@legalengine.co.uk. Tell me about a matter you worked on to get a sense for what I'm capable of?||Yeah, so a matter between Shepard Winslow and Nottingham Forest.||Okay, I understand. To get started, could you tell me what the matter involved, including the main challenge or objective?||Yes, it was going back to the early 90s when Nottingham Forest beat Sheffield Wednesday 7-1 and I was starting to have mental scarring as a result.||Thank you for sharing that. Why did the client come to you for this matter, and what specific problem were they trying to solve?||They were trying to solve for mental torture and scarring as a result of childhood bullying for supporting a rubbish team.||I see. What was the outcome for the client, and what specific positive impact did your team provide to the client to achieve this outcome? Please also mention how this matter aligned with the client's strategic objectives.||Yes, so the client's strategic objectives were to seek recompense for childhood bullying. They came to me because I'm known to both parties and produced a fantastic outcome for the litigator.||And what was the deal size or transaction value for this matter? Were there any notable cost savings or revenue implications for the client?||It was $5,050 for the advice and I think I saved £25 in heartache.||Okay, thank you. And who were the key team members who worked with you on this matter, and what were their roles?||The main one was Simon Martin and he was there as a childhood friend and fellow victim of said bullying.||Understood. How many jurisdictions were involved in this matter, and which were the primary ones?||This was just the UK case.||Were there any innovative legal approaches or novel issues you addressed in this matter, including any precedent-setting aspects? Are there any regulatory impact or sustainability or social considerations worth highlighting?||Yeah, just social considerations were Nottingham High School was a horrible place to attend as a Sheffield Wednesday fan. And so, you know, the novelty was really around using childhood friendship as a way of torturing other pupils.||And what is the current status of this matter? If completed, when did it finish?||No, it's still open. I still get regularly shown up for my allegiance to the Owls.||Understood. Was there any press coverage or awards related to this matter that we should mention?||Not really. The Nottingham Evening Post covered it at the time, based on their own gleefulness at the victory.||Thank you for sharing those details. Let me summarise my understanding of this matter to ensure I've captured everything correctly:\n\nThe matter involves Shepard Winslow and Nottingham Forest, dating back to a seven-one game in the early nineties. The main challenge was addressing mental scarring from childhood bullying due to supporting Sheffield Wednesday. The client sought recompense for this bullying and came to you because of your connection to both parties, leading to a fantastic outcome for the litigator. The advice cost five thousand and fifty dollars, with an estimated saving of twenty-five pounds in heartache. Simon Martin, a childhood friend and fellow victim, was a key team member. The case was based in the UK, with social considerations highlighting Nottingham High School as a difficult place for Sheffield Wednesday fans, and the novelty involved using childhood friendship for torturing other pupils. The matter is ongoing, with the client still facing ridicule for their team allegiance. There was local coverage in the Nottingham Evening Post at the time.\n\nIs this summary accurate, or would you like to make any corrections before we move on?||Two corrections, so right at the start you got it wrong, it should be Sheffield Wednesday right at the start of the summary and the matter value was £5.50.||Thank you for the corrections. Let me update the summary:\n\nThe matter involves Shepard Winslow and Nottingham Forest, dating back to a seven-one game in the early nineties. The main challenge was addressing mental scarring from childhood bullying due to supporting Sheffield Wednesday. The client sought recompense for this bullying and came to you because of your connection to both parties, leading to a fantastic outcome for the litigator. The advice cost five pounds fifty, with an estimated saving of twenty-five pounds in heartache. Simon Martin, a childhood friend and fellow victim, was a key team member. The case was based in the UK, with social considerations highlighting Nottingham High School as a difficult place for Sheffield Wednesday fans, and the novelty involved using childhood friendship for torturing other pupils. The matter is ongoing, with the client still facing ridicule for their team allegiance. There was local coverage in the Nottingham Evening Post at the time.\n\nIs this summary accurate now?||No, so right at the start Leonard it should read the matter was between or related to Sheffield Wednesday and Nottingham Forest.||Okay, I understand. Let me revise the summary once more:\n\nThe matter was between Sheffield Wednesday and Nottingham Forest, dating back to a seven-one game in the early nineties. The main challenge was addressing mental scarring from childhood bullying due to supporting Sheffield Wednesday. The client sought recompense for this bullying and came to you because of your connection to both parties, leading to a fantastic outcome for the litigator. The advice cost five pounds fifty, with an estimated saving of twenty-five pounds in heartache. Simon Martin, a childhood friend and fellow victim, was a key team member. The case was based in the UK, with social considerations highlighting Nottingham High School as a difficult place for Sheffield Wednesday fans, and the novelty involved using childhood friendship for torturing other pupils. The matter is ongoing, with the client still facing ridicule for their team allegiance. There was local coverage in the Nottingham Evening Post at the time.\n\nIs this summary accurate now, or are there any further corrections?||No, all accurate thank you Leonard.All accurate now, Leonard. That's great.You still there, Leonard?"
+          },
+          "webhookUrl": "https://leonard-dev.app.n8n.cloud/webhook/649c7e8a-fa63-4d63-8b2b-e3bee21e3c02",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "triggerCount": 1,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

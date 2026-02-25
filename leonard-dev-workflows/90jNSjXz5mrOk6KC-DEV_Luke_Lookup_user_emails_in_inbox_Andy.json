@@ -1,0 +1,607 @@
+{
+  "name": "DEV - Luke - Lookup user emails in inbox - Andy",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -608,
+        -800
+      ],
+      "id": "54673875-0d3f-4a2c-9158-5a9214e4fb38",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a useful assistant, now undertake the following User Task: {{ $('Task').item.json.Task }} from: {{ $('Task').item.json.From }} using the 'get_emails' tool. \n\nToday's is: {{ $json.formattedDate }}\nTime is now: {{ $json.formattedTime }}",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        128,
+        224
+      ],
+      "id": "253923a1-dda3-467b-a722-42a7d11b57bc",
+      "name": "AI Agent1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {
+          "maxOutputTokens": 8048
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        32,
+        464
+      ],
+      "id": "97acd4b0-0e19-4ca2-a323-a7218de2e94e",
+      "name": "Google Vertex Chat Model1",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        -128,
+        -800
+      ],
+      "id": "45356834-05f2-4538-9726-7be051eb218a",
+      "name": "Date & Time"
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- Function node code ---\n\n// Expecting an input item with a field `now`\n// e.g. \"2025-12-02T06:57:39.432+00:00\"\nconst input = $input.first();\nconst inputDate = new Date(input.json.now);\n\n// Helper to zero-pad to two digits\nconst pad = n => n.toString().padStart(2, '0');\n\n// UK date → DDMMYY\nconst dd = pad(inputDate.getDate());\nconst mm = pad(inputDate.getMonth() + 1);\nconst yy = inputDate.getFullYear().toString().slice(-2);\n\nconst formattedDate = `${dd}${mm}${yy}`;\n\n// Time → HH:mm:ss (24-hour clock)\nconst formattedTime = `${pad(inputDate.getHours())}:${pad(inputDate.getMinutes())}:${pad(inputDate.getSeconds())}`;\n\n// Local UK-style date → DD/MM/YYYY\nconst localDate = inputDate.toLocaleDateString(\"en-GB\");\n\n// Local UK-style time → HH:mm:ss (24-hour clock)\nconst localTime = inputDate.toLocaleTimeString(\"en-GB\", {\n  hour12: false\n});\n\nreturn [\n  {\n    json: {\n      now: input.json.now,   // original value from Set node\n      formattedDate,         // \"021225\"\n      formattedTime,         // \"06:57:39\"\n      localDate,             // \"02/12/2025\"\n      localTime              // \"06:57:39\"\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        320,
+        -800
+      ],
+      "id": "fca03dfc-0283-4d0d-9ecd-41dcef4fb105",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5f981a67-fd06-4687-abcc-29295939493b",
+              "name": "now",
+              "value": "={{ $json.currentDate }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        96,
+        -800
+      ],
+      "id": "aa659d33-8525-45e3-97fb-5897d5d1af9a",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5f981a67-fd06-4687-abcc-29295939493b",
+              "name": "Task",
+              "value": "=Find all emails  ",
+              "type": "string"
+            },
+            {
+              "id": "e1c34d3d-8e39-402f-a425-29cde0597d15",
+              "name": "From",
+              "value": "edu@legalengine.co.uk",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -368,
+        -800
+      ],
+      "id": "9f017deb-9eef-4555-a811-7405e6e1aeca",
+      "name": "Task"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Write me a weighted summary with most recent emails having a greater waiting previous emails for all conversations related to this sender based on the emails found in this set of data \n{{ $json.subject }}\n{{ $json.body_preview }}\n{{ $json.raw_block }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        816,
+        240
+      ],
+      "id": "9af22881-356a-4cb8-9708-ba0ad7348c38",
+      "name": "AI Agent",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        816,
+        432
+      ],
+      "id": "a9025254-0f5e-4243-8f66-018a33d4d5f8",
+      "name": "Google Vertex Chat Model",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": "=25",
+        "filtersUI": {
+          "values": {
+            "filterBy": "search",
+            "search": "=from: {{ $('Task').item.json.From }}"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "typeVersion": 2,
+      "position": [
+        192,
+        464
+      ],
+      "id": "94c2afcd-51d7-4030-b54e-1285ca4693b4",
+      "name": "get_emails",
+      "webhookId": "4e2d3354-46bd-4887-9a04-088b0a4c7174",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "6JzfHO6LkLYhrooM",
+          "name": "Sam@legalengine Outlook (December)"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"emails\": {\n      \"type\": \"array\",\n      \"description\": \"All parsed emails in the order they were listed.\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"index\": {\n            \"type\": \"integer\",\n            \"description\": \"The 1-based index number from the original list.\"\n          },\n          \"subject\": {\n            \"type\": \"string\",\n            \"description\": \"The email subject line.\"\n          },\n          \"body_preview\": {\n            \"type\": \"string\",\n            \"description\": \"Short preview or first lines of the email body.\"\n          },\n          \"sender\": {\n            \"type\": \"string\",\n            \"description\": \"Sender email address.\"\n          },\n          \"recipient\": {\n            \"type\": \"string\",\n            \"description\": \"Recipient email(s) as a single comma-separated string.\"\n          },\n          \"raw_block\": {\n            \"type\": \"string\",\n            \"description\": \"Raw text block for this email from the source.\"\n          }\n        },\n        \"required\": [\n          \"index\",\n          \"subject\",\n          \"body_preview\"\n        ]\n      }\n    }\n  },\n  \"required\": [\n    \"emails\"\n  ]\n}\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        336,
+        464
+      ],
+      "id": "83544dff-675c-434a-bcc7-da52e02aeb1c",
+      "name": "Structured Output Parser",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Expecting input like items[0].json.output.emails\nconst root = items[0].json || {};\nconst emails = (root.output && Array.isArray(root.output.emails))\n  ? root.output.emails\n  : [];\n\nreturn emails.map(e => {\n  const recipientList = e.recipient\n    ? String(e.recipient)\n        .split(',')\n        .map(r => r.trim())\n        .filter(Boolean)\n    : [];\n\n  return {\n    json: {\n      index: e.index,\n      subject: e.subject,\n      body_preview: e.body_preview,\n      sender: e.sender,\n      recipients: recipientList,      // array of recipients\n      timestamp: e.timestamp || null, // keep null if missing\n      raw_block: e.raw_block\n    }\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        608,
+        240
+      ],
+      "id": "1b62f27d-978a-4f41-9f47-013c2896bfa6",
+      "name": "Code in JavaScript",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Date & Time').item.json.currentDate }}",
+        "contextWindowLength": 20
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        944,
+        432
+      ],
+      "id": "99b22c94-7eff-4fe8-b6be-9e729d410632",
+      "name": "Simple Memory",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Function node\n// Goal: take all Graph messages and produce a single item with:\n//   - json.emails: normalised emails\n//   - json.combinedText: combined plain text of all emails\n\nfunction stripHtml(html) {\n  if (!html) return \"\";\n  return String(html)\n    // remove styles and scripts\n    .replace(/<style[^>]*>[\\s\\S]*?<\\/style>/gi, \" \")\n    .replace(/<script[^>]*>[\\s\\S]*?<\\/script>/gi, \" \")\n    // strip tags\n    .replace(/<[^>]+>/g, \" \")\n    // basic entities\n    .replace(/&nbsp;/gi, \" \")\n    .replace(/&amp;/gi, \"&\")\n    .replace(/&lt;/gi, \"<\")\n    .replace(/&gt;/gi, \">\")\n    // collapse whitespace\n    .replace(/\\s+/g, \" \")\n    .trim();\n}\n\n// 1. Collect all raw messages in a robust way\nlet messages;\n\n// Case A. single item whose json is the whole array\nif (items.length === 1 && Array.isArray(items[0].json)) {\n  messages = items[0].json;\n}\n// Case B. multiple items, each item.json is one message\nelse {\n  messages = items.map(i => i.json || {});\n}\n\n// 2. Normalise messages\nconst normalised = messages.map((m, idx) => {\n  const sent = m.sentDateTime || m.createdDateTime || null;\n  const subject = m.subject || \"\";\n  const bodyPreview = m.bodyPreview || \"\";\n\n  const contentType = m.body && m.body.contentType;\n  const content = m.body && m.body.content;\n\n  const bodyText =\n    contentType && String(contentType).toLowerCase() === \"html\"\n      ? stripHtml(content)\n      : (content || \"\");\n\n  const senderObj =\n    (m.from && m.from.emailAddress) ||\n    (m.sender && m.sender.emailAddress) ||\n    {};\n  const senderName = senderObj.name || \"\";\n  const senderAddress = senderObj.address || \"\";\n\n  return {\n    index: idx + 1,\n    id: m.id || \"\",\n    sentDateTime: sent,\n    subject,\n    bodyPreview,\n    bodyText,\n    senderName,\n    senderAddress,\n    odataType: m[\"@odata.type\"] || null,\n  };\n});\n\n// 3. Sort by time\nnormalised.sort((a, b) => {\n  if (!a.sentDateTime && !b.sentDateTime) return 0;\n  if (!a.sentDateTime) return 1;\n  if (!b.sentDateTime) return -1;\n  return (\n    new Date(a.sentDateTime).getTime() -\n    new Date(b.sentDateTime).getTime()\n  );\n});\n\n// 4. Build combined text for the Agent\nconst combinedText = normalised\n  .map(m => {\n    return [\n      `Email ${m.index}`,\n      m.sentDateTime ? `Sent: ${m.sentDateTime}` : \"\",\n      `From: ${m.senderName} <${m.senderAddress}>`,\n      `Subject: ${m.subject}`,\n      \"\",\n      `Preview: ${m.bodyPreview}`,\n      \"\",\n      \"Body:\",\n      m.bodyText,\n    ]\n      .filter(Boolean)\n      .join(\"\\n\");\n  })\n  .join(\"\\n\\n---\\n\\n\");\n\n// 5. Return a single item for the AI Agent\nreturn [\n  {\n    json: {\n      emails: normalised,\n      combinedText,\n    },\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        864,
+        -800
+      ],
+      "id": "55ceabc6-4486-4405-a602-df945847d861",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Here are recent emails\n{{ $json.combinedText }}\n\nPerovide a comprehensive but digestible summary and weight the summary with a bias for more recent emails over older emails.\n\nMake sure to include a breakdown of the most recent points raised and any action items.\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        1056,
+        -800
+      ],
+      "id": "44f5a2a5-6ed8-4616-ae2e-68b5c43b1d46",
+      "name": "AI Agent2"
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        1072,
+        -560
+      ],
+      "id": "b2899d16-e613-488f-a931-848f338961b9",
+      "name": "Google Vertex Chat Model2",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "output": "fields",
+        "fields": [
+          "from",
+          "body",
+          "bodyPreview",
+          "sender",
+          "subject",
+          "sentDateTime"
+        ],
+        "filtersUI": {
+          "values": {
+            "filters": {
+              "custom": "={{ \"from/emailAddress/address eq '\" + $('Task').item.json.From + \"'\" }}"
+            }
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        544,
+        -800
+      ],
+      "id": "c148a7ff-f7ab-4c0a-b4d2-db4ad27dd4cc",
+      "name": "Get many messages",
+      "webhookId": "9ebecd5f-8b32-4e5a-a8d8-0ff64640f99e",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "6JzfHO6LkLYhrooM",
+          "name": "Sam@legalengine Outlook (December)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const root = items[0].json || {};\nconst emails = (root.output && Array.isArray(root.output.emails))\n  ? root.output.emails\n  : [];\n\nlet combined = emails.map(e => {\n  return [\n    `Email ${e.index}`,\n    `Subject: ${e.subject}`,\n    `From: ${e.sender || ''}`,\n    `To: ${e.recipient || ''}`,\n    ``,\n    `Body preview:`,\n    e.body_preview || '',\n    ``,\n    `Raw block:`,\n    e.raw_block || ''\n  ].join('\\n');\n}).join('\\n\\n---\\n\\n');\n\nreturn [\n  {\n    json: {\n      emails_text: combined\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        832,
+        32
+      ],
+      "id": "e8cc9b9e-63d3-49d8-a856-2621458b71eb",
+      "name": "Code in JavaScript3",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Write me a weighted summary with most recent emails having a greater waiting previous emails for all conversations related to this sender based on the emails found in this set of data \n{{ $json.emails_text }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        1120,
+        -32
+      ],
+      "id": "2051648e-e084-4f41-903c-d600dbf7a1e0",
+      "name": "AI Agent3",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {
+          "maxOutputTokens": 2048
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        1136,
+        208
+      ],
+      "id": "cf4b5776-4396-485a-b981-853dde6a731d",
+      "name": "Google Vertex Chat Model3",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      },
+      "disabled": true
+    }
+  ],
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Time": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Get many messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Task": {
+      "main": [
+        [
+          {
+            "node": "Date & Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_emails": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        []
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many messages": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript3": {
+      "main": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 0,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

@@ -1,0 +1,759 @@
+{
+  "name": "Fireflies Test 1 - Andy",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=System Prompt\n\nYou are Lexi, an expert legal meeting assistant.\nYour role is to analyse transcripts of meetings between lawyers and clients and produce a structured, professional output.\n\nYour Tasks:\n\nIdentify Follow-Up Actions\n\nExtract all actions that arise in the transcript.\n\nCategorise each one clearly as:\n\nAgreed Action – explicitly confirmed by lawyer or client.\n\nInferred / Potential Action – implied but not explicitly confirmed.\n\nNeeds Clarity – ambiguous; may be an action, but not clearly stated.\n\nSummarise the Meeting\n\nProvide a concise high-level summary of the main topics, issues, and next steps discussed.\n\nFocus on legal and practical matters, not filler conversation.\n\nOutput Format:\n\nHigh-Level Summary (3–6 sentences)\n\nAction List (bullet points, using categories above):\n\nAgreed Action: [who is responsible, what needs doing, when if specified]\n\nInferred / Potential Action: [description]\n\nNeeds Clarity: [description + what is unclear]\n\nStyle & Rules:\n\nBe precise, neutral, and professional.\n\nDo not invent actions that are not supported by the transcript.\n\nAlways separate what is confirmed from what is speculative.\n\nFlag anything that might require clarification before being treated as a true action.\n\nConversation overview here: {{ $json.data.summary.overview }}\nSummary of conversation here: {{ $json.data.summary.short_summary }}\nAction List here:{{ $json.data.summary.action_items }}\nBullet gist: {{ $json.data.summary.bullet_gist }}\nGist: {{ $json.data.summary.gist }}\nShorthand bullets: {{ $json.data.summary.shorthand_bullet }}",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        288,
+        -384
+      ],
+      "id": "f1d56993-0694-4ce1-ada9-d62084ae2869",
+      "name": "AI Agent",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini-2025-08-07",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini-2025-08-07"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        304,
+        -160
+      ],
+      "id": "02ba06e3-3399-462a-bd8d-45f2d7f096ff",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "LldOhLNBReShSMkE",
+          "name": "OpenAi account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "getTranscriptsList",
+        "filters": {
+          "fromDate": "2025-08-05"
+        }
+      },
+      "type": "@firefliesai/n8n-nodes-fireflies.fireflies",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        -384
+      ],
+      "id": "fcfc8e2e-b94e-4fe4-90c8-86aafd5d8b09",
+      "name": "Get a list of transcripts",
+      "alwaysOutputData": true,
+      "credentials": {
+        "firefliesApi": {
+          "id": "WlvA2onXFybeJ92u",
+          "name": "Fireflies account - Lee"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "getTranscriptSummary",
+        "transcriptId": "={{ $json.data.id }}"
+      },
+      "type": "@firefliesai/n8n-nodes-fireflies.fireflies",
+      "typeVersion": 1,
+      "position": [
+        64,
+        -384
+      ],
+      "id": "6b5f8c88-5be6-48d2-920d-4cf655ffd2f6",
+      "name": "Get a summary of a transcript",
+      "credentials": {
+        "firefliesApi": {
+          "id": "WlvA2onXFybeJ92u",
+          "name": "Fireflies account - Lee"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "toRecipients": "=andy@legalengine.co.uk",
+        "subject": "=Legal Engine Actions from Call",
+        "bodyContent": "=<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Legal Engine • Your Matter Summary</title>\n\n  <!-- Brand Typeface -->\n  <link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap\" rel=\"stylesheet\">\n\n  <style>\n    :root{\n      --le-navy:#062047; --le-blue:#00b3ff; --le-indigo:#0066ff;\n      --le-grey:#f2f6fa; --le-silver:#e5ecf3; --le-text:#263238;\n    }\n    *{box-sizing:border-box;margin:0;padding:0;}\n    body{\n      width:100%!important;background:var(--le-grey);\n      font-family:'Inter',Helvetica,Arial,sans-serif;\n      color:var(--le-text);-webkit-font-smoothing:antialiased;\n    }\n    .wrapper{\n      max-width:700px;margin:0 auto;background:#fff;\n      border:1px solid var(--le-silver);border-radius:10px;\n      padding:48px 40px;\n    }\n    .section{margin-bottom:20px;line-height:1.55;}\n    .section h1{color:var(--le-navy);font-size:24px;font-weight:700;margin-bottom:18px;}\n    .section h2{\n      color:var(--le-navy);font-size:22px;font-weight:700;\n      padding-bottom:10px;border-bottom:2px solid var(--le-silver);\n      margin-bottom:14px;\n    }\n    .section p{margin-bottom:16px;white-space:pre-line;}\n\n    .button{\n      display:inline-block;padding:14px 28px;font-weight:600;\n      color:#fff!important;text-decoration:none;border-radius:6px;\n      background:linear-gradient(90deg,var(--le-blue)0%,var(--le-indigo)100%);\n      transition:opacity .25s ease-in-out;\n    }\n    .button:hover{opacity:.8;}\n\n\n    .signature p{margin-bottom:6px;}\n.signature{\n  color:var(--le-text);                /* same dark text as body */\n  font-family:'Inter',Helvetica,Arial,sans-serif;\n}\n.signature a{\n  color:var(--le-text);                /* links also black */\n  text-decoration:none;\n}\n\n\n    .footer{\n      font-size:13px;color:#6c7a84;text-align:center;\n      padding-top:24px;border-top:1px solid var(--le-silver);\n    }\n    .tracking-pixel{display:none;width:1px;height:1px;}\n\n    @media(max-width:520px){\n      .wrapper{padding:32px 22px;}\n      .section h1{font-size:22px;}\n      .section h2{font-size:20px;}\n    }\n  </style>\n</head>\n<body>\n  <div class=\"wrapper\">\n\n    <!-- HEADER -->\n    <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-collapse:collapse;margin-bottom:40px;\">\n      <tr>\n        <td align=\"center\">\n          <img\n            src=\"https://49390627.fs1.hubspotusercontent-eu1.net/hub/49390627/hubfs/e8ad0e08-aa6c-4d44-9053-cdcf7bbaec5b.png?width=852&amp;height=339&amp;name=e8ad0e08-aa6c-4d44-9053-cdcf7bbaec5b.png\"\n            alt=\"Legal Engine\"\n            width=\"180\" height=\"72\"\n            style=\"width:180px;max-width:100%;height:auto;display:block;border:0;outline:none;text-decoration:none;\">\n        </td>\n      </tr>\n    </table>\n    <!--[if mso]><style>.mso-logo img{width:180px!important;height:auto!important;}</style><![endif]-->\n\n  <!-- INTRO -->\n    <div class=\"section\">\n      <p>Hi,</p>\n      <p>Thanks for taking the time to test Legal Engine.</p>\n    \n    </div>\n\n    <!-- SUMMARY OF ACTIONS -->\n    <div class=\"section\">\n      <h2>Summary of Actions</h2>\n  {{ $json.output }}\n    </div>\n\n    <!-- EXTRA ASSETS INTRO -->\n    <div class=\"section\">\n  \n      <p>This is just a snapshot of my capabilities. At&nbsp;<a href=\"https://legalengine.co.uk/\"><b>Legal Engine</b></a>, we’re building a suite of assistants like me, ready to transform Marketing &amp; BD across the legal industry.</p>\n    </div>\n\n<!-- SIGN-OFF -->\n<div class=\"signature\">\n  <p>Cheers,</p>\n\n  <p><b>Leonard</b></p>\n\n  <p><b>AI Assistant<br>Legal Engine</b></p>\n\n  <p>\n    E:&nbsp;<a href=\"mailto:leonard@legalengine.co.uk\">leonard@legalengine.co.uk</a><br>\n    W:&nbsp;<a href=\"https://legalengine.co.uk/\">www.legalengine.co.uk</a>\n  </p>\n</div>\n    <!-- FOOTER + UNSUBSCRIBE -->\n    <div class=\"footer\">\n      &copy; 2025 Legal Engine Ltd. All rights reserved.<br><br>\n      <a href=\"https://unsubscribe.legalengine.co.uk\" style=\"color:var(--le-blue);text-decoration:none;\">Unsubscribe</a>\n    </div>\n\n    <!-- OPEN-TRACKING -->\n    <img class=\"tracking-pixel\"\n         alt=\"\">\n  </div>\n</body>\n</html>",
+        "additionalFields": {
+          "bodyContentType": "html"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        1024,
+        -368
+      ],
+      "id": "436d5289-9264-4957-b084-5b39f707a85e",
+      "name": "HTML Email from Leonard to Lawyer",
+      "webhookId": "03bf6b23-ce1b-4340-9b85-755d534ee154",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "APa28clvTTmmzH55",
+          "name": "Microsoft Outlook - Leonard @ Legal Engine"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {
+          "numberOfItems": -1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserItemList",
+      "typeVersion": 1,
+      "position": [
+        432,
+        -160
+      ],
+      "id": "bb4ab338-a0ad-4d8d-b7cd-cec52db80f0b",
+      "name": "Item List Output Parser",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Your role is to produce a html formatted version of this text that will be embedded into an html email. I just need the output to be a paragaph of formatted text in html and not a full html template\n\nTest here: {{ $json['0'] }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        640,
+        -368
+      ],
+      "id": "e3f293ae-bd9e-4299-84ec-dcb83ff8c8be",
+      "name": "AI Agent2",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini-2025-08-07",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini-2025-08-07"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        640,
+        -144
+      ],
+      "id": "2af649a6-dae6-4126-8b07-2554523e18c6",
+      "name": "OpenAI Chat Model2",
+      "credentials": {
+        "openAiApi": {
+          "id": "LldOhLNBReShSMkE",
+          "name": "OpenAi account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are Lexi, the world’s first AI powered legal BD assistant. Your role and purpose in life is to analyse call transcripts and support your lawyer master in the effective execution of follow up actions to generate and realise opportunities that have arisen. Your tasks include: 1.\tAnalyse the meeting transcript and identify a set of meeting actions. 2.\tCompare the meeting transcript to your knowledge base of Legal Engine and suggest upsell and cross sell opportunities that your lawyer may not have considered. 3.\tIn a conversational tone, take the lead and suggest to your lawyer what the best course of action is. Be confident without being arrogant. 4.\tAutomatically draft a follow up email to the client with agreed actions. 5.\tIf required, make internal referral suggestions on potential cross sell opportunities. the output should be a formatted email with consistent headings which allows easy transfer of content straight from the email to other delivery channels.\n\nConversation overview here: {{ $json.data.summary.overview }}\nSummary of conversation here: {{ $json.data.summary.short_summary }}\nAction List here:{{ $json.data.summary.action_items }}\nBullet gist: {{ $json.data.summary.bullet_gist }}\nGist: {{ $json.data.summary.gist }}\nShorthand bullets: {{ $json.data.summary.shorthand_bullet }}",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        288,
+        64
+      ],
+      "id": "c7a24dc7-6fec-4a5c-ae53-91a34025a777",
+      "name": "AI Agent3",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini-2025-08-07",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini-2025-08-07"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        304,
+        288
+      ],
+      "id": "37b30522-4dd6-4734-975e-974e287025af",
+      "name": "OpenAI Chat Model3",
+      "credentials": {
+        "openAiApi": {
+          "id": "LldOhLNBReShSMkE",
+          "name": "OpenAi account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "getTranscriptSummary",
+        "transcriptId": "=01K24P4KRQMZCM6S7TSS6563QN"
+      },
+      "type": "@firefliesai/n8n-nodes-fireflies.fireflies",
+      "typeVersion": 1,
+      "position": [
+        64,
+        64
+      ],
+      "id": "29626285-ec4f-4aa3-bf60-777a6604104c",
+      "name": "Get a summary of a transcript1",
+      "credentials": {
+        "firefliesApi": {
+          "id": "WlvA2onXFybeJ92u",
+          "name": "Fireflies account - Lee"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "toRecipients": "=lee@legalengine.co.uk",
+        "subject": "=Legal Engine Actions from Call",
+        "bodyContent": "=<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Legal Engine • Your Matter Summary</title>\n\n  <!-- Brand Typeface -->\n  <link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap\" rel=\"stylesheet\">\n\n  <style>\n    :root{\n      --le-navy:#062047; --le-blue:#00b3ff; --le-indigo:#0066ff;\n      --le-grey:#f2f6fa; --le-silver:#e5ecf3; --le-text:#263238;\n    }\n    *{box-sizing:border-box;margin:0;padding:0;}\n    body{\n      width:100%!important;background:var(--le-grey);\n      font-family:'Inter',Helvetica,Arial,sans-serif;\n      color:var(--le-text);-webkit-font-smoothing:antialiased;\n    }\n    .wrapper{\n      max-width:700px;margin:0 auto;background:#fff;\n      border:1px solid var(--le-silver);border-radius:10px;\n      padding:48px 40px;\n    }\n    .section{margin-bottom:20px;line-height:1.55;}\n    .section h1{color:var(--le-navy);font-size:24px;font-weight:700;margin-bottom:18px;}\n    .section h2{\n      color:var(--le-navy);font-size:22px;font-weight:700;\n      padding-bottom:10px;border-bottom:2px solid var(--le-silver);\n      margin-bottom:14px;\n    }\n    .section p{margin-bottom:16px;white-space:pre-line;}\n\n    .button{\n      display:inline-block;padding:14px 28px;font-weight:600;\n      color:#fff!important;text-decoration:none;border-radius:6px;\n      background:linear-gradient(90deg,var(--le-blue)0%,var(--le-indigo)100%);\n      transition:opacity .25s ease-in-out;\n    }\n    .button:hover{opacity:.8;}\n\n\n    .signature p{margin-bottom:6px;}\n.signature{\n  color:var(--le-text);                /* same dark text as body */\n  font-family:'Inter',Helvetica,Arial,sans-serif;\n}\n.signature a{\n  color:var(--le-text);                /* links also black */\n  text-decoration:none;\n}\n\n\n    .footer{\n      font-size:13px;color:#6c7a84;text-align:center;\n      padding-top:24px;border-top:1px solid var(--le-silver);\n    }\n    .tracking-pixel{display:none;width:1px;height:1px;}\n\n    @media(max-width:520px){\n      .wrapper{padding:32px 22px;}\n      .section h1{font-size:22px;}\n      .section h2{font-size:20px;}\n    }\n  </style>\n</head>\n<body>\n  <div class=\"wrapper\">\n\n    <!-- HEADER -->\n    <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-collapse:collapse;margin-bottom:40px;\">\n      <tr>\n        <td align=\"center\">\n          <img\n            src=\"https://49390627.fs1.hubspotusercontent-eu1.net/hub/49390627/hubfs/e8ad0e08-aa6c-4d44-9053-cdcf7bbaec5b.png?width=852&amp;height=339&amp;name=e8ad0e08-aa6c-4d44-9053-cdcf7bbaec5b.png\"\n            alt=\"Legal Engine\"\n            width=\"180\" height=\"72\"\n            style=\"width:180px;max-width:100%;height:auto;display:block;border:0;outline:none;text-decoration:none;\">\n        </td>\n      </tr>\n    </table>\n    <!--[if mso]><style>.mso-logo img{width:180px!important;height:auto!important;}</style><![endif]-->\n\n  <!-- INTRO -->\n    <div class=\"section\">\n      <p>Hi,</p>\n      <p>Thanks for taking the time to test Legal Engine.</p>\n    \n    </div>\n\n    <!-- SUMMARY OF ACTIONS -->\n    <div class=\"section\">\n      <h2>Summary of Actions</h2>\n  {{ $json.output }}\n    </div>\n\n    <!-- EXTRA ASSETS INTRO -->\n    <div class=\"section\">\n  \n      <p>This is just a snapshot of my capabilities. At&nbsp;<a href=\"https://legalengine.co.uk/\"><b>Legal Engine</b></a>, we’re building a suite of assistants like me, ready to transform Marketing &amp; BD across the legal industry.</p>\n    </div>\n\n<!-- SIGN-OFF -->\n<div class=\"signature\">\n  <p>Cheers,</p>\n\n  <p><b>Leonard</b></p>\n\n  <p><b>AI Assistant<br>Legal Engine</b></p>\n\n  <p>\n    E:&nbsp;<a href=\"mailto:leonard@legalengine.co.uk\">leonard@legalengine.co.uk</a><br>\n    W:&nbsp;<a href=\"https://legalengine.co.uk/\">www.legalengine.co.uk</a>\n  </p>\n</div>\n    <!-- FOOTER + UNSUBSCRIBE -->\n    <div class=\"footer\">\n      &copy; 2025 Legal Engine Ltd. All rights reserved.<br><br>\n      <a href=\"https://unsubscribe.legalengine.co.uk\" style=\"color:var(--le-blue);text-decoration:none;\">Unsubscribe</a>\n    </div>\n\n    <!-- OPEN-TRACKING -->\n    <img class=\"tracking-pixel\"\n         alt=\"\">\n  </div>\n</body>\n</html>",
+        "additionalFields": {
+          "bodyContentType": "html"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        1024,
+        80
+      ],
+      "id": "269e5deb-e817-44c1-871b-e6f3129db23e",
+      "name": "HTML Email from Leonard to Lawyer1",
+      "webhookId": "03bf6b23-ce1b-4340-9b85-755d534ee154",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "APa28clvTTmmzH55",
+          "name": "Microsoft Outlook - Leonard @ Legal Engine"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {
+          "numberOfItems": -1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserItemList",
+      "typeVersion": 1,
+      "position": [
+        432,
+        288
+      ],
+      "id": "daa08207-896f-49fa-aece-34956cadd8f4",
+      "name": "Item List Output Parser1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Your role is to produce a html formatted version of this text that will be embedded into an html email. I just need the output to be a paragaph of formatted text in html and not a full html template\n\nTest here: {{ $json['0'] }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        640,
+        80
+      ],
+      "id": "06ee4018-78b1-4d7b-ba1d-a1f24f559680",
+      "name": "AI Agent4",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini-2025-08-07",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini-2025-08-07"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        640,
+        304
+      ],
+      "id": "bc5ba801-95d9-4a64-b8ba-078a5bd637a6",
+      "name": "OpenAI Chat Model4",
+      "credentials": {
+        "openAiApi": {
+          "id": "LldOhLNBReShSMkE",
+          "name": "OpenAi account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Flatten meeting summary JSON into a single machine-readable text stream\n\nconst data = $json.data?.summary ?? {};\nlet out = [];\n\nfunction section(title, content) {\n  if (!content) return;\n  out.push(`## ${title}\\n${content}\\n`);\n}\n\n// Headline / type\nif (data.meeting_type) {\n  out.push(`# Meeting Type: ${data.meeting_type}\\n`);\n} else {\n  out.push(`# Meeting Summary\\n`);\n}\n\n// Keywords\nif (Array.isArray(data.keywords) && data.keywords.length) {\n  out.push(`## Keywords\\n${data.keywords.join(', ')}\\n`);\n}\n\n// Sections\nsection(\"Short Summary\", data.short_summary);\nsection(\"Overview\", data.overview);\nsection(\"Gist\", data.gist);\nsection(\"Bullet Gist\", data.bullet_gist);\nsection(\"Shorthand Bullet Notes\", data.shorthand_bullet);\nsection(\"Action Items\", data.action_items);\n\n// Any transcript chapters or extended sections (if they exist)\nif (Array.isArray(data.transcript_chapters) && data.transcript_chapters.length) {\n  out.push(`## Transcript Chapters\\n${JSON.stringify(data.transcript_chapters, null, 2)}\\n`);\n}\nif (Array.isArray(data.extended_sections) && data.extended_sections.length) {\n  out.push(`## Extended Sections\\n${JSON.stringify(data.extended_sections, null, 2)}\\n`);\n}\n\n// Final flattened text\nreturn [{\n  json: {\n    text: out.join('\\n')\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        512,
+        -704
+      ],
+      "id": "b3bab04b-4b13-4e5a-bd87-648c4b221631",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "operation": "getTranscriptsList",
+        "filters": {
+          "fromDate": "2025-08-05"
+        }
+      },
+      "type": "@firefliesai/n8n-nodes-fireflies.fireflies",
+      "typeVersion": 1,
+      "position": [
+        -352,
+        -560
+      ],
+      "id": "e997b829-5196-4b17-905a-78f9c092f43c",
+      "name": "LEE - Get a list of transcripts",
+      "alwaysOutputData": true,
+      "credentials": {
+        "firefliesApi": {
+          "id": "WlvA2onXFybeJ92u",
+          "name": "Fireflies account - Lee"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "firefliespostcall",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -160,
+        -704
+      ],
+      "id": "2d8185b4-6908-4cb0-9db0-fef269a8e423",
+      "name": "Andy Fireflies Webhook",
+      "webhookId": "feb7a4b3-8f0d-4def-818a-503a3c976ad2"
+    },
+    {
+      "parameters": {
+        "transcriptId": "={{ $json.body.meetingId }}"
+      },
+      "type": "@firefliesai/n8n-nodes-fireflies.fireflies",
+      "typeVersion": 1,
+      "position": [
+        96,
+        -704
+      ],
+      "id": "91f64804-90f1-4ee7-bd63-56b5d425c8a5",
+      "name": "Get a transcript",
+      "credentials": {
+        "firefliesApi": {
+          "id": "c9USzIXhQleb0BJ2",
+          "name": "Fireflies account Andy"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getTranscriptSummary",
+        "transcriptId": "={{ $json.data.id }}"
+      },
+      "type": "@firefliesai/n8n-nodes-fireflies.fireflies",
+      "typeVersion": 1,
+      "position": [
+        304,
+        -704
+      ],
+      "id": "4dff8ff5-351e-4e19-b938-a61f453e1d47",
+      "name": "Get a summary of a transcript3",
+      "credentials": {
+        "firefliesApi": {
+          "id": "c9USzIXhQleb0BJ2",
+          "name": "Fireflies account Andy"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "firefliespostcall",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -160,
+        -896
+      ],
+      "id": "2cc38c64-59b2-4b30-a9e2-67c381ba308b",
+      "name": "Lee Fireflies Webhook",
+      "webhookId": "feb7a4b3-8f0d-4def-818a-503a3c976ad2"
+    },
+    {
+      "parameters": {
+        "transcriptId": "={{ $json.body.meetingId }}"
+      },
+      "type": "@firefliesai/n8n-nodes-fireflies.fireflies",
+      "typeVersion": 1,
+      "position": [
+        96,
+        -896
+      ],
+      "id": "2455e454-88c8-4278-b98d-6cfc94bc7281",
+      "name": "Get a transcript2",
+      "credentials": {
+        "firefliesApi": {
+          "id": "WlvA2onXFybeJ92u",
+          "name": "Fireflies account - Lee"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getTranscriptSummary",
+        "transcriptId": "={{ $json.data.id }}"
+      },
+      "type": "@firefliesai/n8n-nodes-fireflies.fireflies",
+      "typeVersion": 1,
+      "position": [
+        304,
+        -896
+      ],
+      "id": "08a5db53-242e-43a3-9cdd-37ebf2cbbb09",
+      "name": "Get a summary of a transcript2",
+      "credentials": {
+        "firefliesApi": {
+          "id": "WlvA2onXFybeJ92u",
+          "name": "Fireflies account - Lee"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a list of transcripts": {
+      "main": [
+        [
+          {
+            "node": "Get a summary of a transcript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a summary of a transcript": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Item List Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent2": {
+      "main": [
+        [
+          {
+            "node": "HTML Email from Leonard to Lawyer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent3": {
+      "main": [
+        [
+          {
+            "node": "AI Agent4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a summary of a transcript1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Item List Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent4": {
+      "main": [
+        [
+          {
+            "node": "HTML Email from Leonard to Lawyer1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent4",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Andy Fireflies Webhook": {
+      "main": [
+        [
+          {
+            "node": "Get a transcript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a transcript": {
+      "main": [
+        [
+          {
+            "node": "Get a summary of a transcript3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a summary of a transcript3": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lee Fireflies Webhook": {
+      "main": [
+        [
+          {
+            "node": "Get a transcript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a transcript2": {
+      "main": [
+        [
+          {
+            "node": "Get a summary of a transcript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {
+    "Andy Fireflies Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "leonard-dev.app.n8n.cloud",
+            "user-agent": "axios/1.11.0",
+            "content-length": "80",
+            "accept": "application/json, text/plain, */*",
+            "accept-encoding": "gzip, br",
+            "baggage": "sentry-environment=production,sentry-release=1.61.0,sentry-public_key=010261725034495cbd9605cd1d3c1a2d,sentry-trace_id=93d539590dd24d37b2cc80d50479b8a1",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "35.184.58.76",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "US",
+            "cf-ray": "979ed6ef459a993b-DUS",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "sentry-trace": "93d539590dd24d37b2cc80d50479b8a1-9c2dd0798ae567f1",
+            "x-forwarded-for": "35.184.58.76, 172.69.109.61",
+            "x-forwarded-host": "leonard-dev.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-52-6c4f4684d5-sdmff",
+            "x-is-trusted": "yes",
+            "x-real-ip": "35.184.58.76"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "meetingId": "01K45K8V3CAJT038C5C9ZMSYY9",
+            "eventType": "Transcription completed"
+          },
+          "webhookUrl": "https://leonard-dev.app.n8n.cloud/webhook/firefliespostcall",
+          "executionMode": "production"
+        }
+      }
+    ],
+    "Lee Fireflies Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "leonard-dev.app.n8n.cloud",
+            "user-agent": "axios/1.11.0",
+            "content-length": "80",
+            "accept": "application/json, text/plain, */*",
+            "accept-encoding": "gzip, br",
+            "baggage": "sentry-environment=production,sentry-release=v1.61.4,sentry-public_key=010261725034495cbd9605cd1d3c1a2d,sentry-trace_id=252ed1ae8159488f9a93a0c5c5e0a571",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "35.192.27.5",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "US",
+            "cf-ray": "97c6de95c5d110e5-ORD",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "sentry-trace": "252ed1ae8159488f9a93a0c5c5e0a571-8e1c5150bbae9c7b",
+            "x-forwarded-for": "35.192.27.5, 172.69.58.64",
+            "x-forwarded-host": "leonard-dev.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-52-6c4f4684d5-sbjk8",
+            "x-hub-signature": "sha256=1033c637ffb9e7e556920acee98584eae40fa20f1fe80f0593384bde61bbcbff",
+            "x-is-trusted": "yes",
+            "x-real-ip": "35.192.27.5"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "meetingId": "01K4J3PEN1ZTYK0DZQ2GGC4KDD",
+            "eventType": "Transcription completed"
+          },
+          "webhookUrl": "https://leonard-dev.app.n8n.cloud/webhook/firefliespostcall",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "triggerCount": 2,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

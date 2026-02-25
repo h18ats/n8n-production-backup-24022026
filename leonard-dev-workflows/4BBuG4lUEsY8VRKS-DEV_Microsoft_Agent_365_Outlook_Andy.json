@@ -1,0 +1,863 @@
+{
+  "name": "DEV - Microsoft Agent 365 Outlook - Andy",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -912,
+        0
+      ],
+      "id": "f44f7f78-8610-414e-bd76-94f999ff5237",
+      "name": "When chat message received",
+      "webhookId": "70fa1f57-cc9a-4993-bcda-cc3c34d7e650",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=User request: {{ $('When chat message received').item.json.chatInput }}\nToday's is: {{ $json.formattedDate }}\nTime is now: {{ $json.formattedTime }}",
+        "options": {
+          "systemMessage": "You are a world class personal assistant to an executive at a tech company. Your role is to manage their diary, looking up details, creating events, accepting or declining events, reminding them what they have coming up.\n\nWhen communicating with the user, the day format should always be in standard  UK formatting so 'DDMMYY' or '12th September 2025' and the time zone should be London. When using the tools date and time should be in ISO 8601 format.\n\nUse the 'calendar_search' tool to look up existing events in the user's calendar.\n\nUse the 'create_event' tool to add new events, clarifying duration, attendees and confirm details back to use before adding new events. Remember that the user may need to provide several inputs so remember them in order to create the event correctly. \n\nUse the 'update_event' tool to update existing events.\n\nUse the 'calendar_search' tool o delete existing events if needed. You will need to find the event ID using the 'calendar_search' tool before using the 'calendar_search' tool. "
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        256,
+        0
+      ],
+      "id": "a0812da2-530c-41ec-881f-329e839b78b5",
+      "name": "AI Agent",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        128,
+        224
+      ],
+      "id": "08f0d36f-8eb4-4aa7-81be-3a4a24e33b0c",
+      "name": "Google Vertex Chat Model",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "resource": "calendar",
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "typeVersion": 2,
+      "position": [
+        -768,
+        336
+      ],
+      "id": "4f4698f5-0841-4e3e-96e0-4a98a0063013",
+      "name": "outlook tool1",
+      "webhookId": "352b5654-361c-4c62-907d-87d51c9ecb3a",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "J6emPxQ1aamee9nR",
+          "name": "Microsoft Outlook - Andy Personal Hotmail"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        -544,
+        0
+      ],
+      "id": "2351ae9f-d387-435d-b8d7-de9a84a048c4",
+      "name": "Date & Time8",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Create events in user's calendar",
+        "resource": "event",
+        "operation": "create",
+        "calendarId": {
+          "__rl": true,
+          "value": "AAMkAGMxYzIyMDNiLTMwNDQtNDE5OC05OGE2LTgyYmMxZjc0N2MxYgBGAAAAAACBf1OFgphsQr9q5Dg5U1xxBwBDq17NBUT6TZpi2QJ2WTqUAAAAAAEGAABDq17NBUT6TZpi2QJ2WTqUAAAAAIZiAAA=",
+          "mode": "list",
+          "cachedResultName": "Calendar"
+        },
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Title', ``, 'string') }}",
+        "startDateTime": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}",
+        "endDateTime": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', ``, 'string') }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "typeVersion": 2,
+      "position": [
+        384,
+        224
+      ],
+      "id": "7f8d0b72-ba2b-4c24-83fe-e4819d2cfc95",
+      "name": "create_event",
+      "webhookId": "352b5654-361c-4c62-907d-87d51c9ecb3a",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "qd4ZgBH04UILcCMZ",
+          "name": "Outlook - Andy @ Legal Engine - Dec 2025"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- Function node code ---\n\n// Expecting an input item with a field `now`\n// e.g. \"2025-12-02T06:57:39.432+00:00\"\nconst input = $input.first();\nconst inputDate = new Date(input.json.now);\n\n// Helper to zero-pad to two digits\nconst pad = n => n.toString().padStart(2, '0');\n\n// UK date → DDMMYY\nconst dd = pad(inputDate.getDate());\nconst mm = pad(inputDate.getMonth() + 1);\nconst yy = inputDate.getFullYear().toString().slice(-2);\n\nconst formattedDate = `${dd}${mm}${yy}`;\n\n// Time → HH:mm:ss (24-hour clock)\nconst formattedTime = `${pad(inputDate.getHours())}:${pad(inputDate.getMinutes())}:${pad(inputDate.getSeconds())}`;\n\n// Local UK-style date → DD/MM/YYYY\nconst localDate = inputDate.toLocaleDateString(\"en-GB\");\n\n// Local UK-style time → HH:mm:ss (24-hour clock)\nconst localTime = inputDate.toLocaleTimeString(\"en-GB\", {\n  hour12: false\n});\n\nreturn [\n  {\n    json: {\n      now: input.json.now,   // original value from Set node\n      formattedDate,         // \"021225\"\n      formattedTime,         // \"06:57:39\"\n      localDate,             // \"02/12/2025\"\n      localTime              // \"06:57:39\"\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -96,
+        0
+      ],
+      "id": "8561c534-b1fb-498a-a37a-9ee9c00a7cb0",
+      "name": "Code in JavaScript",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5f981a67-fd06-4687-abcc-29295939493b",
+              "name": "now",
+              "value": "={{ $json.currentDate }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -320,
+        0
+      ],
+      "id": "96d047fd-ac69-4cf5-98e8-be0f92ad07bb",
+      "name": "Edit Fields",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Get many events in Microsoft Outlook",
+        "resource": "event",
+        "fromAllCalendars": false,
+        "calendarId": {
+          "__rl": true,
+          "value": "AAMkAGMxYzIyMDNiLTMwNDQtNDE5OC05OGE2LTgyYmMxZjc0N2MxYgBGAAAAAACBf1OFgphsQr9q5Dg5U1xxBwBDq17NBUT6TZpi2QJ2WTqUAAAAAAEGAABDq17NBUT6TZpi2QJ2WTqUAAAAAIZiAAA=",
+          "mode": "list",
+          "cachedResultName": "Calendar"
+        },
+        "returnAll": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Return_All', ``, 'boolean') }}",
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "typeVersion": 2,
+      "position": [
+        512,
+        224
+      ],
+      "id": "71ceabfe-ae1c-4aba-ae32-db179a62bd0c",
+      "name": "calendar_search",
+      "webhookId": "352b5654-361c-4c62-907d-87d51c9ecb3a",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "qd4ZgBH04UILcCMZ",
+          "name": "Outlook - Andy @ Legal Engine - Dec 2025"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('When chat message received').item.json.sessionId }}",
+        "contextWindowLength": 20
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        256,
+        224
+      ],
+      "id": "65cec4a8-72f6-452b-87fc-df49ff6d438e",
+      "name": "Simple Memory",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Update an event in Microsoft Outlook",
+        "resource": "event",
+        "operation": "update",
+        "calendarId": {
+          "__rl": true,
+          "value": "AAMkAGMxYzIyMDNiLTMwNDQtNDE5OC05OGE2LTgyYmMxZjc0N2MxYgBGAAAAAACBf1OFgphsQr9q5Dg5U1xxBwBDq17NBUT6TZpi2QJ2WTqUAAAAAAEGAABDq17NBUT6TZpi2QJ2WTqUAAAAAIZiAAA=",
+          "mode": "list",
+          "cachedResultName": "Calendar"
+        },
+        "eventId": {
+          "__rl": true,
+          "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Event', ``, 'string') }}",
+          "mode": "id"
+        },
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "typeVersion": 2,
+      "position": [
+        656,
+        224
+      ],
+      "id": "23a50df8-e074-4b77-a689-334e52fb9723",
+      "name": "update_event",
+      "webhookId": "352b5654-361c-4c62-907d-87d51c9ecb3a",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "qd4ZgBH04UILcCMZ",
+          "name": "Outlook - Andy @ Legal Engine - Dec 2025"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Delete an event in Microsoft Outlook",
+        "resource": "event",
+        "operation": "delete",
+        "calendarId": {
+          "__rl": true,
+          "value": "AAMkAGMxYzIyMDNiLTMwNDQtNDE5OC05OGE2LTgyYmMxZjc0N2MxYgBGAAAAAACBf1OFgphsQr9q5Dg5U1xxBwBDq17NBUT6TZpi2QJ2WTqUAAAAAAEGAABDq17NBUT6TZpi2QJ2WTqUAAAAAIZiAAA=",
+          "mode": "list",
+          "cachedResultName": "Calendar"
+        },
+        "eventId": {
+          "__rl": true,
+          "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Event', ``, 'string') }}",
+          "mode": "id"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "typeVersion": 2,
+      "position": [
+        800,
+        224
+      ],
+      "id": "e89a551e-e869-4500-a886-1c9d5353a73a",
+      "name": "delete_event",
+      "webhookId": "352b5654-361c-4c62-907d-87d51c9ecb3a",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "qd4ZgBH04UILcCMZ",
+          "name": "Outlook - Andy @ Legal Engine - Dec 2025"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -944,
+        -496
+      ],
+      "id": "ac3c0a62-4ab1-4e92-9ca6-a540ad594f3e",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=User Task: {{ $('Task').item.json.Task }}  {{ $('Task').item.json.Date }} for {{ $('Task').item.json.Starting }}. \n\nThe event needs to start no earlier than {{ $('Task').item.json.Earliest_Start }} and be finished by {{ $('Task').item.json.Latest_Finish }} latest.\n\nCreate a meeting called  {{ $('Task').item.json.Event_Name }} of {{ $('Task').item.json.Event_Length }}m in length and invite {{ $('Task').item.json.Invite }}. Mark the event as {{ $('Task').item.json['Private?'] }}. Set a reminder in my diary {{ $('Task').item.json.Alert_Mins }}m before the event.\n\nIf there is no availability {{ $('Task').item.json.Date }}, find the earliest {{ $('Task').item.json.Event_Length }}m slot after {{ $('Task').item.json.Earliest_Start }} the next working day (Monday - Friday) and book the event for then.\n\nToday's is: {{ $json.formattedDate }}\nTime is now: {{ $json.formattedTime }}",
+        "options": {
+          "systemMessage": "You are a world class personal assistant to an executive at a tech company. Your role is to manage their diary, looking up details, creating events, accepting or declining events, reminding them what they have coming up.\n\nWhen communicating with the user, the day format should always be in standard  UK formatting so 'DDMMYY' or '12th September 2025' and the time zone should be London. When using the tools date and time should be in ISO 8601 format.\n\nUse the 'calendar_search' tool to look up existing events in the user's calendar.\n\nUse the 'create_event' tool to add new events.\n\nUse the 'update_event' tool to update existing events.\n\nUse the 'calendar_search' tool o delete existing events if needed. You will need to find the event ID using the 'calendar_search' tool before using the 'calendar_search' tool. "
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        336,
+        -496
+      ],
+      "id": "55527c7f-70ba-49d1-bebb-7778959df0f3",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        208,
+        -272
+      ],
+      "id": "f12e419b-b981-47ec-8a5c-0f7b4e702d8d",
+      "name": "Google Vertex Chat Model1",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        -464,
+        -496
+      ],
+      "id": "d5ddd141-cf05-49ee-a7de-13abd80dd26f",
+      "name": "Date & Time"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Create events in user's calendar",
+        "resource": "event",
+        "operation": "create",
+        "calendarId": {
+          "__rl": true,
+          "value": "AAMkAGMxYzIyMDNiLTMwNDQtNDE5OC05OGE2LTgyYmMxZjc0N2MxYgBGAAAAAACBf1OFgphsQr9q5Dg5U1xxBwBDq17NBUT6TZpi2QJ2WTqUAAAAAAEGAABDq17NBUT6TZpi2QJ2WTqUAAAAAIZiAAA=",
+          "mode": "list",
+          "cachedResultName": "Calendar"
+        },
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Title', ``, 'string') }}",
+        "startDateTime": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}",
+        "endDateTime": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', ``, 'string') }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "typeVersion": 2,
+      "position": [
+        464,
+        -272
+      ],
+      "id": "3add2f8d-d318-434d-bb00-bc9dda4b50b7",
+      "name": "create_event1",
+      "webhookId": "352b5654-361c-4c62-907d-87d51c9ecb3a",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "qd4ZgBH04UILcCMZ",
+          "name": "Outlook - Andy @ Legal Engine - Dec 2025"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- Function node code ---\n\n// Expecting an input item with a field `now`\n// e.g. \"2025-12-02T06:57:39.432+00:00\"\nconst input = $input.first();\nconst inputDate = new Date(input.json.now);\n\n// Helper to zero-pad to two digits\nconst pad = n => n.toString().padStart(2, '0');\n\n// UK date → DDMMYY\nconst dd = pad(inputDate.getDate());\nconst mm = pad(inputDate.getMonth() + 1);\nconst yy = inputDate.getFullYear().toString().slice(-2);\n\nconst formattedDate = `${dd}${mm}${yy}`;\n\n// Time → HH:mm:ss (24-hour clock)\nconst formattedTime = `${pad(inputDate.getHours())}:${pad(inputDate.getMinutes())}:${pad(inputDate.getSeconds())}`;\n\n// Local UK-style date → DD/MM/YYYY\nconst localDate = inputDate.toLocaleDateString(\"en-GB\");\n\n// Local UK-style time → HH:mm:ss (24-hour clock)\nconst localTime = inputDate.toLocaleTimeString(\"en-GB\", {\n  hour12: false\n});\n\nreturn [\n  {\n    json: {\n      now: input.json.now,   // original value from Set node\n      formattedDate,         // \"021225\"\n      formattedTime,         // \"06:57:39\"\n      localDate,             // \"02/12/2025\"\n      localTime              // \"06:57:39\"\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -16,
+        -496
+      ],
+      "id": "02e828b9-811a-4260-9060-08577002c20e",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5f981a67-fd06-4687-abcc-29295939493b",
+              "name": "now",
+              "value": "={{ $json.currentDate }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -240,
+        -496
+      ],
+      "id": "4fbb433e-afad-4cec-b3c7-5763f5dd8564",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Get many events in Microsoft Outlook",
+        "resource": "event",
+        "fromAllCalendars": false,
+        "calendarId": {
+          "__rl": true,
+          "value": "AAMkAGMxYzIyMDNiLTMwNDQtNDE5OC05OGE2LTgyYmMxZjc0N2MxYgBGAAAAAACBf1OFgphsQr9q5Dg5U1xxBwBDq17NBUT6TZpi2QJ2WTqUAAAAAAEGAABDq17NBUT6TZpi2QJ2WTqUAAAAAIZiAAA=",
+          "mode": "list",
+          "cachedResultName": "Calendar"
+        },
+        "returnAll": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Return_All', ``, 'boolean') }}",
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "typeVersion": 2,
+      "position": [
+        592,
+        -272
+      ],
+      "id": "ad71c08d-56d1-4a69-8aaa-5e746ee87d35",
+      "name": "calendar_search1",
+      "webhookId": "352b5654-361c-4c62-907d-87d51c9ecb3a",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "qd4ZgBH04UILcCMZ",
+          "name": "Outlook - Andy @ Legal Engine - Dec 2025"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Date & Time').item.json.currentDate }}",
+        "contextWindowLength": 20
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        336,
+        -272
+      ],
+      "id": "d31530a7-14aa-4a19-ac5b-ee57dcbc0b65",
+      "name": "Simple Memory1"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Update an event in Microsoft Outlook",
+        "resource": "event",
+        "operation": "update",
+        "calendarId": {
+          "__rl": true,
+          "value": "AAMkAGMxYzIyMDNiLTMwNDQtNDE5OC05OGE2LTgyYmMxZjc0N2MxYgBGAAAAAACBf1OFgphsQr9q5Dg5U1xxBwBDq17NBUT6TZpi2QJ2WTqUAAAAAAEGAABDq17NBUT6TZpi2QJ2WTqUAAAAAIZiAAA=",
+          "mode": "list",
+          "cachedResultName": "Calendar"
+        },
+        "eventId": {
+          "__rl": true,
+          "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Event', ``, 'string') }}",
+          "mode": "id"
+        },
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "typeVersion": 2,
+      "position": [
+        736,
+        -272
+      ],
+      "id": "d62ab0eb-1451-463e-b929-b314cdcae5ee",
+      "name": "update_event1",
+      "webhookId": "352b5654-361c-4c62-907d-87d51c9ecb3a",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "qd4ZgBH04UILcCMZ",
+          "name": "Outlook - Andy @ Legal Engine - Dec 2025"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Delete an event in Microsoft Outlook",
+        "resource": "event",
+        "operation": "delete",
+        "calendarId": {
+          "__rl": true,
+          "value": "AAMkAGMxYzIyMDNiLTMwNDQtNDE5OC05OGE2LTgyYmMxZjc0N2MxYgBGAAAAAACBf1OFgphsQr9q5Dg5U1xxBwBDq17NBUT6TZpi2QJ2WTqUAAAAAAEGAABDq17NBUT6TZpi2QJ2WTqUAAAAAIZiAAA=",
+          "mode": "list",
+          "cachedResultName": "Calendar"
+        },
+        "eventId": {
+          "__rl": true,
+          "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Event', ``, 'string') }}",
+          "mode": "id"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "typeVersion": 2,
+      "position": [
+        880,
+        -272
+      ],
+      "id": "09c6c14c-2b30-4927-ba7f-0ed18472b046",
+      "name": "delete_event1",
+      "webhookId": "352b5654-361c-4c62-907d-87d51c9ecb3a",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "qd4ZgBH04UILcCMZ",
+          "name": "Outlook - Andy @ Legal Engine - Dec 2025"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5f981a67-fd06-4687-abcc-29295939493b",
+              "name": "Task",
+              "value": "=Find me the next available free slot in my diary  ",
+              "type": "string"
+            },
+            {
+              "id": "e1c34d3d-8e39-402f-a425-29cde0597d15",
+              "name": "Event_Name",
+              "value": "Lee<>Luke Post Meeting Check in",
+              "type": "string"
+            },
+            {
+              "id": "20392a74-7c3d-4e25-9334-7d905ad8ecb4",
+              "name": "Event_Length",
+              "value": "15",
+              "type": "string"
+            },
+            {
+              "id": "2c15d529-20de-4162-89ae-e154d0ee71ea",
+              "name": "Invite",
+              "value": "Nobody",
+              "type": "string"
+            },
+            {
+              "id": "050af3be-9bd0-4f36-95be-52fed5988834",
+              "name": "Private?",
+              "value": "Not Private",
+              "type": "string"
+            },
+            {
+              "id": "12577a6e-5429-4d93-a3fb-5112006411e2",
+              "name": "Starting",
+              "value": "on the hour, quarter past, half past or quarter to the hour",
+              "type": "string"
+            },
+            {
+              "id": "45abb33b-41be-48ca-a457-7ca6915625aa",
+              "name": "Date",
+              "value": "Today",
+              "type": "string"
+            },
+            {
+              "id": "3f12ef22-b095-4a74-847f-fa7a03ff9244",
+              "name": "Earliest_Start",
+              "value": "8am",
+              "type": "string"
+            },
+            {
+              "id": "d837939f-2d8a-4b83-a3d9-be286ab25ba3",
+              "name": "Latest_Finish",
+              "value": "6pm",
+              "type": "string"
+            },
+            {
+              "id": "938f4aa6-3b76-45ed-afc0-af516712ea8d",
+              "name": "Alert_Mins",
+              "value": "15",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -704,
+        -496
+      ],
+      "id": "630238c3-bfa9-42ad-a81b-7af268970ced",
+      "name": "Task"
+    }
+  ],
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Date & Time8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Time8": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "create_event": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        []
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "calendar_search": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "update_event": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "delete_event": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Time": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "create_event1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "calendar_search1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "update_event1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "delete_event1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Task": {
+      "main": [
+        [
+          {
+            "node": "Date & Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 0,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

@@ -1,0 +1,867 @@
+{
+  "name": "Create Leonard Clone with PP serach and input/output",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.elevenlabs.io/v1/convai/agents/create",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "xi-api-key",
+              "value": "sk_cf2f6abdf8d17c22e76236f81c5c1466ffb50831ea37eae4"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"agent_id\": \"tG9uM0Gz6OeuPuR8B123\",\n    \"name\": \"{{ $('Notion Upload Page').item.json.name }}'s AI Agent\",\n    \"conversation_config\": {\n        \"asr\": {\n            \"quality\": \"high\",\n            \"provider\": \"elevenlabs\",\n            \"user_input_audio_format\": \"pcm_16000\",\n            \"keywords\": []\n        },\n        \"turn\": {\n            \"turn_timeout\": 7.0,\n            \"silence_end_call_timeout\": 60.0,\n            \"mode\": \"turn\"\n        },\n        \"tts\": {\n            \"model_id\": \"eleven_flash_v2\",\n            \"voice_id\": \"AwP2bjcqrSky0yiDhZSe\",\n            \"agent_output_audio_format\": \"pcm_16000\",\n            \"optimize_streaming_latency\": 4,\n            \"stability\": 0.45,\n            \"speed\": 1.0,\n            \"similarity_boost\": 0.5,\n            \"pronunciation_dictionary_locators\": []\n        },\n        \"conversation\": {\n            \"max_duration_seconds\": 750,\n            \"client_events\": [\n                \"audio\",\n                \"interruption\",\n                \"user_transcript\",\n                \"agent_response\",\n                \"agent_response_correction\"\n            ]\n        },\n        \"language_presets\": {},\n        \"agent\": {\n            \"first_message\": \"Hi there {{ $('Code').item.json.firstName }},  I'm Leonard from Legal Engine. I'm going to show you how, by harnessing the power of voice and AI, I can help to take the pain out of creating a professional bio that can be used for both directory submissions and other BD activities. If you're chatting with me on a mobile device you may need to ensure the device doesn't go into standby as it may interrupt our conversation. If we could start with you sharing, a high level of what you want me to include in the bio, I can then show you what I'm capable of. Over to you {{ $('Code').item.json.firstName }}…\",\n            \"language\": \"en\",\n            \"dynamic_variables\": {\n                \"dynamic_variable_placeholders\": {\n                    \"user_name\": \"Andy\"\n                }\n            },\n            \"prompt\": {\n                \"prompt\": \"You are a business development manager for a top tier UK law firm. Use what you have within your knowledge base to help to complete a bio for the caller that will feature as part of their submission to Chambers and Legal 500. You can be jovial but professional. Once the caller states their high level guidance on what needs to go in the bio, use the knowledge base and what the caller has said to provide the caller with a 200 word bio in UK English. Use this as the basis for the bio and ask the user if it needs amending or changing.\",\n\"llm\": \"gemini-2.0-flash-001\",\n                \"temperature\": 0.6,\n                \"max_tokens\": -1,\n                \"tools\": [\n                    {\n                        \"id\": \"EUv1berotGH2ACIu2O65\",\n                        \"type\": \"system\",\n                        \"name\": \"language_detection\",\n                        \"description\": \"\",\n                        \"params\": {\n                            \"system_tool_type\": \"language_detection\"\n                        }\n                    },\n                    {\n                        \"id\": \"zLmU2CTKXCq9MOzvaSLb\",\n                        \"type\": \"webhook\",\n                        \"name\": \"save_client\",\n                        \"description\": \"Use this tool to save the client name for a matter once it is known\",\n                        \"api_schema\": {\n                            \"url\": \"https://leonard-dev.app.n8n.cloud/webhook/testcrm\",\n                            \"method\": \"POST\",\n                            \"path_params_schema\": {},\n                            \"query_params_schema\": null,\n                            \"request_body_schema\": {\n                                \"type\": \"object\",\n                                \"properties\": {\n                                    \"client\": {\n                                        \"type\": \"string\",\n                                        \"description\": \"Establish the client's name \",\n                                        \"dynamic_variable\": \"\",\n                                        \"constant_value\": \"\"\n                                    },\n                                    \"user_email\": {\n                                        \"type\": \"string\",\n                                        \"description\": \"\",\n                                        \"dynamic_variable\": \"user_email\",\n                                        \"constant_value\": \"\"\n                                    },\n                                    \"user_name\": {\n                                        \"type\": \"string\",\n                                        \"description\": \"\",\n                                        \"dynamic_variable\": \"user_name\",\n                                        \"constant_value\": \"\"\n                                    }\n                                },\n                                \"required\": [\n                                    \"client\",\n                                    \"user_email\",\n                                    \"user_name\"\n                                ],\n                                \"description\": \"Get the client name, first name and other personal details ready to save\"\n                            },\n                            \"request_headers\": {}\n                        },\n                        \"dynamic_variables\": {\n                            \"dynamic_variable_placeholders\": {\n                                \"user_email\": \"andy@legalengine.co.uk\",\n                                \"user_name\": \"Andy\"\n                            }\n                        }\n                    },\n                    {\n                        \"id\": \"lfbwRtpGj7SwzaH8LaQK\",\n                        \"type\": \"webhook\",\n                        \"name\": \"send_summary\",\n                        \"description\": \"Use this tool to send the user the summary of a matter once they approve that it is correct. \",\n                        \"api_schema\": {\n                            \"url\": \"https://leonard-dev.app.n8n.cloud/webhook/testdemo\",\n                            \"method\": \"POST\",\n                            \"path_params_schema\": {},\n                            \"query_params_schema\": null,\n                            \"request_body_schema\": {\n                                \"type\": \"object\",\n                                \"properties\": {\n                                    \"user_email\": {\n                                        \"type\": \"string\",\n                                        \"description\": \"\",\n                                        \"dynamic_variable\": \"user_email\",\n                                        \"constant_value\": \"\"\n                                    },\n                                    \"summary\": {\n                                        \"type\": \"string\",\n                                        \"description\": \"summary of matter description in UK English, not US English\",\n                                        \"dynamic_variable\": \"\",\n                                        \"constant_value\": \"\"\n                                    },\n                                    \"user_name\": {\n                                        \"type\": \"string\",\n                                        \"description\": \"\",\n                                        \"dynamic_variable\": \"user_name\",\n                                        \"constant_value\": \"\"\n                                    },\n                                    \"transcript\": {\n                                        \"type\": \"string\",\n                                        \"description\": \"A full transcript of the user's conversation with the agent until this point, in UK English, not US English\",\n                                        \"dynamic_variable\": \"\",\n                                        \"constant_value\": \"\"\n                                    }\n                                },\n                                \"required\": [\n                                    \"user_email\",\n                                    \"summary\",\n                                    \"user_name\",\n                                    \"transcript\"\n                                ],\n                                \"description\": \"Ask the user if the matter summary that you gave them is correct, if okay to send, trigger this action.\"\n                            },\n                            \"request_headers\": {}\n                        },\n                        \"dynamic_variables\": {\n                            \"dynamic_variable_placeholders\": {\n                                \"user_email\": \"andy@legalengine.co.uk\",\n                                \"user_name\": \"Andy\"\n                            }\n                        }\n                    },\n                    {\n                        \"id\": \"fEL96Xn1nkQZ2J39JmtN\",\n                        \"type\": \"system\",\n                        \"name\": \"end_call\",\n                        \"description\": \"\",\n                        \"params\": {\n                            \"system_tool_type\": \"end_call\"\n                        }\n                    }\n                ],\n                \"tool_ids\": [\n                    \"EUv1berotGH2ACIu2O65\",\n                    \"zLmU2CTKXCq9MOzvaSLb\",\n                    \"lfbwRtpGj7SwzaH8LaQK\",\n                    \"fEL96Xn1nkQZ2J39JmtN\"\n                ],\n                \"knowledge_base\": [\n                    {\n                        \"type\": \"url\",\n                        \"name\": \"2025.03 facets 1 to 6 - laws - work types - sectors - participants - connectors - information assets - noslegal 3.0 - Microsoft.xlsx\",\n                        \"id\": \"ejv14Dbmoc3KyCyFO19K\",\n                        \"usage_mode\": \"auto\"\n                    },\n                    {\n                        \"type\": \"url\",\n                        \"name\": \"{{ $('Notion Upload Page').item.json.name }} - Personal Profile and Company Info\",\n                        \"id\": \"{{ $('Create KB').item.json.id }}\",\n                        \"usage_mode\": \"prompt\"\n                    },\n                    {\n                        \"type\": \"url\",\n                        \"name\": \"taxonomy/2025.03 v3 noslegal release/2025.03 guide - noslegal 3.0.pdf at main · noslegal/taxonomy\",\n                        \"id\": \"asdugn4RGhF5gvo638Mz\",\n                        \"usage_mode\": \"auto\"\n                    },\n                    {\n                        \"type\": \"url\",\n                        \"name\": \"GitHub - noslegal/taxonomy: noslegal taxonomy facets and release notes\",\n                        \"id\": \"WTSeALM0hCdp3JOAQkh7\",\n                        \"usage_mode\": \"auto\"\n                    },\n                    {\n                        \"type\": \"text\",\n                        \"name\": \"Legal500 Instructions\",\n                        \"id\": \"Y47AunKPNxeDkf6ZXHrA\",\n                        \"usage_mode\": \"auto\"\n                    }\n                ],\n                \"custom_llm\": null,\n                \"ignore_default_personality\": false,\n                \"rag\": {\n                    \"enabled\": true,\n                    \"embedding_model\": \"e5_mistral_7b_instruct\",\n                    \"max_vector_distance\": 0.6,\n                    \"max_documents_length\": 50000\n                }\n            }\n        }\n    },\n    \"metadata\": {\n        \"created_at_unix_secs\": 1745903685\n    },\n    \"platform_settings\": {\n        \"auth\": {\n            \"enable_auth\": false,\n            \"allowlist\": [],\n            \"shareable_token\": null\n        },\n        \"evaluation\": {\n            \"criteria\": []\n        },\n        \"widget\": {\n            \"variant\": \"full\",\n            \"expandable\": \"never\",\n            \"avatar\": {\n                \"type\": \"orb\",\n                \"color_1\": \"#2792DC\",\n                \"color_2\": \"#9CE6E6\"\n            },\n            \"feedback_mode\": \"during\",\n            \"bg_color\": \"#ffffff\",\n            \"text_color\": \"#000000\",\n            \"btn_color\": \"#000000\",\n            \"btn_text_color\": \"#ffffff\",\n            \"border_color\": \"#e1e1e1\",\n            \"focus_color\": \"#000000\",\n            \"border_radius\": null,\n            \"btn_radius\": null,\n            \"action_text\": null,\n            \"start_call_text\": null,\n            \"end_call_text\": null,\n            \"expand_text\": null,\n            \"listening_text\": null,\n            \"speaking_text\": null,\n            \"shareable_page_text\": null,\n            \"shareable_page_show_terms\": true,\n            \"terms_text\": \"#### Terms and conditions\\n\\nBy clicking \\\"Agree,\\\" and each time I interact with this AI agent, I consent to the recording, storage, and sharing of my communications with third-party service providers, and as described in the Privacy Policy.\\nIf you do not wish to have your conversations recorded, please refrain from using this service.\",\n            \"terms_html\": \"<h4>Terms and conditions</h4>\\n<p>By clicking &quot;Agree,&quot; and each time I interact with this AI agent, I consent to the recording, storage, and sharing of my communications with third-party service providers, and as described in the Privacy Policy.\\nIf you do not wish to have your conversations recorded, please refrain from using this service.</p>\\n\",\n            \"terms_key\": null,\n            \"show_avatar_when_collapsed\": true,\n            \"disable_banner\": false,\n            \"mic_muting_enabled\": false,\n            \"language_selector\": false,\n            \"custom_avatar_path\": null\n        },\n        \"data_collection\": {},\n        \"overrides\": {\n            \"conversation_config_override\": {\n                \"agent\": {\n                    \"prompt\": {\n                        \"prompt\": false\n                    },\n                    \"first_message\": false,\n                    \"language\": true\n                },\n                \"tts\": {\n                    \"voice_id\": false\n                }\n            },\n            \"custom_llm_extra_body\": false,\n            \"enable_conversation_initiation_client_data_from_webhook\": false\n        },\n        \"call_limits\": {\n            \"agent_concurrency_limit\": -1,\n            \"daily_limit\": 100000\n        },\n        \"ban\": null,\n        \"privacy\": {\n            \"record_voice\": true,\n            \"retention_days\": 730,\n            \"delete_transcript_and_pii\": true,\n            \"delete_audio\": true,\n            \"apply_to_existing_conversations\": false\n        },\n        \"workspace_overrides\": {\n            \"conversation_initiation_client_data_webhook\": null,\n            \"webhooks\": {\n                \"post_call_webhook_id\": null\n            }\n        },\n        \"safety\": {\n            \"is_blocked_ivc\": false,\n            \"is_blocked_non_ivc\": false,\n            \"ignore_safety_evaluation\": false\n        }\n    },\n    \"phone_numbers\": [],\n    \"access_info\": {\n        \"is_creator\": true,\n        \"creator_name\": \"Leonard\",\n        \"creator_email\": \"leonard@legalengine.co.uk\",\n        \"role\": \"admin\"\n    },\n    \"categories\": []\n}\n\n\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2340,
+        -400
+      ],
+      "id": "b3cc6341-4e3c-42af-91b2-2e2703a93c37",
+      "name": "Create Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        40,
+        -200
+      ],
+      "id": "4d281d17-77c0-4489-862b-1eaf8bca3b34",
+      "name": "Date & Time"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "c609c3e6-6896-48dc-a273-420431bed013",
+      "name": "OpenAI Model1",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        740,
+        20
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "LldOhLNBReShSMkE",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.perplexity.ai/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"sonar\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are an expert researcher who uses deep research for professional services and law firms in order to provide lawyers, legal firm partners, business development teams at law firms and marketing departments at law firms with incredibly comprehensive and accurate publicly available information.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"I have the following information; Name={{ $json.fullName }}, Email={{ $json.email }}, Company={{ $json.domain }}. Please provide an accurate possible professional brief for a senior manager using the sources above, find me all information that relates to the work that the user and their firm have done that may have involved the user and/or is related to the areas of specialism that the user has according to their publicly available research and company bio when looking at work that is related to the user it may be helpful to looking at the sector, the practice area and the office for the user as well as their Relevant experience, Publications and insights, News and client work, Professional bodies, Awards and citations and Career and qualifications. \"\n    }\n  ],\n  \"max_tokens\": 1200,\n  \"temperature\": 0.5\n}",
+        "options": {}
+      },
+      "id": "0da09690-f999-4097-976b-fb28987ea59f",
+      "name": "Perplexity Firm Research",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        480,
+        -200
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "Ok9KPJP4UMw6OLgP",
+          "name": "Unnamed credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const email = $('On form submission').first().json['Company Email ']; // or use the correct field name from your webhook\nconst [fullNamePart, domain] = email.split(\"@\");\n\nlet firstName = \"\";\nlet lastName = \"\";\n\n// Try splitting by dot or fallback to full name as first name\nif (fullNamePart.includes(\".\")) {\n  [firstName, lastName] = fullNamePart.split(\".\");\n} else {\n  firstName = fullNamePart;\n}\n\nfirstName = firstName.charAt(0).toUpperCase() + firstName.slice(1);\nlastName = lastName ? lastName.charAt(0).toUpperCase() + lastName.slice(1) : \"\";\nconst fullName = lastName ? `${firstName} ${lastName}` : firstName;\n\nreturn [\n  {\n    json: {\n      email,\n      firstName,\n      lastName,\n      fullName,\n      domain,\n    },\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        260,
+        -200
+      ],
+      "id": "fa18a0da-230f-4cf0-be75-0c0e3f7cfb9a",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "ba7fbfe2-d975-4d5b-9232-51e85e9bb807",
+      "name": "OpenAI Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        20
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "LldOhLNBReShSMkE",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an expert business development researcher, a world leader in helping law and professional service firms and companies grow. Using the following information available, which comes from a perplexity search of similar legal matters to the one originally ingested.\n\nI want you to write a robustly compiled, comprehensive and verbose list of Subject Areas, Industries and Matters that you've found that are related to the user. \n\nDo not make up information, but do use all information in full.\n\nBe sure to write in UK English and NOT US English and make sure the output is a maximum of 1500 characters. \n\nINPUT:\nThe content is  here: {{ $('Perplexity Firm Research').item.json.choices[0].message.content }}\nHere is the date and time: {{ $now }}",
+        "options": {
+          "systemMessage": "=You are an expert business development researcher, a world leader in helping law and professional service firms and companies grow. Using the following information available, which comes from a perplexity search of similar legal matters to the one originally ingested.\n\nI want you to write a robustly compiled, comprehensive and verbose list of Subject Areas, Industries and Matters that you've found that are related to the user. \n\nDo not make up information, but do use all information in full.\n\nBe sure to write in UK English and NOT US English and make sure the output is a maximum of 1500 characters. \n\nINPUT:\nThe content is  here: {{ $('Perplexity Firm Research').item.json.choices[0].message.content }}\nHere is the date and time: {{ $now }}"
+        }
+      },
+      "id": "3224ae3c-e005-47e2-b0f4-ee95d02f09fe",
+      "name": "Individual Info",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        700,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an expert business development researcher, a world leader in helping law and professional service firms and companies grow. Using the following information available, which comes from a perplexity search of similar legal matters to the one originally ingested.\n\nI want you to write a robustly compiled, comprehensive and verbose list of Subject Areas, Industries and Matters that you've found that are related to the firm and all awards, ESG notes and anything that would be helpful to show a throrough understanding of the firm. \n\nDo not make up information, but do use all information in full.\n\nBe sure to write in UK English and NOT US English and make sure the output is a maximum of 1500 characters. \nKeep length to a maximum of 1500 Characters.\n\nINPUT:\nThe content is  here: {{ $('Perplexity Firm Research').item.json.choices[0].message.content }}\nHere is the date and time: {{ $now }}",
+        "options": {
+          "systemMessage": "=You are an expert business development researcher, a world leader in helping law and professional service firms and companies grow. Using the following information available, which comes from a perplexity search of similar legal matters to the one originally ingested.\n\nI want you to write a robustly compiled, comprehensive and verbose list of Subject Areas, Industries and Matters that you've found that are related to the user. \n\nDo not make up information, but do use all information in full.\n\nBe sure to write in UK English and NOT US English and make sure the output is a maximum of 1500 characters. \nKeep length to a maximum of 1500 Characters.\n\nINPUT:\nThe content is  here: {{ $('Perplexity Firm Research').item.json.choices[0].message.content }}\nHere is the date and time: {{ $now }}"
+        }
+      },
+      "id": "f79f6d54-f7dc-409e-9ff6-acd678627f02",
+      "name": "Company info",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        1080,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "1ea69e60-0837-809f-83cd-dc13c923af60",
+          "mode": "list",
+          "cachedResultName": "1ea69e60-0837-809f-83cd-dc13c923af60",
+          "cachedResultUrl": "https://www.notion.so/1ea69e600837809f83cddc13c923af60"
+        },
+        "title": "TonyTest",
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Email|title",
+              "title": "={{ $('Code').item.json.email }}"
+            },
+            {
+              "key": "Company|rich_text",
+              "textContent": "={{ $('Code').item.json.domain }}"
+            },
+            {
+              "key": "FN|rich_text",
+              "textContent": "={{ $('Code').item.json.firstName }}"
+            },
+            {
+              "key": "SN|rich_text",
+              "textContent": "={{ $('Code').item.json.lastName }}"
+            },
+            {
+              "key": "C Details|rich_text",
+              "textContent": "={{ $json.output }}"
+            },
+            {
+              "key": "P Details|rich_text",
+              "textContent": "={{ $('Individual Info').item.json.output }}"
+            },
+            {
+              "key": "Name|rich_text",
+              "textContent": "={{ $('Code').item.json.fullName }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        1460,
+        -200
+      ],
+      "id": "0cf8706f-b018-4890-ad2d-03ee5b0e684f",
+      "name": "Notion",
+      "credentials": {
+        "notionApi": {
+          "id": "F6UQEs6NhRbwsx9v",
+          "name": "Notion account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "resource": "database",
+        "databaseId": {
+          "__rl": true,
+          "value": "1ea69e60-0837-809f-83cd-dc13c923af60",
+          "mode": "id"
+        }
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        1680,
+        -200
+      ],
+      "id": "f7f5e19e-1700-4e0b-8f57-f9cd4e573074",
+      "name": "Notion1",
+      "credentials": {
+        "notionApi": {
+          "id": "F6UQEs6NhRbwsx9v",
+          "name": "Notion account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "get",
+        "pageId": {
+          "__rl": true,
+          "value": "={{ $('Notion').item.json.url }}",
+          "mode": "url"
+        }
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        1900,
+        -200
+      ],
+      "id": "167387df-5853-46b6-bb32-49454e6ecb3a",
+      "name": "Notion2",
+      "credentials": {
+        "notionApi": {
+          "id": "F6UQEs6NhRbwsx9v",
+          "name": "Notion account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.elevenlabs.io/v1/convai/agents/create",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "xi-api-key",
+              "value": "sk_cf2f6abdf8d17c22e76236f81c5c1466ffb50831ea37eae4"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "=\n{\n    \"url\": \"{{ $json.url }}\"\n\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2200,
+        -200
+      ],
+      "id": "1729702f-a9bf-4cf4-863f-2af48c06d485",
+      "name": "Create Agent1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const content = $input.first().json.output;\nreturn [\n  {\n    binary: {\n      data: {\n        data: Buffer.from(content, \"utf8\").toString(\"base64\"),\n        mimeType: \"text/plain\",\n        fileName: \"output.txt\",\n      },\n    },\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1460,
+        20
+      ],
+      "id": "b0084b95-7df7-49d9-91cd-a93163006d50",
+      "name": "Code1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const content = $input.first().json.output;\nreturn [\n  {\n    binary: {\n      data: {\n        data: Buffer.from(content, \"utf8\").toString(\"base64\"),\n        mimeType: \"text/plain\",\n        fileName: \"output.txt\",\n      },\n    },\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1460,
+        220
+      ],
+      "id": "29a0eae5-a751-4dca-b006-5c1a87715063",
+      "name": "Code2",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.elevenlabs.io/v1/convai/knowledge-base/url",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "xi-api-key",
+              "value": "sk_cf2f6abdf8d17c22e76236f81c5c1466ffb50831ea37eae4"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "=\n{\n    \"url\": \"{{ $json.url }}\"\n\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2000,
+        -400
+      ],
+      "id": "0d967547-7610-4dd4-b875-a835b7a37032",
+      "name": "Create KB"
+    },
+    {
+      "parameters": {
+        "pageId": {
+          "__rl": true,
+          "value": "https://www.notion.so/AI-Knowledge-Base-1ea69e60083780f0a935cff8ac44c8a1",
+          "mode": "url"
+        },
+        "title": "={{ $('Code').item.json.fullName }}",
+        "blockUi": {
+          "blockValues": [
+            {
+              "textContent": "={{ $json.chunk }}"
+            },
+            {
+              "textContent": "={{ $('Company Info 2000char').item.json.chunk }}"
+            },
+            {}
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        1800,
+        -400
+      ],
+      "id": "7a10ad08-df7b-49e7-873e-5946e19f2129",
+      "name": "Notion Upload Page",
+      "credentials": {
+        "notionApi": {
+          "id": "F6UQEs6NhRbwsx9v",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json.output; // Or use the correct field name\nconst maxLength = 2000;\n\nlet chunks = [];\nfor (let i = 0; i < input.length; i += maxLength) {\n  chunks.push({\n    chunk: input.substring(i, i + maxLength)\n  });\n}\n\nreturn chunks.map(c => ({ json: c }));\nreturn [items[0]];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1460,
+        -400
+      ],
+      "id": "4860ddcb-14a3-44d8-aba4-a892cfea36c9",
+      "name": "Company Info 2000char"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $('Individual Info').first().json.output; // Or use the correct field name\nconst maxLength = 2000;\n\nlet chunks = [];\nfor (let i = 0; i < input.length; i += maxLength) {\n  chunks.push({\n    chunk: input.substring(i, i + maxLength)\n  });\n}\n\nreturn chunks.map(c => ({ json: c }));\nreturn [items[0]];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1640,
+        -400
+      ],
+      "id": "8241e496-8a05-495d-a112-4a88c8aa5ce6",
+      "name": "Indiv Info 2000char"
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "=https://api.elevenlabs.io/v1/convai/agents/{{ $('Create Agent').item.json.agent_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "xi-api-key",
+              "value": "sk_cf2f6abdf8d17c22e76236f81c5c1466ffb50831ea37eae4"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2700,
+        -400
+      ],
+      "id": "5afb36f7-baca-4640-944c-986ce692e96f",
+      "name": "Delete Agent"
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "=https://api.elevenlabs.io/v1/convai/knowledge-base/{{ $('Create KB').item.json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "xi-api-key",
+              "value": "sk_cf2f6abdf8d17c22e76236f81c5c1466ffb50831ea37eae4"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3020,
+        -400
+      ],
+      "id": "e305b4d5-277d-44ac-ac8f-ec1c90a39713",
+      "name": "Delete KB"
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2180,
+        -400
+      ],
+      "id": "cc04989c-427f-480e-bb38-003bad8c4ece",
+      "name": "Wait 2s",
+      "webhookId": "b4119067-b89a-4834-a4a6-bf693dc4b7b7"
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2860,
+        -400
+      ],
+      "id": "ab928662-1dbc-4b6e-a525-5a33bb60717e",
+      "name": "Wait 2s1",
+      "webhookId": "8236dedc-1827-46c0-b857-f7c159c79523"
+    },
+    {
+      "parameters": {
+        "amount": 15,
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2540,
+        -400
+      ],
+      "id": "3af5c5dd-76f5-4fd8-80ab-84321c3bebe9",
+      "name": "Wait 2m",
+      "webhookId": "bd44371f-891f-4cc4-86f6-7bddcf13110e"
+    },
+    {
+      "parameters": {
+        "formTitle": "User Details",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "First Name",
+              "placeholder": "Leonard ",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Company Email ",
+              "fieldType": "email",
+              "placeholder": "leonard@legalengine.co.uk",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        -180,
+        -200
+      ],
+      "id": "06df4549-6903-4046-a215-7d0b224b6d0e",
+      "name": "On form submission",
+      "webhookId": "c6b387fe-5fc3-45c6-a509-330208f78028"
+    },
+    {
+      "parameters": {
+        "resource": "chatMessage",
+        "chatId": {
+          "__rl": true,
+          "value": "19:3b774197e8f540238b983f2e1cfa5f0f@thread.v2",
+          "mode": "list",
+          "cachedResultName": "sandbox-demo.legalengine.co.uk (group)",
+          "cachedResultUrl": "https://teams.microsoft.com/l/chat/19%3A3b774197e8f540238b983f2e1cfa5f0f%40thread.v2/0?tenantId=fad5c68f-d169-4373-bed7-55243bd99c7b"
+        },
+        "message": "=New Bespoke AI Agent created for {{ $('Code').item.json.fullName }} - {{ $('Code').item.json.email }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftTeams",
+      "typeVersion": 2,
+      "position": [
+        2540,
+        -820
+      ],
+      "id": "dd63f69f-d3a6-49d8-9417-1f3e696e4858",
+      "name": "Microsoft Teams",
+      "webhookId": "653395d3-6d6e-41df-918d-039b3954f4a9",
+      "credentials": {
+        "microsoftTeamsOAuth2Api": {
+          "id": "qyoIpk534c3Uq1X6",
+          "name": "Microsoft Teams account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toRecipients": "=leonard@legalengine.co.uk",
+        "subject": "=Hey {{ $('Code').item.json.firstName }}, here is your own bespoke AI Agent",
+        "bodyContent": "=Hi {{ $('Code').item.json.firstName }},\n\nPlease see below a link to your very own AI Agent, this agent will self destruct in 15mins!\n\nhttps://elevenlabs.io/app/conversational-ai/talk-to/{{ $json.agent_id }}\n\nThis agent is also only a snapshot of what I can do. The team are building more agents like me to support marketing and BD teams with events, pitches, client teams and much more.  Visit https://legalengine.co.uk for more information on our product suite.  \n\nIf you need further support or have additional questions please contact my team at info@legalengine.co.uk.\n\nCheers,\n\nLeonard\n\nLegal Engine AI Agent\n\n",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        2540,
+        -620
+      ],
+      "id": "2e690bc5-bbdd-40a4-91e5-0c13ab28f474",
+      "name": "Email from Leonard - all assets",
+      "webhookId": "078b33ed-2393-4ea0-8e93-2d970dcdccb6",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "APa28clvTTmmzH55",
+          "name": "Microsoft Outlook account 2"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Date & Time": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Individual Info",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Perplexity Firm Research": {
+      "main": [
+        [
+          {
+            "node": "Individual Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Perplexity Firm Research",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Company info",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Individual Info": {
+      "main": [
+        [
+          {
+            "node": "Company info",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Company info": {
+      "main": [
+        [
+          {
+            "node": "Notion",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Company Info 2000char",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notion": {
+      "main": [
+        [
+          {
+            "node": "Notion1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notion1": {
+      "main": [
+        [
+          {
+            "node": "Notion2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notion2": {
+      "main": [
+        [
+          {
+            "node": "Create Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Agent1": {
+      "main": [
+        []
+      ]
+    },
+    "Create KB": {
+      "main": [
+        [
+          {
+            "node": "Wait 2s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notion Upload Page": {
+      "main": [
+        [
+          {
+            "node": "Create KB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Company Info 2000char": {
+      "main": [
+        [
+          {
+            "node": "Indiv Info 2000char",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Indiv Info 2000char": {
+      "main": [
+        [
+          {
+            "node": "Notion Upload Page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Agent": {
+      "main": [
+        [
+          {
+            "node": "Wait 2m",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Email from Leonard - all assets",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Microsoft Teams",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Agent": {
+      "main": [
+        [
+          {
+            "node": "Wait 2s1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 2s": {
+      "main": [
+        [
+          {
+            "node": "Create Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 2s1": {
+      "main": [
+        [
+          {
+            "node": "Delete KB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 2m": {
+      "main": [
+        [
+          {
+            "node": "Delete Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Date & Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 1,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

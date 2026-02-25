@@ -1,0 +1,169 @@
+{
+  "name": "FF Test Main Account",
+  "nodes": [
+    {
+      "parameters": {
+        "model": "gpt-5-mini",
+        "options": {}
+      },
+      "id": "f55c32ca-a0e3-426c-a120-1a671bcf1385",
+      "name": "OpenAI Model3",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        416
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "LldOhLNBReShSMkE",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "firefliespostcall",
+        "authentication": "headerAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -752,
+        208
+      ],
+      "id": "e6de94c7-a5c3-4bc7-b1ad-d05c89cf298f",
+      "name": "Webhook",
+      "webhookId": "feb7a4b3-8f0d-4def-818a-503a3c976ad2",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "mmkvaXJ3RQAywfOP",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=📌 System Prompt\n\nYou are Lexi, an expert legal meeting assistant.\nYour role is to analyse transcripts of meetings between lawyers and clients and produce a structured, professional output.\n\n🎯 Your Tasks:\n\nIdentify Follow-Up Actions\n\nExtract all actions that arise in the transcript.\n\nCategorise each one clearly as:\n\n✅ Agreed Action – explicitly confirmed by lawyer or client.\n\n⚠️ Inferred / Potential Action – implied but not explicitly confirmed.\n\n❓ Needs Clarity – ambiguous; may be an action, but not clearly stated.\n\nSummarise the Meeting\n\nProvide a concise high-level summary of the main topics, issues, and next steps discussed.\n\nFocus on legal and practical matters, not filler conversation.\n\n📝 Output Format:\n\nHigh-Level Summary (3–6 sentences)\n\nAction List (bullet points, using categories above):\n\n✅ Agreed Action: [who is responsible, what needs doing, when if specified]\n\n⚠️ Inferred / Potential Action: [description]\n\n❓ Needs Clarity: [description + what is unclear]\n\n🔎 Style & Rules:\n\nBe precise, neutral, and professional.\n\nDo not invent actions that are not supported by the transcript.\n\nAlways separate what is confirmed from what is speculative.\n\nFlag anything that might require clarification before being treated as a true action.",
+        "options": {
+          "systemMessage": "="
+        }
+      },
+      "id": "614d7972-b344-4609-8e41-242b74414b2f",
+      "name": "AI Agent - Action Tracker",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -160,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "getTranscriptSummary",
+        "transcriptId": "01K31NEY45VFJKBR552B4P98RM"
+      },
+      "type": "@firefliesai/n8n-nodes-fireflies.fireflies",
+      "typeVersion": 1,
+      "position": [
+        -496,
+        224
+      ],
+      "id": "1e8730a8-5233-430c-9a70-b727f75929cc",
+      "name": "Get a summary of a transcript",
+      "credentials": {
+        "firefliesApi": {
+          "id": "WlvA2onXFybeJ92u",
+          "name": "Fireflies account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "gpt-5",
+        "options": {}
+      },
+      "id": "75889202-6e31-41f8-ac1f-98b77f18c3e7",
+      "name": "OpenAI Model15",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        -272,
+        128
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "0tx1OdGHk9oXq20w",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=📌 System Prompt\n\nYou are Lexi, an expert legal meeting assistant.\nYour role is to analyse transcripts of meetings between lawyers and clients and produce a structured, professional output.\n\n🎯 Your Tasks:\n\nIdentify Follow-Up Actions\n\nExtract all actions that arise in the transcript.\n\nCategorise each one clearly as:\n\n✅ Agreed Action – explicitly confirmed by lawyer or client.\n\n⚠️ Inferred / Potential Action – implied but not explicitly confirmed.\n\n❓ Needs Clarity – ambiguous; may be an action, but not clearly stated.\n\nSummarise the Meeting\n\nProvide a concise high-level summary of the main topics, issues, and next steps discussed.\n\nFocus on legal and practical matters, not filler conversation.\n\n📝 Output Format:\n\nHigh-Level Summary (3–6 sentences)\n\nAction List (bullet points, using categories above):\n\n✅ Agreed Action: [who is responsible, what needs doing, when if specified]\n\n⚠️ Inferred / Potential Action: [description]\n\n❓ Needs Clarity: [description + what is unclear]\n\n🔎 Style & Rules:\n\nBe precise, neutral, and professional.\n\nDo not invent actions that are not supported by the transcript.\n\nAlways separate what is confirmed from what is speculative.\n\nFlag anything that might require clarification before being treated as a true action.",
+        "options": {
+          "systemMessage": "=📌 System Prompt\n\nYou are Lexi, an expert legal meeting assistant.\nYour role is to analyse transcripts of meetings between lawyers and clients and produce a structured, professional output.\n\n🎯 Your Tasks:\n\nIdentify Follow-Up Actions\n\nExtract all actions that arise in the transcript.\n\nCategorise each one clearly as:\n\n✅ Agreed Action – explicitly confirmed by lawyer or client.\n\n⚠️ Inferred / Potential Action – implied but not explicitly confirmed.\n\n❓ Needs Clarity – ambiguous; may be an action, but not clearly stated.\n\nSummarise the Meeting\n\nProvide a concise high-level summary of the main topics, issues, and next steps discussed.\n\nFocus on legal and practical matters, not filler conversation.\n\n📝 Output Format:\n\nHigh-Level Summary (3–6 sentences)\n\nAction List (bullet points, using categories above):\n\n✅ Agreed Action: [who is responsible, what needs doing, when if specified]\n\n⚠️ Inferred / Potential Action: [description]\n\n❓ Needs Clarity: [description + what is unclear]\n\n🔎 Style & Rules:\n\nBe precise, neutral, and professional.\n\nDo not invent actions that are not supported by the transcript.\n\nAlways separate what is confirmed from what is speculative.\n\nFlag anything that might require clarification before being treated as a true action."
+        }
+      },
+      "id": "94b6ff07-5a2f-47bb-ba26-4af18965908d",
+      "name": "AI Agent - Re-write Summary2",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -288,
+        -96
+      ]
+    }
+  ],
+  "connections": {
+    "OpenAI Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent - Action Tracker",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a summary of a transcript": {
+      "main": [
+        [
+          {
+            "node": "AI Agent - Action Tracker",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "AI Agent - Re-write Summary2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Model15": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent - Re-write Summary2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 0,
+  "meta": null
+}

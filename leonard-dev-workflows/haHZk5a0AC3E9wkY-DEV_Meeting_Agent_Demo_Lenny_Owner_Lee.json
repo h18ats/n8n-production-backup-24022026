@@ -1,0 +1,1554 @@
+{
+  "name": "DEV - Meeting Agent Demo (Lenny) - Owner Lee",
+  "nodes": [
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        -2176,
+        256
+      ],
+      "id": "4e316403-56c3-4d29-be59-9efc30bc653c",
+      "name": "Google Vertex Chat Model2",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toRecipients": "={{ $('Leia').item.json.body.data.conversation_initiation_client_data.dynamic_variables.email }}, sam@legalengine.co.uk, lee@legalengine.co.uk, luke@legalengine.co.uk\n",
+        "subject": "Leia Demo",
+        "bodyContent": "=<html>\n  <body style=\"font-family: Arial, sans-serif; color: #000000; line-height: 1.6;\">\n\n    <!-- Header logo (Outlook-safe) -->\n    <table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" style=\"margin-bottom:20px;\">\n      <tr>\n        <td align=\"left\" style=\"padding:0;\">\n          <img src=\"https://legalengine.co.uk/legal-engine-logo-no-shadow.png\"\n               alt=\"Legal Engine\"\n               width=\"160\"\n               style=\"display:block; border:0; outline:none; text-decoration:none;\">\n        </td>\n      </tr>\n    </table>\n\n    <!-- Greeting -->\n    <p style=\"font-size:16px; font-weight:bold;\">Thanks for speaking to me.</p>\n\n    <p style=\"font-size:15px;\">Here’s your meeting summary based on the conversation with Leia:</p>\n\n    <!-- Context -->\n    <h3 style=\"font-size:18px; color:#D35400; margin-top:30px;\">Context</h3>\n    <p style=\"font-size:14px;\">{{ $('Context Agent').item.json.output }}</p>\n\n    <!-- Next Steps -->\n    <h3 style=\"font-size:18px; color:#D35400; margin-top:30px;\">Next Steps</h3>\n    <ul style=\"font-size:14px; padding-left:20px; margin-top:5px;\">\n      {{ $('Next Steps Agent').item.json.output.split('\\n').map(line => `<li>${line.trim()}</li>`).join('') }}\n    </ul>\n\n    <!-- BD/Marketing Opportunities -->\n    <h3 style=\"font-size:18px; color:#D35400; margin-top:30px;\">BD/Marketing Opportunities</h3>\n\n    <p style=\"font-size:14px; margin-bottom:10px;\">\n      <strong>Area to Explore:</strong><br>\n      {{ $json.areaToExplore }}\n    </p>\n\n    <p style=\"font-size:14px; margin-bottom:5px;\">\n      <strong>Potential Formats:</strong>\n    </p>\n    <ul style=\"font-size:14px; padding-left:20px; margin-top:5px;\">\n      {{ $json.formattedFormatsHTML }}\n    </ul>\n\n    <p style=\"font-size:14px; margin-top:15px;\">\n      <strong>Suggested Use:</strong><br>\n      {{ $json.suggestedUse }}\n    </p>\n\n    <p style=\"font-size:14px; margin-top:15px;\">\n      <strong>Something to Think About:</strong><br>\n      {{ $json.somethingToThinkAbout }}\n    </p>\n\n    <!-- Footer -->\n    <hr style=\"margin:30px 0; border:none; border-top:1px solid #ccc;\" />\n\n    <p style=\"font-size:14px; margin:0 0 10px 0;\">\n      That’s everything for now — hope it was helpful.\n      If you’d like to log another meeting straight away, you can do it\n      <a href=\"https://sumer.legalengine.co.uk/\" target=\"_blank\" style=\"color:#D35400; text-decoration:none;\">here</a>.\n    </p>\n\n    <p style=\"font-size:14px; margin-top:20px;\">Leia</p>\n\n    <!-- Signature (Outlook-safe) -->\n    <table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"margin-top:20px;\">\n      <tr>\n        <td style=\"padding:0; font-family:Arial, sans-serif; font-size:14px; color:#000000;\">\n          <p style=\"margin:0; font-weight:700;\">New Business Agent</p>\n          <p style=\"margin:0; font-weight:700; color:#ff6b5e;\">Legal Engine Ltd</p>\n\n          <p style=\"margin:6px 0 0 0;\">\n            <strong>E:</strong>\n            <a href=\"mailto:leia@legalengine.co.uk\" style=\"color:#1155cc; text-decoration:none;\">\n              leia@legalengine.co.uk\n            </a>\n          </p>\n\n          <p style=\"margin:0;\">\n            <strong>W:</strong>\n            <a href=\"https://www.legalengine.co.uk\" style=\"color:#1155cc; text-decoration:none;\">\n              www.legalengine.co.uk\n            </a>\n          </p>\n        </td>\n      </tr>\n    </table>\n\n  </body>\n</html>",
+        "additionalFields": {
+          "bodyContentType": "html"
+        },
+        "path": "c18868b9-e42e-45e4-b9e3-192b1294d01f"
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        -544,
+        256
+      ],
+      "id": "dff87b67-99ac-47d0-aeb5-5ef865d41d95",
+      "name": "Summary email - INTERNAL1",
+      "webhookId": "c18868b9-e42e-45e4-b9e3-192b1294d01f",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "ts6NAj26jL1iUdW2",
+          "name": "Microsoft Outlook - Info @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an AI assistant helping the Founder of Legal Engine record the key outcomes, activities and next steps from client and business development meetings as they look to scale their business.\n\nYour task is to extract the core context of the meeting. You will receive a transcript summary (starting with “Here’s what I’ve captured:”) from a voice assistant debrief. Return just the plain-English context — no headings, no extra explanation.\n\nWrite 1–2 full sentences summarising what the meeting was about. Keep it professional and clear.\n\n\nPlease make sure that all outputs are in *UK English* not American English, including all spelling and date formats.\n\n\nHere is the full transcript:\n{{ $('Leia').item.json.body.data.transcript.map(t => t.message).filter(Boolean).join(' ') }}\n\nAnd here is the summary:\n{{ $('Leia').item.json.body.data.analysis.transcript_summary }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -2176,
+        32
+      ],
+      "id": "98e9521b-98b9-4a37-b257-7304f37568c9",
+      "name": "Context Agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an AI assistant helping the Founder of Legal Engine record the key outcomes, activities and next steps from client and business development meetings as they look to scale their business.\n\nYou will receive a transcript of a debrief conversation between the lawyer and an AI assistant named Leia. Luke ends by offering a structured summary starting with: “Here’s what I’ve captured:”.\n\nYour task is to extract the **Next Steps** section from Luke’s summary and rewrite it as a plain text list — one sentence per line.\n\nEach line should clearly state:\n- What the follow-up action is\n- Who is responsible\n- Any deadline or timeframe mentioned\n\nIf no timeframe is provided, mention that. If any actions seem vague or unclear, add a note suggesting the need to confirm details\n\nPlease make sure that all outputs are in *UK English* not American English, including all spelling and date formats.\n\n\n⚠️ Output a plain text response using one line per action.  \nDo NOT use bullet points, markdown, or extra formatting.  \nEach line should be its own sentence.\n\n\n\nHere is the full transcript:\n{{ $('Leia').item.json.body.data.transcript.map(t => t.message).filter(Boolean).join(' ') }}\n\nAnd here is the summary:\n{{ $('Leia').item.json.body.data.analysis.transcript_summary }}\n\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -1824,
+        32
+      ],
+      "id": "6ce5f221-ee71-4ec5-b80c-2467b9b0e0cc",
+      "name": "Next Steps Agent"
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        -1824,
+        256
+      ],
+      "id": "f797b6bd-a152-449a-9661-5f85f9c62e95",
+      "name": "Google Vertex Chat Model3",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        -1472,
+        256
+      ],
+      "id": "bd17b168-8657-4844-b23b-0aecaff50b51",
+      "name": "Google Vertex Chat Model4",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an AI assistant helping the Founder of Legal Engine record the key outcomes, activities and next steps from client and business development meetings as they look to scale their business.\n\nYou’ll receive a transcript of a short debrief between a lawyer and an AI assistant named Leia. Near the end of the conversation, Leia provides a structured summary that begins with the phrase: “Here’s what I’ve captured:”.\n\nYour task is to extract **only the BD or marketing insight** mentioned in that summary and rewrite it into a short, plain-English paragraph.\n\nBegin by briefly stating what the opportunity or insight is. Then, suggest how Legal Engine might build on it — for example:\n- Mentioning it in a future conversation with another client\n- Exploring the theme further internally\n- Turning it into a short post or article\n\nAvoid suggesting specific content types (like “blog post” or “webinar”) unless the user has already used those terms. Keep your tone light, suggestive, and reflective — you're offering a gentle nudge, not a directive.\n\nIf no BD or marketing insight was mentioned, write:  \n**Nothing specific noted.**\n\nPlease use *UK English* spelling and grammar throughout.\n\n\nHere is the full transcript:\n{{ $('Leia').item.json.body.data.transcript.map(t => t.message).filter(Boolean).join(' ') }}\n\nAnd here is the summary:\n{{ $('Leia').item.json.body.data.analysis.transcript_summary }}\n\n\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -1472,
+        32
+      ],
+      "id": "99e18d7d-a9a8-4d05-bbc0-9efc68fc9e9f",
+      "name": "Insight Agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an AI assistant helping the Founder of Legal Engine record the key outcomes, activities and next steps from client and business development meetings as they look to scale their business.\n\nThis is about highlighting a potential area of interest and offering a few thoughtful nudges for how they might reflect on or act on it.\n\nReturn your response using the following format, with **clear labels and line breaks**. Do NOT use JSON, markdown, headings, or bold formatting. Use hyphenated bullets for lists only where shown:\n\nArea to Explore:\n[One or two sentences summarising the theme or shift identified — e.g. “CRM investment across law firms” or “M&A caution among mid-market clients”. Keep it grounded in the original insight.]\n\nPotential Formats:\n- [A concise format idea, like “Short LinkedIn post” or “BD Digest theme”]\n- [Another format idea, e.g. “Lunch & Learn” or “Discussion topic for internal strategy session”]\n\nSuggested Use:\n[Explain how and where this could be used — e.g. in conversations with other clients, to spark internal collaboration, or as a recurring theme across insights.]\n\nSomething to Think About:\n[A reflective, commercially intelligent question that encourages further curiosity — e.g. “Are other clients raising similar issues?”, “How might this trend shape demand across other sectors?”]\n\nPlease write in UK English and reflect Legal Engine’s tone of voice:\n- Clear over clever: use plain, active language.\n- Commercial and relatable: demonstrate business acumen and empathy.\n- Collaborative: sound like a peer, not a professor.\n- Forward-looking: embrace innovation and change with confidence.\n\nYour job is to **provoke useful curiosity**, not prescribe next steps.\n\n\nPlease use *UK English* spelling and grammar throughout.\n\nIf no BD or marketing insight was mentioned, return the following:\n\nArea to Explore:\nNothing specific noted.\n\nPotential Formats:\n\nSuggested Use:\n\nSomething to Think About:\n\n---\n\nHere is the specific insight captured:\n{{ $json.output }}\n\nHere is the full transcript:\n{{ $('Leia').item.json.body.data.transcript.map(t => t.message).filter(Boolean).join(' ') }}\n\nAnd here is the summary:\n{{ $('Leia').item.json.body.data.analysis.transcript_summary }}\n\n\n\n\n\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -1120,
+        32
+      ],
+      "id": "517a9422-1f92-435e-835c-f65c00235ed9",
+      "name": "BD Content Agent"
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        -1120,
+        256
+      ],
+      "id": "ddf8b82e-b5b1-4912-8ff4-17f7cfeaa08d",
+      "name": "Google Vertex Chat Model5",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the AI text\nconst text = $json.output || \"\";\n\n// Helper to extract each section by heading name\nfunction extractSection(name) {\n  const regex = new RegExp(`${name}:([\\\\s\\\\S]*?)(?=\\\\n[A-Z][^\\\\n]*:|$)`, \"i\");\n  const match = text.match(regex);\n  return match ? match[1].trim().replace(/^[-•]\\s*/gm, \"\") : \"\";\n}\n\n// Extract each section\nconst areaToExplore = extractSection(\"Area to Explore\");\nconst potentialFormatsRaw = extractSection(\"Potential Formats\");\nconst suggestedUse = extractSection(\"Suggested Use\");\nconst somethingToThinkAbout = extractSection(\"Something to Think About\");\n\n// Split potential formats into array and HTML list\nconst potentialFormats = potentialFormatsRaw\n  .split(/\\n+/)\n  .map(s => s.trim())\n  .filter(Boolean);\n\nconst formattedFormatsHTML = potentialFormats\n  .map(item => `<li>${item}</li>`)\n  .join(\"\");\n\nreturn [\n  {\n    json: {\n      areaToExplore,\n      potentialFormats,\n      formattedFormatsHTML,\n      suggestedUse,\n      somethingToThinkAbout\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -768,
+        32
+      ],
+      "id": "d1861c27-6a23-4873-a5bc-4a2fb5717422",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "d7c2b118-58ce-4ff7-b616-cd6578ae40b0",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -2400,
+        32
+      ],
+      "id": "accffa0f-534b-4d0d-99cb-0f03f538037d",
+      "name": "Leia",
+      "webhookId": "d7c2b118-58ce-4ff7-b616-cd6578ae40b0"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "deal",
+        "operation": "update",
+        "dealId": {
+          "__rl": true,
+          "value": 365379910855,
+          "mode": "list",
+          "cachedResultName": "Leia Demo"
+        },
+        "updateFields": {
+          "customPropertiesUi": {
+            "customPropertiesValues": [
+              {
+                "property": "leia_demo_notes",
+                "value": "={{ $json.areaToExplore }}"
+              }
+            ]
+          },
+          "description": "={{ $('Context Agent').item.json.output }}"
+        }
+      },
+      "type": "n8n-nodes-base.hubspot",
+      "typeVersion": 2.2,
+      "position": [
+        -544,
+        -144
+      ],
+      "id": "bd167d83-00c7-433a-810f-6c29ba09b8e6",
+      "name": "Update a deal",
+      "credentials": {}
+    }
+  ],
+  "connections": {
+    "Google Vertex Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Context Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Context Agent": {
+      "main": [
+        [
+          {
+            "node": "Next Steps Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Next Steps Agent": {
+      "main": [
+        [
+          {
+            "node": "Insight Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Next Steps Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Insight Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insight Agent": {
+      "main": [
+        [
+          {
+            "node": "BD Content Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "BD Content Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "BD Content Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Update a deal",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Summary email - INTERNAL1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leia": {
+      "main": [
+        [
+          {
+            "node": "Context Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a deal": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {
+    "Leia": [
+      {
+        "json": {
+          "headers": {
+            "host": "leonard-dev.app.n8n.cloud",
+            "user-agent": "ElevenLabs/1.0",
+            "content-length": "23302",
+            "accept": "*/*",
+            "accept-encoding": "gzip, br",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "34.77.234.246",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "BE",
+            "cf-ray": "9bed956b248ab751-CDG",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "elevenlabs-signature": "t=1768566202,v0=ea24d0b3a88121f484144bb2f0186de52a77f8cc7ddadb685163bb5555e48a9c",
+            "x-forwarded-for": "34.77.234.246, 172.68.151.121",
+            "x-forwarded-host": "leonard-dev.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-52-6c4f4684d5-dnzwc",
+            "x-is-trusted": "yes",
+            "x-real-ip": "34.77.234.246"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "type": "post_call_transcription",
+            "event_timestamp": 1768566202,
+            "data": {
+              "agent_id": "agent_6001k88xr2k5eyeazvw9x4kst8gt",
+              "conversation_id": "conv_7501kf3c1m3bfszt0hcn2mxs3kkm",
+              "status": "done",
+              "user_id": null,
+              "branch_id": null,
+              "version_id": null,
+              "transcript": [
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_6001k88xr2k5eyeazvw9x4kst8gt",
+                    "branch_id": null,
+                    "workflow_node_id": null
+                  },
+                  "message": "Hello, ready for a quick debrief?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 0,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.2159251100019901
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "Yeah.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 2,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.10141913600091357
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_6001k88xr2k5eyeazvw9x4kst8gt",
+                    "branch_id": null,
+                    "workflow_node_id": null
+                  },
+                  "message": "Great. Who was the meeting with?\n",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 3,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.3152150999958394
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.23730127599992556
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.3151965309953084
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.226022375994944
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 2420,
+                          "price": 0.000242
+                        },
+                        "input_cache_read": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 9,
+                          "price": 0.0000036000000000000003
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "Ignition.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 6,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.17016452100506285
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_6001k88xr2k5eyeazvw9x4kst8gt",
+                    "branch_id": null,
+                    "workflow_node_id": null
+                  },
+                  "message": "Got it. And how did the meeting go? What were the key things you want to remember?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 8,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.3177628779958468
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.22918857699551154
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.31774115399457514
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.2755740560023696
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 730,
+                          "price": 0.000073
+                        },
+                        "input_cache_read": {
+                          "tokens": 1702,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 21,
+                          "price": 0.000008400000000000001
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "It was good. Key thing is that they're looking at an intake agent to help them speed up the way that they get and respond to new clients.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 12,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.11552654299885035
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_6001k88xr2k5eyeazvw9x4kst8gt",
+                    "branch_id": null,
+                    "workflow_node_id": null
+                  },
+                  "message": "Thanks. What do you need to do next, and who's going to take each action?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 22,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.31627241499518277
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.2241807489990606
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.37747286499507027
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.16687529099726817
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 782,
+                          "price": 0.0000782
+                        },
+                        "input_cache_read": {
+                          "tokens": 1702,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 20,
+                          "price": 0.000008
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "I need to price up an agent, how much it might cost us to build, and then they do need to send over a demo.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 27,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.13405424999655224
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_6001k88xr2k5eyeazvw9x4kst8gt",
+                    "branch_id": null,
+                    "workflow_node_id": null
+                  },
+                  "message": "And who will be responsible for pricing up the agent and sending over the demo?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 37,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.7029119709986844
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.5815305189971696
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.7028920290031238
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.33715321300405776
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 2532,
+                          "price": 0.00025320000000000003
+                        },
+                        "input_cache_read": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 16,
+                          "price": 0.0000064000000000000006
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "And edu for building it.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 43,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.14342055800079834
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_6001k88xr2k5eyeazvw9x4kst8gt",
+                    "branch_id": null,
+                    "workflow_node_id": null
+                  },
+                  "message": "And who will be responsible for pricing up the agent and sending over the demo?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 46,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.7737994769995566
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.6631462209988968
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.7737525630000164
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.304115021994221
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 855,
+                          "price": 0.0000855
+                        },
+                        "input_cache_read": {
+                          "tokens": 1699,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 16,
+                          "price": 0.0000064000000000000006
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "Me?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 51,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.13163727399660274
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_6001k88xr2k5eyeazvw9x4kst8gt",
+                    "branch_id": null,
+                    "workflow_node_id": null
+                  },
+                  "message": "Got it. Can you add a bit more detail to make that clearer?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 52,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.7491704800049774
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.634452541002247
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.7491502720004064
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.24881893199926708
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 2572,
+                          "price": 0.00025719999999999996
+                        },
+                        "input_cache_read": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 15,
+                          "price": 0.000006
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "No.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 56,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.12528156700136606
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_6001k88xr2k5eyeazvw9x4kst8gt",
+                    "branch_id": null,
+                    "workflow_node_id": null
+                  },
+                  "message": "Is there anyone internally you should introduce Ignition to?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 63,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.3462179060006747
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.2534963419966516
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.34619511799974134
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.26555137999821454
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 51,
+                          "price": 0.0000051
+                        },
+                        "input_cache_read": {
+                          "tokens": 2538,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 10,
+                          "price": 0.000004
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "No.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 67,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.12254639599996153
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_6001k88xr2k5eyeazvw9x4kst8gt",
+                    "branch_id": null,
+                    "workflow_node_id": null
+                  },
+                  "message": "Was there anything from the meeting that could turn into a marketing or business development idea? Perhaps an industry trend or a regulatory update?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 70,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.43879024800116895
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.299642436002614
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.4812674659988261
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.3251457840015064
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 69,
+                          "price": 0.0000069
+                        },
+                        "input_cache_read": {
+                          "tokens": 2532,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 26,
+                          "price": 0.0000104
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "Yeah, maybe something around the fact that",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 79,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.16255331599677447
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_6001k88xr2k5eyeazvw9x4kst8gt",
+                    "branch_id": null,
+                    "workflow_node_id": null
+                  },
+                  "message": "Let me just dig into...",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 83,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.5875993060035398
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.49406666200229665
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.5875791830039816
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.30538197200075956
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 2635,
+                          "price": 0.0002635
+                        },
+                        "input_cache_read": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 20,
+                          "price": 0.000008
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": true,
+                  "original_message": "Let me just dig into that a little. What do you think the implication of that is?",
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "lawyers are going to use BD agents for intake",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 84,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.16550514700065833
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_6001k88xr2k5eyeazvw9x4kst8gt",
+                    "branch_id": null,
+                    "workflow_node_id": null
+                  },
+                  "message": "Thanks. Let me play that back to you now.\n\nHere’s what I’ve captured:\n— Client name: Ignition\n— Meeting context and key takeaways: They are looking for an intake agent to speed up how they get and respond to new clients.\n— Next steps and owners: You will price up an agent, estimate the build cost, and...",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 89,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.6626459570034058
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.5565430560018285
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 1.0898490110048442
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.2100774580030702
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 126,
+                          "price": 0.000012600000000000001
+                        },
+                        "input_cache_read": {
+                          "tokens": 2525,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 127,
+                          "price": 0.0000508
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": true,
+                  "original_message": "Thanks. Let me play that back to you now.\n\nHere’s what I’ve captured:\n— Client name: Ignition\n— Meeting context and key takeaways: They are looking for an intake agent to speed up how they get and respond to new clients.\n— Next steps and owners: You will price up an agent, estimate the build cost, and send over a demo. Edu will be responsible for building it.\n— Internal introductions: None mentioned.\n— BD or marketing opportunities: Lawyers using BD agents for intake.\n\nIs there anything I’ve missed or that you’d like to adjust?\n",
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": ". You still there?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 106,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.5577841799968155
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_6001k88xr2k5eyeazvw9x4kst8gt",
+                    "branch_id": null,
+                    "workflow_node_id": null
+                  },
+                  "message": "Yes, I'm here. I was just reading back the summary.\n\nHere’s what I’ve captured:...",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 109,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 1.9028774190010154
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 1.761439898997196
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 2.2805979390032007
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.25403836100304034
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 2730,
+                          "price": 0.000273
+                        },
+                        "input_cache_read": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 130,
+                          "price": 0.000052
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": true,
+                  "original_message": "Yes, I'm here. I was just reading back the summary.\n\nHere’s what I’ve captured:\n— Client name: Ignition\n— Meeting context and key takeaways: They are looking for an intake agent to speed up how they get and respond to new clients.\n— Next steps and owners: You will price up an agent, estimate the build cost, and send over a demo. Edu will be responsible for building the agent.\n— Internal introductions: None.\n— BD or marketing opportunities: Lawyers using BD agents for intake.\n\nIs there anything I’ve missed or that you’d like to adjust?",
+                  "source_medium": null
+                }
+              ],
+              "metadata": {
+                "start_time_unix_secs": 1768566083,
+                "accepted_time_unix_secs": 1768566083,
+                "call_duration_secs": 114,
+                "cost": 1351,
+                "deletion_settings": {
+                  "deletion_time_unix_secs": null,
+                  "deleted_logs_at_time_unix_secs": null,
+                  "deleted_audio_at_time_unix_secs": null,
+                  "deleted_transcript_at_time_unix_secs": null,
+                  "delete_transcript_and_pii": false,
+                  "delete_audio": false
+                },
+                "feedback": {
+                  "type": null,
+                  "overall_score": null,
+                  "likes": 0,
+                  "dislikes": 0,
+                  "rating": null,
+                  "comment": null
+                },
+                "authorization_method": "public",
+                "charging": {
+                  "dev_discount": false,
+                  "is_burst": false,
+                  "tier": "enterprise",
+                  "llm_usage": {
+                    "irreversible_generation": {
+                      "model_usage": {
+                        "gemini-2.5-flash-lite": {
+                          "input": {
+                            "tokens": 15502,
+                            "price": 0.0015502000000000003
+                          },
+                          "input_cache_read": {
+                            "tokens": 12698,
+                            "price": 0
+                          },
+                          "input_cache_write": {
+                            "tokens": 0,
+                            "price": 0
+                          },
+                          "output_total": {
+                            "tokens": 410,
+                            "price": 0.000164
+                          }
+                        }
+                      }
+                    },
+                    "initiated_generation": {
+                      "model_usage": {
+                        "gemini-2.5-flash-lite": {
+                          "input": {
+                            "tokens": 17134,
+                            "price": 0.0017134000000000001
+                          },
+                          "input_cache_read": {
+                            "tokens": 18637,
+                            "price": 0
+                          },
+                          "input_cache_write": {
+                            "tokens": 0,
+                            "price": 0
+                          },
+                          "output_total": {
+                            "tokens": 511,
+                            "price": 0.0002044
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "llm_price": 0.0019178,
+                  "llm_charge": 19,
+                  "call_charge": 1332,
+                  "free_minutes_consumed": 0,
+                  "free_llm_dollars_consumed": 0
+                },
+                "phone_call": null,
+                "batch_call": null,
+                "termination_reason": "Client disconnected: 1006",
+                "error": null,
+                "warnings": [],
+                "main_language": "en",
+                "rag_usage": null,
+                "text_only": false,
+                "features_usage": {
+                  "language_detection": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "transfer_to_agent": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "transfer_to_number": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "multivoice": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "dtmf_tones": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "external_mcp_servers": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "pii_zrm_workspace": false,
+                  "pii_zrm_agent": false,
+                  "tool_dynamic_variable_updates": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "is_livekit": false,
+                  "voicemail_detection": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "workflow": {
+                    "enabled": false,
+                    "tool_node": {
+                      "enabled": false,
+                      "used": false
+                    },
+                    "standalone_agent_node": {
+                      "enabled": false,
+                      "used": false
+                    },
+                    "phone_number_node": {
+                      "enabled": false,
+                      "used": false
+                    },
+                    "end_node": {
+                      "enabled": false,
+                      "used": false
+                    }
+                  },
+                  "agent_testing": {
+                    "enabled": false,
+                    "tests_ran_after_last_modification": false,
+                    "tests_ran_in_last_7_days": false
+                  },
+                  "versioning": {
+                    "enabled": false,
+                    "used": false
+                  }
+                },
+                "eleven_assistant": {
+                  "is_eleven_assistant": false
+                },
+                "initiator_id": null,
+                "conversation_initiation_source": "widget",
+                "conversation_initiation_source_version": "0.6.0",
+                "timezone": "Europe/London",
+                "async_metadata": null,
+                "whatsapp": null,
+                "agent_created_from": "ui",
+                "agent_last_updated_from": "ui"
+              },
+              "analysis": {
+                "evaluation_criteria_results": {},
+                "data_collection_results": {},
+                "evaluation_criteria_results_list": [],
+                "data_collection_results_list": [],
+                "call_successful": "success",
+                "transcript_summary": "The user debriefed the AI agent on a meeting with Ignition, who are looking for an intake agent. The user needs to price up an agent and send over a demo, with Edu responsible for building it. A marketing idea is that lawyers will use BD agents for intake. The agent summarized the conversation.\n",
+                "call_summary_title": "Meeting Debrief: Ignition"
+              },
+              "conversation_initiation_client_data": {
+                "conversation_config_override": {
+                  "turn": null,
+                  "tts": {
+                    "voice_id": null,
+                    "stability": null,
+                    "speed": null,
+                    "similarity_boost": null
+                  },
+                  "conversation": {
+                    "text_only": null
+                  },
+                  "agent": {
+                    "first_message": null,
+                    "language": "en",
+                    "prompt": {
+                      "prompt": null,
+                      "llm": null,
+                      "native_mcp_server_ids": null
+                    }
+                  }
+                },
+                "custom_llm_extra_body": {},
+                "user_id": null,
+                "source_info": {
+                  "source": "widget",
+                  "version": "0.6.0"
+                },
+                "dynamic_variables": {
+                  "first_name": "Sam",
+                  "email": "samrjstamp@gmail.com",
+                  "full_name": "Sam",
+                  "system__agent_id": "agent_6001k88xr2k5eyeazvw9x4kst8gt",
+                  "system__agent_turns": 12,
+                  "system__current_agent_turns": 12,
+                  "system__current_subagent_turns": 12,
+                  "system__current_agent_id": "agent_6001k88xr2k5eyeazvw9x4kst8gt",
+                  "system__conversation_id": "conv_7501kf3c1m3bfszt0hcn2mxs3kkm",
+                  "system__call_duration_secs": 114,
+                  "system__time_utc": "2026-01-16T12:23:17.880684+00:00",
+                  "system__time": "Friday, 12:23 16 January 2026",
+                  "system__timezone": "Europe/London",
+                  "system__caller_id": null,
+                  "system__called_number": null,
+                  "system__call_sid": null
+                }
+              }
+            }
+          },
+          "webhookUrl": "https://leonard-dev.app.n8n.cloud/webhook/Leia-demo-transcript",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "triggerCount": 1,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

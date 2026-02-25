@@ -1,0 +1,81 @@
+{
+  "name": "Simple Click Tracker",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "email-click",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "81fa3f93-3caf-48d0-8f4b-205bf2845e54",
+      "name": "Click Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -320,
+        -192
+      ],
+      "webhookId": "5088156a-3bc7-40cc-b812-75bccf676073"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "redirectUrl",
+              "value": "https://example.com"
+            },
+            {
+              "name": "token",
+              "value": "={{$json.query.token}}"
+            },
+            {
+              "name": "target",
+              "value": "={{$json.query.target}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b49dc1bb-e34b-48dd-bf7f-e4f71016125d",
+      "name": "Prepare Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        -192
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "7849f419-30bf-4cbf-9531-2a6fcfa18627",
+      "name": "Redirect User",
+      "type": "n8n-nodes-base.httpResponse",
+      "typeVersion": 1,
+      "position": [
+        192,
+        -192
+      ]
+    }
+  ],
+  "connections": {
+    "Click Webhook": {
+      "main": [
+        [
+          {
+            "node": "Prepare Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 0,
+  "meta": null
+}

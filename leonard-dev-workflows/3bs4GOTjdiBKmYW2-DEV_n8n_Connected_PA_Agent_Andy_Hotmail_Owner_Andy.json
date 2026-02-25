@@ -1,0 +1,2856 @@
+{
+  "name": "DEV - n8n Connected PA Agent Andy Hotmail - Owner Andy",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "dc28acca-48ba-4510-abaf-91889a8b6778",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1776,
+        -5840
+      ],
+      "id": "976809bd-f8a7-46bb-b448-3ff2285dbebd",
+      "name": "Webhook",
+      "webhookId": "dc28acca-48ba-4510-abaf-91889a8b6778",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "messages": {
+          "message": [
+            {
+              "content": "={{ $json.body.searchQuery }}"
+            }
+          ]
+        },
+        "simplify": true,
+        "options": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.perplexity",
+      "typeVersion": 1,
+      "position": [
+        -1552,
+        -5840
+      ],
+      "id": "0d3cd948-51ff-4904-b18a-0d878194c3cb",
+      "name": "Message a model",
+      "credentials": {
+        "perplexityApi": {
+          "id": "pOqM7kFIqiYB3qGU",
+          "name": "Perplexity account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message }}",
+        "options": {
+          "systemMessage": "=# Overview\nYou are an expert research agent. You will be fed information, and you need to make a concise summary. It should only be about three sentences. "
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -1328,
+        -5840
+      ],
+      "id": "3d1446cd-8558-4ed4-88a4-a326a5330f66",
+      "name": "AI Agent1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -976,
+        -5840
+      ],
+      "id": "afa2ef5e-3dab-46a7-abc5-7a52192c8f7c",
+      "name": "Respond to Webhook",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        -1264,
+        -5616
+      ],
+      "id": "6d3d96c3-f9ed-4476-9bca-203f6998ce20",
+      "name": "Google Vertex Chat Model",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Request: {{ $('Code in JavaScript').item.json.request }}",
+        "options": {
+          "systemMessage": "=You're a helpful assistant that helps the user based on their request or questio. \nYou should use your tools to effectively fulfill the requests. You can use the tools as many times as necessary. \n\nToday is {{ $now.format('cccc') }} the {{ $now.setZone('Europe/London').format('yyyy-MM-dd') }} at {{ $now.setZone('Europe/London').toFormat('HH:mm') }}.\n\n\n"
+        }
+      },
+      "id": "ae8c5ff4-f1de-41e9-a956-9070a054333d",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -496,
+        704
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "sendTo": "eduardo.aguilarpelaez@gmail.com",
+        "subject": "=Calendar: {{ $('webhook').item.json.body.question }}",
+        "message": "={{ $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        48,
+        704
+      ],
+      "id": "6b6b95fa-ca30-4ba6-b462-fee1352030ea",
+      "name": "Gmail",
+      "webhookId": "d72135ce-50dd-477e-997e-15af676c6436",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "N15HJY1qHiINx9PM",
+          "name": "Lee C Gmail account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "toRecipients": "andy.batty@hotmail.com",
+        "subject": "=Your n8n calendar topol was just called",
+        "bodyContent": "=",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        48,
+        896
+      ],
+      "id": "6cd8dde1-d011-414e-b6bc-806c3d08567c",
+      "name": "Microsoft Outlook",
+      "webhookId": "94761820-05dc-4db6-9bf1-33c4c89661d6",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "J6emPxQ1aamee9nR",
+          "name": "Microsoft Outlook - Andy Personal Hotmail"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        -768,
+        704
+      ],
+      "id": "a5d67ae3-ebb8-42e7-82c9-2376c8c84dd5",
+      "name": "Date & Time",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        48,
+        496
+      ],
+      "id": "dda04696-0b52-44d4-a6be-f92041198204",
+      "name": "Respond to Webhook1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "toRecipients": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', ``, 'string') }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "bodyContent": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "typeVersion": 2,
+      "position": [
+        -544,
+        928
+      ],
+      "id": "2f2fd2f7-1760-46e5-a796-45e1994c290c",
+      "name": "Send Email Tool",
+      "webhookId": "03353188-16cb-41b6-844f-530c5e37a11d",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "J6emPxQ1aamee9nR",
+          "name": "Microsoft Outlook - Andy Personal Hotmail"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "resource": "event",
+        "fromAllCalendars": false,
+        "calendarId": {
+          "__rl": true,
+          "value": "AQMkADAwATZiZmYAZC05Y2I4LTQ0AGY1LTAwAi0wMAoARgAAA2QS1OtkhP1HqkHqJvjoSWEHACbRHx0Y--5Es8CLEwdUGpQAAAIBBgAAACbRHx0Y--5Es8CLEwdUGpQAAAKdnAAAAA==",
+          "mode": "list",
+          "cachedResultName": "Calendar"
+        },
+        "limit": 30,
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "typeVersion": 2,
+      "position": [
+        -416,
+        928
+      ],
+      "id": "5ea51d50-b075-4789-800a-a7f25636b6a5",
+      "name": "Get Calendar Event Tool",
+      "webhookId": "03353188-16cb-41b6-844f-530c5e37a11d",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "J6emPxQ1aamee9nR",
+          "name": "Microsoft Outlook - Andy Personal Hotmail"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "resource": "event",
+        "operation": "create",
+        "calendarId": {
+          "__rl": true,
+          "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Calendar', ``, 'string') }}",
+          "mode": "id"
+        },
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Title', ``, 'string') }}",
+        "startDateTime": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}",
+        "endDateTime": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', ``, 'string') }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "typeVersion": 2,
+      "position": [
+        -288,
+        928
+      ],
+      "id": "e8f1f39c-3806-45d0-8042-b57219f677f7",
+      "name": "Create Calendar Event Tool",
+      "webhookId": "03353188-16cb-41b6-844f-530c5e37a11d",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "J6emPxQ1aamee9nR",
+          "name": "Microsoft Outlook - Andy Personal Hotmail"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": 30,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "typeVersion": 2,
+      "position": [
+        -160,
+        928
+      ],
+      "id": "9d85bb60-37d1-448f-8db2-f5a5b4c99f2c",
+      "name": "Get Email Tool",
+      "webhookId": "03353188-16cb-41b6-844f-530c5e37a11d",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "J6emPxQ1aamee9nR",
+          "name": "Microsoft Outlook - Andy Personal Hotmail"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build a request string from mixed input shapes.\n//\n// Supported:\n// 1) { json: { body: { ... } } }  -> joins non-empty values from body\n// 2) { json: { chatInput: \"...\" } } -> uses chatInput (trimmed)\n\nconst values = items.flatMap((i) => {\n  const j = i.json ?? {};\n  const out = [];\n\n  // New shape: explicit chat input\n  if (typeof j.chatInput === \"string\" && j.chatInput.trim()) {\n    out.push(j.chatInput.trim());\n  }\n\n  // Existing shape: merge of body values\n  const body = j.body;\n  if (body && typeof body === \"object\" && !Array.isArray(body)) {\n    for (const v of Object.values(body)) {\n      if (v !== \"\" && v !== null && v !== undefined) out.push(String(v));\n    }\n  }\n\n  return out;\n});\n\n// Join all values into a single string\nconst request = values.join(\" \").replace(/\\s+/g, \" \").trim();\n\n// Output as a single string called \"request\"\nreturn [{ json: { request } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1120,
+        704
+      ],
+      "id": "24f10496-2f4d-4e7e-b01c-5b4401852383",
+      "name": "Code in JavaScript",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "outlook_tool_andy_personal_hotmail",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1568,
+        704
+      ],
+      "id": "9c7e2c51-4cfb-4a81-a4c3-fbc032cdff5c",
+      "name": "webhook",
+      "webhookId": "fcf68529-7456-45c4-9232-aeace02fe661",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        -704,
+        912
+      ],
+      "id": "35a492f1-2b5c-4990-8e94-0abc9dd7b207",
+      "name": "Google Vertex Chat Model2",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -1328,
+        688
+      ],
+      "id": "5c42c576-83f8-453b-80e8-f6b7c2dd3916",
+      "name": "Merge",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -1536,
+        848
+      ],
+      "id": "3781e4a9-55c8-4e05-9f5e-66260bc166d4",
+      "name": "When chat message received",
+      "webhookId": "16915ebe-0527-49fa-8da6-b4fc81653d51",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "height": 512,
+        "width": 1152
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1872,
+        -5936
+      ],
+      "typeVersion": 1,
+      "id": "ff5c4d4b-1c32-4581-abef-2644a293c9bf",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Request: {{ $('Code in JavaScript1').item.json.request }}",
+        "options": {
+          "systemMessage": "=You're a helpful assistant that helps the user based on their request or questio. \nYou should use your tools to effectively fulfill the requests. You can use the tools as many times as necessary. \n\nToday is {{ $now.format('cccc') }} the {{ $now.setZone('Europe/London').format('yyyy-MM-dd') }} at {{ $now.setZone('Europe/London').toFormat('HH:mm') }}.\n\n\n"
+        }
+      },
+      "id": "f071b964-9caf-4b7d-ad36-d34aa83721da",
+      "name": "AI Agent2",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -448,
+        1632
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "sendTo": "eduardo.aguilarpelaez@gmail.com",
+        "subject": "=Calendar: {{ $('webhook1').item.json.body.question }}",
+        "message": "={{ $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        96,
+        1632
+      ],
+      "id": "9adeebc5-acee-4912-bb22-ad184ca40460",
+      "name": "Gmail1",
+      "webhookId": "d72135ce-50dd-477e-997e-15af676c6436",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "N15HJY1qHiINx9PM",
+          "name": "Lee C Gmail account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "toRecipients": "andy.batty@hotmail.com",
+        "subject": "=Your n8n calendar topol was just called",
+        "bodyContent": "=",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        96,
+        1824
+      ],
+      "id": "7314de93-af69-405a-978c-5fc6b17f3b32",
+      "name": "Microsoft Outlook1",
+      "webhookId": "94761820-05dc-4db6-9bf1-33c4c89661d6",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "J6emPxQ1aamee9nR",
+          "name": "Microsoft Outlook - Andy Personal Hotmail"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        -848,
+        1632
+      ],
+      "id": "864c0c5e-0de7-4750-a4ea-c3f1c8955d0e",
+      "name": "Date & Time1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        96,
+        1424
+      ],
+      "id": "5e384c7d-15eb-40d6-b4d1-d48e0b5ded87",
+      "name": "Respond to Webhook2",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "toRecipients": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', ``, 'string') }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "bodyContent": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "typeVersion": 2,
+      "position": [
+        -496,
+        1856
+      ],
+      "id": "b1904aa5-e364-476b-a651-90184a36a70e",
+      "name": "Send Email Tool1",
+      "webhookId": "03353188-16cb-41b6-844f-530c5e37a11d",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "J6emPxQ1aamee9nR",
+          "name": "Microsoft Outlook - Andy Personal Hotmail"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "resource": "event",
+        "fromAllCalendars": false,
+        "calendarId": {
+          "__rl": true,
+          "value": "AQMkADAwATZiZmYAZC05Y2I4LTQ0AGY1LTAwAi0wMAoARgAAA2QS1OtkhP1HqkHqJvjoSWEHACbRHx0Y--5Es8CLEwdUGpQAAAIBBgAAACbRHx0Y--5Es8CLEwdUGpQAAAKdnAAAAA==",
+          "mode": "list",
+          "cachedResultName": "Calendar"
+        },
+        "limit": 30,
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "typeVersion": 2,
+      "position": [
+        -368,
+        1856
+      ],
+      "id": "0f3e2ea7-b48c-42be-9551-7625396b5e99",
+      "name": "Get Calendar Event Tool1",
+      "webhookId": "03353188-16cb-41b6-844f-530c5e37a11d",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "J6emPxQ1aamee9nR",
+          "name": "Microsoft Outlook - Andy Personal Hotmail"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "resource": "event",
+        "operation": "create",
+        "calendarId": {
+          "__rl": true,
+          "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Calendar', ``, 'string') }}",
+          "mode": "id"
+        },
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Title', ``, 'string') }}",
+        "startDateTime": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}",
+        "endDateTime": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', ``, 'string') }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "typeVersion": 2,
+      "position": [
+        -240,
+        1856
+      ],
+      "id": "4a525e55-dd76-4dfc-80f2-968c65c1c445",
+      "name": "Create Calendar Event Tool1",
+      "webhookId": "03353188-16cb-41b6-844f-530c5e37a11d",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "J6emPxQ1aamee9nR",
+          "name": "Microsoft Outlook - Andy Personal Hotmail"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": 30,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "typeVersion": 2,
+      "position": [
+        -112,
+        1856
+      ],
+      "id": "35410d61-2970-4371-8ab5-92d15bbeb760",
+      "name": "Get Email Tool1",
+      "webhookId": "03353188-16cb-41b6-844f-530c5e37a11d",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "J6emPxQ1aamee9nR",
+          "name": "Microsoft Outlook - Andy Personal Hotmail"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build a request string from mixed input shapes.\n//\n// Supported:\n// 1) { json: { body: { ... } } }  -> joins non-empty values from body\n// 2) { json: { chatInput: \"...\" } } -> uses chatInput (trimmed)\n\nconst values = items.flatMap((i) => {\n  const j = i.json ?? {};\n  const out = [];\n\n  // New shape: explicit chat input\n  if (typeof j.chatInput === \"string\" && j.chatInput.trim()) {\n    out.push(j.chatInput.trim());\n  }\n\n  // Existing shape: merge of body values\n  const body = j.body;\n  if (body && typeof body === \"object\" && !Array.isArray(body)) {\n    for (const v of Object.values(body)) {\n      if (v !== \"\" && v !== null && v !== undefined) out.push(String(v));\n    }\n  }\n\n  return out;\n});\n\n// Join all values into a single string\nconst request = values.join(\" \").replace(/\\s+/g, \" \").trim();\n\n// Output as a single string called \"request\"\nreturn [{ json: { request } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1072,
+        1632
+      ],
+      "id": "4215ffd9-132e-4b87-bcd2-db8704ef1c37",
+      "name": "Code in JavaScript1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "outlook_tool_andy_personal_hotmail",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1520,
+        1632
+      ],
+      "id": "75337467-1ecd-4fb7-a6b6-68f4772b5963",
+      "name": "webhook1",
+      "webhookId": "fcf68529-7456-45c4-9232-aeace02fe661",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        -656,
+        1840
+      ],
+      "id": "35d0c0cb-459e-49a0-bcb3-2708b802a19f",
+      "name": "Google Vertex Chat Model3",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -1280,
+        1616
+      ],
+      "id": "1e1935df-355d-47e1-9d48-17468fd52077",
+      "name": "Merge1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "height": 992,
+        "width": 2144
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1632,
+        1200
+      ],
+      "typeVersion": 1,
+      "id": "b379a762-2089-43c1-b02a-346f9c533520",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Request: {{ $json.user_response }}",
+        "options": {
+          "systemMessage": "=You're a helpful assistant that helps the user based on their request or questio. \nYou should use your tools to effectively fulfill the requests. You can use the tools as many times as necessary. \n\nToday is {{ $now.format('cccc') }} the {{ $now.setZone('Europe/London').format('yyyy-MM-dd') }} at {{ $now.setZone('Europe/London').toFormat('HH:mm') }}.\n\n\n"
+        }
+      },
+      "id": "ecb3d8ec-3fdc-4600-a702-5eb2c5d930d3",
+      "name": "AI Agent3",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -688,
+        -688
+      ]
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        -896,
+        -480
+      ],
+      "id": "1793c838-588b-4b54-a4f1-05def1ef9adf",
+      "name": "Google Vertex Chat Model4",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -2368,
+        -608
+      ],
+      "id": "840488c9-3cd1-4cf8-bf3f-bb16311397be",
+      "name": "When clicking ‘Execute workflow’",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "sendAndWait",
+        "user": {
+          "__rl": true,
+          "value": "U0915JZ9KSM",
+          "mode": "list",
+          "cachedResultName": "andy"
+        },
+        "message": "={{ $json.output }}\n\nWould you like me to take any further actions?",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "double",
+            "approveLabel": "Yes",
+            "disapproveLabel": "No"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        -320,
+        -1184
+      ],
+      "id": "0b3b8719-164d-40f3-8eb5-26c9bc1b98a5",
+      "name": "Send message and wait for response1",
+      "webhookId": "6fe86b90-3710-4e54-8a2c-e529d748affa",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "bTNkj7Fgpv9nbH3s",
+          "name": "Andy - Slack account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "sendAndWait",
+        "user": {
+          "__rl": true,
+          "value": "U0915JZ9KSM",
+          "mode": "list",
+          "cachedResultName": "andy"
+        },
+        "message": "How else can I help you?",
+        "responseType": "freeText",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        128,
+        -1184
+      ],
+      "id": "b1f59b82-61d5-4100-895c-1a54a5938272",
+      "name": "Send message and wait for response2",
+      "webhookId": "6fe86b90-3710-4e54-8a2c-e529d748affa",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "bTNkj7Fgpv9nbH3s",
+          "name": "Andy - Slack account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a44cccbd-a634-401d-bfee-03ab638bca6c",
+              "leftValue": "={{ $json.data.approved }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -128,
+        -1184
+      ],
+      "id": "5f2b2a98-8f06-46a1-92ff-16b0d68988bd",
+      "name": "If",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "user",
+        "user": {
+          "__rl": true,
+          "value": "U0915JZ9KSM",
+          "mode": "list",
+          "cachedResultName": "andy"
+        },
+        "text": "Thanks, have a great day, bye",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        144,
+        -992
+      ],
+      "id": "487fe1d9-12e1-4ad7-b9ae-feca7fd66c0f",
+      "name": "Send a message",
+      "webhookId": "32447b83-71d9-4088-b307-5d58c1de2a30",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "bTNkj7Fgpv9nbH3s",
+          "name": "Andy - Slack account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b25c6692-3003-499b-89aa-51c01816dcc2",
+              "name": "user_response",
+              "value": "={{ $json.user_msg }}",
+              "type": "string"
+            },
+            {
+              "id": "79b043d5-2aff-456e-b344-295d9afc726f",
+              "name": "sessionId",
+              "value": "12345",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -944,
+        -704
+      ],
+      "id": "d57b1690-4339-43bc-8f3c-3d829dbcb5f9",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "resource": "event",
+        "fromAllCalendars": false,
+        "calendarId": {
+          "__rl": true,
+          "value": "AQMkADAwATZiZmYAZC05Y2I4LTQ0AGY1LTAwAi0wMAoARgAAA2QS1OtkhP1HqkHqJvjoSWEHACbRHx0Y--5Es8CLEwdUGpQAAAIBBgAAACbRHx0Y--5Es8CLEwdUGpQAAAKdnAAAAA==",
+          "mode": "list",
+          "cachedResultName": "Calendar"
+        },
+        "limit": 30,
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "typeVersion": 2,
+      "position": [
+        -608,
+        -464
+      ],
+      "id": "3ce4907a-c14e-49e4-b0ef-e58c9fd9a2cc",
+      "name": "Get Many Calendar Events Tool",
+      "webhookId": "03353188-16cb-41b6-844f-530c5e37a11d",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "J6emPxQ1aamee9nR",
+          "name": "Microsoft Outlook - Andy Personal Hotmail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "event",
+        "operation": "get",
+        "calendarId": {
+          "__rl": true,
+          "value": "AQMkADAwATZiZmYAZC05Y2I4LTQ0AGY1LTAwAi0wMAoARgAAA2QS1OtkhP1HqkHqJvjoSWEHACbRHx0Y--5Es8CLEwdUGpQAAAIBBgAAACbRHx0Y--5Es8CLEwdUGpQAAAKdnAAAAA==",
+          "mode": "list",
+          "cachedResultName": "Calendar"
+        },
+        "eventId": {
+          "__rl": true,
+          "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Event', ``, 'string') }}",
+          "mode": "id"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "typeVersion": 2,
+      "position": [
+        -720,
+        -464
+      ],
+      "id": "d6473130-7645-4424-874d-534bcc4929cf",
+      "name": "Get Calendar Event Tool2",
+      "webhookId": "03353188-16cb-41b6-844f-530c5e37a11d",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "J6emPxQ1aamee9nR",
+          "name": "Microsoft Outlook - Andy Personal Hotmail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "event",
+        "operation": "create",
+        "calendarId": {
+          "__rl": true,
+          "value": "AQMkADAwATZiZmYAZC05Y2I4LTQ0AGY1LTAwAi0wMAoARgAAA2QS1OtkhP1HqkHqJvjoSWEHACbRHx0Y--5Es8CLEwdUGpQAAAIBBgAAACbRHx0Y--5Es8CLEwdUGpQAAAKdnAAAAA==",
+          "mode": "list",
+          "cachedResultName": "Calendar"
+        },
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Title', ``, 'string') }}",
+        "startDateTime": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}",
+        "endDateTime": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', ``, 'string') }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "typeVersion": 2,
+      "position": [
+        -480,
+        -464
+      ],
+      "id": "de579aea-83ef-46eb-86da-73439b8aa214",
+      "name": "Create Calendar Event Tool5",
+      "webhookId": "03353188-16cb-41b6-844f-530c5e37a11d",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "J6emPxQ1aamee9nR",
+          "name": "Microsoft Outlook - Andy Personal Hotmail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "event",
+        "operation": "update",
+        "calendarId": {
+          "__rl": true,
+          "value": "AQMkADAwATZiZmYAZC05Y2I4LTQ0AGY1LTAwAi0wMAoARgAAA2QS1OtkhP1HqkHqJvjoSWEHACbRHx0Y--5Es8CLEwdUGpQAAAIBBgAAACbRHx0Y--5Es8CLEwdUGpQAAAKdnAAAAA==",
+          "mode": "list",
+          "cachedResultName": "Calendar"
+        },
+        "eventId": {
+          "__rl": true,
+          "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Event', ``, 'string') }}",
+          "mode": "id"
+        },
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "typeVersion": 2,
+      "position": [
+        -336,
+        -464
+      ],
+      "id": "4b5aec0a-cd77-4ca1-910e-7f444cfa3353",
+      "name": "Update Calendar Event Tool",
+      "webhookId": "03353188-16cb-41b6-844f-530c5e37a11d",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "J6emPxQ1aamee9nR",
+          "name": "Microsoft Outlook - Andy Personal Hotmail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "event",
+        "operation": "delete",
+        "calendarId": {
+          "__rl": true,
+          "value": "AQMkADAwATZiZmYAZC05Y2I4LTQ0AGY1LTAwAi0wMAoARgAAA2QS1OtkhP1HqkHqJvjoSWEHACbRHx0Y--5Es8CLEwdUGpQAAAIBBgAAACbRHx0Y--5Es8CLEwdUGpQAAAKdnAAAAA==",
+          "mode": "list",
+          "cachedResultName": "Calendar"
+        },
+        "eventId": {
+          "__rl": true,
+          "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Event', ``, 'string') }}",
+          "mode": "id"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "typeVersion": 2,
+      "position": [
+        -192,
+        -464
+      ],
+      "id": "9bec060f-9afc-441e-9136-f0c4366853d2",
+      "name": "Delete Calendar Event Tool",
+      "webhookId": "03353188-16cb-41b6-844f-530c5e37a11d",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "J6emPxQ1aamee9nR",
+          "name": "Microsoft Outlook - Andy Personal Hotmail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": 30,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "typeVersion": 2,
+      "position": [
+        -896,
+        -256
+      ],
+      "id": "548172a5-93d5-4235-86b1-d97d2f6369e5",
+      "name": "Get Email Messages Tool",
+      "webhookId": "03353188-16cb-41b6-844f-530c5e37a11d",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "J6emPxQ1aamee9nR",
+          "name": "Microsoft Outlook - Andy Personal Hotmail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toRecipients": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', ``, 'string') }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "bodyContent": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "typeVersion": 2,
+      "position": [
+        -736,
+        -256
+      ],
+      "id": "018537a6-0930-4840-890e-41a48f7c01e9",
+      "name": "Send Email Tool5",
+      "webhookId": "03353188-16cb-41b6-844f-530c5e37a11d",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "J6emPxQ1aamee9nR",
+          "name": "Microsoft Outlook - Andy Personal Hotmail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "reply",
+        "messageId": {
+          "__rl": true,
+          "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "typeVersion": 2,
+      "position": [
+        -608,
+        -256
+      ],
+      "id": "20013d4f-a591-4e47-bc21-03bc4d9d9c70",
+      "name": "Reply to Email Tool",
+      "webhookId": "03353188-16cb-41b6-844f-530c5e37a11d",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "J6emPxQ1aamee9nR",
+          "name": "Microsoft Outlook - Andy Personal Hotmail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "messageId": {
+          "__rl": true,
+          "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+          "mode": "id"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "typeVersion": 2,
+      "position": [
+        -464,
+        -256
+      ],
+      "id": "125c546c-4fa6-4b43-997d-c7840567a7eb",
+      "name": "Delete Email Tool",
+      "webhookId": "03353188-16cb-41b6-844f-530c5e37a11d",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "J6emPxQ1aamee9nR",
+          "name": "Microsoft Outlook - Andy Personal Hotmail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "messageId": {
+          "__rl": true,
+          "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "typeVersion": 2,
+      "position": [
+        -1040,
+        -256
+      ],
+      "id": "a8467e86-7170-4738-a4cf-1f04aaa8bc1c",
+      "name": "Get Single Email Messages Tool",
+      "webhookId": "03353188-16cb-41b6-844f-530c5e37a11d",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "J6emPxQ1aamee9nR",
+          "name": "Microsoft Outlook - Andy Personal Hotmail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "height": 992,
+        "width": 2144
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1648,
+        448
+      ],
+      "typeVersion": 1,
+      "id": "cd514ce7-269b-4586-8ffb-65b87a722868",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "sendAndWait",
+        "user": {
+          "__rl": true,
+          "value": "U0915JZ9KSM",
+          "mode": "list",
+          "cachedResultName": "andy"
+        },
+        "message": "How can I help you?",
+        "responseType": "freeText",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        -1712,
+        -5280
+      ],
+      "id": "004ff1b3-6171-4036-ad5d-c9519887693b",
+      "name": "Send message and wait for response3",
+      "webhookId": "6fe86b90-3710-4e54-8a2c-e529d748affa",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "bTNkj7Fgpv9nbH3s",
+          "name": "Andy - Slack account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Request: {{ $json.data.text }}",
+        "options": {
+          "systemMessage": "=You're a helpful assistant that helps the user based on their request or questio. \nYou should use your tools to effectively fulfill the requests. You can use the tools as many times as necessary. \n\nToday is {{ $now.format('cccc') }} the {{ $now.setZone('Europe/London').format('yyyy-MM-dd') }} at {{ $now.setZone('Europe/London').toFormat('HH:mm') }}.\n\n\n"
+        }
+      },
+      "id": "d9516832-8cf9-4264-a398-560f57019dbf",
+      "name": "AI Agent4",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -1168,
+        -5264
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        -1376,
+        -5040
+      ],
+      "id": "4db383f5-52e7-467e-ba2e-03de7cd76b78",
+      "name": "Google Vertex Chat Model5",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "sendAndWait",
+        "user": {
+          "__rl": true,
+          "value": "U0915JZ9KSM",
+          "mode": "list",
+          "cachedResultName": "andy"
+        },
+        "message": "={{ $json.output }}\n\nWould you like me to take any further actions?",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "double",
+            "approveLabel": "Yes",
+            "disapproveLabel": "No"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        -784,
+        -5264
+      ],
+      "id": "f378e00a-e624-4e35-b67e-49c4a6ac7c74",
+      "name": "Send message and wait for response4",
+      "webhookId": "6fe86b90-3710-4e54-8a2c-e529d748affa",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "bTNkj7Fgpv9nbH3s",
+          "name": "Andy - Slack account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "sendAndWait",
+        "user": {
+          "__rl": true,
+          "value": "U0915JZ9KSM",
+          "mode": "list",
+          "cachedResultName": "andy"
+        },
+        "message": "How else can I help you?",
+        "responseType": "freeText",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        -336,
+        -5264
+      ],
+      "id": "4a720218-1c8a-4fd3-ad08-cbccf91cc668",
+      "name": "Send message and wait for response5",
+      "webhookId": "6fe86b90-3710-4e54-8a2c-e529d748affa",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "bTNkj7Fgpv9nbH3s",
+          "name": "Andy - Slack account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a44cccbd-a634-401d-bfee-03ab638bca6c",
+              "leftValue": "={{ $json.data.approved }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -592,
+        -5264
+      ],
+      "id": "6ae56643-9d94-419f-8406-8ac0a37b8ea8",
+      "name": "If1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "user",
+        "user": {
+          "__rl": true,
+          "value": "U0915JZ9KSM",
+          "mode": "list",
+          "cachedResultName": "andy"
+        },
+        "text": "Thanks, have a great day, bye",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        -336,
+        -5040
+      ],
+      "id": "035525e7-43ea-4ff2-9cdc-26fb4f4952d8",
+      "name": "Send a message1",
+      "webhookId": "32447b83-71d9-4088-b307-5d58c1de2a30",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "bTNkj7Fgpv9nbH3s",
+          "name": "Andy - Slack account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b25c6692-3003-499b-89aa-51c01816dcc2",
+              "name": "data.text",
+              "value": "={{ $json.data.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1424,
+        -5280
+      ],
+      "id": "b86d35c7-e543-48f5-b4ee-e6d0a8444d2f",
+      "name": "Edit Fields1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "resource": "event",
+        "fromAllCalendars": false,
+        "calendarId": {
+          "__rl": true,
+          "value": "AQMkADAwATZiZmYAZC05Y2I4LTQ0AGY1LTAwAi0wMAoARgAAA2QS1OtkhP1HqkHqJvjoSWEHACbRHx0Y--5Es8CLEwdUGpQAAAIBBgAAACbRHx0Y--5Es8CLEwdUGpQAAAKdnAAAAA==",
+          "mode": "list",
+          "cachedResultName": "Calendar"
+        },
+        "limit": 30,
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "typeVersion": 2,
+      "position": [
+        -1088,
+        -5024
+      ],
+      "id": "60158efd-0c4d-4063-bdac-834700583eed",
+      "name": "Get Many Calendar Events Tool1",
+      "webhookId": "03353188-16cb-41b6-844f-530c5e37a11d",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "J6emPxQ1aamee9nR",
+          "name": "Microsoft Outlook - Andy Personal Hotmail"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "resource": "event",
+        "operation": "get",
+        "calendarId": {
+          "__rl": true,
+          "value": "AQMkADAwATZiZmYAZC05Y2I4LTQ0AGY1LTAwAi0wMAoARgAAA2QS1OtkhP1HqkHqJvjoSWEHACbRHx0Y--5Es8CLEwdUGpQAAAIBBgAAACbRHx0Y--5Es8CLEwdUGpQAAAKdnAAAAA==",
+          "mode": "list",
+          "cachedResultName": "Calendar"
+        },
+        "eventId": {
+          "__rl": true,
+          "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Event', ``, 'string') }}",
+          "mode": "id"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "typeVersion": 2,
+      "position": [
+        -1200,
+        -5024
+      ],
+      "id": "0e74a5de-4014-4fff-a46d-44d35af3b348",
+      "name": "Get Calendar Event Tool3",
+      "webhookId": "03353188-16cb-41b6-844f-530c5e37a11d",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "J6emPxQ1aamee9nR",
+          "name": "Microsoft Outlook - Andy Personal Hotmail"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "resource": "event",
+        "operation": "create",
+        "calendarId": {
+          "__rl": true,
+          "value": "AQMkADAwATZiZmYAZC05Y2I4LTQ0AGY1LTAwAi0wMAoARgAAA2QS1OtkhP1HqkHqJvjoSWEHACbRHx0Y--5Es8CLEwdUGpQAAAIBBgAAACbRHx0Y--5Es8CLEwdUGpQAAAKdnAAAAA==",
+          "mode": "list",
+          "cachedResultName": "Calendar"
+        },
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Title', ``, 'string') }}",
+        "startDateTime": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}",
+        "endDateTime": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', ``, 'string') }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "typeVersion": 2,
+      "position": [
+        -960,
+        -5024
+      ],
+      "id": "3ec188c4-d071-4c17-be2e-91c078da691e",
+      "name": "Create Calendar Event Tool6",
+      "webhookId": "03353188-16cb-41b6-844f-530c5e37a11d",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "J6emPxQ1aamee9nR",
+          "name": "Microsoft Outlook - Andy Personal Hotmail"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "resource": "event",
+        "operation": "update",
+        "calendarId": {
+          "__rl": true,
+          "value": "AQMkADAwATZiZmYAZC05Y2I4LTQ0AGY1LTAwAi0wMAoARgAAA2QS1OtkhP1HqkHqJvjoSWEHACbRHx0Y--5Es8CLEwdUGpQAAAIBBgAAACbRHx0Y--5Es8CLEwdUGpQAAAKdnAAAAA==",
+          "mode": "list",
+          "cachedResultName": "Calendar"
+        },
+        "eventId": {
+          "__rl": true,
+          "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Event', ``, 'string') }}",
+          "mode": "id"
+        },
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "typeVersion": 2,
+      "position": [
+        -816,
+        -5024
+      ],
+      "id": "3e9df624-ecc9-44f3-b890-d9e23c0c0358",
+      "name": "Update Calendar Event Tool1",
+      "webhookId": "03353188-16cb-41b6-844f-530c5e37a11d",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "J6emPxQ1aamee9nR",
+          "name": "Microsoft Outlook - Andy Personal Hotmail"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "resource": "event",
+        "operation": "delete",
+        "calendarId": {
+          "__rl": true,
+          "value": "AQMkADAwATZiZmYAZC05Y2I4LTQ0AGY1LTAwAi0wMAoARgAAA2QS1OtkhP1HqkHqJvjoSWEHACbRHx0Y--5Es8CLEwdUGpQAAAIBBgAAACbRHx0Y--5Es8CLEwdUGpQAAAKdnAAAAA==",
+          "mode": "list",
+          "cachedResultName": "Calendar"
+        },
+        "eventId": {
+          "__rl": true,
+          "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Event', ``, 'string') }}",
+          "mode": "id"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "typeVersion": 2,
+      "position": [
+        -672,
+        -5024
+      ],
+      "id": "148d408e-bd0a-42ca-851f-7dc0d60d4336",
+      "name": "Delete Calendar Event Tool1",
+      "webhookId": "03353188-16cb-41b6-844f-530c5e37a11d",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "J6emPxQ1aamee9nR",
+          "name": "Microsoft Outlook - Andy Personal Hotmail"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": 30,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "typeVersion": 2,
+      "position": [
+        -1376,
+        -4816
+      ],
+      "id": "42a92556-78d3-4e83-aee8-c2e3c5d09cf1",
+      "name": "Get Email Messages Tool1",
+      "webhookId": "03353188-16cb-41b6-844f-530c5e37a11d",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "J6emPxQ1aamee9nR",
+          "name": "Microsoft Outlook - Andy Personal Hotmail"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "toRecipients": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', ``, 'string') }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "bodyContent": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "typeVersion": 2,
+      "position": [
+        -1216,
+        -4816
+      ],
+      "id": "0b13b885-48dc-40c6-a077-ebf1a2537130",
+      "name": "Send Email Tool6",
+      "webhookId": "03353188-16cb-41b6-844f-530c5e37a11d",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "J6emPxQ1aamee9nR",
+          "name": "Microsoft Outlook - Andy Personal Hotmail"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "reply",
+        "messageId": {
+          "__rl": true,
+          "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "typeVersion": 2,
+      "position": [
+        -1088,
+        -4816
+      ],
+      "id": "0253ab9e-dec9-48e1-82a4-32a37daece6d",
+      "name": "Reply to Email Tool1",
+      "webhookId": "03353188-16cb-41b6-844f-530c5e37a11d",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "J6emPxQ1aamee9nR",
+          "name": "Microsoft Outlook - Andy Personal Hotmail"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "messageId": {
+          "__rl": true,
+          "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+          "mode": "id"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "typeVersion": 2,
+      "position": [
+        -944,
+        -4816
+      ],
+      "id": "b75f584c-761c-49ce-9df8-2a8743af2e40",
+      "name": "Delete Email Tool1",
+      "webhookId": "03353188-16cb-41b6-844f-530c5e37a11d",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "J6emPxQ1aamee9nR",
+          "name": "Microsoft Outlook - Andy Personal Hotmail"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "messageId": {
+          "__rl": true,
+          "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "typeVersion": 2,
+      "position": [
+        -1520,
+        -4816
+      ],
+      "id": "d13ee298-24b0-4dbc-944d-8195ec037586",
+      "name": "Get Single Email Messages Tool1",
+      "webhookId": "03353188-16cb-41b6-844f-530c5e37a11d",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "J6emPxQ1aamee9nR",
+          "name": "Microsoft Outlook - Andy Personal Hotmail"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "height": 736,
+        "width": 1824
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1824,
+        -5360
+      ],
+      "typeVersion": 1,
+      "id": "a636feec-6c90-4326-acab-5f90b658a67b",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "updates": [
+          "com.twilio.messaging.inbound-message.received"
+        ]
+      },
+      "type": "n8n-nodes-base.twilioTrigger",
+      "typeVersion": 1,
+      "position": [
+        -2160,
+        -944
+      ],
+      "id": "eea8e008-636f-49f2-9148-f336bc42fdb7",
+      "name": "Twilio sms received Trigger",
+      "webhookId": "52f37039-8fbe-43c5-96bb-fef5799b6fe7",
+      "credentials": {
+        "twilioApi": {
+          "id": "w7ZJaAAqbDjuLfJP",
+          "name": "Legal Engine Twilio account - +447426903220"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9b898eba-83ec-4c0e-beb4-fb4dbebed316",
+              "name": "user_phone_number",
+              "value": "+447966543220",
+              "type": "string"
+            },
+            {
+              "id": "cc1a4ede-68b4-47b5-8bfa-76e925c3b863",
+              "name": "user_first_name",
+              "value": "Andy",
+              "type": "string"
+            },
+            {
+              "id": "4a0b4517-21c7-4500-9ec5-57aeaf9681c9",
+              "name": "user_last_name",
+              "value": "Batty",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -2160,
+        -608
+      ],
+      "id": "a3042d02-0c25-4fbd-8940-fb4221855a14",
+      "name": "Set Input Params",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "from": "+447426903220",
+        "to": "={{ $('Twilio sms received Trigger').item.json.data.from }}",
+        "message": "={{ $json.output }}\nWould you like me to take any further actions? If so please let me know what you want me to do next?",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.twilio",
+      "typeVersion": 1,
+      "position": [
+        -320,
+        -688
+      ],
+      "id": "4b37db0f-6f57-4b81-9ade-15c89155c14e",
+      "name": "Send an SMS/MMS/WhatsApp message2",
+      "credentials": {
+        "twilioApi": {
+          "id": "w7ZJaAAqbDjuLfJP",
+          "name": "Legal Engine Twilio account - +447426903220"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "from": "+447426903220",
+        "to": "={{ $json.user_phone_number }}",
+        "message": "=Hi {{ $json.user_first_name }}, how can I help you today?",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.twilio",
+      "typeVersion": 1,
+      "position": [
+        -1792,
+        -608
+      ],
+      "id": "2542cad9-31dd-4255-a831-8fd3ae9f2690",
+      "name": "Send SMS",
+      "credentials": {
+        "twilioApi": {
+          "id": "w7ZJaAAqbDjuLfJP",
+          "name": "Legal Engine Twilio account - +447426903220"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9b898eba-83ec-4c0e-beb4-fb4dbebed316",
+              "name": "user_phone_number",
+              "value": "={{ $('Twilio sms received Trigger').item.json.data.from }}",
+              "type": "string"
+            },
+            {
+              "id": "69e86a26-d4c6-468e-910c-4573be865a99",
+              "name": "user_msg",
+              "value": "={{ $('Twilio sms received Trigger').item.json.data.body }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1440,
+        -944
+      ],
+      "id": "705b16fe-1892-4f8e-ac53-beea34e03ee4",
+      "name": "Set Input Params1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "bb637471-5064-4484-bf84-1d35907dad21",
+              "leftValue": "={{ $('Twilio sms received Trigger').item.json.data.from }}",
+              "rightValue": "=+447966543220",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1760,
+        -944
+      ],
+      "id": "92a5d01d-826c-410b-b473-4ef4b9c664dc",
+      "name": "If3"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "69e86a26-d4c6-468e-910c-4573be865a99",
+              "name": "user_msg",
+              "value": "=",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -48,
+        -688
+      ],
+      "id": "c29f9e2f-03c7-4f8d-9456-b276962dbd52",
+      "name": "Set Input Params2",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9b898eba-83ec-4c0e-beb4-fb4dbebed316",
+              "name": "user_phone_number",
+              "value": "={{ $json.data.from }}",
+              "type": "string"
+            },
+            {
+              "id": "69e86a26-d4c6-468e-910c-4573be865a99",
+              "name": "user_msg",
+              "value": "={{ $json.data.body }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1952,
+        -944
+      ],
+      "id": "eaab2c0a-e583-44d1-9086-84989babb233",
+      "name": "Set Input Params3"
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 50
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -352,
+        -144
+      ],
+      "id": "fb40229f-df1f-4645-922f-94c7624da9fe",
+      "name": "Simple Memory"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Gmail",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Microsoft Outlook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Time": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Calendar Event Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Calendar Event Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Email Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "webhook": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Date & Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "AI Agent2": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Gmail1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Microsoft Outlook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Time1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email Tool1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Calendar Event Tool1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Calendar Event Tool1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Email Tool1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Date & Time1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "webhook1": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent3": {
+      "main": [
+        [
+          {
+            "node": "Send an SMS/MMS/WhatsApp message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Set Input Params",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send message and wait for response1": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send message and wait for response2": {
+      "main": [
+        []
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send message and wait for response2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Many Calendar Events Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Calendar Event Tool2": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Calendar Event Tool5": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Calendar Event Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Calendar Event Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Email Messages Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email Tool5": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply to Email Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Email Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Single Email Messages Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send message and wait for response3": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent4": {
+      "main": [
+        [
+          {
+            "node": "Send message and wait for response4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent4",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send message and wait for response4": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send message and wait for response5": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Send message and wait for response5",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Many Calendar Events Tool1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent4",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Calendar Event Tool3": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent4",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Calendar Event Tool6": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent4",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Calendar Event Tool1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent4",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Calendar Event Tool1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent4",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Email Messages Tool1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent4",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email Tool6": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent4",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply to Email Tool1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent4",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Email Tool1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent4",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Single Email Messages Tool1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent4",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Twilio sms received Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set Input Params3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Input Params": {
+      "main": [
+        [
+          {
+            "node": "Send SMS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send an SMS/MMS/WhatsApp message2": {
+      "main": [
+        [
+          {
+            "node": "Set Input Params2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send SMS": {
+      "main": [
+        []
+      ]
+    },
+    "Set Input Params1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If3": {
+      "main": [
+        [
+          {
+            "node": "Set Input Params1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Set Input Params2": {
+      "main": [
+        []
+      ]
+    },
+    "Set Input Params3": {
+      "main": [
+        [
+          {
+            "node": "If3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": {
+    "node:Twilio sms received Trigger": {
+      "sinkId": "DGfaa8e339c8f5c2077d26c0551d76ed29",
+      "subscriptionId": "DFb8a99edea067701907e9dba6bc7a4dab"
+    }
+  },
+  "pinData": {
+    "webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "leonard-dev.app.n8n.cloud",
+            "user-agent": "ElevenLabs/1.0",
+            "content-length": "115",
+            "accept": "*/*",
+            "accept-encoding": "gzip, br",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "34.77.234.246",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "BE",
+            "cf-ray": "997d5b38f4f6acc1-CDG",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "x-forwarded-for": "34.77.234.246, 172.71.232.136",
+            "x-forwarded-host": "leonard-dev.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-52-6c4f4684d5-sbjk8",
+            "x-is-trusted": "yes",
+            "x-real-ip": "34.77.234.246"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "searchEmail": "",
+            "createEmail": "",
+            "searchEvent": "What was the last event in my calendar?",
+            "createEvent": ""
+          },
+          "webhookUrl": "https://leonard-dev.app.n8n.cloud/webhook/get_outlook",
+          "executionMode": "production"
+        }
+      }
+    ],
+    "webhook1": [
+      {
+        "json": {
+          "headers": {
+            "host": "leonard-dev.app.n8n.cloud",
+            "user-agent": "ElevenLabs/1.0",
+            "content-length": "115",
+            "accept": "*/*",
+            "accept-encoding": "gzip, br",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "34.77.234.246",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "BE",
+            "cf-ray": "997d5b38f4f6acc1-CDG",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "x-forwarded-for": "34.77.234.246, 172.71.232.136",
+            "x-forwarded-host": "leonard-dev.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-52-6c4f4684d5-sbjk8",
+            "x-is-trusted": "yes",
+            "x-real-ip": "34.77.234.246"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "searchEmail": "",
+            "createEmail": "",
+            "searchEvent": "What was the last event in my calendar?",
+            "createEvent": ""
+          },
+          "webhookUrl": "https://leonard-dev.app.n8n.cloud/webhook/get_outlook",
+          "executionMode": "production"
+        }
+      }
+    ],
+    "Twilio sms received Trigger": [
+      {
+        "json": {
+          "specversion": "1.0",
+          "type": "com.twilio.messaging.inbound-message.received",
+          "source": "/2010-04-01/Accounts/REDACTED/Messages/SMa98b629cdf447e2b57f26e4a861d2c15.json",
+          "id": "EZ438c1ee0a105fdc1ce8cfd5a3e3e3138",
+          "dataschema": "https://events-schemas.twilio.com/Messaging.InboundMessageV1/6",
+          "datacontenttype": "application/json",
+          "time": "2026-01-22T21:06:22.755Z",
+          "data": {
+            "fromState": "",
+            "numMedia": 0,
+            "timestamp": "2026-01-22T21:06:22.755Z",
+            "fromCity": "",
+            "recipients": [],
+            "accountSid": "REDACTED",
+            "to": "+447426903220",
+            "toCountry": "GB",
+            "toState": "",
+            "fromCountry": "GB",
+            "numSegments": 1,
+            "messageSid": "SMa98b629cdf447e2b57f26e4a861d2c15",
+            "eventName": "com.twilio.messaging.inbound-message.received",
+            "body": "What is the last email I received?",
+            "toCity": "",
+            "from": "+447966543220"
+          }
+        }
+      }
+    ]
+  },
+  "triggerCount": 1,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

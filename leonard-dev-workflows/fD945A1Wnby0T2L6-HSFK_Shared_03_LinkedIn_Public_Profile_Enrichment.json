@@ -1,0 +1,305 @@
+{
+  "name": "HSFK - Shared 03 - LinkedIn Public Profile Enrichment",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## HSFK - Shared 03 - LinkedIn Public Profile Enrichment\n\n**Purpose:** Reusable sub-workflow. Fetch a LinkedIn public profile page and extract structured person data using the Vertex AI LLM (shared-04). Returns role, company, tenure, location, previous roles, education, and skills.\n\n**Inputs (from calling workflow via Execute Workflow node):**\n- `linkedin_url` (string) - Full public LinkedIn profile URL, e.g. `https://www.linkedin.com/in/john-smith/`\n- `person_name` (string) - Person's full name (used as fallback if LinkedIn blocks the request)\n\n**Output:**\n```json\n{\n  \"name\": \"string\",\n  \"current_role\": \"string\",\n  \"current_company\": \"string\",\n  \"location\": \"string\",\n  \"tenure_start\": \"string (YYYY-MM or approximate)\",\n  \"previous_roles\": [\n    { \"title\": \"string\", \"company\": \"string\", \"duration\": \"string\" }\n  ],\n  \"education\": [\n    { \"degree\": \"string\", \"institution\": \"string\", \"year\": \"string\" }\n  ],\n  \"skills\": [\"string\"],\n  \"linkedin_url\": \"string\",\n  \"data_source\": \"linkedin_scrape | fallback_name_only\",\n  \"scraped_at\": \"ISO 8601 string\",\n  \"status\": \"success | blocked | partial\"\n}\n```\n\n**Rate limiting:** LinkedIn blocks aggressive scrapers. This workflow adds a 2-second wait before each fetch. Callers should not invoke more than 10 profiles per minute.\n\n**Block handling:** If LinkedIn returns HTTP 999 or 403 (bot-detection block), the workflow returns partial data (name only) rather than failing. Set `data_source: \"fallback_name_only\"` and `status: \"blocked\"` in that case.\n\n**Credential required:** None (public scraping). No LinkedIn API key needed.\n\n**Sub-workflow called:** shared-04 (Vertex AI LLM Call) — workflow ID `AI3InmjY6gmJwdXg`\n\n**Used by:** UC 1.3 (Event Prep), UC 1.6 (Leadership Context Monitor)\n\n**n8n instance:** leonard-dev.app.n8n.cloud",
+        "height": 620,
+        "width": 500,
+        "color": 4
+      },
+      "id": "sticky-note-docs",
+      "name": "Documentation",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -540,
+        -200
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "trigger-execute-workflow",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Validate inputs and build HTTP request headers for LinkedIn scraping\nconst linkedinUrl = ($json.linkedin_url || '').trim();\nconst personName = ($json.person_name || '').trim();\n\n// Input validation\nif (!personName) {\n  throw new Error('person_name is required');\n}\n\n// Normalise LinkedIn URL - ensure it ends without trailing query strings that expose bot traffic\nlet normalisedUrl = linkedinUrl;\nif (normalisedUrl && !normalisedUrl.startsWith('https://')) {\n  normalisedUrl = 'https://' + normalisedUrl;\n}\n// Strip tracking query params but keep the path clean\nif (normalisedUrl) {\n  try {\n    const url = new URL(normalisedUrl);\n    // Keep only the pathname - LinkedIn public profile paths are sufficient\n    normalisedUrl = `https://www.linkedin.com${url.pathname}`;\n    // Ensure path ends with / for consistency\n    if (!normalisedUrl.endsWith('/')) {\n      normalisedUrl = normalisedUrl + '/';\n    }\n  } catch (e) {\n    // URL parse failed - use as-is\n  }\n}\n\n// Build realistic browser-style request headers to reduce bot detection probability\n// Using a modern Chrome/Windows UA is the most common real user fingerprint\nconst requestHeaders = {\n  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',\n  'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',\n  'Accept-Language': 'en-GB,en;q=0.9',\n  'Accept-Encoding': 'gzip, deflate, br',\n  'Cache-Control': 'no-cache',\n  'Pragma': 'no-cache',\n  'Sec-Ch-Ua': '\"Not A(Brand\";v=\"99\", \"Google Chrome\";v=\"121\", \"Chromium\";v=\"121\"',\n  'Sec-Ch-Ua-Mobile': '?0',\n  'Sec-Ch-Ua-Platform': '\"Windows\"',\n  'Sec-Fetch-Dest': 'document',\n  'Sec-Fetch-Mode': 'navigate',\n  'Sec-Fetch-Site': 'none',\n  'Sec-Fetch-User': '?1',\n  'Upgrade-Insecure-Requests': '1'\n};\n\nreturn {\n  json: {\n    linkedin_url: normalisedUrl,\n    person_name: personName,\n    has_linkedin_url: !!(normalisedUrl && normalisedUrl.includes('linkedin.com')),\n    request_headers: requestHeaders,\n    validated_at: new Date().toISOString()\n  }\n};"
+      },
+      "id": "validate-and-build-headers",
+      "name": "Validate Input & Build Headers",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $json.linkedin_url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "={{ $json.request_headers['User-Agent'] }}"
+            },
+            {
+              "name": "Accept",
+              "value": "={{ $json.request_headers['Accept'] }}"
+            },
+            {
+              "name": "Accept-Language",
+              "value": "={{ $json.request_headers['Accept-Language'] }}"
+            },
+            {
+              "name": "Sec-Fetch-Mode",
+              "value": "navigate"
+            },
+            {
+              "name": "Sec-Fetch-Dest",
+              "value": "document"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 15000,
+          "allowUnauthorizedCerts": false,
+          "redirect": {
+            "redirect": {
+              "followRedirects": true,
+              "maxRedirects": 3
+            }
+          },
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "responseFormat": "text"
+            }
+          },
+          "ignoreHttpStatusErrors": true
+        }
+      },
+      "id": "http-fetch-linkedin",
+      "name": "Fetch LinkedIn Profile",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        400,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "check-block-status",
+              "leftValue": "={{ $json.statusCode }}",
+              "rightValue": 200,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "check-linkedin-block",
+      "name": "Check for LinkedIn Block",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        640,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Clean LinkedIn HTML: strip scripts, styles, SVG, and extract meaningful text\n// LinkedIn renders most profile data in the page <script type=\"application/ld+json\"> block\n// and in visible HTML. We prioritise the JSON-LD structured data if present.\n\nconst validatedInput = $('Validate Input & Build Headers').first().json;\nconst httpResponse = $json;\n\nconst rawHtml = (typeof httpResponse.body === 'string') ? httpResponse.body : JSON.stringify(httpResponse.body || '');\n\n// Step 1: Try to extract JSON-LD structured data (most reliable)\nlet jsonLdData = null;\nconst jsonLdMatches = rawHtml.matchAll(/<script[^>]+type=[\"']application\\/ld\\+json[\"'][^>]*>([\\s\\S]*?)<\\/script>/gi);\nfor (const match of jsonLdMatches) {\n  try {\n    const parsed = JSON.parse(match[1].trim());\n    // LinkedIn Person schema uses @type: 'Person'\n    if (parsed['@type'] === 'Person' || (Array.isArray(parsed['@graph']) && parsed['@graph'].some(n => n['@type'] === 'Person'))) {\n      jsonLdData = parsed;\n      break;\n    }\n  } catch (e) {\n    // Not valid JSON, skip\n  }\n}\n\n// Step 2: Strip scripts, styles, SVGs, and comments from HTML for text extraction\nlet cleanedHtml = rawHtml\n  .replace(/<script[\\s\\S]*?<\\/script>/gi, ' ')\n  .replace(/<style[\\s\\S]*?<\\/style>/gi, ' ')\n  .replace(/<svg[\\s\\S]*?<\\/svg>/gi, ' ')\n  .replace(/<!--[\\s\\S]*?-->/g, ' ')\n  .replace(/<[^>]+>/g, ' ')         // Strip all remaining HTML tags\n  .replace(/&amp;/g, '&')\n  .replace(/&lt;/g, '<')\n  .replace(/&gt;/g, '>')\n  .replace(/&quot;/g, '\"')\n  .replace(/&#39;/g, \"'\")\n  .replace(/&nbsp;/g, ' ')\n  .replace(/\\s{2,}/g, ' ')          // Collapse multiple whitespace\n  .trim();\n\n// Limit to first 8000 characters to stay within LLM context budget\n// LinkedIn profiles above this length are typically repetitive nav/footer content\nconst truncatedText = cleanedHtml.substring(0, 8000);\n\nreturn {\n  json: {\n    person_name: validatedInput.person_name,\n    linkedin_url: validatedInput.linkedin_url,\n    json_ld_data: jsonLdData,\n    page_text: truncatedText,\n    has_json_ld: jsonLdData !== null,\n    page_length: rawHtml.length,\n    cleaned_at: new Date().toISOString()\n  }\n};"
+      },
+      "id": "clean-html-content",
+      "name": "Clean HTML Content",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": "AI3InmjY6gmJwdXg",
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "system_prompt": "You are a professional data extraction assistant for a law firm. Extract structured profile information from the LinkedIn page content provided. Return ONLY valid JSON with this exact schema:\n{\n  \"name\": \"Full name (string)\",\n  \"current_role\": \"Current job title (string)\",\n  \"current_company\": \"Current employer name (string)\",\n  \"location\": \"City and/or country (string)\",\n  \"tenure_start\": \"Start date of current role, format YYYY-MM if known, else approximate year (string)\",\n  \"previous_roles\": [\n    { \"title\": \"Job title\", \"company\": \"Company name\", \"duration\": \"e.g. 2018-2021 or 3 years\" }\n  ],\n  \"education\": [\n    { \"degree\": \"Degree name\", \"institution\": \"School name\", \"year\": \"Graduation year or range\" }\n  ],\n  \"skills\": [\"Skill 1\", \"Skill 2\"],\n  \"extraction_confidence\": \"high | medium | low\"\n}\nIf a field is not present in the source text, use null. For arrays, use an empty array [] if nothing found. Do not invent data.",
+            "user_prompt": "=Extract the LinkedIn profile data for {{ $json.person_name }}.\n\n{% if $json.has_json_ld %}JSON-LD structured data found on page:\n{{ JSON.stringify($json.json_ld_data).substring(0, 3000) }}\n\n{% endif %}Page text content:\n{{ $json.page_text }}",
+            "model": "gemini-2.5-flash",
+            "temperature": "0.1",
+            "response_format": "json",
+            "max_tokens": "2048"
+          }
+        }
+      },
+      "id": "llm-extract-profile",
+      "name": "LLM Extract Profile Data",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse LLM extraction output into canonical profile structure\nconst llmOutput = $json;\nconst cleanedData = $('Clean HTML Content').first().json;\n\nlet extractedProfile = null;\nlet extractionConfidence = 'low';\n\n// shared-04 returns { text, parsed_json, json_valid, model_used, ... }\nif (llmOutput.json_valid && llmOutput.parsed_json) {\n  extractedProfile = llmOutput.parsed_json;\n  extractionConfidence = extractedProfile.extraction_confidence || 'medium';\n} else {\n  // Fallback: try to parse the raw text if JSON validation failed\n  try {\n    const cleanText = (llmOutput.text || '')\n      .replace(/```json\\s*/gi, '')\n      .replace(/```/g, '')\n      .trim();\n    extractedProfile = JSON.parse(cleanText);\n    extractionConfidence = 'low'; // Reduced confidence since JSON validation failed\n  } catch (e) {\n    extractedProfile = null;\n  }\n}\n\n// Build canonical output - merge LLM extraction with what we already know\nconst canonicalProfile = {\n  name: (extractedProfile && extractedProfile.name) || cleanedData.person_name,\n  current_role: (extractedProfile && extractedProfile.current_role) || null,\n  current_company: (extractedProfile && extractedProfile.current_company) || null,\n  location: (extractedProfile && extractedProfile.location) || null,\n  tenure_start: (extractedProfile && extractedProfile.tenure_start) || null,\n  previous_roles: (extractedProfile && Array.isArray(extractedProfile.previous_roles))\n    ? extractedProfile.previous_roles\n    : [],\n  education: (extractedProfile && Array.isArray(extractedProfile.education))\n    ? extractedProfile.education\n    : [],\n  skills: (extractedProfile && Array.isArray(extractedProfile.skills))\n    ? extractedProfile.skills.slice(0, 20)  // Cap at 20 skills\n    : [],\n  linkedin_url: cleanedData.linkedin_url,\n  data_source: 'linkedin_scrape',\n  scraped_at: new Date().toISOString(),\n  status: extractedProfile ? 'success' : 'partial',\n  extraction_confidence: extractionConfidence,\n  llm_model: llmOutput.model_used || 'gemini-2.5-flash',\n  tokens_used: (llmOutput.input_tokens || 0) + (llmOutput.output_tokens || 0)\n};\n\nreturn { json: canonicalProfile };"
+      },
+      "id": "parse-llm-profile",
+      "name": "Parse LLM Profile Output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1360,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Final output formatting for the success path\n// Ensures a clean, consistent output contract for calling workflows\nconst profile = $json;\n\nreturn {\n  json: {\n    // Core identity\n    name: profile.name || null,\n    current_role: profile.current_role || null,\n    current_company: profile.current_company || null,\n    location: profile.location || null,\n\n    // Tenure at current role\n    tenure_start: profile.tenure_start || null,\n\n    // Career history\n    previous_roles: profile.previous_roles || [],\n\n    // Education and skills\n    education: profile.education || [],\n    skills: profile.skills || [],\n\n    // Provenance\n    linkedin_url: profile.linkedin_url || null,\n    data_source: profile.data_source || 'linkedin_scrape',\n    scraped_at: profile.scraped_at || new Date().toISOString(),\n\n    // Quality indicators\n    status: profile.status || 'success',\n    extraction_confidence: profile.extraction_confidence || 'medium',\n    llm_model: profile.llm_model || null,\n    tokens_used: profile.tokens_used || 0\n  }\n};"
+      },
+      "id": "format-output-success",
+      "name": "Format Output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1600,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Fallback handler: LinkedIn returned 999 (bot block) or 403 (forbidden)\n// Return partial data from the person_name input only.\n// Callers can still use the name for downstream processing.\n\nconst validatedInput = $('Validate Input & Build Headers').first().json;\nconst httpResponse = $json;\n\nconst statusCode = httpResponse.statusCode || 0;\n\nconsole.warn(`LinkedIn block detected for ${validatedInput.person_name}. HTTP status: ${statusCode}. URL: ${validatedInput.linkedin_url}`);\n\nreturn {\n  json: {\n    // Partial data - name only\n    name: validatedInput.person_name,\n    current_role: null,\n    current_company: null,\n    location: null,\n    tenure_start: null,\n    previous_roles: [],\n    education: [],\n    skills: [],\n\n    // Provenance\n    linkedin_url: validatedInput.linkedin_url,\n    data_source: 'fallback_name_only',\n    scraped_at: new Date().toISOString(),\n\n    // Quality indicators\n    status: 'blocked',\n    extraction_confidence: 'none',\n    block_status_code: statusCode,\n    llm_model: null,\n    tokens_used: 0\n  }\n};"
+      },
+      "id": "handle-block-fallback",
+      "name": "Handle Block Fallback",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        380
+      ]
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Validate Input & Build Headers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Input & Build Headers": {
+      "main": [
+        [
+          {
+            "node": "Fetch LinkedIn Profile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch LinkedIn Profile": {
+      "main": [
+        [
+          {
+            "node": "Check for LinkedIn Block",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check for LinkedIn Block": {
+      "main": [
+        [
+          {
+            "node": "Clean HTML Content",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Handle Block Fallback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean HTML Content": {
+      "main": [
+        [
+          {
+            "node": "LLM Extract Profile Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM Extract Profile Data": {
+      "main": [
+        [
+          {
+            "node": "Parse LLM Profile Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse LLM Profile Output": {
+      "main": [
+        [
+          {
+            "node": "Format Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 0,
+  "meta": null
+}

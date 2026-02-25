@@ -1,0 +1,540 @@
+{
+  "name": "HSFK UC 3.2a - Referral Capture (Webhook)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## HSFK UC 3.2a - Referral Capture (Webhook Path)\n\n**Trigger:** POST webhook at `/webhook/hsfk-referral-capture`\n\n**Purpose:** Capture referral requests from the ElevenLabs voice agent or any HTTP POST. Extracts structured referral data, creates Airtable records, schedules a follow-up reminder, and posts a Slack notification.\n\n**Flow:**\n1. Webhook receives POST with referral data\n2. Extract + validate structured referral fields\n3. Create record in `HSFK - Referral Tracker` (Airtable)\n4. Create follow-up record in `HSFK - Referral Follow-ups` (14 days from now)\n5. Post to Slack: 'New referral: connect [X] with [Y] re: [context]'\n6. Audit log via shared-05\n\n**Expected webhook payload (from voice agent):**\n```json\n{\n  \"referrer_name\": \"John Smith\",\n  \"referrer_email\": \"j.smith@hsfk.com\",\n  \"referred_person\": \"Alice Brown\",\n  \"referred_person_organisation\": \"Acme Corp\",\n  \"target_team_or_person\": \"IP Team\",\n  \"context\": \"IP dispute matter, needs specialist advice\",\n  \"urgency\": \"high|medium|low\",\n  \"source\": \"voice_agent\"\n}\n```\n\n**Companion workflow:** UC 3.2b handles follow-up reminders (schedule trigger).\n\n**Sub-workflow IDs:**\n- shared-05 (Airtable Audit): `zjwCkfCuH3GnW2qT`\n\n**Airtable base:** `app0QZAuhY8Zx4I54`\n- Referral Tracker: `tbl4J4x7MgiBCGQ4W`\n- Referral Follow-ups: `tblJvRUsuJdVFogJT`",
+        "height": 580,
+        "width": 500,
+        "color": 4
+      },
+      "id": "sticky-note-docs",
+      "name": "Documentation",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -540,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "hsfk-referral-capture",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook: POST /hsfk-referral-capture",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -80,
+        240
+      ],
+      "webhookId": "hsfk-referral-capture"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract and validate referral payload from webhook body\nconst startTime = Date.now();\nconst body = $json.body || $json;\n\n// Extract fields with sensible defaults\nconst referrerName = String(body.referrer_name || '').trim();\nconst referrerEmail = String(body.referrer_email || '').trim();\nconst referredPerson = String(body.referred_person || '').trim();\nconst referredPersonOrg = String(body.referred_person_organisation || '').trim();\nconst targetTeam = String(body.target_team_or_person || '').trim();\nconst context = String(body.context || '').trim();\nconst urgencyRaw = String(body.urgency || 'medium').trim().toLowerCase();\nconst urgency = ['high', 'medium', 'low'].includes(urgencyRaw) ? urgencyRaw : 'medium';\nconst source = String(body.source || 'webhook').trim();\n\n// Validate required fields\nconst validationErrors = [];\nif (!referrerName) validationErrors.push('referrer_name is required');\nif (!referredPerson) validationErrors.push('referred_person is required');\nif (!context) validationErrors.push('context is required');\n\nif (validationErrors.length > 0) {\n  throw new Error(`Validation failed: ${validationErrors.join(', ')}`);\n}\n\n// Calculate follow-up date: 14 days from now\nconst now = new Date();\nconst followUpDate = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);\n\nreturn {\n  json: {\n    start_time: startTime,\n    captured_at: now.toISOString(),\n    follow_up_date: followUpDate.toISOString().split('T')[0], // YYYY-MM-DD\n    referral: {\n      referrer_name: referrerName,\n      referrer_email: referrerEmail,\n      referred_person: referredPerson,\n      referred_person_organisation: referredPersonOrg,\n      target_team_or_person: targetTeam,\n      context: context,\n      urgency: urgency,\n      source: source,\n      status: 'open'\n    },\n    slack_message: `:handshake: *New Referral Captured*\\n\\n*Connect:* ${referredPerson}${referredPersonOrg ? ' (' + referredPersonOrg + ')' : ''} with *${targetTeam}*\\n*Re:* ${context}\\n*Referred by:* ${referrerName}${referrerEmail ? ' (' + referrerEmail + ')' : ''}\\n*Urgency:* ${urgency}\\n*Source:* ${source}\\n*Follow-up due:* ${followUpDate.toISOString().split('T')[0]}`\n  }\n};"
+      },
+      "id": "extract-referral-data",
+      "name": "Extract & Validate Referral",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "app0QZAuhY8Zx4I54"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tbl4J4x7MgiBCGQ4W"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Captured Date": "={{ $json.captured_at }}",
+            "Source": "={{ $json.referral.source }}",
+            "Referrer Name": "={{ $json.referral.referrer_name }}",
+            "Referrer Email": "={{ $json.referral.referrer_email }}",
+            "Referred Person": "={{ $json.referral.referred_person }}",
+            "Referred Person Organisation": "={{ $json.referral.referred_person_organisation }}",
+            "Target Team or Person": "={{ $json.referral.target_team_or_person }}",
+            "Context": "={{ $json.referral.context }}",
+            "Urgency": "={{ $json.referral.urgency }}",
+            "Status": "={{ $json.referral.status }}",
+            "Follow-up Date": "={{ $json.follow_up_date }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Captured Date",
+              "displayName": "Captured Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Source",
+              "displayName": "Source",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Referrer Name",
+              "displayName": "Referrer Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Referrer Email",
+              "displayName": "Referrer Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Referred Person",
+              "displayName": "Referred Person",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Referred Person Organisation",
+              "displayName": "Referred Person Organisation",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Target Team or Person",
+              "displayName": "Target Team or Person",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Context",
+              "displayName": "Context",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Urgency",
+              "displayName": "Urgency",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "high",
+                  "value": "high"
+                },
+                {
+                  "name": "medium",
+                  "value": "medium"
+                },
+                {
+                  "name": "low",
+                  "value": "low"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "open",
+                  "value": "open"
+                },
+                {
+                  "name": "in_progress",
+                  "value": "in_progress"
+                },
+                {
+                  "name": "completed",
+                  "value": "completed"
+                },
+                {
+                  "name": "cancelled",
+                  "value": "cancelled"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Follow-up Date",
+              "displayName": "Follow-up Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "create-referral-record",
+      "name": "Create Referral Tracker Record",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        400,
+        240
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "AIRTABLE_TOKEN_CRED",
+          "name": "Airtable - Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Capture the new referral record ID and pass it forward for follow-up creation\nconst airtableResponse = $json;\nconst extractData = $('Extract & Validate Referral').item.json;\n\nconst referralRecordId = airtableResponse.id;\n\nreturn {\n  json: {\n    referral_record_id: referralRecordId,\n    follow_up_date: extractData.follow_up_date,\n    captured_at: extractData.captured_at,\n    referral: extractData.referral,\n    slack_message: extractData.slack_message\n  }\n};"
+      },
+      "id": "capture-record-id",
+      "name": "Capture Referral Record ID",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        640,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "app0QZAuhY8Zx4I54"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tblJvRUsuJdVFogJT"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Reminder Date": "={{ $json.follow_up_date }}",
+            "Reminder Type": "initial_follow_up",
+            "Status at Time of Reminder": "open",
+            "Notes": "={{ 'Auto-created: connect ' + $json.referral.referred_person + ' with ' + $json.referral.target_team_or_person + ' re: ' + $json.referral.context }}",
+            "HSFK - Referral Tracker": "={{ [$json.referral_record_id] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Reminder Date",
+              "displayName": "Reminder Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Reminder Type",
+              "displayName": "Reminder Type",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status at Time of Reminder",
+              "displayName": "Status at Time of Reminder",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Notes",
+              "displayName": "Notes",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "HSFK - Referral Tracker",
+              "displayName": "HSFK - Referral Tracker",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "create-followup-record",
+      "name": "Create Follow-up Record (14 days)",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        880,
+        240
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "AIRTABLE_TOKEN_CRED",
+          "name": "Airtable - Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://slack.com/api/chat.postMessage",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({ channel: 'hsfk-referrals', text: $('Capture Referral Record ID').item.json.slack_message, unfurl_links: false }) }}",
+        "options": {
+          "timeout": 10000,
+          "response": {
+            "response": {
+              "fullResponse": false,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "slack-notify-new-referral",
+      "name": "Slack: Notify New Referral",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1120,
+        240
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "SLACK_BOT_CRED",
+          "name": "Slack Bot - Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ status: 'success', referral_id: $('Capture Referral Record ID').item.json.referral_record_id, message: 'Referral captured and follow-up scheduled', follow_up_date: $('Capture Referral Record ID').item.json.follow_up_date }) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "webhook-response",
+      "name": "Webhook Response: 200 OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1360,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "zjwCkfCuH3GnW2qT"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "workflow_name": "HSFK UC 3.2a - Referral Capture",
+            "use_case_id": "3.2a",
+            "trigger_type": "webhook",
+            "input_summary": "={{ 'Referral from ' + $('Capture Referral Record ID').item.json.referral.referrer_name + ': connect ' + $('Capture Referral Record ID').item.json.referral.referred_person + ' with ' + $('Capture Referral Record ID').item.json.referral.target_team_or_person }}",
+            "output_summary": "={{ 'Referral record created: ' + $('Capture Referral Record ID').item.json.referral_record_id + '. Follow-up scheduled: ' + $('Capture Referral Record ID').item.json.follow_up_date }}",
+            "status": "success",
+            "duration_ms": 0
+          }
+        },
+        "options": {}
+      },
+      "id": "audit-log",
+      "name": "Audit Log via Shared-05",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        1600,
+        240
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook: POST /hsfk-referral-capture": {
+      "main": [
+        [
+          {
+            "node": "Extract & Validate Referral",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract & Validate Referral": {
+      "main": [
+        [
+          {
+            "node": "Create Referral Tracker Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Referral Tracker Record": {
+      "main": [
+        [
+          {
+            "node": "Capture Referral Record ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Capture Referral Record ID": {
+      "main": [
+        [
+          {
+            "node": "Create Follow-up Record (14 days)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Follow-up Record (14 days)": {
+      "main": [
+        [
+          {
+            "node": "Slack: Notify New Referral",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack: Notify New Referral": {
+      "main": [
+        [
+          {
+            "node": "Webhook Response: 200 OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Response: 200 OK": {
+      "main": [
+        [
+          {
+            "node": "Audit Log via Shared-05",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 1,
+  "meta": null
+}

@@ -1,0 +1,2944 @@
+{
+  "name": "BACKUP - 241125 - Fladgate consolodate matter uploads - Andy",
+  "nodes": [
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "156090cc-9c17-4309-89eb-1171f9745d19",
+              "leftValue": "={{ $('Search existing matters').item.json.Attachments[0].id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -2944,
+        80
+      ],
+      "id": "f6405265-42ab-4760-8e24-3f93c13ac426",
+      "name": "If",
+      "alwaysOutputData": false,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appUvJyzSky12m4HA",
+          "mode": "list",
+          "cachedResultName": "Fladgate - Leonard Live Data",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl3ADT2yOV8EJCnZ",
+          "mode": "list",
+          "cachedResultName": "FG - Conversation History by lawyer",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA/tbl3ADT2yOV8EJCnZ"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Email": "={{ $('Search for new matter').item.json.Email }}",
+            "Transcript ID": "={{ $('Search for new matter').item.json.id }}",
+            "First Name": "={{ $('Search for new matter').item.json[\"First Name\"] }}",
+            "Last Name": "={{ $('Search for new matter').item.json[\"Last Name\"] }}",
+            "Number of Calls": 0,
+            "Call Length": "={{ $('Search for new matter').item.json[\"Call Length (s)\"] }}",
+            "Conversation History": "={{ $json.output }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Transcript ID",
+              "displayName": "Transcript ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Created",
+              "displayName": "Created",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Last Modified",
+              "displayName": "Last Modified",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Conversation History",
+              "displayName": "Conversation History",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Call Length",
+              "displayName": "Call Length",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Number of Calls",
+              "displayName": "Number of Calls",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -2720,
+        176
+      ],
+      "id": "9e2d63cc-cae9-4899-8d3d-5171b1f066b0",
+      "name": "Create new conv summary",
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        -2432,
+        208
+      ],
+      "id": "14add9f2-f202-4238-99d6-cb1630977847",
+      "name": "Google Vertex Chat Model3",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        -1584,
+        112
+      ],
+      "id": "485f7cd3-454e-429f-b814-3cb8b7c4924b",
+      "name": "Google Vertex Chat Model",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=New Matter Summary:{{ $('Set pre IF').item.json[\"New Matter Summary\"] }}\nNew Matter Extract: {{ $('Set pre IF').item.json[\"New Matter Extract\"] }}\nExisting Matter Summary: {{ $('Set pre IF').item.json[\"Existing Matter Summary\"] }}\nExisting Matter Extract: {{ $('Set pre IF').item.json[\"Existing Matter Extract\"] }}\nExisting Matter Lead Lawyer: {{ $('Set pre IF').item.json[\"Existing Matter Lead Lawyer\"] }}\nExisting Matter Client: {{ $('Set pre IF').item.json[\"Existing Matter Client\"] }}\nNew Matter Lead Lawyer: {{ $('Set pre IF').item.json[\"New Matter Lead Lawyer\"] }}\nNew Matter Client: {{ $('Set pre IF').item.json[\"New Matter Client\"] }}\nNew Matter Short Summary: {{ $('Set pre IF').item.json[\"New Matter Short Summary\"] }}\nExisting Matter Short Summary: {{ $('Set pre IF').item.json[\"Existing Matter Short Summary\"] }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You are an expert in extracting client names from a series of converations ({{ $('Matter history agent').item.json.output }}) ready to act as a knowledge base for a voice AI agent. \n\nThe aim is to ensure the knowledge base has a comprehensive list of all clients, firms and companies this lawyer has worked for or represented.\n\nThe output should be a very concise list of clients separated by commas in a single short text stream, ranked in a weighted order of relevance with the most relevant first."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -1648,
+        -112
+      ],
+      "id": "0bd61463-dc5c-4a47-9341-bf66ffacea89",
+      "name": "Client Extraction",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "value": "appUvJyzSky12m4HA",
+          "mode": "list",
+          "cachedResultName": "Fladgate - Leonard Live Data",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblFoqBZuazSwqy3m",
+          "mode": "list",
+          "cachedResultName": "FG - Conslodated Matter History by lawyer",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA/tblFoqBZuazSwqy3m"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Email": "={{ $('Search for new matter').item.json.Email }}",
+            "Clients": "={{ $json.output }}"
+          },
+          "matchingColumns": [
+            "Email"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Created",
+              "displayName": "Created",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Last Modified",
+              "displayName": "Last Modified",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Matter History",
+              "displayName": "Matter History",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Clients",
+              "displayName": "Clients",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Matters",
+              "displayName": "Matters",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -1296,
+        -112
+      ],
+      "id": "7cf9eb6d-e812-4b57-a023-1efba990da10",
+      "name": "Create new conv summary2",
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "value": "appUvJyzSky12m4HA",
+          "mode": "list",
+          "cachedResultName": "Fladgate - Leonard Live Data",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblFoqBZuazSwqy3m",
+          "mode": "list",
+          "cachedResultName": "FG - Conslodated Matter History by lawyer",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA/tblFoqBZuazSwqy3m"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Email": "={{ $('Search for new matter').item.json.Email }}",
+            "Matters": "={{ $json.output }}"
+          },
+          "matchingColumns": [
+            "Email"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Created",
+              "displayName": "Created",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Last Modified",
+              "displayName": "Last Modified",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Matter History",
+              "displayName": "Matter History",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Clients",
+              "displayName": "Clients",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Matters",
+              "displayName": "Matters",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -496,
+        -112
+      ],
+      "id": "30c2c126-50d7-484b-9136-53dfb3eea186",
+      "name": "Create new conv summary3",
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "May use an output parser",
+        "height": 400,
+        "width": 336
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1696,
+        -160
+      ],
+      "typeVersion": 1,
+      "id": "12e075e9-96c6-4fd2-9630-05ce0cc3722b",
+      "name": "Sticky Note",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Converation history: {{ $('Matter history agent').item.json.output }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You are an expert in extracting client names from a series of converations ({{ $('Matter history agent').item.json.output }}) ready to act as a knowledge base for a voice AI agent. \n\nThe aim is to ensure the knowledge base has a comprehensive list of all clients, firms and companies this lawyer has worked for or represented.\n\nThe output should be a very concise list of clients ranked in a weighted order of relevance with the most relevant first."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -2048,
+        416
+      ],
+      "id": "3810ddca-58a9-4e85-a64c-acf4e5c1aa27",
+      "name": "Client Extraction1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        -2096,
+        608
+      ],
+      "id": "1800c179-1c23-47d0-bb37-2e54450f94a3",
+      "name": "Google Vertex Chat Model4",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {
+          "numberOfItems": -1,
+          "separator": "\\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserItemList",
+      "typeVersion": 1,
+      "position": [
+        -1888,
+        624
+      ],
+      "id": "d1a227a7-2215-4981-b534-9ef1f774381e",
+      "name": "Item List Output Parser",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "value": "appUvJyzSky12m4HA",
+          "mode": "list",
+          "cachedResultName": "Fladgate - Leonard Live Data",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblFoqBZuazSwqy3m",
+          "mode": "list",
+          "cachedResultName": "FG - Conslodated Matter History by lawyer",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA/tblFoqBZuazSwqy3m"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Email": "={{ $('Set pre IF').item.json.Email }}",
+            "Last Name": "={{ $('Search for new matter').item.json[\"Last Name\"] }}",
+            "First Name": "={{ $('Search for new matter').item.json[\"First Name\"] }}",
+            "Matter History": "={{ $json.output }}"
+          },
+          "matchingColumns": [
+            "Email"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Created",
+              "displayName": "Created",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Last Modified",
+              "displayName": "Last Modified",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Matter History",
+              "displayName": "Matter History",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Clients",
+              "displayName": "Clients",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Matters",
+              "displayName": "Matters",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -2144,
+        -32
+      ],
+      "id": "a40168c1-c255-4e63-b392-d195110b1385",
+      "name": "Create new summary for new conv",
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "airtableTokenApi",
+        "baseId": {
+          "__rl": true,
+          "value": "https://airtable.com/appUvJyzSky12m4HA/tblje0fc5drcChsFR/viwSNFkNswHK2MyyR?blocks=hide",
+          "mode": "url"
+        },
+        "tableId": {
+          "__rl": true,
+          "value": "https://airtable.com/appUvJyzSky12m4HA/tblje0fc5drcChsFR/viwSNFkNswHK2MyyR?blocks=hide",
+          "mode": "url"
+        },
+        "triggerField": "Created time",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.airtableTrigger",
+      "typeVersion": 1,
+      "position": [
+        -4224,
+        80
+      ],
+      "id": "c2b9c9bd-4ddd-4adc-9e59-52e5b92efe9d",
+      "name": "On New FG Matter Upload",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "base": {
+          "__rl": true,
+          "value": "https://airtable.com/appUvJyzSky12m4HA/tbl9NJsjg5hJRqpPx/viwImoxUDoxhhVvIx?blocks=hide",
+          "mode": "url"
+        },
+        "table": {
+          "__rl": true,
+          "value": "https://airtable.com/appUvJyzSky12m4HA/tbl9NJsjg5hJRqpPx/viwImoxUDoxhhVvIx?blocks=hide",
+          "mode": "url"
+        },
+        "id": "={{ $json.id }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -4032,
+        80
+      ],
+      "id": "8bf42432-f5c3-4346-901b-49eaad9d21d5",
+      "name": "Get new matter",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appUvJyzSky12m4HA",
+          "mode": "list",
+          "cachedResultName": "Fladgate - Leonard Live Data",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblje0fc5drcChsFR",
+          "mode": "list",
+          "cachedResultName": "FG_Uploaded_matter_log",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA/tblje0fc5drcChsFR"
+        },
+        "filterByFormula": "={Email}='{{ $json.Email }}'",
+        "returnAll": false,
+        "limit": 1,
+        "options": {
+          "fields": [
+            "Email",
+            "Full Name",
+            "First Name",
+            "Date Last Updated",
+            "Last Name"
+          ]
+        },
+        "sort": {
+          "property": [
+            {
+              "field": "Date Last Updated"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -3616,
+        80
+      ],
+      "id": "fe7af0e6-a3fc-432a-b32a-faf63b84a65b",
+      "name": "Search for new matter",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      },
+      "disabled": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appUvJyzSky12m4HA",
+          "mode": "list",
+          "cachedResultName": "Fladgate - Leonard Live Data",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblje0fc5drcChsFR",
+          "mode": "list",
+          "cachedResultName": "FG_Uploaded_matter_log",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA/tblje0fc5drcChsFR"
+        },
+        "filterByFormula": "={Email}='{{ $json.Email }}'",
+        "returnAll": false,
+        "limit": 1,
+        "options": {},
+        "sort": {
+          "property": [
+            {
+              "field": "Email"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -3392,
+        80
+      ],
+      "id": "6798c913-a8c4-4bd7-9828-978fd9a2ddfe",
+      "name": "Search existing matters",
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      },
+      "disabled": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=New Matter Summary:{{ $('Set pre IF').item.json[\"New Matter Summary\"] }}\nNew Matter Extract: {{ $('Set pre IF').item.json[\"New Matter Extract\"] }}\nExisting Matter Summary: {{ $('Set pre IF').item.json[\"Existing Matter Summary\"] }}\nExisting Matter Extract: {{ $('Set pre IF').item.json[\"Existing Matter Extract\"] }}\nExisting Matter Lead Lawyer: {{ $('Set pre IF').item.json[\"Existing Matter Lead Lawyer\"] }}\nExisting Matter Client: {{ $('Set pre IF').item.json[\"Existing Matter Client\"] }}\nNew Matter Lead Lawyer: {{ $('Set pre IF').item.json[\"New Matter Lead Lawyer\"] }}\nNew Matter Client: {{ $('Set pre IF').item.json[\"New Matter Client\"] }}\nNew Matter Short Summary: {{ $('Set pre IF').item.json[\"New Matter Short Summary\"] }}\nExisting Matter Short Summary: {{ $('Set pre IF').item.json[\"Existing Matter Short Summary\"] }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You are an expert in taking a series of summaries and facts about a legal metter and consolidating them into a single output which ia consolidated version ready to act as a knowledge base for a voice AI agent. \n\nYou should make sure to use as much detail as possible from each conversation. You should keep all structure and output in a way that ensures matters are not mixed or confused if later used by an LLM.\n\nMake sure that the new and existing matters are kept structually separate to ensure the facts are not confused between matters. \n\nKeep the total output to a digestible size for an LLM to avoid excess latency. The content will be machine only readable so make it the most effective and accurate source of information charecter for character. "
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -2496,
+        -32
+      ],
+      "id": "7613f503-88cb-4500-afb9-f422d2b6341d",
+      "name": "Matter history agent",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        -784,
+        112
+      ],
+      "id": "013a1206-5ef0-4594-a4b3-a075abd944f2",
+      "name": "Google Vertex Chat Model2",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=New Matter Summary:{{ $('Set pre IF').item.json[\"New Matter Summary\"] }}\nNew Matter Extract: {{ $('Set pre IF').item.json[\"New Matter Extract\"] }}\nExisting Matter Summary: {{ $('Set pre IF').item.json[\"Existing Matter Summary\"] }}\nExisting Matter Extract: {{ $('Set pre IF').item.json[\"Existing Matter Extract\"] }}\nExisting Matter Lead Lawyer: {{ $('Set pre IF').item.json[\"Existing Matter Lead Lawyer\"] }}\nExisting Matter Client: {{ $('Set pre IF').item.json[\"Existing Matter Client\"] }}\nNew Matter Lead Lawyer: {{ $('Set pre IF').item.json[\"New Matter Lead Lawyer\"] }}\nNew Matter Client: {{ $('Set pre IF').item.json[\"New Matter Client\"] }}\nNew Matter Short Summary: {{ $('Set pre IF').item.json[\"New Matter Short Summary\"] }}\nExisting Matter Short Summary: {{ $('Set pre IF').item.json[\"Existing Matter Short Summary\"] }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You are an expert in extracting short and concise matter summaries from a lawyer's converation history ({{ $('Matter history agent').item.json.output }}) ready to act as a knowledge base for a voice AI agent. \n\nThe aim is to ensure the knowledge base has a comprehensive list of all matters this lawyer has worked on, with a maximum 50 words per matter. Each matter summary should include the name of the client and a brief decription of the matter.\n\nThe output should be a very concise list of matters separated by commas in a single short text stream, ranked in a weighted order of relevance with the most relevant first."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -848,
+        -112
+      ],
+      "id": "459b1194-6fc1-4a92-af99-be97096df1b9",
+      "name": "Matter Extraction",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "value": "appUvJyzSky12m4HA",
+          "mode": "list",
+          "cachedResultName": "Fladgate - Leonard Live Data",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl3ADT2yOV8EJCnZ",
+          "mode": "list",
+          "cachedResultName": "FG - Conversation History by lawyer",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA/tbl3ADT2yOV8EJCnZ"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Email": "={{ $json.fields.Email }}",
+            "Previous Submissions": "={{ $json.fields[\"Matter History\"] }}"
+          },
+          "matchingColumns": [
+            "Email"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Transcript ID",
+              "displayName": "Transcript ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Created",
+              "displayName": "Created",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Last Modified",
+              "displayName": "Last Modified",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Call Length",
+              "displayName": "Call Length",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Number of Calls",
+              "displayName": "Number of Calls",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Number of Matters Uploaded",
+              "displayName": "Number of Matters Uploaded",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Conversation History",
+              "displayName": "Conversation History",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Clients",
+              "displayName": "Clients",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Matters",
+              "displayName": "Matters",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Matters from prior conversations",
+              "displayName": "Matters from prior conversations",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Prior Conversation History",
+              "displayName": "Prior Conversation History",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Clients from prior conversations",
+              "displayName": "Clients from prior conversations",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Previous Matters",
+              "displayName": "Previous Matters",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Previous Clients",
+              "displayName": "Previous Clients",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Previous Submissions",
+              "displayName": "Previous Submissions",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -1872,
+        -112
+      ],
+      "id": "8ab341ac-0de4-4607-82ba-386d51f1c581",
+      "name": "Upload Matter History",
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "value": "appUvJyzSky12m4HA",
+          "mode": "list",
+          "cachedResultName": "Fladgate - Leonard Live Data",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl3ADT2yOV8EJCnZ",
+          "mode": "list",
+          "cachedResultName": "FG - Conversation History by lawyer",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA/tbl3ADT2yOV8EJCnZ"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Email": "={{ $json.fields.Email }}",
+            "Previous Clients": "={{ $json.fields.Clients }}"
+          },
+          "matchingColumns": [
+            "Email"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Transcript ID",
+              "displayName": "Transcript ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Created",
+              "displayName": "Created",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Last Modified",
+              "displayName": "Last Modified",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Conversation History",
+              "displayName": "Conversation History",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Call Length",
+              "displayName": "Call Length",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Number of Calls",
+              "displayName": "Number of Calls",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Clients",
+              "displayName": "Clients",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Matters",
+              "displayName": "Matters",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Previous Matters",
+              "displayName": "Previous Matters",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Previous Clients",
+              "displayName": "Previous Clients",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Previous Submissions",
+              "displayName": "Previous Submissions",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -1072,
+        -112
+      ],
+      "id": "fa580c0f-4eb3-4e27-af11-a777d8b887f4",
+      "name": "Upload Previous Clients",
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "value": "appUvJyzSky12m4HA",
+          "mode": "list",
+          "cachedResultName": "Fladgate - Leonard Live Data",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl3ADT2yOV8EJCnZ",
+          "mode": "list",
+          "cachedResultName": "FG - Conversation History by lawyer",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA/tbl3ADT2yOV8EJCnZ"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Email": "={{ $json.fields.Email }}",
+            "Previous Matters": "={{ $json.fields.Matters }}"
+          },
+          "matchingColumns": [
+            "Email"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Transcript ID",
+              "displayName": "Transcript ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Created",
+              "displayName": "Created",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Last Modified",
+              "displayName": "Last Modified",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Conversation History",
+              "displayName": "Conversation History",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Call Length",
+              "displayName": "Call Length",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Number of Calls",
+              "displayName": "Number of Calls",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Clients",
+              "displayName": "Clients",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Matters",
+              "displayName": "Matters",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Previous Matters",
+              "displayName": "Previous Matters",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Previous Clients",
+              "displayName": "Previous Clients",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Previous Submissions",
+              "displayName": "Previous Submissions",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -272,
+        -112
+      ],
+      "id": "e8043ef2-7a69-4ce1-b915-1257d392aebe",
+      "name": "Upload Previous Clients1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "Testing Output Parser",
+        "height": 544,
+        "width": 528
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2240,
+        320
+      ],
+      "typeVersion": 1,
+      "id": "20eca807-890b-42d7-b975-7e51bffbab8d",
+      "name": "Sticky Note1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f6051f2f-8330-4e41-84b0-26762da5732e",
+              "leftValue": "={{ $json[\"Extracted Data\"].value }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "ffef5e9f-49fe-4f45-b997-46cb2751b650",
+              "leftValue": "={{ $json[\"Extract 1\"].value }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "f5f94871-cdde-4311-bbf8-9aca0c934c29",
+              "leftValue": "={{ $json[\"Client Name\"].value }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -3856,
+        80
+      ],
+      "id": "80ee0d58-1502-4d45-839e-7ef46d19e058",
+      "name": "If1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "amount": 20
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -3840,
+        272
+      ],
+      "id": "165eb1ef-255b-4a10-8d9b-2e508a9fb511",
+      "name": "Wait",
+      "webhookId": "1bcee640-1e19-486e-bb1e-1290b9c7951e",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2b0483ab-79c3-42f3-9fe0-e96e8e0e1a3f",
+              "name": "fields[\"First Name\"]",
+              "value": "={{ $('Set pre IF').item.json.fields[\"First Name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "68e5fd4d-e927-41b8-b991-877a30a82c2e",
+              "name": "fields[\"Last Name\"]",
+              "value": "={{ $('Set pre IF').item.json.fields[\"Last Name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "0614cd2c-de73-457d-9cee-f93d703c02d1",
+              "name": "fields.Email",
+              "value": "={{ $('Set pre IF').item.json.fields.Email }}",
+              "type": "string"
+            },
+            {
+              "id": "cff3134e-a498-4675-8346-0643388f2776",
+              "name": "\"Extracted Data\"].valu",
+              "value": "={{ $('Search existing matters').item.json[\"Extracted Data\"].value }}",
+              "type": "string"
+            },
+            {
+              "id": "b7ebaf78-b077-46d0-85a6-5cc0d879a81e",
+              "name": "\"Matter Summary\"].valu",
+              "value": "={{ $('Search existing matters').item.json[\"Matter Summary\"].value }}",
+              "type": "string"
+            },
+            {
+              "id": "a4650156-424d-4a79-9d1d-b363f466585b",
+              "name": "\"Client Name\"].valu",
+              "value": "={{ $('Search existing matters').item.json[\"Client Name\"].value }}",
+              "type": "string"
+            },
+            {
+              "id": "9d204167-51a7-4415-a0ce-26ba2b77b980",
+              "name": "\"Lead Lawyer\"].valu",
+              "value": "={{ $('Search existing matters').item.json[\"Lead Lawyer\"].value }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -2736,
+        -288
+      ],
+      "id": "276d17e5-df29-4bf9-a3eb-a2df1b66ee96",
+      "name": "Edit Fields3",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "Need to build logic for single new matter vs consolodating lots of existing"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2624,
+        -224
+      ],
+      "typeVersion": 1,
+      "id": "90964abf-9bff-48ff-9490-7f7d51e6a1ad",
+      "name": "Sticky Note2",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fac072bc-3a1b-4c03-80e4-d068b36ec5c2",
+              "name": "Email",
+              "value": "={{ $('Search for new matter').item.json.Email }}",
+              "type": "string"
+            },
+            {
+              "id": "abeb6ada-a847-4ccb-b987-37e4ae4877ea",
+              "name": "First Name",
+              "value": "={{ $('Search for new matter').item.json[\"First Name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "7b3e5846-8258-41ed-97c3-bd46740e71a2",
+              "name": "Last Name",
+              "value": "={{ $('Search for new matter').item.json[\"Last Name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "17ee2a3f-b44a-408f-8e86-be4f921d1d68",
+              "name": "New Matter Summary",
+              "value": "={{ $('Get new matter').item.json[\"Extracted Data\"].value }}",
+              "type": "string"
+            },
+            {
+              "id": "9c70d49d-7ecc-4688-9482-00eddd0a5b85",
+              "name": "New Matter Extract",
+              "value": "={{ $('Get new matter').item.json[\"Extract 1\"].value }}",
+              "type": "string"
+            },
+            {
+              "id": "36a94abc-4d85-4e5f-aebf-05ea0eac73f4",
+              "name": "Existing Matter Summary",
+              "value": "={{ $json[\"Extracted Data\"].value }}",
+              "type": "string"
+            },
+            {
+              "id": "ba245cec-5921-46f4-93e0-78c68afe68ba",
+              "name": "Existing Matter Extract",
+              "value": "={{ $json[\"Extract 1\"].value }}",
+              "type": "string"
+            },
+            {
+              "id": "141ec9ff-3aae-44d8-ae96-ffcb127680b3",
+              "name": "Existing Matter Lead Lawyer",
+              "value": "={{ $json[\"Lead Lawyer\"].value }}",
+              "type": "string"
+            },
+            {
+              "id": "40e11599-fab6-4c51-a17c-1703bf605b6f",
+              "name": "Existing Matter Client",
+              "value": "={{ $json[\"Client Name\"].value }}",
+              "type": "string"
+            },
+            {
+              "id": "a540a5c5-fc21-401a-a9bb-1e9598d8730c",
+              "name": "Existing Matter Short Summary",
+              "value": "={{ $json[\"Matter Summary\"].value }}",
+              "type": "string"
+            },
+            {
+              "id": "26a6d12b-999e-4ef4-9199-845cce45e082",
+              "name": "New Matter Lead Lawyer",
+              "value": "={{ $('Get new matter').item.json[\"Lead Lawyer\"].value }}",
+              "type": "string"
+            },
+            {
+              "id": "3e242243-d2d2-4d3c-b024-12f4867b6c64",
+              "name": "New Matter Short Summary",
+              "value": "={{ $('Get new matter').item.json[\"Client Name\"].value }}",
+              "type": "string"
+            },
+            {
+              "id": "8f7d2ea3-0755-4ba4-8fce-3108d9d1e65c",
+              "name": "New Matter Client",
+              "value": "={{ $('Get new matter').item.json[\"Client Name\"].value }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3168,
+        80
+      ],
+      "id": "b61ae155-b8e3-404a-943c-866e5afc489e",
+      "name": "Set pre IF",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "1cae44cb-3d7e-41ec-a0ef-4106a6f46f3f",
+              "leftValue": "={{ $json.Email }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -3392,
+        -128
+      ],
+      "id": "8ce4aee3-c8a2-4d84-9689-4b3d823cf981",
+      "name": "If2",
+      "alwaysOutputData": true,
+      "disabled": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appUvJyzSky12m4HA",
+          "mode": "list",
+          "cachedResultName": "Fladgate - Leonard Live Data",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl3ADT2yOV8EJCnZ",
+          "mode": "list",
+          "cachedResultName": "FG - Conversation History by lawyer",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA/tbl3ADT2yOV8EJCnZ"
+        },
+        "filterByFormula": "={Email}='{{ $json.Email }}'",
+        "returnAll": false,
+        "limit": 1,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -3600,
+        -128
+      ],
+      "id": "21e93a41-6870-4b78-8d85-d78dd39b0647",
+      "name": "Does user exist?",
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      },
+      "disabled": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "value": "appUvJyzSky12m4HA",
+          "mode": "list",
+          "cachedResultName": "Fladgate - Leonard Live Data",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl3ADT2yOV8EJCnZ",
+          "mode": "list",
+          "cachedResultName": "FG - Conversation History by lawyer",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA/tbl3ADT2yOV8EJCnZ"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Email": "={{ $('Get new matter').item.json.Email }}",
+            "Number of Matters Uploaded": 1,
+            "Matters from prior conversations": ".",
+            "Prior Conversation History": ".",
+            "Clients from prior conversations": ".",
+            "Previous Matters": ".",
+            "Previous Clients": ".",
+            "Previous Submissions": ".",
+            "Last Name": "={{ $('Get new matter').item.json[\"Last Name\"] }}",
+            "First Name": "={{ $('Get new matter').item.json[\"First Name\"] }}"
+          },
+          "matchingColumns": [
+            "Email"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Transcript ID",
+              "displayName": "Transcript ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Created",
+              "displayName": "Created",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Last Modified",
+              "displayName": "Last Modified",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Call Length",
+              "displayName": "Call Length",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Number of Calls",
+              "displayName": "Number of Calls",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Number of Matters Uploaded",
+              "displayName": "Number of Matters Uploaded",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Conversation History",
+              "displayName": "Conversation History",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Clients",
+              "displayName": "Clients",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Matters",
+              "displayName": "Matters",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Matters from prior conversations",
+              "displayName": "Matters from prior conversations",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Prior Conversation History",
+              "displayName": "Prior Conversation History",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Clients from prior conversations",
+              "displayName": "Clients from prior conversations",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Previous Matters",
+              "displayName": "Previous Matters",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Previous Clients",
+              "displayName": "Previous Clients",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Previous Submissions",
+              "displayName": "Previous Submissions",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -3136,
+        -112
+      ],
+      "id": "11ae20a9-8718-4db9-82be-92df00722dbe",
+      "name": "Upload Matter History1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "Need to pull in more than just the last matter, ie pull in numerous.",
+        "height": 576
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -3216,
+        -352
+      ],
+      "typeVersion": 1,
+      "id": "6e8127f5-9625-4d52-bcff-ec75822c2970",
+      "name": "Sticky Note3",
+      "disabled": true
+    }
+  ],
+  "connections": {
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Matter history agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create new conv summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Matter history agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Client Extraction",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Client Extraction": {
+      "main": [
+        [
+          {
+            "node": "Create new conv summary2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create new conv summary2": {
+      "main": [
+        [
+          {
+            "node": "Upload Previous Clients",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Client Extraction1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Item List Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Client Extraction1",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create new summary for new conv": {
+      "main": [
+        [
+          {
+            "node": "Upload Matter History",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On New FG Matter Upload": {
+      "main": [
+        [
+          {
+            "node": "Get new matter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get new matter": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search for new matter": {
+      "main": [
+        [
+          {
+            "node": "Search existing matters",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search existing matters": {
+      "main": [
+        [
+          {
+            "node": "Set pre IF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Matter history agent": {
+      "main": [
+        [
+          {
+            "node": "Create new summary for new conv",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Matter Extraction",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Matter Extraction": {
+      "main": [
+        [
+          {
+            "node": "Create new conv summary3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Matter History": {
+      "main": [
+        [
+          {
+            "node": "Client Extraction",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Previous Clients": {
+      "main": [
+        [
+          {
+            "node": "Matter Extraction",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create new conv summary3": {
+      "main": [
+        [
+          {
+            "node": "Upload Previous Clients1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Search for new matter",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Does user exist?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Get new matter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set pre IF": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Does user exist?": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Upload Matter History1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "any",
+    "executionTimeout": 300,
+    "availableInMCP": false,
+    "errorWorkflow": "nSr5syzpgcboR5Da"
+  },
+  "staticData": {
+    "node:On New FG Conversation": {
+      "lastTimeChecked": "2025-11-14T19:43:21Z"
+    },
+    "node:On New FG Matter Upload": {
+      "lastTimeChecked": "2025-11-24T19:25:02Z"
+    }
+  },
+  "pinData": {
+    "Get new matter": [
+      {
+        "json": {
+          "id": "recGnzzY10UxOyqHK",
+          "createdTime": "2025-11-22T14:01:08.000Z",
+          "Full Name": "Lara Howie",
+          "Last Name": "Howie",
+          "First Name": "Lara",
+          "Email": "lara@legalengine.co.uk",
+          "Date Last Updated": "2025-11-22T14:04:54.000Z",
+          "Date Modified by": {
+            "id": "usrAISERVICE00000",
+            "email": "aiassist@noreply.airtable.com",
+            "name": "AI"
+          },
+          "Created by": {
+            "id": "usrPAGESHARE00000",
+            "email": "anonymous+formpage@noreply.airtable.com",
+            "name": "Anonymous"
+          },
+          "Created time": "2025-11-22T14:01:08.000Z",
+          "MD - Is Confidential": {
+            "state": "error",
+            "errorType": "emptyDependency",
+            "value": null,
+            "isStale": false
+          },
+          "Last Modified": "2025-11-22T14:04:54.000Z",
+          "Attachments": [
+            {
+              "id": "attyIsIG3EKnAG87e",
+              "url": "https://v5.airtableusercontent.com/v3/e/47/47/1763834400000/QgZ8nhj6U32qmqVZkG6zDA/9bgjsnQ8pURGGkwgFIKw-T09NbM3GRNMsEaQFAyrWk_lpLaUnJhR3_7wkgj6YQXWSJY1kknLmcdMDcYe56yJcTnqqcBSwv9aLpaVyspnRIjgc5IPC8toxQR6XjLTWddXaGysYRNZJoGaCAdl3RfXQUZs1cD7A88gerWfyCYlV3E0DW4G_Kc96egO94kUf-RXrFiJLyD20_Rx3cQ-ue3AOF0VXkH7kNzz5sYPl8Ft_MA/h7tzUQ0mZyD7eXzWHqoWxbclrmg8M921NGXAiWuYNoM",
+              "filename": "FINAL Fladgate Family-Matrimonial Finance 2027 - Hetty Leonard M_520686_18.docx",
+              "size": 70948,
+              "type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+              "thumbnails": {
+                "small": {
+                  "url": "https://v5.airtableusercontent.com/v3/e/47/47/1763834400000/gCgMxc3malRld1vqH-yabw/D-G0tWi_D4tg3iGAkKiYTFD-D4FfnvROfOx5fi87crOoMD19Io4IQkjlYI2Yn6ae_fpFAsOn50U80flJ4tDDw_8X_6vApdy0_fNu4Sfp_vi62Kv1O5S0w5OBKEFgcYziLRQ33i4jZTdHEA2fOCxMnw/3qBDz-JBmoktr7VBQKHFaQv9VnhwOzVteEiYfZw2zhU",
+                  "width": 25,
+                  "height": 35
+                },
+                "large": {
+                  "url": "https://v5.airtableusercontent.com/v3/e/47/47/1763834400000/68BwkO2xuyKL6ahr0Qf8SA/niLMsOb5yenFSLPRZgy_PGN3JLkFHUL1QzfNV9kcrzM4EGxIGhVpRTfEml4LfIOqImtAyKTIR6RPFTlZFl1EqqypoKRGCKkgd-IRdmv1N0HntZoRkwYsOWU3iGlPjcG52PI_FlvNM1iOQlvrufkb8A/9zLpX8hcCkAiEE0qgicDW8tmkkQnumx2wpI0CRNBhVA",
+                  "width": 512,
+                  "height": 724
+                }
+              }
+            }
+          ],
+          "Summary (Attachments)": {
+            "state": "empty",
+            "value": null,
+            "isStale": true
+          },
+          "Title (Attachments)": {
+            "state": "empty",
+            "value": null,
+            "isStale": true
+          },
+          "Extracted Data": {
+            "state": "generated",
+            "value": "- Reference: PAM007\n- Matter title: Confidential Matter 18\n- E1 Client (for ranking): The founder of a globally recognised IT storage software company\n- E2 Summary and department role:\n  - Representation: Advising the founder on divorce and a consequential financial settlement; French domicile, long-term London residence, three children; post-sale investments in funds and startups; now on the board of another tech company\n  - Asset base: Properties include multiple in France, one in London, one in Ibiza; investment portfolios offshore and in the US; total assets circa £44–50m\n  - Key issues:\n    1) Identifying matrimonial vs non-matrimonial assets (incl. post-separation)\n    2) Potential carried interest in a UK private equity fund\n    3) Valuations of properties and private companies in the UK and abroad\n    4) Taxation of properties and private companies in the UK and abroad\n  - Disclosure approach: Extensive voluntary disclosure due to most assets in client’s sole name/beneficial interests; example: property owned via a Maltese company with client as sole shareholder\n  - Cross-jurisdictional coordination: Worked with UK accountants Blick Rothenberg and French firm Circuit Avocats to ensure accuracy of disclosure\n  - Objectives and settlement stance: Maintain good relationship with wife and avoid court publicity; client is a self-starter with no inherited wealth, intends to provide wife with 50% of everything with provision for children; settlement discussions imminent\n- E3 Matter value: Approximately £50 million\n- E4 Cross-border jurisdictions: UK, France, Ibiza, US, and offshore\n- E5 Lead lawyer: Hetty Gleave (Partner)\n- E6 Other team members: Rebecca Christie (Senior Associate)\n- E7 Other firms/advisers: William Healing (Partner) and Océane Hamayon Lesné (Foreign Qualified Lawyer), AFP Bloom (Band 4, UHNW firms)\n- E8 Status: Ongoing\n- E9 Other information: Not provided",
+            "isStale": false
+          },
+          "Matter Summary": {
+            "state": "generated",
+            "value": "Representing IT storage founder in cross-border divorce: £50m assets, voluntary disclosure, valuations, carried interest, tax.",
+            "isStale": false
+          },
+          "Client Name": {
+            "state": "generated",
+            "value": "The client is described as \"the founder of a globally recognised IT storage software company.\"",
+            "isStale": false
+          },
+          "Lead Lawyer": {
+            "state": "generated",
+            "value": "Hetty Gleave",
+            "isStale": false
+          },
+          "Multiple Matters": {
+            "state": "generated",
+            "value": "No. It contains a single matter: only one E1 and a continuous E1–E9 run with no duplicate D1/E1 sections.",
+            "isStale": false
+          },
+          "How Many Matters?": {
+            "state": "generated",
+            "value": "1",
+            "isStale": false
+          },
+          "Extract 1": {
+            "state": "generated",
+            "value": "# Confidential Matter 18 (Ref: PAM007)\n\n## Analysis\nUHNW cross-border divorce/financial settlement involving approximately £44–50m in assets, focusing on distinguishing matrimonial vs non-matrimonial (including post-separation) assets, potential carried interest, complex multi-jurisdiction valuations, and tax. The client seeks a private, cooperative settlement; extensive voluntary disclosure has been coordinated with UK and French advisers; settlement discussions are imminent; matter ongoing.\n\n## E1. Name of client (for ranking purposes only)\nThe founder of a globally recognised IT storage software company.\n\n## E2. Summary of matter and department’s role\nFladgate has been advising the founder of a globally recognised company specialising in IT storage software on divorce and the consequential financial settlement. He is domiciled in France but has lived in London for many years where his three children were born. Following the sale of his company, he invested in various funds and startups and is now on the Board of another tech company. The parties own several properties around the world, including multiple properties in France, one in London, and one in Ibiza, and our client has investment portfolios offshore and in the US. In total, his assets are in the region of £44–50 million. Issues include:\n- Identifying matrimonial and non‑matrimonial assets, in particular post‑separation assets.\n- Potential carried interest in a private equity fund based in the UK.\n- Valuations of properties and private companies in the UK and abroad.\n- Taxation of properties and private companies in the UK and abroad.\n\nOur client's overriding aim is to maintain a good working relationship with his wife (W) for the sake of his children and to avoid the publicity of the court process. Extensive financial disclosure was necessary as the majority of the assets were in his sole name or held by companies in which he has a beneficial interest. For example, one of the properties is owned by a Maltese company in which he is the only shareholder. This has all been undertaken by our client on a voluntary basis.\n\nDisclosure was complicated due to the number of properties and business interests in other jurisdictions. This required us working closely with our client's accountants in the UK, Blick Rothenberg, and in France, Circuit Avocats, to ensure all the disclosure was accurate.\n\nOur client is a self‑starter, with no inherited wealth, who wishes to provide W with 50% of everything he owns, building in provision for their children. We are at the stage where we are about to head into settlement discussions.\n\n## E3. Matter value\nApproximately £50 million.\n\n## E4. Cross‑border?\nUK, France, Ibiza, US, and offshore.\n\n## E5. Lead lawyer\nHetty Gleave (Partner).\n\n## E6. Other team members\nRebecca Christie (Senior Associate).\n\n## E7. Other firms advising and roles\nWilliam Healing (Partner) and Océane Hamayon Lesné (Foreign Qualified Lawyer), AFP Bloom (Band 4, UHNW firms).\n\n## E8. Date of completion / current status\nOngoing.\n\n## E9. Other information\n—",
+            "isStale": false
+          },
+          "Extract 2": {
+            "state": "empty",
+            "value": null,
+            "isStale": true
+          },
+          "Extract 3": {
+            "state": "empty",
+            "value": null,
+            "isStale": true
+          },
+          "Extract 4": {
+            "state": "empty",
+            "value": null,
+            "isStale": true
+          }
+        }
+      }
+    ],
+    "Search existing matters": [
+      {
+        "json": {
+          "id": "recxn8JwBcTFamAT5",
+          "createdTime": "2025-11-22T13:55:02.000Z",
+          "Full Name": "Lara Howie",
+          "Last Name": "Howie",
+          "First Name": "Lara",
+          "Email": "lara@legalengine.co.uk",
+          "Date Last Updated": "2025-11-22T13:57:41.000Z",
+          "Date Modified by": {
+            "id": "usrAISERVICE00000",
+            "email": "aiassist@noreply.airtable.com",
+            "name": "AI"
+          },
+          "Created by": {
+            "id": "usrPAGESHARE00000",
+            "email": "anonymous+formpage@noreply.airtable.com",
+            "name": "Anonymous"
+          },
+          "Created time": "2025-11-22T13:55:02.000Z",
+          "MD - Is Confidential": {
+            "state": "error",
+            "errorType": "emptyDependency",
+            "value": null,
+            "isStale": false
+          },
+          "Last Modified": "2025-11-22T13:57:41.000Z",
+          "Attachments": [
+            {
+              "id": "att4giufYne6QYi9v",
+              "url": "https://v5.airtableusercontent.com/v3/e/47/47/1763834400000/g1yLHuzM1S6VOxx3fuCmHg/hLi9aH4T6E1-yfi6QxAEk5-M4byymx1oKTHlu2PA9CqKGF4Efw1-zWtsUt5XHHum8KPl0Bq9CNaqc8MOgssUL0yDzPyw5lV9YOxUQ33rpU1AEsg_TI-1_j6tclkPAmXjslJzjm4vsk66_tL2sr34Oi_8QjK4EKeuO358x8tbVEjsgyroQp9XK0Q6mRCXTaaWo_XShpFl4cr72HJaIhkFuuE_7F0FMJ_qliKwj8WiP6o/x0RwhSdq-0Wtg3AjQor7V-qf-mOUbd6i80PREzxm0JQ",
+              "filename": "FINAL Fladgate Family-Matrimonial Finance 2027 - Hetty Leonard M_520686_17.docx",
+              "size": 72690,
+              "type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+              "thumbnails": {
+                "small": {
+                  "url": "https://v5.airtableusercontent.com/v3/e/47/47/1763834400000/Q2kXA0Yw8Bt5FDjBRjC90Q/oHR0ciMJ5ABM9lX8YmYNcELL0yHHGJTb5LpzNDbB3u_0uzR2IyyQYyeWFYIWkBwEfV_ktelHa5YTsRkGiQoz6uWx_iEchJzoc6r_E1stCTeCluFJGZ7__ZRrWNRHD5P9zOTxCw_30OUHypgrjzzFYg/0-2FD9Cvn3pOjJFXqPxRwcu2IOHF7zza4xqBxMx07_g",
+                  "width": 25,
+                  "height": 35
+                },
+                "large": {
+                  "url": "https://v5.airtableusercontent.com/v3/e/47/47/1763834400000/QWNWXdwrj_rV6_fu6m2QeQ/r3cC28RyspREwRjw-8yFSTUS-APCNSDX3GGyw-D36YTk5hMIM3EtMkqBmU4JumCOs60r7m5kRaN9ZZfpkOmUck9noOfxE434LgOl8lSU75XKnDMFc9aDlr5LC_wNhrIeeWRa5yEVVj1mskDmjuZv_w/RTcbLrXwUGSCdXM2NTGzGaj9uaJ1ZvZoALeSVBQl5N8",
+                  "width": 512,
+                  "height": 724
+                }
+              }
+            }
+          ],
+          "Summary (Attachments)": {
+            "state": "empty",
+            "value": null,
+            "isStale": true
+          },
+          "Title (Attachments)": {
+            "state": "empty",
+            "value": null,
+            "isStale": true
+          },
+          "Extracted Data": {
+            "state": "generated",
+            "value": "- Case reference: PAM007\n- Title: Confidential Matter 17\n- Client (E1): Wife/Hotelier; husband transitioned from male to female during the proceedings\n- Summary and department role/importance (E2):\n  - Novel legal issues: Treatment of family assets where a party requires funds to transition during divorce; whether surgery/care is imperative vs elective\n  - Background: Acting for the wife (W) in divorce and financial proceedings after a 20‑year marriage; husband (H) stated intention to transition to a lesbian trans woman. Assets across UK, Italy, USA, Switzerland, Germany, Argentina, Morocco; includes a Moroccan hotel business\n  - Key issues: Correct forum (H began parallel Italian proceedings), interim maintenance, disclosure, valuations (including earthquake impact on the Morocco hotel), classification of matrimonial vs non‑matrimonial assets\n  - Adverse conduct/steps by H:\n    1) Refused to comply with interim maintenance orders claiming no income; enforcement succeeded with punitive costs against H\n    2) Refused to contribute to W’s legal expenses\n    3) Issued Italian divorce proceedings despite submitting to UK jurisdiction; Italian court dismissed for lack of jurisdiction and awarded W costs\n    4) Sold company shares and reinvested some proceeds without W’s knowledge, leading to a Freezing Order on net proceeds after a contested hearing; H is appealing\n    5) Profligate spending increasing liabilities; nature and extent of liabilities in issue\n    6) Non‑disclosure of US land interests, revealed pre‑PTR\n  - Procedural posture/novel point: Approaching final hearing; assets schedule not agreed. Judicial intervention required on whether transitioning costs should be paid from known matrimonial assets; further transitioning costs may be raised at trial as a niche point of law\n- Matter value (E3): £3–4 million\n- Cross‑border jurisdictions (E4): Italy, Switzerland, US, Germany, Argentina, Morocco\n- Lead lawyer (E5): Hetty Gleave (Partner, Fladgate)\n- Other team members (E6): Patrick Buck (Associate, Fladgate); Isabelle McGregor (Trainee, Fladgate)\n- Other firms/advisers and roles (E7): Susan Apthorp, Keystone Law (adverse); Alexis Campbell KC (Band 2 Family: Matrimonial Finance), Simon Calhaem (Band 3 Family: Matrimonial Finance), Laura Heaton (Band 2 Family: Matrimonial Finance) — 29 Beford Row; Michele Menato, B&M Law (Italian law advice for our client)\n- Status (E8): Ongoing\n- Other information (E9): Not provided",
+            "isStale": false
+          },
+          "Matter Summary": {
+            "state": "generated",
+            "value": "Cross-border divorce finance: novel transition-costs issue, forum fight, enforcement wins, freezing order; £3–4m assets, ongoing.",
+            "isStale": false
+          },
+          "Client Name": {
+            "state": "generated",
+            "value": "Wife/Hotelier whose husband transitioned from male to female during the proceedings.",
+            "isStale": false
+          },
+          "Lead Lawyer": {
+            "state": "generated",
+            "value": "Hetty Gleave",
+            "isStale": false
+          },
+          "Multiple Matters": {
+            "state": "generated",
+            "value": "No. Only one E1 (followed by E2–E9 once) and no duplicate D1 or E1, so it’s a single matter.",
+            "isStale": false
+          },
+          "How Many Matters?": {
+            "state": "generated",
+            "value": "1",
+            "isStale": false
+          },
+          "Extract 1": {
+            "state": "generated",
+            "value": "# Confidential Matter 17\n\nRef: PAM007\n\n## E1 Name of client (for ranking purposes only)\nWife/Hotelier whose husband transitioned from male to female during the proceedings\n\n## E2 Summary of matter and your department's role\nThis case has raised novel areas of law in relation to the treatment of family assets when acting for a party who requires funds to transition from male to female during the divorce process. We are acting for a wife (W) in divorce and financial proceedings who has been married to her husband (H) for 20 years. The marriage broke down when W was told by H that they wish to transition to a lesbian trans woman. The parties have multiple properties/land which span the globe, including the UK, Italy, USA, Switzerland, Germany, Argentina, Morocco, as well as a hotel business in Morocco.\n\nWhilst the matter is complicated by the number of foreign jurisdictions involved, the matter is further complicated by the fact that H does not believe that our client is entitled to her 'fair share' of the matrimonial pot on the basis he believes he has earned most of the family wealth. H also believes they are entitled to use matrimonial funds for the purpose of transitioning during the divorce process, triggering arguments about whether it was imperative or elective surgery.\n\nThe matter has raised several issues, ranging from the correct forum for the proceedings (the husband immediately commenced parallel proceedings in Italy) interim maintenance, disclosure, valuations, particularly in relation to their hotel in Morocco following the recent earthquake, and the nature of matrimonial and non-matrimonial assets.\n\nH has sought to run our client's finances into the ground by:\n1. Refusing to comply with orders for interim maintenance on the basis he had no income, which was demonstrably untrue, requiring the client to issue enforcement proceedings which were successful and resulted in punitive costs orders against H.\n2. Refusing to make any contribution towards our client's legal expenses.\n3. Issuing proceedings for divorce in Italy to run concurrently with the UK proceedings, even though H had submitted to the UK jurisdiction in order to drain our client of cash. The Italian court has recently determined they have no jurisdiction and dismissed the application in Italy and awarded our client costs.\n4. Selling shares in a company and reinvesting some of the proceeds without our client's knowledge or consent, which forced her to apply for a Freezing Order in relation to the net proceeds, which was made following a bitterly fought hearing. H is now appealing the Freezing Order.\n5. H's profligate spending which has significantly increased liabilities and so the nature and extent of those liabilities is in question.\n6. H's non-disclosure of land interests in the US, which have only become apparent prior to the PTR.\n\nThe matter is coming up to a final hearing as the parties have been unable to agree the assets schedule which enables them to agree the accurate division of matrimonial assets. Whether the costs associated with the H's transitioning to female during the proceedings should be paid from the known matrimonial assets was a novel point which required judicial intervention to resolve. It may be that further costs associated with transitioning will form part of the husband's argument at trial and debate about how they are paid for will be a niche point of law.\n\n## E3 Matter value\n£3-4 million\n\n## E4 Is this a cross-border matter? If yes, please indicate the jurisdictions involved.\nItaly, Switzerland, US, Germany, Argentina, Morocco\n\n## E5 Lead lawyer\nHetty Gleave (Partner, Fladgate)\n\n## E6 Other team members\n- Patrick Buck (Associate, Fladgate)\n- Isabelle McGregor (Trainee, Fladgate)\n\n## E7 Other firms advising on the matter and their role(s)\n- Susan Apthorp, Keystone Law (adverse)\n- Alexis Campbell KC, (Band 2 Family: Matrimonial Finance), Simon Calhaem (Band 3 Family: Matrimonial Finance), Laura Heaton (Band 2 Family: Matrimonial Finance) - 29 Beford Row\n- Michele Menato, B&M Law (Italian law advice for our client)\n\n## E8 Date of completion or current status\nOngoing\n\n## E9 Other information about this matter\n—",
+            "isStale": false
+          },
+          "Extract 2": {
+            "state": "empty",
+            "value": null,
+            "isStale": true
+          },
+          "Extract 3": {
+            "state": "empty",
+            "value": null,
+            "isStale": true
+          },
+          "Extract 4": {
+            "state": "empty",
+            "value": null,
+            "isStale": true
+          }
+        }
+      }
+    ],
+    "Set pre IF": [
+      {
+        "json": {
+          "Email": "andy.batty@hotmail.com",
+          "First Name": "Andy",
+          "Last Name": "Batty",
+          "New Matter Summary": "- Client: Just Eat Takeaway dot com\n- Matter summary & department role: Over the past 12 months, counsel provided to iFood on integrating their technology platform to establish a unified technology stack for the entire corporation. Scope included legal implications across jurisdictions in South America and Europe, with focus on market connotations and regulatory considerations for generative AI. The matter is considered precedent‑setting, reflecting a shift from European‑focused startups to larger multinational conglomerates.\n- Matter value: £3,000,000 (three million pounds sterling)\n- Cross‑border: Yes\n  - Jurisdictions: United Kingdom; Italy; Poland; Portugal; Germany; Austria; Czech Republic; Netherlands; Brazil; Rwanda\n- Lead lawyer: Mr. Andy Batty (London), specialising in Mergers & Acquisitions\n- Team members:\n  - Mr. Lee Curtis (Dublin, Human Resources)\n  - Mr. Charles Dickens (Netherlands, Data Protection)\n  - Mr. Sam Stamp (Hamburg, Human Resources)\n- Other firms: None (no external law firms engaged)\n- Status/timeline: Commenced 1 February 2020; ongoing\n- Press coverage: www.nbc.com; Financial Times; BBC Online; The Grocer\n- Core topics identified:\n  - Technology platform integration and unified tech stack\n  - Cross‑border regulatory analysis (South America and Europe)\n  - Generative AI regulatory and market considerations\n  - M&A leadership with supporting HR and Data Protection expertise\n  - Multinational operational consolidation and governance",
+          "New Matter Extract": "## First matter (Markdown)\n- D1. Name of client: Just Eat Takeaway dot com\n- D2. Summary of matter and your department's role:\nOver the past 12 months, our team has provided counsel to iFood concerning the integration of their technology platform, aiming to establish a unified technology stack for the entire corporation. This advisory role encompassed addressing the legal implications of this approach across various jurisdictions in South America and Europe, with particular attention to the diverse market connotations and regulatory considerations surrounding the application of generative AI. This matter is deemed precedent-setting, reflecting the evolving landscape characterised by the global transition from European-focused startups to larger, multinational conglomerates.\n- D3. Matter value: The financial value of this matter is presently assessed at £3,000,000 (three million pounds sterling).\n- D4. Cross-border jurisdictions: This engagement is inherently cross-border, spanning multiple jurisdictions. These include the United Kingdom, Italy, Poland, Portugal, Germany, Austria, the Czech Republic, the Netherlands, Brazil, and Rwanda.\n- D5. Lead lawyer: The lead lawyer for this matter is Mr. Andy Batty, based in our London office, specialising in Mergers & Acquisitions.\n- D6. Other team members: The team supporting this matter comprises Mr. Lee Curtis (Dublin, Human Resources), Mr. Charles Dickens (Netherlands, Data Protection), and Mr. Sam Stamp (Hamburg, Human Resources).\n- D7. Other firms advising: No other external law firms are engaged in this matter.\n- D8. Date of completion or current status: This matter commenced on 1 February 2020 and remains ongoing.\n- D9. Other information: Significant press coverage for this matter has been identified from www.nbc.com, the Financial Times, BBC Online, and the Grocer.",
+          "Existing Matter Summary": "- Client: Just Eat Takeaway dot com\n- Matter summary & department role: Over the past 12 months, counsel provided to iFood on integrating their technology platform to establish a unified technology stack for the entire corporation. Scope included legal implications across jurisdictions in South America and Europe, with focus on market connotations and regulatory considerations for generative AI. The matter is considered precedent‑setting, reflecting a shift from European‑focused startups to larger multinational conglomerates.\n- Matter value: £3,000,000 (three million pounds sterling)\n- Cross‑border: Yes\n  - Jurisdictions: United Kingdom; Italy; Poland; Portugal; Germany; Austria; Czech Republic; Netherlands; Brazil; Rwanda\n- Lead lawyer: Mr. Andy Batty (London), specialising in Mergers & Acquisitions\n- Team members:\n  - Mr. Lee Curtis (Dublin, Human Resources)\n  - Mr. Charles Dickens (Netherlands, Data Protection)\n  - Mr. Sam Stamp (Hamburg, Human Resources)\n- Other firms: None (no external law firms engaged)\n- Status/timeline: Commenced 1 February 2020; ongoing\n- Press coverage: www.nbc.com; Financial Times; BBC Online; The Grocer\n- Core topics identified:\n  - Technology platform integration and unified tech stack\n  - Cross‑border regulatory analysis (South America and Europe)\n  - Generative AI regulatory and market considerations\n  - M&A leadership with supporting HR and Data Protection expertise\n  - Multinational operational consolidation and governance",
+          "Existing Matter Extract": "## First matter (Markdown)\n- D1. Name of client: Just Eat Takeaway dot com\n- D2. Summary of matter and your department's role:\nOver the past 12 months, our team has provided counsel to iFood concerning the integration of their technology platform, aiming to establish a unified technology stack for the entire corporation. This advisory role encompassed addressing the legal implications of this approach across various jurisdictions in South America and Europe, with particular attention to the diverse market connotations and regulatory considerations surrounding the application of generative AI. This matter is deemed precedent-setting, reflecting the evolving landscape characterised by the global transition from European-focused startups to larger, multinational conglomerates.\n- D3. Matter value: The financial value of this matter is presently assessed at £3,000,000 (three million pounds sterling).\n- D4. Cross-border jurisdictions: This engagement is inherently cross-border, spanning multiple jurisdictions. These include the United Kingdom, Italy, Poland, Portugal, Germany, Austria, the Czech Republic, the Netherlands, Brazil, and Rwanda.\n- D5. Lead lawyer: The lead lawyer for this matter is Mr. Andy Batty, based in our London office, specialising in Mergers & Acquisitions.\n- D6. Other team members: The team supporting this matter comprises Mr. Lee Curtis (Dublin, Human Resources), Mr. Charles Dickens (Netherlands, Data Protection), and Mr. Sam Stamp (Hamburg, Human Resources).\n- D7. Other firms advising: No other external law firms are engaged in this matter.\n- D8. Date of completion or current status: This matter commenced on 1 February 2020 and remains ongoing.\n- D9. Other information: Significant press coverage for this matter has been identified from www.nbc.com, the Financial Times, BBC Online, and the Grocer.",
+          "Existing Matter Lead Lawyer": "Andy Batty",
+          "Existing Matter Client": "Just Eat Takeaway dot com",
+          "Existing Matter Short Summary": "Advising iFood for Just Eat Takeaway on cross-border tech integration and generative AI; £3m; ongoing.",
+          "New Matter Lead Lawyer": "Andy Batty",
+          "New Matter Short Summary": "Just Eat Takeaway dot com",
+          "New Matter Client": "Just Eat Takeaway dot com"
+        }
+      }
+    ]
+  },
+  "triggerCount": 1,
+  "meta": null
+}

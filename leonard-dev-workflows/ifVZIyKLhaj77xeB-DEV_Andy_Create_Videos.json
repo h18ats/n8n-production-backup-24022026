@@ -1,0 +1,3548 @@
+{
+  "name": "DEV - Andy Create Videos",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        688,
+        112
+      ],
+      "id": "794324cc-80f7-496f-aef7-6de4c77efebc",
+      "name": "When clicking ‘Execute workflow’",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "363abbd9-5ed8-4b6a-b1a0-739893a02fff",
+              "name": "video_prompt",
+              "value": "Two lawyers are talking to each other about the pain and frustration of directory submissions. One lawyer remarks the other'Have you not heard of Legal Engine?' whilst pulling out his phone from his pocket. A single click and Leonard the voice AI agent from Legal Engine calls the lawyer and within a couple of minutes Leonard has sent a Legal 500 submission ready template through via email. The second lawyer is astounded at the E simplicity and brilliance of legal engine smiles and says 'I need a bit of that in my life'. The lawyers are based in the UK, the lawyer who makes the phone call is a female and the other is a male. The main idea is to sell the concept of legal engine to lawyers.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        848,
+        112
+      ],
+      "id": "b34b5894-c616-40c2-977e-c827a126c1bd",
+      "name": "Video Prompt"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kie.ai/api/v1/jobs/createTask",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"sora-2-text-to-video\",\n  \"input\": {\n    \"prompt\": \"{{ $json.video_prompt }}\",\n    \"aspect_ratio\": \"landscape\",\n    \"n_frames\": \"10\",\n    \"remove_watermark\": true\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1008,
+        112
+      ],
+      "id": "b2d149e1-942c-483c-8c7e-2ec5a022f5f8",
+      "name": "Text to Video",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "1yKvOsyFzqYOcYYU",
+          "name": "Kie -Andy"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1152,
+        112
+      ],
+      "id": "f7424eaa-0d54-4860-806d-71b2c907699b",
+      "name": "Wait",
+      "webhookId": "67b8e0e9-9f3b-4b83-966a-4c5574beb613"
+    },
+    {
+      "parameters": {
+        "url": "https://api.kie.ai/api/v1/jobs/recordInfo",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "taskId",
+              "value": "={{ $json.data.taskId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1296,
+        112
+      ],
+      "id": "f4ff8495-ebe0-40a7-bd0c-590f95583b60",
+      "name": "Get Video",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "1yKvOsyFzqYOcYYU",
+          "name": "Kie -Andy"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4f9a9a29-cc45-4e39-a1a0-e78caadbab09",
+              "leftValue": "={{ $json.data.state }}",
+              "rightValue": "success",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1440,
+        112
+      ],
+      "id": "4ca2df71-272b-4907-ada6-7dd62e2b1dac",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "content": "## Text to Video",
+        "height": 336,
+        "width": 1152,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        640,
+        0
+      ],
+      "id": "572cfb36-54f5-4eaf-8da3-dab87ee028ed",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "20ef7845-0ae5-4f77-bbf0-7e4e28a3b12f",
+              "name": "video_prompt",
+              "value": "A realistic UGC style video of a young woman with curly hair sitting in her car recording a selfie style video of herself holding the product, which is in the source image. Nothing about the product from the source image should change. It should appear exactly as given. In the video, the woman says, 'I absolutely love this curl cream. It keeps my hair bouncy, curly, and lightweight all day long. You guys HAVE to try it!' She speaks enthusiastically and authentically.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1008,
+        464
+      ],
+      "id": "40dbcb55-d92b-4169-a4ae-dadff4c760e0",
+      "name": "Video Prompt1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "02ac4e8d-a5a1-46cf-8b3a-66a32450be95",
+              "name": "image_url",
+              "value": "https://v3b.fal.media/files/b/koala/6PdI8VEnUcEzCDWoM0P8w.jpg",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        848,
+        464
+      ],
+      "id": "1453e28c-3699-4c25-9fde-a3781b5f163b",
+      "name": "Image URL"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "714ed3d2-1e81-4aae-a977-8151769371a7",
+              "name": "video_url",
+              "value": "={{ JSON.parse($json.data.resultJson).resultUrls[0] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1600,
+        112
+      ],
+      "id": "835e4f00-19da-4951-ac64-eb1f3efc6642",
+      "name": "Video URL"
+    },
+    {
+      "parameters": {
+        "content": "## Data Cleanup",
+        "height": 336,
+        "width": 464,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        640,
+        1760
+      ],
+      "id": "5abb7802-63b0-4d61-8f46-b6132c98d934",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5dddfcc6-0e7c-4972-be51-1b47a8ee9e89",
+              "name": "test",
+              "value": "={{ \"This is line one.\\nThis is line two.\\nThis is line three.\" }}",
+              "type": "string"
+            },
+            {
+              "id": "ef4b303a-e066-4477-a4a9-f4e6ffe59b1c",
+              "name": "test1",
+              "value": "\"pizza pizza\"",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        720,
+        1888
+      ],
+      "id": "6484b32d-683a-4b2b-a076-a50da8ee8117",
+      "name": "Bad"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b09352eb-481e-4fe7-b1a7-b5c4b7df0c1a",
+              "name": "test",
+              "value": "={{ $json.test.replace(/\\r?\\n|\\r/g, ' ') }}",
+              "type": "string"
+            },
+            {
+              "id": "35f57de0-6c41-4566-89bb-bfd0170d0ed6",
+              "name": "test1",
+              "value": "={{ $json.test1.replace(/\"/g, '') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        928,
+        1888
+      ],
+      "id": "251e86d3-aeb5-404f-b654-9213e8b36350",
+      "name": "Good"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kie.ai/api/v1/jobs/createTask",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"sora-2-image-to-video\",\n  \"input\": {\n    \"prompt\": \"{{ $json.video_prompt }}\",\n    \"image_urls\": [\n      \"{{ $('Image URL').item.json.image_url }}\"\n    ],\n    \"aspect_ratio\": \"portrait\",\n    \"n_frames\": \"10\",\n    \"remove_watermark\": true\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1152,
+        464
+      ],
+      "id": "c72c48c2-2a8c-4d60-80a2-888a0866d28a",
+      "name": "Image to Video",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "1yKvOsyFzqYOcYYU",
+          "name": "Kie -Andy"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1296,
+        464
+      ],
+      "id": "e063b3d5-d004-4f0f-b58a-5405c136b2eb",
+      "name": "Wait1",
+      "webhookId": "485a45f2-5406-4a29-9fde-9d0c5ee064ae"
+    },
+    {
+      "parameters": {
+        "url": "https://api.kie.ai/api/v1/jobs/recordInfo",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "taskId",
+              "value": "={{ $json.data.taskId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1440,
+        464
+      ],
+      "id": "b43c8434-5438-43a4-b322-1065d3c9107a",
+      "name": "Get Video1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "1yKvOsyFzqYOcYYU",
+          "name": "Kie -Andy"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4f9a9a29-cc45-4e39-a1a0-e78caadbab09",
+              "leftValue": "={{ $json.data.state }}",
+              "rightValue": "success",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1584,
+        464
+      ],
+      "id": "4d1307ab-673d-453b-b77c-8d3ea4798d3c",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "cefb3a3b-6da9-419c-ba11-4dcbf84a1d40",
+              "name": "video_url",
+              "value": "={{ JSON.parse($json.data.resultJson).resultUrls[0] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1744,
+        464
+      ],
+      "id": "d5bad0d9-3271-4d43-a8f9-557b1cab4b67",
+      "name": "Video URL1"
+    },
+    {
+      "parameters": {
+        "content": "## Image to Video",
+        "height": 336,
+        "width": 1296,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        640,
+        352
+      ],
+      "id": "4e7e7c1f-65e6-4dba-b3ae-841c143cb54c",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8f81a8e5-3dcf-4a01-adf2-616feae8ea38",
+              "name": "scene_1",
+              "value": "A small, adventurous green frog wearing a tiny brown explorer hat leaps across glowing lily pads at sunrise. Soft mist floats over a calm forest pond surrounded by tall reeds and fireflies fading in the morning light. The frog pauses mid-leap, eyes wide with determination, its reflection shimmering in the golden water. Cinematic lighting, warm and magical tone, shallow depth of field.",
+              "type": "string"
+            },
+            {
+              "id": "d4cbbd96-705e-4fe9-9751-bc4d8b669949",
+              "name": "scene_2",
+              "value": "The same frog cautiously hops through ancient moss-covered stone ruins deep in a lush jungle. Vines hang overhead, birds flutter past, and sunlight beams through gaps in the canopy. The frog glances around curiously, brushing dust off an engraved stone with its tiny hand, revealing mysterious runes. Slight camera pan following its movement, adventurous orchestral music vibe.",
+              "type": "string"
+            },
+            {
+              "id": "9acd1c0c-4c1f-4b93-9dff-623eaf4557e8",
+              "name": "scene_3",
+              "value": "Inside a dim cave, illuminated by glowing crystals, the same frog discovers a small wooden chest half-buried in sand. It opens the chest slowly—light spills out, reflecting in the frog’s wide eyes. Gold coins and a shimmering gemstone glow as the frog smiles proudly, lifting the gem triumphantly. The background glitters with magic dust as the camera pulls back to reveal the vast treasure chamber.",
+              "type": "string"
+            },
+            {
+              "id": "540ce05c-7595-4a9a-956a-85615bdf0e31",
+              "name": "image_url",
+              "value": "https://v3b.fal.media/files/b/monkey/MHh_16nXj3e5ARdSbsqAa.jpg",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        848,
+        1168
+      ],
+      "id": "4ffa9655-10a2-40b8-86d0-0dd40774a181",
+      "name": "Video Prompts"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kie.ai/api/v1/jobs/createTask",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"sora-2-pro-storyboard\",\n  \"input\": {\n    \"n_frames\": \"15\",\n    \"image_urls\": [\n      \"{{ $json.image_url }}\"\n    ],\n    \"aspect_ratio\": \"landscape\",\n    \"shots\": [\n      {\n        \"Scene\": \"{{ $json.scene_1 }}\",\n        \"duration\": 5\n      },\n      {\n        \"Scene\": \"{{ $json.scene_2 }}\",\n        \"duration\": 5\n      },\n      {\n        \"Scene\": \"{{ $json.scene_3 }}\",\n        \"duration\": 5\n      }\n    ]\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        992,
+        1168
+      ],
+      "id": "008ebe6f-b125-4f26-83d5-a9b3f19f97a6",
+      "name": "Story Request",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "1yKvOsyFzqYOcYYU",
+          "name": "Kie -Andy"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1152,
+        1168
+      ],
+      "id": "115e2212-eb54-479b-9e55-646ad03f002d",
+      "name": "Wait2",
+      "webhookId": "8b6052e0-ea03-4caf-820a-e2ae57ce401d"
+    },
+    {
+      "parameters": {
+        "url": "https://api.kie.ai/api/v1/jobs/recordInfo",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "taskId",
+              "value": "={{ $json.data.taskId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1296,
+        1168
+      ],
+      "id": "09015902-0cb4-41ac-9117-5d9c101b96c6",
+      "name": "Get Video2",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "1yKvOsyFzqYOcYYU",
+          "name": "Kie -Andy"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4f9a9a29-cc45-4e39-a1a0-e78caadbab09",
+              "leftValue": "={{ $json.data.state }}",
+              "rightValue": "success",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1456,
+        1168
+      ],
+      "id": "4e22e452-353a-4b86-af5f-e68e2fbe364b",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "eb125b1c-7589-4a0b-b88f-623d68ca91bd",
+              "name": "video_url",
+              "value": "={{ JSON.parse($json.data.resultJson).resultUrls[0] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1616,
+        1168
+      ],
+      "id": "5f2cae45-886d-44f0-b2c0-8243a2feb746",
+      "name": "Video URL2"
+    },
+    {
+      "parameters": {
+        "content": "## Storyboard",
+        "height": 336,
+        "width": 1168,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        640,
+        1056
+      ],
+      "id": "a0fe47c2-d445-4fb2-9e28-b47fbaee6923",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "20ef7845-0ae5-4f77-bbf0-7e4e28a3b12f",
+              "name": "video_prompt",
+              "value": "@sama recording a selfie style video in a car explaining how gravity works in two short sentences.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        848,
+        816
+      ],
+      "id": "5f3b1897-1c5f-4379-9dd8-cc3b42428296",
+      "name": "Video Prompt2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kie.ai/api/v1/jobs/createTask",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"sora-2-text-to-video\",\n  \"input\": {\n    \"prompt\": \"{{ $json.video_prompt }}\",\n    \"aspect_ratio\": \"portrait\",\n    \"n_frames\": \"10\",\n    \"remove_watermark\": true\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1008,
+        816
+      ],
+      "id": "5afdde31-70f8-4da0-9882-6da6ab144615",
+      "name": "Text to Video1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "1yKvOsyFzqYOcYYU",
+          "name": "Kie -Andy"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1152,
+        816
+      ],
+      "id": "f4e609fd-1204-4b57-9748-d8755fba0f5c",
+      "name": "Wait3",
+      "webhookId": "9a927f5a-20dc-4861-bce1-93e0db50d53c"
+    },
+    {
+      "parameters": {
+        "url": "https://api.kie.ai/api/v1/jobs/recordInfo",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "taskId",
+              "value": "={{ $json.data.taskId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1296,
+        816
+      ],
+      "id": "b346866d-e1a2-4bbd-a3ea-6b0e6d48ff43",
+      "name": "Get Video3",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "1yKvOsyFzqYOcYYU",
+          "name": "Kie -Andy"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4f9a9a29-cc45-4e39-a1a0-e78caadbab09",
+              "leftValue": "={{ $json.data.state }}",
+              "rightValue": "success",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1440,
+        816
+      ],
+      "id": "f4f873d7-a20b-4026-aa46-b2ab84abf02f",
+      "name": "If3"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "714ed3d2-1e81-4aae-a977-8151769371a7",
+              "name": "video_url",
+              "value": "={{ JSON.parse($json.data.resultJson).resultUrls[0] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1600,
+        816
+      ],
+      "id": "221c52e9-fd09-4e3b-9fdf-a2f65da7629c",
+      "name": "Video URL3"
+    },
+    {
+      "parameters": {
+        "content": "## Cameos",
+        "height": 336,
+        "width": 1168,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        640,
+        704
+      ],
+      "id": "1aa3486f-c84e-4969-b613-85fa82c0110f",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "363abbd9-5ed8-4b6a-b1a0-739893a02fff",
+              "name": "video_prompt",
+              "value": "A professor stands at the front of a lively classroom, enthusiastically giving a lecture. On the blackboard behind him are colorful chalk diagrams. With an animated gesture, he declares to the students: 'Sora 2 is now available on Kie AI, making it easier than ever to create stunning videos.' The students listen attentively, some smiling and taking notes.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        848,
+        1520
+      ],
+      "id": "bccc2e61-3691-4957-8354-8efe9dcf0f9c",
+      "name": "Video Prompt3"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kie.ai/api/v1/jobs/createTask",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"sora-2-text-to-video\",\n  \"input\": {\n    \"prompt\": \"{{ $json.output.replace(/\"/g, '').replace(/\\r?\\n|\\r/g, ' ') }}\",\n    \"aspect_ratio\": \"landscape\",\n    \"n_frames\": \"10\",\n    \"remove_watermark\": true\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1232,
+        1520
+      ],
+      "id": "5ae21390-dc3a-42fd-8ed9-9fbb79a6ae83",
+      "name": "Text to Video2",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "1yKvOsyFzqYOcYYU",
+          "name": "Kie -Andy"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1376,
+        1520
+      ],
+      "id": "c30e637c-d66a-4d74-b2a7-6f628087c5a9",
+      "name": "Wait4",
+      "webhookId": "7173c7cf-3bb0-451b-8867-cb11ad1924a6"
+    },
+    {
+      "parameters": {
+        "url": "https://api.kie.ai/api/v1/jobs/recordInfo",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "taskId",
+              "value": "={{ $json.data.taskId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1520,
+        1520
+      ],
+      "id": "2f62a8ae-3f8a-45fe-9a16-805c9aa1b1f8",
+      "name": "Get Video4",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "1yKvOsyFzqYOcYYU",
+          "name": "Kie -Andy"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4f9a9a29-cc45-4e39-a1a0-e78caadbab09",
+              "leftValue": "={{ $json.data.state }}",
+              "rightValue": "success",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1664,
+        1520
+      ],
+      "id": "26e0f897-7710-4dc1-914b-2f3d019d7950",
+      "name": "If4"
+    },
+    {
+      "parameters": {
+        "content": "## Text to Video (w/ prompting)",
+        "height": 336,
+        "width": 1376,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        640,
+        1408
+      ],
+      "id": "212af7ae-c340-4bd6-ac22-e43ec32ab293",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "714ed3d2-1e81-4aae-a977-8151769371a7",
+              "name": "video_url",
+              "value": "={{ JSON.parse($json.data.resultJson).resultUrls[0] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1824,
+        1520
+      ],
+      "id": "e15ca837-5e25-451a-aa0f-cd39ddfb6aa6",
+      "name": "Video URL4"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Input: {{ $json.video_prompt }}",
+        "options": {
+          "systemMessage": "=# Overview\nYou are an expert AI video prompt engineer trained to design optimized prompts for Sora 2 video generation. Your role is to take a raw input concept (such as a short idea, scene description, or video type) and transform it into a highly detailed, visually rich, and cinematic video prompt.\n\nYour output must describe a **realistic, natural-looking video** that matches the input intent. Focus on optimizing for visual quality, camera realism, lighting accuracy, subject movement, and environmental coherence.\n\nFollow these rules when creating each prompt:\n\n1. Always describe:\n   - The main subject(s): appearance, clothing, age, gender, expression, and motion.\n   - The setting: location, background, lighting, time of day, and atmosphere.\n   - The camera style: angle, lens type, framing, and movement (e.g., handheld, dolly, aerial).\n   - The tone or emotion of the scene (e.g., cinematic, documentary, upbeat, dramatic).\n   - Realistic environmental and lighting effects (e.g., soft sunlight, reflections, motion blur).\n\n2. The prompt should sound like a professional cinematographer describing a shot to a visual effects team.\n3. Avoid generic or repetitive phrasing—each sentence should add visual or contextual detail.\n4. Keep the tone natural and descriptive, not technical or robotic.\n5. Ensure that the prompt reads fluently and feels like a single cohesive vision.\n\nWhen ready, output only the final video prompt with no commentary or additional explanation.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        976,
+        1520
+      ],
+      "id": "90a48d74-ca70-4fd6-8318-1ca510412319",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "content": "# 🛠️ Setup Guide  \n**Author:** [Nate Herk](https://www.youtube.com/@nateherk)\n\nFollow the steps below to get this KIE.AI-powered workflow up and running in n8n:\n\n### ✅ Step 1: Get Your API Key  \nHead over to [kie.ai](https://kie.ai) to grab your API key and set up your billing information.\n\n### ✅ Step 2: Authenticate Your Requests  \nPlug your API key into the **HTTP Request** nodes that are calling [kie.ai](https://kie.ai).  \nCreate a **Generic Header Auth** where:  \n- **Name** = `Authorization`  \n- **Value** = `Bearer YOUR_API_KEY`  \n\n💡 *This is shown step-by-step in the YouTube video for easy reference.*\n\n### ✅ Step 3: Customize Your Prompts  \nInsert your own **video** and **image URL** prompts into the **Set** nodes. Play around with different styles and formats — Sora 2 + n8n lets you create some seriously cool automated videos.\n\n### 💬 Final Step: Share Your Ideas  \nGo back to [Nate’s YouTube video](https://youtu.be/Vm8QOo9MiC4?si=6aLmZbxtxuiBxqgH) and drop a comment with the **Sora 2 automations** you want to see. He might just build it — and share the free template!\n",
+        "height": 608,
+        "width": 624
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        48
+      ],
+      "id": "65150b71-7d0b-47d4-91e1-8cf9f8dd5996",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        976,
+        1680
+      ],
+      "id": "8471e32d-bbb3-4249-a63e-c4ae44c8421b",
+      "name": "Google Vertex Chat Model",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Call sumamry here: {{ $json.body.data.analysis.transcript_summary }}\nCall transcript here: {{ $json.body.data.transcript }}",
+        "options": {
+          "systemMessage": "=You are the **Voice Agent Creation Agent**.\n\nYour job is to take structured input describing the desired purpose, tone, behaviour, and technical requirements of a new ElevenLabs voice agent — and return a **single, valid JSON object** that is 100% syntactically correct and ready for use inside an n8n workflow.\n\n---\n\n### 🎯 YOUR OUTPUT REQUIREMENTS\n\nYou must output **only** a single JSON object that matches the following schema:\n\n```json\n{\n  \"status\": \"success\",\n  \"agent_prompt\": \"string\"\n}\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        384,
+        -560
+      ],
+      "id": "a35324fd-16b2-41f1-9037-abd6bb1922b0",
+      "name": "AI Agent1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.elevenlabs.io/v1/convai/agents/create",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "xi-api-key",
+              "value": "sk_3eca705a3c2780af4cb1116beb64d3e1d3bfc187a8d565f8"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"agent_id\": \"agent_0201k4b73d15egvvd88yqxzvz19g\",\n  \"name\": \"Custom Agentic AI Agent Baldrick - [owner: Andy] - {{ $('Webhook1').item.json.body.data.conversation_initiation_client_data.dynamic_variables.system__time }}\",\n  \"conversation_config\": {\n    \"asr\": {\n      \"quality\": \"high\",\n      \"provider\": \"elevenlabs\",\n      \"user_input_audio_format\": \"pcm_16000\",\n      \"keywords\": []\n    },\n    \"turn\": {\n      \"turn_timeout\": 10.0,\n      \"silence_end_call_timeout\": -1.0,\n      \"mode\": \"turn\"\n    },\n    \"tts\": {\n      \"model_id\": \"eleven_flash_v2\",\n      \"voice_id\": \"AwP2bjcqrSky0yiDhZSe\",\n      \"supported_voices\": [],\n      \"agent_output_audio_format\": \"pcm_16000\",\n      \"optimize_streaming_latency\": 4,\n      \"stability\": 0.65,\n      \"speed\": 0.99,\n      \"similarity_boost\": 0.45,\n      \"pronunciation_dictionary_locators\": []\n    },\n    \"conversation\": {\n      \"text_only\": false,\n      \"max_duration_seconds\": 3600,\n      \"client_events\": [\"audio\", \"interruption\"]\n    },\n    \"language_presets\": {},\n    \"agent\": {\n      \"first_message\": \"Hi, I'm Baldrick, your super smart bespoke Agentic AI Voice Agent. I hear you're interested in creating a voice agent to help you with a task so let's get going. What do you want to start with?\",\n      \"language\": \"en\",\n      \"dynamic_variables\": {\n        \"dynamic_variable_placeholders\": {}\n      },\n      \"prompt\": {\n        \"prompt\": \"{{ $json.agent_prompt }}\",\n        \"llm\": \"gemini-2.5-flash-lite\",\n        \"temperature\": 0.3,\n        \"max_tokens\": -1,\n        \"tool_ids\": [],\n        \"built_in_tools\": {\n          \"end_call\": {\n            \"type\": \"system\",\n            \"name\": \"end_call\",\n            \"description\": \"\",\n            \"response_timeout_secs\": 20,\n            \"disable_interruptions\": false,\n            \"force_pre_tool_speech\": false,\n            \"assignments\": [],\n            \"params\": { \"system_tool_type\": \"end_call\" }\n          },\n          \"language_detection\": null,\n          \"transfer_to_agent\": null,\n          \"transfer_to_number\": null,\n          \"skip_turn\": null,\n          \"play_keypad_touch_tone\": null,\n          \"voicemail_detection\": {\n            \"type\": \"system\",\n            \"name\": \"voicemail_detection\",\n            \"description\": \"\",\n            \"response_timeout_secs\": 20,\n            \"disable_interruptions\": false,\n            \"force_pre_tool_speech\": false,\n            \"assignments\": [],\n            \"params\": {\n              \"system_tool_type\": \"voicemail_detection\",\n              \"voicemail_message\": \"\"\n            }\n          }\n        },\n        \"mcp_server_ids\": [],\n        \"native_mcp_server_ids\": [],\n        \"knowledge_base\": [],\n        \"custom_llm\": null,\n        \"ignore_default_personality\": false,\n        \"rag\": {\n          \"enabled\": true,\n          \"embedding_model\": \"e5_mistral_7b_instruct\",\n          \"max_vector_distance\": 0.6,\n          \"max_documents_length\": 50000,\n          \"max_retrieved_rag_chunks_count\": 20\n        },\n        \"timezone\": null,\n        \"tools\": [\n          {\n            \"type\": \"system\",\n            \"name\": \"end_call\",\n            \"description\": \"\",\n            \"response_timeout_secs\": 20,\n            \"disable_interruptions\": false,\n            \"force_pre_tool_speech\": false,\n            \"assignments\": [],\n            \"params\": { \"system_tool_type\": \"end_call\" }\n          },\n          {\n            \"type\": \"system\",\n            \"name\": \"voicemail_detection\",\n            \"description\": \"\",\n            \"response_timeout_secs\": 20,\n            \"disable_interruptions\": false,\n            \"force_pre_tool_speech\": false,\n            \"assignments\": [],\n            \"params\": {\n              \"system_tool_type\": \"voicemail_detection\",\n              \"voicemail_message\": \"\"\n            }\n          }\n        ]\n      }\n    }\n  },\n  \"metadata\": {\n    \"created_at_unix_secs\": 1757018174,\n    \"updated_at_unix_secs\": 1757018174\n  },\n  \"platform_settings\": {\n    \"auth\": {\n      \"enable_auth\": false,\n      \"allowlist\": [],\n      \"shareable_token\": null\n    },\n    \"evaluation\": { \"criteria\": [] },\n    \"widget\": {\n      \"variant\": \"full\",\n      \"placement\": \"bottom-right\",\n      \"expandable\": \"never\",\n      \"avatar\": {\n        \"type\": \"orb\",\n        \"color_1\": \"#2792dc\",\n        \"color_2\": \"#9ce6e6\"\n      },\n      \"feedback_mode\": \"during\",\n      \"bg_color\": \"#ffffff\",\n      \"text_color\": \"#000000\",\n      \"btn_color\": \"#000000\",\n      \"btn_text_color\": \"#ffffff\",\n      \"border_color\": \"#e1e1e1\",\n      \"focus_color\": \"#000000\",\n      \"border_radius\": null,\n      \"btn_radius\": null,\n      \"action_text\": null,\n      \"start_call_text\": null,\n      \"end_call_text\": null,\n      \"expand_text\": null,\n      \"listening_text\": null,\n      \"speaking_text\": null,\n      \"shareable_page_text\": null,\n      \"shareable_page_show_terms\": false,\n      \"terms_text\": null,\n      \"terms_html\": null,\n      \"terms_key\": null,\n      \"show_avatar_when_collapsed\": false,\n      \"disable_banner\": false,\n      \"override_link\": null,\n      \"mic_muting_enabled\": false,\n      \"transcript_enabled\": false,\n      \"text_input_enabled\": false,\n      \"default_expanded\": false,\n      \"always_expanded\": false,\n      \"text_contents\": {\n        \"main_label\": \"Chat to your Agent ?\",\n        \"start_call\": \"Chat now\",\n        \"start_chat\": null,\n        \"new_call\": null,\n        \"end_call\": null,\n        \"mute_microphone\": null,\n        \"change_language\": null,\n        \"collapse\": null,\n        \"expand\": null,\n        \"copied\": null,\n        \"accept_terms\": null,\n        \"dismiss_terms\": null,\n        \"listening_status\": null,\n        \"speaking_status\": null,\n        \"connecting_status\": null,\n        \"chatting_status\": null,\n        \"input_label\": null,\n        \"input_placeholder\": null,\n        \"input_placeholder_text_only\": null,\n        \"input_placeholder_new_conversation\": null,\n        \"user_ended_conversation\": null,\n        \"agent_ended_conversation\": null,\n        \"conversation_id\": null,\n        \"error_occurred\": null,\n        \"copy_id\": null\n      },\n      \"styles\": {\n        \"base\": null,\n        \"base_hover\": null,\n        \"base_active\": null,\n        \"base_border\": null,\n        \"base_subtle\": null,\n        \"base_primary\": null,\n        \"base_error\": null,\n        \"accent\": null,\n        \"accent_hover\": null,\n        \"accent_active\": null,\n        \"accent_border\": null,\n        \"accent_subtle\": null,\n        \"accent_primary\": null,\n        \"overlay_padding\": null,\n        \"button_radius\": null,\n        \"input_radius\": null,\n        \"bubble_radius\": null,\n        \"sheet_radius\": null,\n        \"compact_sheet_radius\": null,\n        \"dropdown_sheet_radius\": null\n      },\n      \"language_selector\": false,\n      \"supports_text_only\": false,\n      \"custom_avatar_path\": null,\n      \"language_presets\": {}\n    },\n    \"data_collection\": {},\n    \"overrides\": {\n      \"conversation_config_override\": {\n        \"tts\": {\n          \"voice_id\": false,\n          \"stability\": false,\n          \"speed\": false,\n          \"similarity_boost\": false\n        },\n        \"conversation\": { \"text_only\": true },\n        \"agent\": {\n          \"first_message\": false,\n          \"language\": false,\n          \"prompt\": { \"prompt\": false, \"native_mcp_server_ids\": false }\n        }\n      },\n      \"custom_llm_extra_body\": false,\n      \"enable_conversation_initiation_client_data_from_webhook\": false\n    },\n    \"call_limits\": {\n      \"agent_concurrency_limit\": -1,\n      \"daily_limit\": 100000,\n      \"bursting_enabled\": true\n    },\n    \"ban\": null,\n    \"privacy\": {\n      \"record_voice\": true,\n      \"retention_days\": -1,\n      \"delete_transcript_and_pii\": false,\n      \"delete_audio\": false,\n      \"apply_to_existing_conversations\": false,\n      \"zero_retention_mode\": false\n    },\n    \"workspace_overrides\": {\n      \"conversation_initiation_client_data_webhook\": null,\n      \"webhooks\": {\n        \"post_call_webhook_id\": \"\",\n        \"send_audio\": false\n      }\n    },\n    \"testing\": {\n      \"attached_tests\": [],\n      \"referenced_tests_ids\": []\n    },\n    \"safety\": {\n      \"is_blocked_ivc\": false,\n      \"is_blocked_non_ivc\": false,\n      \"ignore_safety_evaluation\": false\n    }\n  },\n  \"phone_numbers\": [],\n  \"workflow\": {\n    \"edges\": {},\n    \"nodes\": {\n      \"start_node\": {\n        \"type\": \"start\",\n        \"position\": { \"x\": 0.0, \"y\": 0.0 }\n      }\n    }\n  },\n  \"access_info\": {\n    \"is_creator\": true,\n    \"creator_name\": \"leonard@legalengine.co.uk\",\n    \"creator_email\": \"leonard@legalengine.co.uk\",\n    \"role\": \"admin\"\n  },\n  \"tags\": []\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        960,
+        -464
+      ],
+      "id": "b3b12ec4-166c-44c9-8bd3-28ee1a5c49cc",
+      "name": "Create 11L agent with KB1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "voice_to_video",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        464,
+        -912
+      ],
+      "id": "0f8451f4-1b50-4fc8-b169-5a38779be4cf",
+      "name": "Webhook1",
+      "webhookId": "19406874-8be4-492d-9bd7-8d5b91ae1291"
+    },
+    {
+      "parameters": {
+        "toRecipients": "=andy@legalengine.co.uk",
+        "subject": "=Your bespoke voice agent ",
+        "bodyContent": "=<!doctype html>\n<html lang=\"en\" style=\"margin:0;padding:0;\">\n  <head>\n    <meta charset=\"utf-8\">\n    <meta name=\"viewport\" content=\"width=device-width\">\n    <title>Your ElevenLabs Agent</title>\n    <style>\n      /* Mobile-friendly defaults */\n      body { margin:0; padding:0; background:#f6f7fb; -webkit-font-smoothing:antialiased; }\n      a { color:#0b5fff; text-decoration:none; }\n      .container { width:100%; max-width:640px; margin:0 auto; background:#ffffff; }\n      .px { padding-left:24px; padding-right:24px; }\n      .py { padding-top:24px; padding-bottom:24px; }\n      .btn { display:inline-block; background:#0b5fff; color:#ffffff !important; padding:14px 22px; border-radius:6px; font-weight:600; }\n      .muted { color:#6b7280; font-size:14px; }\n      .footer { font-size:12px; color:#9aa3b2; }\n    </style>\n  </head>\n  <body>\n    <span style=\"display:none!important;visibility:hidden;opacity:0;color:transparent;height:0;width:0;overflow:hidden;\">\n      Your agent is ready. Open it now.\n    </span>\n\n    <table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" style=\"background:#f6f7fb;\">\n      <tr>\n        <td align=\"center\">\n          <table role=\"presentation\" class=\"container\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\">\n            <tr>\n              <td class=\"px py\" style=\"text-align:left;\">\n                <h1 style=\"margin:0 0 8px 0; font-family:Inter,Segoe UI,Arial,sans-serif; font-size:22px; line-height:1.3; color:#111827;\">\n                  Your ElevenLabs Agent is ready\n                </h1>\n                <p style=\"margin:0 0 16px 0; font-family:Inter,Segoe UI,Arial,sans-serif; font-size:16px; line-height:1.6; color:#374151;\">\n                  Here is your agent link. Click the button below to open it, or use the direct URL beneath. This link is valid for the next 30 mins.\n                </p>\n\n                <!-- CTA Button -->\n                <p style=\"margin:20px 0 8px 0;\">\n                  <a class=\"btn\" href=\"https://voice-coding.legalengine.co.uk/?agent-id={{ $('Create 11L agent with KB1').item.json.agent_id }}\" target=\"_blank\" rel=\"noopener\">\n                    Open Your Agent\n                  </a>\n                </p>\n\n                <!-- Plain-text fallback link -->\n                <p class=\"muted\" style=\"margin:8px 0 0 0; font-family:Inter,Segoe UI,Arial,sans-serif;\">\n                  Or copy and paste this link into your browser:<br>\n                  <a href=\"https://voice-coding.legalengine.co.uk/?agent-id={{ $('Create 11L agent with KB1').item.json.agent_id }}\" target=\"_blank\" rel=\"noopener\">\n                    https://voice-coding.legalengine.co.uk/?agent-id={{ $('Create 11L agent with KB1').item.json.agent_id }}\n                  </a>\n                </p>\n\n                <hr style=\"border:none; border-top:1px solid #eef1f5; margin:24px 0;\">\n\n                <p class=\"footer\" style=\"margin:0; font-family:Inter,Segoe UI,Arial,sans-serif;\">\n                  If you weren’t expecting this email, you can safely ignore it.\n                </p>\n              </td>\n            </tr>\n          </table>\n\n          <table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\">\n            <tr>\n              <td align=\"center\" class=\"py\">\n                <p class=\"footer\" style=\"margin:0; font-family:Inter,Segoe UI,Arial,sans-serif;\">\n                  © {{ $now }} Legal Engine • All rights reserved\n                </p>\n              </td>\n            </tr>\n          </table>\n\n        </td>\n      </tr>\n    </table>\n  </body>\n</html>\n",
+        "additionalFields": {
+          "bodyContentType": "html"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        1856,
+        -464
+      ],
+      "id": "26f02bd0-54e6-47e3-8794-e2688136768a",
+      "name": "HTML Email to user1",
+      "webhookId": "11b79c33-0e76-4507-82a5-8644f76b775f",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "eweG9vjyeWb4mfPE",
+          "name": "Microsoft Outlook - Support @ Legal Engine"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "=https://api.elevenlabs.io/v1/convai/agents/{{ $('Create 11L agent with KB1').item.json.agent_id }}\n",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "xi-api-key",
+              "value": "sk_3eca705a3c2780af4cb1116beb64d3e1d3bfc187a8d565f8"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2304,
+        -464
+      ],
+      "id": "94bb7eb8-b4ae-40c0-a507-2ad10ed9a3e9",
+      "name": "Delete Agent1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// === Voice Agent JSON Sanitiser ===\n// Input: Raw text from the LLM (might include backticks or markdown)\n// Output: Clean JSON object { status, agent_prompt }\n\nlet raw = $json.output || $json.data || $input.item.json.text || \"\";\nraw = raw.trim();\n\n// Step 1: Remove Markdown wrappers and non-JSON text\n// Removes ```json, ```, and stray Markdown artifacts\nraw = raw\n  .replace(/^```json/i, \"\")\n  .replace(/^```/, \"\")\n  .replace(/```$/, \"\")\n  .replace(/[\\u0000-\\u001F]+/g, \" \") // remove control chars\n  .trim();\n\n// Step 2: If there's extra text around JSON, try to isolate it\nconst firstBrace = raw.indexOf(\"{\");\nconst lastBrace = raw.lastIndexOf(\"}\");\nif (firstBrace > -1 && lastBrace > firstBrace) {\n  raw = raw.slice(firstBrace, lastBrace + 1);\n}\n\n// Step 3: Try to parse JSON safely\nlet parsed;\ntry {\n  parsed = JSON.parse(raw);\n} catch (err) {\n  // Step 4: Attempt quick repairs for unescaped quotes or newlines\n  let repaired = raw\n    .replace(/\\n+/g, \" \")\n    .replace(/\\r+/g, \" \")\n    .replace(/\\\\(?![\"\\\\/bfnrtu])/g, \"\\\\\\\\\") // escape stray backslashes\n    .replace(/“|”/g, '\"') // smart quotes\n    .replace(/‘|’/g, \"'\"); // smart apostrophes\n\n  try {\n    parsed = JSON.parse(repaired);\n  } catch (e2) {\n    // Step 5: Fallback error-safe response\n    return [\n      {\n        json: {\n          status: \"error\",\n          message: \"Invalid or unrepairable JSON from Voice Agent Creation Agent\",\n          raw_response: raw\n        }\n      }\n    ];\n  }\n}\n\n// Step 6: Ensure structure matches the expected schema\nif (!parsed || typeof parsed !== \"object\") {\n  return [\n    {\n      json: {\n        status: \"error\",\n        message: \"Voice Agent Creation Agent output not an object\",\n        raw_response: raw\n      }\n    }\n  ];\n}\n\nif (!parsed.agent_prompt || typeof parsed.agent_prompt !== \"string\") {\n  parsed.status = \"error\";\n  parsed.message = \"Missing or invalid agent_prompt field\";\n}\n\n// Step 7: Clean up the agent_prompt text\nif (parsed.agent_prompt) {\n  parsed.agent_prompt = parsed.agent_prompt\n    .replace(/\\s+/g, \" \")\n    .replace(/\\\\n/g, \" \")\n    .replace(/[\"]+/g, '\"')\n    .trim();\n}\n\n// Step 8: Return clean JSON object\nreturn [\n  {\n    json: {\n      status: parsed.status || \"success\",\n      agent_prompt: parsed.agent_prompt || \"\",\n      validated: true\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        736,
+        -464
+      ],
+      "id": "a6392d84-f058-4fa4-9932-6a4e04cdd617",
+      "name": "Code in JavaScript1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Email address if validated here: \n{{ $('If5').item.json.body.data.analysis.data_collection_results.email_address.value }}\nRationale for decision on email address here:\n{{ $('If5').item.json.body.data.analysis.data_collection_results.email_address.rationale }}",
+        "options": {
+          "systemMessage": "=Take the inputs and produce the most likely email address that the user is trying to give to the voice agent in particular paying attention to the word 'at' which is likely to actually be a @.\n\nOutput is a well formulated email address."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1200,
+        -464
+      ],
+      "id": "ddda8108-17ae-45f0-a747-656cfb3185d6",
+      "name": "AI Agent2",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        1216,
+        -288
+      ],
+      "id": "53b583b0-f456-4e19-aa60-b637fd0c7440",
+      "name": "Google Vertex Chat Model1",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        464,
+        -336
+      ],
+      "id": "268a97dc-58ce-4f1e-b7ed-cdeea2f6534a",
+      "name": "Google Vertex Chat Model2",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "10d0d682-5b65-41ab-8541-cd65011e7e15",
+              "leftValue": "={{ $json.body.data.conversation_initiation_client_data.dynamic_variables.system__call_duration_secs }}",
+              "rightValue": 45,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        688,
+        -912
+      ],
+      "id": "afbb525a-dfd0-4911-bcf9-2ff637becbe5",
+      "name": "If5"
+    },
+    {
+      "parameters": {
+        "amount": 30,
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2080,
+        -464
+      ],
+      "id": "c2a2f9ce-db90-4587-81ad-2012ccd2f56d",
+      "name": "Wait5",
+      "webhookId": "591ca9a7-4c25-44e1-9bd8-fc167aa9f074",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "amount": 2,
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1632,
+        -464
+      ],
+      "id": "84929644-e7a2-4824-b46f-9266912f6cca",
+      "name": "Wait6",
+      "webhookId": "0be34cde-e35f-4e17-be8d-99760422b36a",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kie.ai/api/v1/jobs/createTask",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"sora-2-text-to-video\",\n  \"input\": {\n    \"prompt\": \"{{ $json.output.replace(/\"/g, '').replace(/\\r?\\n|\\r/g, ' ') }}\",\n    \"aspect_ratio\": \"landscape\",\n    \"n_frames\": \"15\",\n    \"remove_watermark\": true\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1296,
+        -912
+      ],
+      "id": "57c86e90-65d5-45bc-a7e2-61152a727e1b",
+      "name": "Text to Video3",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "1yKvOsyFzqYOcYYU",
+          "name": "Kie -Andy"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1440,
+        -912
+      ],
+      "id": "1fa35646-f6d9-4eac-863f-f9267adf92fe",
+      "name": "Wait7",
+      "webhookId": "7173c7cf-3bb0-451b-8867-cb11ad1924a6"
+    },
+    {
+      "parameters": {
+        "url": "https://api.kie.ai/api/v1/jobs/recordInfo",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "taskId",
+              "value": "={{ $json.data.taskId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1584,
+        -912
+      ],
+      "id": "73939b26-6814-40c7-8362-cae7bb850b30",
+      "name": "Get Video5",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "1yKvOsyFzqYOcYYU",
+          "name": "Kie -Andy"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4f9a9a29-cc45-4e39-a1a0-e78caadbab09",
+              "leftValue": "={{ $json.data.state }}",
+              "rightValue": "success",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1728,
+        -912
+      ],
+      "id": "7a66a910-d96c-4d44-b1a7-81c84aab1082",
+      "name": "If6"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "714ed3d2-1e81-4aae-a977-8151769371a7",
+              "name": "video_url",
+              "value": "={{ JSON.parse($json.data.resultJson).resultUrls[0] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1888,
+        -912
+      ],
+      "id": "99d67bfb-2899-4b2e-ae9d-2aabdda9fae9",
+      "name": "Video URL5"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Input Summary: {{ $json.body.data.analysis.data_collection_results.summary.value }}\nInput Transcript: {{ $json.body.data.transcript }}",
+        "options": {
+          "systemMessage": "=# Overview\nYou are an expert AI video prompt engineer trained to design optimized prompts for Sora 2 video generation. Your role is to take a raw input concept (such as a short idea, scene description, or video type) and transform it into a highly detailed, visually rich, and cinematic video prompt.\n\nYour output must describe a **realistic, natural-looking video** that matches the input intent. Focus on optimizing for visual quality, camera realism, lighting accuracy, subject movement, and environmental coherence.\n\nFollow these rules when creating each prompt:\n\n1. Always describe:\n   - The main subject(s): appearance, clothing, age, gender, expression, and motion.\n   - The setting: location, background, lighting, time of day, and atmosphere.\n   - The camera style: angle, lens type, framing, and movement (e.g., handheld, dolly, aerial).\n   - The tone or emotion of the scene (e.g., cinematic, documentary, upbeat, dramatic).\n   - Realistic environmental and lighting effects (e.g., soft sunlight, reflections, motion blur).\n\n2. The prompt should sound like a professional cinematographer describing a shot to a visual effects team.\n3. Avoid generic or repetitive phrasing—each sentence should add visual or contextual detail.\n4. Keep the tone natural and descriptive, not technical or robotic.\n5. Ensure that the prompt reads fluently and feels like a single cohesive vision.\n\nWhen ready, output only the final video prompt with no commentary or additional explanation.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1040,
+        -912
+      ],
+      "id": "09b05d0c-1a30-492e-812e-85e3b5feb558",
+      "name": "AI Agent3"
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        -752
+      ],
+      "id": "8b778f0c-9900-458e-8c74-f28b87c0cef0",
+      "name": "Google Vertex Chat Model3",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toRecipients": "=andy@legalengine.co.uk, leonard@legalengine.co.uk, tom.wellingham@deliveroo.co.uk",
+        "subject": "=Your bespoke video link",
+        "bodyContent": "=<!doctype html>\n<html lang=\"en\" style=\"margin:0;padding:0;\">\n  <head>\n    <meta charset=\"utf-8\">\n    <meta name=\"viewport\" content=\"width=device-width\">\n    <title>Your ElevenLabs Agent</title>\n    <style>\n      /* Mobile-friendly defaults */\n      body { margin:0; padding:0; background:#f6f7fb; -webkit-font-smoothing:antialiased; }\n      a { color:#0b5fff; text-decoration:none; }\n      .container { width:100%; max-width:640px; margin:0 auto; background:#ffffff; }\n      .px { padding-left:24px; padding-right:24px; }\n      .py { padding-top:24px; padding-bottom:24px; }\n      .btn { display:inline-block; background:#0b5fff; color:#ffffff !important; padding:14px 22px; border-radius:6px; font-weight:600; }\n      .muted { color:#6b7280; font-size:14px; }\n      .footer { font-size:12px; color:#9aa3b2; }\n    </style>\n  </head>\n  <body>\n    <span style=\"display:none!important;visibility:hidden;opacity:0;color:transparent;height:0;width:0;overflow:hidden;\">\n      Your bespoke video ready. Open it now.\n    </span>\n\n    <table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" style=\"background:#f6f7fb;\">\n      <tr>\n        <td align=\"center\">\n          <table role=\"presentation\" class=\"container\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\">\n            <tr>\n              <td class=\"px py\" style=\"text-align:left;\">\n                <h1 style=\"margin:0 0 8px 0; font-family:Inter,Segoe UI,Arial,sans-serif; font-size:22px; line-height:1.3; color:#111827;\">\n                  Your bespoke video is ready\n                </h1>\n                <p style=\"margin:0 0 16px 0; font-family:Inter,Segoe UI,Arial,sans-serif; font-size:16px; line-height:1.6; color:#374151;\">\n                  Here is your bespoke video link. Click the button below to download it, or use the direct URL beneath. \n                </p>\n\n                <!-- CTA Button -->\n                <p style=\"margin:20px 0 8px 0;\">\n                  <a class=\"btn\" href=\"{{ $json.video_url }}\" target=\"_blank\" rel=\"noopener\">\n                    Download Your Video\n                  </a>\n                </p>\n\n                <!-- Plain-text fallback link -->\n                <p class=\"muted\" style=\"margin:8px 0 0 0; font-family:Inter,Segoe UI,Arial,sans-serif;\">\n                  Or copy and paste this link into your browser:<br>\n                  <a href=\"{{ $json.video_url }}\" target=\"_blank\" rel=\"noopener\">\n                    {{ $json.video_url }}\n                  </a>\n                </p>\n\n                <hr style=\"border:none; border-top:1px solid #eef1f5; margin:24px 0;\">\n\n                <p class=\"footer\" style=\"margin:0; font-family:Inter,Segoe UI,Arial,sans-serif;\">\n                  If you weren’t expecting this email, you can safely ignore it.\n                </p>\n              </td>\n            </tr>\n          </table>\n\n          <table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\">\n            <tr>\n              <td align=\"center\" class=\"py\">\n                <p class=\"footer\" style=\"margin:0; font-family:Inter,Segoe UI,Arial,sans-serif;\">\n                  © {{ $now }} Legal Engine • All rights reserved\n                </p>\n              </td>\n            </tr>\n          </table>\n\n        </td>\n      </tr>\n    </table>\n  </body>\n</html>\n",
+        "additionalFields": {
+          "bodyContentType": "html"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        2112,
+        -912
+      ],
+      "id": "b70aedc2-327e-4f58-815e-2b51a2b06e11",
+      "name": "HTML Email to user",
+      "webhookId": "11b79c33-0e76-4507-82a5-8644f76b775f",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "eweG9vjyeWb4mfPE",
+          "name": "Microsoft Outlook - Support @ Legal Engine"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Video Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Video Prompt": {
+      "main": [
+        [
+          {
+            "node": "Text to Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text to Video": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Get Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Video": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Image URL": {
+      "main": [
+        [
+          {
+            "node": "Video Prompt1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Video URL",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bad": {
+      "main": [
+        [
+          {
+            "node": "Good",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Video Prompt1": {
+      "main": [
+        [
+          {
+            "node": "Image to Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Image to Video": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "Get Video1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Video1": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Video URL1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Video Prompts": {
+      "main": [
+        [
+          {
+            "node": "Story Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait2": {
+      "main": [
+        [
+          {
+            "node": "Get Video2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Video2": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Video URL2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Story Request": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text to Video1": {
+      "main": [
+        [
+          {
+            "node": "Wait3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait3": {
+      "main": [
+        [
+          {
+            "node": "Get Video3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Video3": {
+      "main": [
+        [
+          {
+            "node": "If3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If3": {
+      "main": [
+        [
+          {
+            "node": "Video URL3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Video Prompt2": {
+      "main": [
+        [
+          {
+            "node": "Text to Video1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Video Prompt3": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text to Video2": {
+      "main": [
+        [
+          {
+            "node": "Wait4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait4": {
+      "main": [
+        [
+          {
+            "node": "Get Video4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Video4": {
+      "main": [
+        [
+          {
+            "node": "If4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If4": {
+      "main": [
+        [
+          {
+            "node": "Video URL4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Text to Video2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create 11L agent with KB1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "If5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML Email to user1": {
+      "main": [
+        [
+          {
+            "node": "Wait5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Create 11L agent with KB1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent2": {
+      "main": [
+        [
+          {
+            "node": "Wait6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If5": {
+      "main": [
+        [],
+        [
+          {
+            "node": "AI Agent3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait5": {
+      "main": [
+        [
+          {
+            "node": "Delete Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait6": {
+      "main": [
+        [
+          {
+            "node": "HTML Email to user1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text to Video3": {
+      "main": [
+        [
+          {
+            "node": "Wait7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait7": {
+      "main": [
+        [
+          {
+            "node": "Get Video5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Video5": {
+      "main": [
+        [
+          {
+            "node": "If6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If6": {
+      "main": [
+        [
+          {
+            "node": "Video URL5",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent3": {
+      "main": [
+        [
+          {
+            "node": "Text to Video3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Video URL5": {
+      "main": [
+        [
+          {
+            "node": "HTML Email to user",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {
+    "Webhook1": [
+      {
+        "json": {
+          "headers": {
+            "host": "leonard-dev.app.n8n.cloud",
+            "user-agent": "ElevenLabs/1.0",
+            "content-length": "36308",
+            "accept": "*/*",
+            "accept-encoding": "gzip, br",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "34.59.11.47",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "US",
+            "cf-ray": "99434f55a71b22d5-ORD",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "elevenlabs-signature": "t=1761412043,v0=979920517c6ac79a40cc469c49fa96063278f72407523718522b11e6a36f11fb",
+            "x-forwarded-for": "34.59.11.47, 172.71.254.189",
+            "x-forwarded-host": "leonard-dev.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-52-6c4f4684d5-swjxv",
+            "x-is-trusted": "yes",
+            "x-real-ip": "34.59.11.47"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "type": "post_call_transcription",
+            "event_timestamp": 1761412043,
+            "data": {
+              "agent_id": "agent_2101k8e48s0hepds9nee2nr29024",
+              "conversation_id": "conv_5101k8e4yk8jfrftvbwz66c13q3z",
+              "status": "done",
+              "user_id": "1jocLV1YMhbdrLSRX3Me8aWkbRX2",
+              "transcript": [
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_2101k8e48s0hepds9nee2nr29024",
+                    "workflow_node_id": null
+                  },
+                  "message": "Hi there! I’m here to help you design your perfect video. I’ll ask you a few quick questions to understand exactly what you’d like to see — things like the subject, setting, and mood. Ready to get started?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 0,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.16033863299890072
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "Yeah, sure.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 12,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.12052323699936096
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_2101k8e48s0hepds9nee2nr29024",
+                    "workflow_node_id": null
+                  },
+                  "message": "Great. First, what kind of video are you imagining? For example — is it a short cinematic clip, a brand story, a product showcase, a nature scene, or something else entirely?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 14,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.33155872499992256
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.2969737900002656
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.4415776960013318
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.08419852899896796
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash": {
+                        "input": {
+                          "tokens": 1074,
+                          "price": 0.00016109999999999999
+                        },
+                        "input_cache_read": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 39,
+                          "price": 0.0000234
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "So it's a short clip to be showed on LinkedIn so about kind of 25 to 30 seconds for a brand called Legal Engine who are a voice AI business who are looking to get brand recognition with lawyers and the legal industry and for their product called Leonard.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 23,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.11688151999987895
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_2101k8e48s0hepds9nee2nr29024",
+                    "workflow_node_id": null
+                  },
+                  "message": "Perfect. Who or what is the main focus of the video? Tell me about them — what do they look like, what are they wearing, how old are they, and what are they doing or feeling in the scene?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 55,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.37697761800154694
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.28862679800113256
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.47842549800043344
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.1393630580005265
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash": {
+                        "input": {
+                          "tokens": 1165,
+                          "price": 0.00017475
+                        },
+                        "input_cache_read": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 45,
+                          "price": 0.000027
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "How old are they and what are they doing or feeling in the scene? So I'm imagining two lawyers, um, one male, one female, uh, based in the UK. Uh, so with English, uh, UK English, uh, as the, as the main, um, as the main kind of language. Uh, with a female lawyer who, uh. Who is basically smarter one that she's wondering along, having a conversation with a male lawyer and the male lawyer is describing how painful the legal 500 and chamber submissions processes, how long it takes and how frustrating it is. And the fact that he's been wasting lots of time on it when he could be doing other work. Whereas the female lawyer turns around and says, have you not heard of Legal Engine? It's revolutionized the directory submissions process. She pulls out her phone. She clicks a single button. And Leonard, who is Legal Engine's voice AI agent, calls her. They have a very short call. And within a few minutes, Leonard is captured by the security guard and sent to the office of legal engine and all of the information that is required for the submissions process. And then it follows up immediately with an email in her inbox, which essentially has all of the details for this submission ready to go. And the mail lawyer is blown away and he turns around and says, I need a bit of legal engine in my life. This is incredible.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 65,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.13351391499963938
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_2101k8e48s0hepds9nee2nr29024",
+                    "workflow_node_id": null
+                  },
+                  "message": "That's a very detailed vision. Could you describe how they move or behave in this scene? For example, are they calmly walking through a park, running in the rain, smiling at the camera, or working on something?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 174,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.5339291300006153
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.4139508650005155
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.6663677369997458
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.12034165100158134
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash": {
+                        "input": {
+                          "tokens": 1509,
+                          "price": 0.00022635
+                        },
+                        "input_cache_read": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 46,
+                          "price": 0.000027599999999999997
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "They're walking down a corridor within a UK law firm. So within the offices.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 184,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.13157038899953477
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_2101k8e48s0hepds9nee2nr29024",
+                    "workflow_node_id": null
+                  },
+                  "message": "Now, where does the scene take place? Describe the setting — indoors or outdoors, city or countryside, real-world or imaginative. What time of day is it, and what’s the lighting like?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 189,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.5487187580001773
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.4475382159998844
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.6293840229991474
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.13838445800138288
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash": {
+                        "input": {
+                          "tokens": 1573,
+                          "price": 0.00023595
+                        },
+                        "input_cache_read": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 42,
+                          "price": 0.0000252
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "Definitely real world. It is morning, so bright. It's within, inside offices, so inside an office of a top 50 UK law firm.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 197,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.115141885000412
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_2101k8e48s0hepds9nee2nr29024",
+                    "workflow_node_id": null
+                  },
+                  "message": "Are there any background details that matter — like the weather, colors, or atmosphere?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 212,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.4032355559993448
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.3074945400003344
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.4032176029995753
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.16753655100001197
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash": {
+                        "input": {
+                          "tokens": 1648,
+                          "price": 0.0002472
+                        },
+                        "input_cache_read": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 17,
+                          "price": 0.000010199999999999999
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "Not really, just the, just the main thing is to make sure that it is clear when Leonard calls the female lawyer that it's Leonard from Legal Engine and I think it'd be good to make it kind of recognisable so something a little bit stand out.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 219,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.12603866300014488
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_2101k8e48s0hepds9nee2nr29024",
+                    "workflow_node_id": null
+                  },
+                  "message": "Let’s talk about how you’d like it to look on camera. Should it feel like a cinematic film, a handheld documentary, a drone shot, or maybe a smooth studio-style video? Do you imagine any specific angles — close-up, wide, aerial, over-the-shoulder?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 237,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.4324543140010064
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.34422187200107146
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.5852680700008932
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.13832872700004373
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash": {
+                        "input": {
+                          "tokens": 1719,
+                          "price": 0.00025784999999999995
+                        },
+                        "input_cache_read": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 62,
+                          "price": 0.000037199999999999996
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "So I think it will be mainly kind of just like a typical advert. But I think there is kind of an over the shoulder shot of when Leonard calls the female lawyer and kind of, you know, a shot of them walking down the corridor together. That's probably a front on shot. And then there's probably a bit of a shot, which is kind of the email arriving seconds after the end of the conversation with that legal 500 matter description ready to go.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 251,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.12246610799957125
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_2101k8e48s0hepds9nee2nr29024",
+                    "workflow_node_id": null
+                  },
+                  "message": "What overall mood should the video have? For instance, would you say it’s emotional, dramatic, uplifting, romantic, peaceful, mysterious, or something else?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 290,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.474640291000469
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.3984906300011062
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.5656515150003543
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.1410723909993976
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash": {
+                        "input": {
+                          "tokens": 1880,
+                          "price": 0.000282
+                        },
+                        "input_cache_read": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 33,
+                          "price": 0.0000198
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "Well, it's an advert. So it's professional, but it also needs a bit of cut through. So, you know, something that's a bit more something that's memorable.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 299,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.12622530900080164
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_2101k8e48s0hepds9nee2nr29024",
+                    "workflow_node_id": null
+                  },
+                  "message": "If you imagine it set to music, what kind of soundtrack or energy would fit — calm and atmospheric, fast and energetic, or cinematic and powerful?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 308,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.43264297200039437
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.3501180650000606
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.4653983790012717
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.13544322599955194
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash": {
+                        "input": {
+                          "tokens": 1955,
+                          "price": 0.00029325
+                        },
+                        "input_cache_read": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 30,
+                          "price": 0.000018
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "No music.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 316,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.13694925799973134
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_2101k8e48s0hepds9nee2nr29024",
+                    "workflow_node_id": null
+                  },
+                  "message": "Do you want the video to look completely realistic, like it was shot with a real camera, or do you...",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 318,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.4122957290001068
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.33827603300051123
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.46596401700116985
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.177364580998983
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash": {
+                        "input": {
+                          "tokens": 1988,
+                          "price": 0.0002982
+                        },
+                        "input_cache_read": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 37,
+                          "price": 0.0000222
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": true,
+                  "original_message": "Do you want the video to look completely realistic, like it was shot with a real camera, or do you want something more stylized — maybe surreal, artistic, or animated in feel?",
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "Yes, yeah totally realistic.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 322,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.7153312909995293
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_2101k8e48s0hepds9nee2nr29024",
+                    "workflow_node_id": null
+                  },
+                  "message": "Lastly, if you could describe the perfect final shot — what do we see and feel as the video ends?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 325,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.4377093179991789
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.3670119969992811
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.43769162699936714
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.15791219700076908
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash": {
+                        "input": {
+                          "tokens": 75,
+                          "price": 0.00001125
+                        },
+                        "input_cache_read": {
+                          "tokens": 1942,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 22,
+                          "price": 0.000013199999999999999
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "I think at the end it's really important that it's clear that the male lawyer is incredibly impressed with what he's seen of Legal Engine and that he's going to adopt it so you know I",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 332,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.9475157099986973
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_2101k8e48s0hepds9nee2nr29024",
+                    "workflow_node_id": null
+                  },
+                  "message": "Excellent — thank you! I now have everything I need to turn this into a cinematic video brief that captures your exact vision. Is there anything else you’d like the video to include before I finalise it?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 357,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.7509013299986691
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.6296065030001046
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.9290376629996899
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.44491125800050213
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash": {
+                        "input": {
+                          "tokens": 146,
+                          "price": 0.000021899999999999997
+                        },
+                        "input_cache_read": {
+                          "tokens": 1937,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 43,
+                          "price": 0.0000258
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "No, I don't think so.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 368,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.13726924399998097
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_2101k8e48s0hepds9nee2nr29024",
+                    "workflow_node_id": null
+                  },
+                  "message": "Alright, here's a summary of your video concept:\n\nYou're looking for a short, six to ten second cinematic clip for Legal Engine, a voice AI business, to gain brand recognition with lawyers and the legal industry for their product, Leonard. The video will feature two UK-based lawyers, one male and one female, walking down a corridor in a top fifty UK law firm office in the morning. The male lawyer expresses frustration about the time-consuming legal five hundred and Chambers submissions process. The female lawyer then introduces Legal Engine, pulls out her phone, and with a single button press, Leonard, Legal Engine's voice AI agent, calls her. After a short call, Leonard captures all the necessary information for the submissions process and sends an email with the details to her inbox immediately. The male lawyer is blown away, exclaiming his need for Legal Engine. The video should be realistic, like a typical advert, with some over-the-shoulder and front-on shots, and a shot of the email arriving. The mood should be professional and memorable, with no music. The final shot should clearly convey the male lawyer's strong impression and intention to adopt Legal Engine.\n\nDoes that sound accurate and complete?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 373,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.8464778390007268
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.6144438510000327
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 1.9963887590001832
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.5015376579995063
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash": {
+                        "input": {
+                          "tokens": 2135,
+                          "price": 0.00032025
+                        },
+                        "input_cache_read": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 249,
+                          "price": 0.0001494
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "Yes, it is. Could you make it more like 30 seconds, please?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 439,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.11173220400087303
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_2101k8e48s0hepds9nee2nr29024",
+                    "workflow_node_id": null
+                  },
+                  "message": "Certainly. So, we'll extend the duration to approximately fifteen seconds. This will allow for a bit more detail or slightly longer shots to convey the story. Are there any specific parts of the current concept you'd like to emphasize or expand upon with this extra...",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 446,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.5149528149995604
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.3652475309991132
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 1.0057606849986769
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.1683805789998587
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash": {
+                        "input": {
+                          "tokens": 467,
+                          "price": 0.00007005
+                        },
+                        "input_cache_read": {
+                          "tokens": 1935,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 71,
+                          "price": 0.0000426
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": true,
+                  "original_message": "Certainly. So, we'll extend the duration to approximately fifteen seconds. This will allow for a bit more detail or slightly longer shots to convey the story. Are there any specific parts of the current concept you'd like to emphasize or expand upon with this extra time, or should we just allow for a slightly more relaxed pacing of the existing narrative?",
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "No, I think we're good. Thanks.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 458,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.19311100199956854
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_2101k8e48s0hepds9nee2nr29024",
+                    "workflow_node_id": null
+                  },
+                  "message": "Excellent. So, to confirm, the video will be approximately fifteen seconds ...",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 461,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.45990391799932695
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.3510086109999975
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.6229019599995809
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.09212938900054723
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash": {
+                        "input": {
+                          "tokens": 536,
+                          "price": 0.00008039999999999999
+                        },
+                        "input_cache_read": {
+                          "tokens": 1931,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 32,
+                          "price": 0.0000192
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": true,
+                  "original_message": "Excellent. So, to confirm, the video will be approximately fifteen seconds long, and all other details from our previous conversation remain the same. Is that correct?",
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "Yeah, that's good. That's good. I think you've got everything. Thanks. Goodbye.",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 465,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.2440785329999926
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_2101k8e48s0hepds9nee2nr29024",
+                    "workflow_node_id": null
+                  },
+                  "message": "You're very welcome! Thank you for your time and input. Goodbye!",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 470,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.8786737600003107
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.6383321590001287
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.8786524799998006
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.15499696300139476
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash": {
+                        "input": {
+                          "tokens": 581,
+                          "price": 0.00008714999999999999
+                        },
+                        "input_cache_read": {
+                          "tokens": 1925,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 16,
+                          "price": 0.0000096
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                }
+              ],
+              "metadata": {
+                "start_time_unix_secs": 1761411550,
+                "accepted_time_unix_secs": 1761411550,
+                "call_duration_secs": 474,
+                "cost": 2813,
+                "deletion_settings": {
+                  "deletion_time_unix_secs": null,
+                  "deleted_logs_at_time_unix_secs": null,
+                  "deleted_audio_at_time_unix_secs": null,
+                  "deleted_transcript_at_time_unix_secs": null,
+                  "delete_transcript_and_pii": false,
+                  "delete_audio": false
+                },
+                "feedback": {
+                  "overall_score": null,
+                  "likes": 0,
+                  "dislikes": 0
+                },
+                "authorization_method": "authorization_header",
+                "charging": {
+                  "dev_discount": true,
+                  "is_burst": false,
+                  "tier": "enterprise",
+                  "llm_usage": {
+                    "irreversible_generation": {
+                      "model_usage": {
+                        "gemini-2.5-flash": {
+                          "input": {
+                            "tokens": 18451,
+                            "price": 0.0027676499999999995
+                          },
+                          "input_cache_read": {
+                            "tokens": 9670,
+                            "price": 0
+                          },
+                          "input_cache_write": {
+                            "tokens": 0,
+                            "price": 0
+                          },
+                          "output_total": {
+                            "tokens": 784,
+                            "price": 0.0004704
+                          }
+                        }
+                      }
+                    },
+                    "initiated_generation": {
+                      "model_usage": {
+                        "gemini-2.5-flash": {
+                          "input": {
+                            "tokens": 29888,
+                            "price": 0.0044832000000000006
+                          },
+                          "input_cache_read": {
+                            "tokens": 9670,
+                            "price": 0
+                          },
+                          "input_cache_write": {
+                            "tokens": 0,
+                            "price": 0
+                          },
+                          "output_total": {
+                            "tokens": 846,
+                            "price": 0.0005076
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "llm_price": 0.0049908,
+                  "llm_charge": 50,
+                  "call_charge": 2763,
+                  "free_minutes_consumed": 0,
+                  "free_llm_dollars_consumed": 0
+                },
+                "phone_call": null,
+                "batch_call": null,
+                "termination_reason": "Client disconnected: 1005",
+                "error": null,
+                "main_language": "en",
+                "rag_usage": null,
+                "text_only": false,
+                "features_usage": {
+                  "language_detection": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "transfer_to_agent": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "transfer_to_number": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "multivoice": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "dtmf_tones": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "external_mcp_servers": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "pii_zrm_workspace": false,
+                  "pii_zrm_agent": false,
+                  "tool_dynamic_variable_updates": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "is_livekit": false,
+                  "voicemail_detection": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "workflow": {
+                    "enabled": false,
+                    "tool_node": {
+                      "enabled": false,
+                      "used": false
+                    },
+                    "standalone_agent_node": {
+                      "enabled": false,
+                      "used": false
+                    },
+                    "phone_number_node": {
+                      "enabled": false,
+                      "used": false
+                    },
+                    "end_node": {
+                      "enabled": false,
+                      "used": false
+                    }
+                  },
+                  "agent_testing": {
+                    "enabled": false,
+                    "tests_ran_after_last_modification": false,
+                    "tests_ran_in_last_7_days": false
+                  }
+                },
+                "eleven_assistant": {
+                  "is_eleven_assistant": false
+                },
+                "initiator_id": "1jocLV1YMhbdrLSRX3Me8aWkbRX2",
+                "conversation_initiation_source": "react_sdk",
+                "conversation_initiation_source_version": "0.5.0",
+                "timezone": null,
+                "initiation_trigger": {
+                  "trigger_type": "default"
+                },
+                "async_metadata": null,
+                "whatsapp": null,
+                "agent_created_from": "ui",
+                "agent_last_updated_from": "ui"
+              },
+              "analysis": {
+                "evaluation_criteria_results": {},
+                "data_collection_results": {
+                  "email_address": {
+                    "data_collection_id": "email_address",
+                    "value": null,
+                    "json_schema": {
+                      "type": "string",
+                      "description": "The users email address, properly formatted and validated as an email address of appropriate structure. ",
+                      "enum": null,
+                      "dynamic_variable": "",
+                      "constant_value": ""
+                    },
+                    "rationale": "I have reviewed the conversation and there is no mention of the user's email address. Therefore, I cannot extract the user's email address."
+                  },
+                  "summary": {
+                    "data_collection_id": "summary",
+                    "value": "You're looking for a short, six to ten second cinematic clip for Legal Engine, a voice AI business, to gain brand recognition with lawyers and the legal industry for their product, Leonard. The video will feature two UK-based lawyers, one male and one female, walking down a corridor in a top fifty UK law firm office in the morning. The male lawyer expresses frustration about the time-consuming legal five hundred and Chambers submissions process. The female lawyer then introduces Legal Engine, pulls out her phone, and with a single button press, Leonard, Legal Engine's voice AI agent, calls her. After a short call, Leonard captures all the necessary information for the submissions process and sends an email with the details to her inbox immediately. The male lawyer is blown away, exclaiming his need for Legal Engine. The video should be realistic, like a typical advert, with some over-the-shoulder and front-on shots, and a shot of the email arriving. The mood should be professional and memorable, with no music. The final shot should clearly convey the male lawyer's strong impression and intention to adopt Legal Engine.",
+                    "json_schema": {
+                      "type": "string",
+                      "description": "The summary of the user's video requirements",
+                      "enum": null,
+                      "dynamic_variable": "",
+                      "constant_value": ""
+                    },
+                    "rationale": "The agent provides a summary of the user's video requirements at 2025-10-25T17:05:23+00:00. This summary is then confirmed by the user at 2025-10-25T17:06:29+00:00 and adjusted to be 15 seconds long at 2025-10-25T17:06:36+00:00. The final summary is: \"You're looking for a short, six to ten second cinematic clip for Legal Engine, a voice AI business, to gain brand recognition with lawyers and the legal industry for their product, Leonard. The video will feature two UK-based lawyers, one male and one female, walking down a corridor in a top fifty UK law firm office in the morning. The male lawyer expresses frustration about the time-consuming legal five hundred and Chambers submissions process. The female lawyer then introduces Legal Engine, pulls out her phone, and with a single button press, Leonard, Legal Engine's voice AI agent, calls her. After a short call, Leonard captures all the necessary information for the submissions process and sends an email with the details to her inbox immediately. The male lawyer is blown away, exclaiming his need for Legal Engine. The video should be realistic, like a typical advert, with some over-the-shoulder and front-on shots, and a shot of the email arriving. The mood should be professional and memorable, with no music. The final shot should clearly convey the male lawyer's strong impression and intention to adopt Legal Engine.\" with the adjustment to be 15 seconds long."
+                  }
+                },
+                "call_successful": "success",
+                "transcript_summary": "The user and AI agent collaborated to design a video concept for Legal Engine, a voice AI business. The video aims to promote their product, Leonard, to lawyers. The user described a scene with two lawyers in a UK law firm, where Leonard simplifies the legal submissions process. The agent summarized the concept, and the user requested the video length be extended to 15 seconds. The user confirmed the details and concluded the conversation.\n",
+                "call_summary_title": "Video Ad Design: LegalEngine"
+              },
+              "conversation_initiation_client_data": {
+                "conversation_config_override": {
+                  "tts": {
+                    "voice_id": null,
+                    "stability": null,
+                    "speed": null,
+                    "similarity_boost": null
+                  },
+                  "conversation": {
+                    "text_only": null
+                  },
+                  "agent": {
+                    "first_message": null,
+                    "language": null,
+                    "prompt": null
+                  }
+                },
+                "custom_llm_extra_body": {},
+                "user_id": "1jocLV1YMhbdrLSRX3Me8aWkbRX2",
+                "source_info": {
+                  "source": "react_sdk",
+                  "version": "0.5.0"
+                },
+                "dynamic_variables": {
+                  "system__agent_id": "agent_2101k8e48s0hepds9nee2nr29024",
+                  "system__current_agent_id": "agent_2101k8e48s0hepds9nee2nr29024",
+                  "system__conversation_id": "conv_5101k8e4yk8jfrftvbwz66c13q3z",
+                  "system__caller_id": null,
+                  "system__called_number": null,
+                  "system__call_duration_secs": 473,
+                  "system__time_utc": "2025-10-25T17:07:04.098991+00:00",
+                  "system__time": "Saturday, 17:07 25 October 2025",
+                  "system__timezone": null,
+                  "system__call_sid": null
+                }
+              }
+            }
+          },
+          "webhookUrl": "https://leonard-dev.app.n8n.cloud/webhook/voice_to_video",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "triggerCount": 1,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

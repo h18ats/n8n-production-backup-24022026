@@ -1,0 +1,240 @@
+{
+  "name": "DEV - FF Luke 0 - Lee Post Call Fireflies Transcript - Andy",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "2d713538-259f-413a-b5e1-d6f3c39ab397",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -160,
+        -896
+      ],
+      "id": "acea4e19-a5ac-480d-ad2a-e69cb03596e5",
+      "name": "Lee Fireflies Webhook",
+      "webhookId": "2d713538-259f-413a-b5e1-d6f3c39ab397"
+    },
+    {
+      "parameters": {
+        "transcriptId": "={{ $json.body.meetingId }}"
+      },
+      "type": "@firefliesai/n8n-nodes-fireflies.fireflies",
+      "typeVersion": 1,
+      "position": [
+        96,
+        -896
+      ],
+      "id": "54aa7081-0c14-4a2c-8823-8c71710311d0",
+      "name": "Get a transcript2",
+      "credentials": {
+        "firefliesApi": {
+          "id": "WlvA2onXFybeJ92u",
+          "name": "Fireflies account - Lee"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getTranscriptSummary",
+        "transcriptId": "={{ $json.data.id }}"
+      },
+      "type": "@firefliesai/n8n-nodes-fireflies.fireflies",
+      "typeVersion": 1,
+      "position": [
+        304,
+        -896
+      ],
+      "id": "8e983402-9b7e-424e-babe-dc00865acf21",
+      "name": "Get a summary of a transcript2",
+      "credentials": {
+        "firefliesApi": {
+          "id": "WlvA2onXFybeJ92u",
+          "name": "Fireflies account - Lee"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0dd22e64-c7a6-41cf-98b4-c1da36af1396",
+              "name": "data.sentences",
+              "value": "={{ $('Get a transcript2').item.json.data.sentences }}",
+              "type": "array"
+            },
+            {
+              "id": "940b0e00-ca02-47f0-94e9-aff56182987e",
+              "name": "data.summary.action_items",
+              "value": "={{ $json.data.summary.action_items }}",
+              "type": "string"
+            },
+            {
+              "id": "25413b01-6b77-4cd2-b27d-fd34e1e5c338",
+              "name": "data.summary.shorthand_bullet",
+              "value": "={{ $json.data.summary.shorthand_bullet }}",
+              "type": "string"
+            },
+            {
+              "id": "962de2ef-98d5-4b57-8740-081230dfaa72",
+              "name": "data.summary.overview",
+              "value": "={{ $json.data.summary.overview }}",
+              "type": "string"
+            },
+            {
+              "id": "93e32f37-f848-4a26-b100-9fa65c5b50c8",
+              "name": "data.summary.bullet_gist",
+              "value": "={{ $json.data.summary.bullet_gist }}",
+              "type": "string"
+            },
+            {
+              "id": "751e9c09-8bb2-4731-b0de-55739aa21035",
+              "name": "data.summary.gist",
+              "value": "={{ $json.data.summary.gist }}",
+              "type": "string"
+            },
+            {
+              "id": "6dbabfe3-3601-4335-b1ac-62f33eb15ef1",
+              "name": "data.summary.short_summary",
+              "value": "={{ $json.data.summary.short_summary }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        512,
+        -896
+      ],
+      "id": "78d0d652-7b12-4b46-a27c-f3aaed91cc2b",
+      "name": "Set Nodes to pass1"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "Qb06mjZMSPBGQBSK",
+          "mode": "list",
+          "cachedResultName": "DEV -FF Luke 1 - Post Call Luke with FF"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        720,
+        -896
+      ],
+      "id": "c961f877-1b5e-4330-a6fe-73415f729adb",
+      "name": "Execute Workflow"
+    }
+  ],
+  "connections": {
+    "Lee Fireflies Webhook": {
+      "main": [
+        [
+          {
+            "node": "Get a transcript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a transcript2": {
+      "main": [
+        [
+          {
+            "node": "Get a summary of a transcript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a summary of a transcript2": {
+      "main": [
+        [
+          {
+            "node": "Set Nodes to pass1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Nodes to pass1": {
+      "main": [
+        [
+          {
+            "node": "Execute Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {
+    "Lee Fireflies Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "leonard-dev.app.n8n.cloud",
+            "user-agent": "axios/1.11.0",
+            "content-length": "80",
+            "accept": "application/json, text/plain, */*",
+            "accept-encoding": "gzip, br",
+            "baggage": "sentry-environment=production,sentry-release=1.61.0,sentry-public_key=010261725034495cbd9605cd1d3c1a2d,sentry-trace_id=93d539590dd24d37b2cc80d50479b8a1",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "35.184.58.76",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "US",
+            "cf-ray": "979ed6ef459a993b-DUS",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "sentry-trace": "93d539590dd24d37b2cc80d50479b8a1-9c2dd0798ae567f1",
+            "x-forwarded-for": "35.184.58.76, 172.69.109.61",
+            "x-forwarded-host": "leonard-dev.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-52-6c4f4684d5-sdmff",
+            "x-is-trusted": "yes",
+            "x-real-ip": "35.184.58.76"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "meetingId": "01K45K8V3CAJT038C5C9ZMSYY9",
+            "eventType": "Transcription completed"
+          },
+          "webhookUrl": "https://leonard-dev.app.n8n.cloud/webhook/firefliespostcall",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "triggerCount": 1,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

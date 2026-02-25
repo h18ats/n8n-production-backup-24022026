@@ -1,0 +1,145 @@
+{
+  "name": "TEST - Summary/Consolidation of Airtable - Owner Andy",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "4d0cd2f8-7b7e-4cb2-8dc2-56957db8b83f",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "1ed315f8-39dd-4194-b754-859c8f40bfea",
+      "name": "Date & Time"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appqXY4NTowyUys7a",
+          "mode": "list",
+          "cachedResultName": "Lottie Live Data",
+          "cachedResultUrl": "https://airtable.com/appqXY4NTowyUys7a"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl9NJsjg5hJRqpPx",
+          "mode": "list",
+          "cachedResultName": "Lottie Conversation Log",
+          "cachedResultUrl": "https://airtable.com/appqXY4NTowyUys7a/tbl9NJsjg5hJRqpPx"
+        },
+        "filterByFormula": "={{`{Date Last Updated} = '${$json.extractedDate}'`}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        672,
+        0
+      ],
+      "id": "b9652fcd-6d2b-4cef-ab60-89f0b66859ce",
+      "name": "Search records",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        896,
+        0
+      ],
+      "id": "d0806939-b03d-462c-994a-92508b8c4c74",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "jsCode": "// runOnceForAllItems mode\nreturn $input.all().map(item => {\n  const dateMatch = (item.json.currentDate || \"\").match(/^\\d{4}-\\d{2}-\\d{2}/);\n  return {\n    json: {\n      ...item.json,\n      extractedDate: dateMatch ? dateMatch[0] : null,\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ],
+      "id": "faaa359f-11e1-4186-b3e3-90b76fb808af",
+      "name": "Code in JavaScript"
+    }
+  ],
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Date & Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Time": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search records": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Search records",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 0,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

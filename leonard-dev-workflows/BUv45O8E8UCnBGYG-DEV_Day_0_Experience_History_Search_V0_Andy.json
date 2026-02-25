@@ -1,0 +1,335 @@
+{
+  "name": "DEV - Day 0 - Experience History Search V0 - Andy",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "5efc6218-5888-4515-9f4a-0c51cf9834aa",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "4ea1f4e5-28f4-44bc-9bb6-2bdf06fbaff5",
+      "name": "ElevenLabs Webhook1",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1424,
+        -80
+      ],
+      "webhookId": "5efc6218-5888-4515-9f4a-0c51cf9834aa"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7b023aea-7579-45d0-acdd-e3ac147f550b",
+              "leftValue": "={{ $json.Matter_name }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -736,
+        16
+      ],
+      "id": "3cab1f03-a434-4727-84fb-fa431299e1b7",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{\n  \"{\\n\" +\n  \"  \\\"conversation_history\\\": \" + JSON.stringify($json[\"Conversation history\"]) + \",\\n\" +\n  \"  \\\"clients\\\": \" + JSON.stringify($items('Update record')[0]?.json?.Clients ?? \"no details found\") + \",\\n\" +\n  \"  \\\"matters\\\": \" + JSON.stringify($items('Update record')[0]?.json?.Matters ?? \"no details found\") + \"\\n\" +\n  \"}\"\n}}\n",
+        "options": {}
+      },
+      "id": "c7a83630-e060-4cfd-82b6-5e16429adc51",
+      "name": "Return 'no details' ElevenLabs",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -512,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{\n  \"{\\n\" +\n  \"  \\\"items\\\": \" + JSON.stringify($items() ?? []) + \",\\n\" +\n  \"  \\\"matters\\\": \" + JSON.stringify(\n        ($items() ?? []).map(i => ({\n          matterName: i.json?.[\"Matter name\"] ?? null,\n          leadLawyerName: i.json?.[\"Lead Lawyer Name\"] ?? null,\n          clientType: i.json?.[\"Client type\"] ?? null,\n          sector: i.json?.Sector ?? null,\n          practiceArea: i.json?.[\"Practice area\"] ?? null,\n          status: i.json?.Status ?? null,\n          notableFeatures: i.json?.[\"Notable features\"] ?? null,\n          whyThisMatters: i.json?.[\"Why this matters\"] ?? null\n        }))\n      ) + \"\\n\" +\n  \"}\"\n}}\n",
+        "options": {}
+      },
+      "id": "61fdfd76-c772-41f3-b904-c7355a36a3a9",
+      "name": "Return Conv History to ElevenLabs",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -512,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "options": {},
+        "path": "ef048da4-251a-48fe-b64e-236d0110a2cd"
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -1424,
+        112
+      ],
+      "id": "63bc7416-60d8-4d1b-982f-5f843708e42b",
+      "name": "When chat message received",
+      "webhookId": "ef048da4-251a-48fe-b64e-236d0110a2cd"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2c7ea5a3-9298-4d62-91ac-b22ef3027fb3",
+              "name": "Matter_name",
+              "value": "={{ $json['Matter name'] }}",
+              "type": "string"
+            },
+            {
+              "id": "cd4aafea-9826-4f64-be9a-ee3edb7c59a1",
+              "name": "Lead_Lawyer_Name",
+              "value": "={{ $json['Lead Lawyer Name'] }}",
+              "type": "string"
+            },
+            {
+              "id": "0c7d54f1-7586-4d88-beca-3abd00bdd739",
+              "name": "Client_type",
+              "value": "={{ $json['Client type'] }}",
+              "type": "string"
+            },
+            {
+              "id": "d9b720e7-8808-4066-bfbc-8cf296abd61b",
+              "name": "Sector",
+              "value": "={{ $json.Sector }}",
+              "type": "string"
+            },
+            {
+              "id": "e6d3ff50-ba39-4b93-bc69-29d32e208400",
+              "name": "Practice_area",
+              "value": "={{ $json['Practice area'] }}",
+              "type": "string"
+            },
+            {
+              "id": "6ca2257a-0fac-4b03-bc5d-a30ecda27b93",
+              "name": "Status",
+              "value": "={{ $json.Status }}",
+              "type": "string"
+            },
+            {
+              "id": "3076bece-9094-40a8-9468-50acd3d2bfe5",
+              "name": "Notable_features",
+              "value": "={{ $json['Notable features'] }}",
+              "type": "string"
+            },
+            {
+              "id": "19e4c92b-2fe9-4d82-9438-d3fff186b602",
+              "name": "Why_this_matters",
+              "value": "={{ $json['Why this matters'] }}",
+              "type": "string"
+            },
+            {
+              "id": "50d8bac0-6343-41c7-80ab-4017a438affa",
+              "name": "Matter_ID",
+              "value": "={{ $json['Matter ID'] }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -960,
+        16
+      ],
+      "id": "efe45a29-058d-4254-adcc-7b8078d9135e",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appZrcHtsKa2j9fc8",
+          "mode": "list",
+          "cachedResultName": "Legal Engine Day 0 Base",
+          "cachedResultUrl": "https://airtable.com/appZrcHtsKa2j9fc8"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblesRZ5rVdULpo77",
+          "mode": "list",
+          "cachedResultName": "Matter Upload Template Dev",
+          "cachedResultUrl": "https://airtable.com/appZrcHtsKa2j9fc8/tblesRZ5rVdULpo77"
+        },
+        "filterByFormula": "=({Matter ID}='{{ $json.body.Matter_ID }}')",
+        "returnAll": false,
+        "limit": 30,
+        "options": {
+          "fields": [
+            "Short Matter Summary",
+            "Matter name",
+            "Lead Lawyer Name",
+            "Client type",
+            "Sector",
+            "Practice area",
+            "Status",
+            "Notable features",
+            "Why this matters",
+            "Matter ID"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -1168,
+        16
+      ],
+      "id": "f771b37b-302f-4079-a244-fe205a1dcb2b",
+      "name": "Search records",
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "ElevenLabs Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Search records",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Return Conv History to ElevenLabs",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return 'no details' ElevenLabs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Search records",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search records": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {
+    "ElevenLabs Webhook1": [
+      {
+        "json": {
+          "headers": {
+            "host": "leonard-dev.app.n8n.cloud",
+            "user-agent": "ElevenLabs/1.0",
+            "content-length": "273",
+            "accept": "*/*",
+            "accept-encoding": "gzip, br",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "34.77.234.246",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "BE",
+            "cf-ray": "9bb0486db6e4d482-CDG",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "x-forwarded-for": "34.77.234.246, 172.71.232.119",
+            "x-forwarded-host": "leonard-dev.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-52-6c4f4684d5-dxhms",
+            "x-is-trusted": "yes",
+            "x-real-ip": "34.77.234.246"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "Matter_Name": "Black Lantern",
+            "Lead_Lawyer_Name": "Sarah Chen",
+            "Client_type": "Corporate",
+            "Sector": "Technology",
+            "Short_Matter_Summary": "Complex technology licensing dispute involving AI intellectual property rights and cross-border enforcement.",
+            "Matter_ID": "11"
+          },
+          "webhookUrl": "https://leonard-dev.app.n8n.cloud/webhook/day_0_exp_search",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "triggerCount": 2,
+  "meta": null
+}

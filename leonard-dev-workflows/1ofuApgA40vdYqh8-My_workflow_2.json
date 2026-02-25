@@ -1,0 +1,249 @@
+{
+  "name": "My workflow 2",
+  "nodes": [
+    {
+      "parameters": {
+        "resource": "folder",
+        "folderId": "id=%2Fsites%2FLINARConsulting%2FShared%20Documents%2FGeneral%2FThree%20Things&listurl=https%3A%2F%2Flinarconsulting%2Esharepoint%2Ecom%2Fsites%2FLINARConsulting%2FShared%20Documents"
+      },
+      "type": "n8n-nodes-base.microsoftOneDrive",
+      "typeVersion": 1,
+      "position": [
+        -176,
+        688
+      ],
+      "id": "5713f5a6-a54b-4c59-a0a8-dfa421258853",
+      "name": "Get items in a folder",
+      "credentials": {
+        "microsoftOneDriveOAuth2Api": {
+          "id": "O6kcuY0URca0xV5I",
+          "name": "Microsoft Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        464
+      ],
+      "id": "451ddd3e-69d1-4d18-868c-e6bbb0c5f083",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": 10,
+        "simple": false,
+        "filters": {
+          "labelIds": [
+            "Label_4258902322851199219"
+          ],
+          "receivedAfter": "2025-10-01T00:00:00"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        416,
+        464
+      ],
+      "id": "91179308-bfe7-4765-a60f-12fd04156a3b",
+      "name": "Get many messages",
+      "webhookId": "31d63ea2-f268-4d08-80bc-6efe0de9fc7f",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "N15HJY1qHiINx9PM",
+          "name": "Lee C Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "You are a helpful assistant designed to read emails from your childrens school and understand whether the message relates to your children",
+        "options": {
+          "systemMessage": ""
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        624,
+        464
+      ],
+      "id": "03bb63d2-7134-43f4-a2d1-49a70755602f",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        496,
+        672
+      ],
+      "id": "42f6e23c-ab32-4b11-8d8f-69733eff16af",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "A6TzpvpaIyqf4IKq",
+          "name": "Lee C chat GPT account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            },
+            {}
+          ]
+        },
+        "filters": {
+          "labelIds": [
+            "Label_570060391721057354"
+          ],
+          "readStatus": "unread"
+        }
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -912,
+        944
+      ],
+      "id": "bd9a5eb5-28d9-4de2-9b04-c5ff055cd5ea",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "N15HJY1qHiINx9PM",
+          "name": "Lee C Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "messageId": "={{ $json.id }}"
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -704,
+        944
+      ],
+      "id": "9ce9e055-de15-4ec8-85f3-d9324bd38592",
+      "name": "Get a message",
+      "webhookId": "02bf15c7-eb8b-44cc-bc03-f344075a781e",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "N15HJY1qHiINx9PM",
+          "name": "Lee C Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "dataPropertyName": "={{ $json.snippet }}\n\n{{ $json.From }}\n\n{{ $json.Subject }}",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "={{ $json.snippet }}"
+            },
+            {}
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        -496,
+        944
+      ],
+      "id": "c9bf8768-a6d9-41b5-b4bf-fc6e098c364e",
+      "name": "HTML"
+    }
+  ],
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get many messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many messages": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a message": {
+      "main": [
+        [
+          {
+            "node": "HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 0,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

@@ -1,0 +1,412 @@
+{
+  "name": "HSFK UC 10.5 - Event Run-Sheet Orchestrator",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "hsfk-uc-10.5",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "1ec08941-dc9f-47cf-9dbc-b7b310648832",
+      "name": "ElevenLabs Post-Call",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "4c333150-dc63-4d39-852e-f02146d55054"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6850b4a6-8f07-40dc-bea1-3d1d5f37469f",
+              "name": "eventDate",
+              "value": "={{ $json.body.extracted_data.eventDate }}",
+              "type": "string"
+            },
+            {
+              "id": "df65c8cc-f465-4e29-8694-23f5cd89cc89",
+              "name": "expectedAttendees",
+              "value": "={{ $json.body.extracted_data.expectedAttendees }}",
+              "type": "number"
+            },
+            {
+              "id": "c8994434-691c-4cec-8df5-ea94db43cf8b",
+              "name": "eventFormat",
+              "value": "={{ $json.body.extracted_data.eventFormat }}",
+              "type": "string"
+            },
+            {
+              "id": "1deec7fd-5bd1-44f4-9b8a-f3f0b1e70a58",
+              "name": "roomRequirements",
+              "value": "={{ $json.body.extracted_data.roomRequirements }}",
+              "type": "string"
+            },
+            {
+              "id": "b0e55e74-f2d8-4e1c-b90b-91f78340da0f",
+              "name": "cateringNeeds",
+              "value": "={{ $json.body.extracted_data.cateringNeeds }}",
+              "type": "string"
+            },
+            {
+              "id": "d0dcb919-6ed5-4328-ba1c-33f939a6710b",
+              "name": "avNeeds",
+              "value": "={{ $json.body.extracted_data.avNeeds }}",
+              "type": "string"
+            },
+            {
+              "id": "ca4c593e-3bdc-4dd5-9cea-df9547496e4e",
+              "name": "staffingNeeds",
+              "value": "={{ $json.body.extracted_data.staffingNeeds }}",
+              "type": "string"
+            },
+            {
+              "id": "0d29ffec-3e97-461a-af26-276f6c48038b",
+              "name": "materialsNeeded",
+              "value": "={{ $json.body.extracted_data.materialsNeeded }}",
+              "type": "string"
+            },
+            {
+              "id": "55fb6baf-15d0-485f-9704-e7046035e230",
+              "name": "bdInvolvement",
+              "value": "={{ $json.body.extracted_data.bdInvolvement }}",
+              "type": "string"
+            },
+            {
+              "id": "91755753-ea7f-4053-8057-a8b5478735f2",
+              "name": "conversation_id",
+              "value": "={{ $json.body.conversation_id }}",
+              "type": "string"
+            },
+            {
+              "id": "24d35ab2-aaea-4611-94f6-3471e7f403d9",
+              "name": "agent_id",
+              "value": "={{ $json.body.agent_id }}",
+              "type": "string"
+            },
+            {
+              "id": "8fba7842-f513-4ac3-a878-c6f5b162d70a",
+              "name": "duration_seconds",
+              "value": "={{ $json.body.duration_seconds }}",
+              "type": "string"
+            },
+            {
+              "id": "f13dfec8-780f-4982-89c5-a4d7803d588f",
+              "name": "caller_name",
+              "value": "={{ $json.body.metadata?.first_name || 'Unknown' }}",
+              "type": "string"
+            },
+            {
+              "id": "000fa500-efc4-41f5-9e5d-5c15bd82048d",
+              "name": "caller_email",
+              "value": "={{ $json.body.metadata?.email || '' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      },
+      "id": "a8a7bbd1-fa7e-48af-ade1-b24f840430f1",
+      "name": "Extract Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        240,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "combinator": "and"
+          },
+          "conditions": [
+            {
+              "id": "8bb25690-f4d0-48a8-b137-e7d93236aa5a",
+              "leftValue": "={{ $json.eventDate }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            },
+            {
+              "id": "72f32242-ad4f-4efc-8084-114689ab1a28",
+              "leftValue": "={{ $json.eventFormat }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            },
+            {
+              "id": "35816120-8361-47a9-a7a3-6ed6fa622f2f",
+              "leftValue": "={{ $json.roomRequirements }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a840a11e-db02-430e-a303-2311c945a753",
+      "name": "Data Complete?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        480,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "eefe38c0-ae8a-4ae4-92c8-976522319066",
+              "name": "summary",
+              "value": "={{ \"## HSFK UC 10.5 - Event Run-Sheet Orchestrator\\n\\n**Caller:** \" + ($json.caller_name || \"Unknown\") + \" (\" + ($json.caller_email || \"no email\") + \")\\n**Duration:** \" + ($json.duration_seconds || \"?\") + \"s\\n**Conversation ID:** \" + ($json.conversation_id || \"?\") + \"\\n\\n### Captured Data\\n\\n- **eventDate**: \" + ($json.eventDate || \"N/A\") + \"\\n- **expectedAttendees**: \" + ($json.expectedAttendees || \"N/A\") + \"\\n- **eventFormat**: \" + ($json.eventFormat || \"N/A\") + \"\\n- **roomRequirements**: \" + ($json.roomRequirements || \"N/A\") + \"\\n- **cateringNeeds**: \" + ($json.cateringNeeds || \"N/A\") + \"\\n- **avNeeds**: \" + ($json.avNeeds || \"N/A\") + \"\\n- **staffingNeeds**: \" + ($json.staffingNeeds || \"N/A\") + \"\\n- **materialsNeeded**: \" + ($json.materialsNeeded || \"N/A\") + \"\\n- **bdInvolvement**: \" + ($json.bdInvolvement || \"N/A\") + \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "c17bfe01-db3b-4b95-9370-123d73f407b7",
+              "name": "ucId",
+              "value": "10.5",
+              "type": "string"
+            },
+            {
+              "id": "f911dd59-a144-4793-821b-5556eb56d770",
+              "name": "agentName",
+              "value": "Event Run-Sheet Orchestrator",
+              "type": "string"
+            },
+            {
+              "id": "62607f7f-57c1-48d3-b80d-f97716d9bbd5",
+              "name": "timestamp",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "a77b380e-db43-4db8-8ec0-881bc2f4988c",
+      "name": "Format Summary",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        720,
+        -60
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "app0QZAuhY8Zx4I54",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl8hV2nYEoRS8Gif",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "UC ID": "={{ $json.ucId }}",
+            "Agent Name": "={{ $json.agentName }}",
+            "Caller": "={{ $json.caller_name }}",
+            "Email": "={{ $json.caller_email }}",
+            "Summary": "={{ $json.summary }}",
+            "Conversation ID": "={{ $json.conversation_id }}",
+            "Duration": "={{ parseInt($json.duration_seconds) || 0 }}",
+            "Timestamp": "={{ $json.timestamp }}",
+            "Data Complete": true,
+            "Raw Extracted Data": "={{ JSON.stringify($json) }}"
+          },
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "77978dbd-c4d6-4d50-a6fa-5ccc9b6db0c8",
+      "name": "Log to Airtable",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        960,
+        -60
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "57nd5p5f6kuW4Xs0",
+          "name": "HSFK Airtable"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://slack.com/api/chat.postMessage",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ channel: \"C098F8Z4P1U\", text: \"New voice conversation for UC 10.5 (Event Run-Sheet Orchestrator):\\nCaller: \" + ($(\"Format Summary\").item.json.caller_name || \"Unknown\") + \" (\" + ($(\"Format Summary\").item.json.caller_email || \"no email\") + \")\\nDuration: \" + ($(\"Format Summary\").item.json.duration_seconds || \"?\") + \"s\\nConversation: \" + ($(\"Format Summary\").item.json.conversation_id || \"?\") }) }}",
+        "options": {}
+      },
+      "id": "ecca9480-30b9-4382-8187-56599131631f",
+      "name": "Notify Slack",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1200,
+        -60
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "rYd0mT6IhOLBmosk",
+          "name": "HSFK Slack Bot (Header Auth)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ status: \"ok\", message: \"Data captured and logged\" }) }}",
+        "options": {}
+      },
+      "id": "e147a127-5ccc-4088-8131-ab461c8e2824",
+      "name": "Respond OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1440,
+        -60
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ status: \"incomplete\", message: \"Some required fields missing, logged for review\" }) }}",
+        "options": {
+          "responseCode": 202
+        }
+      },
+      "id": "f47be983-bbf8-4156-b746-042d10589191",
+      "name": "Respond Incomplete",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        720,
+        120
+      ]
+    }
+  ],
+  "connections": {
+    "ElevenLabs Post-Call": {
+      "main": [
+        [
+          {
+            "node": "Extract Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Data": {
+      "main": [
+        [
+          {
+            "node": "Data Complete?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Complete?": {
+      "main": [
+        [
+          {
+            "node": "Format Summary",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Incomplete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Summary": {
+      "main": [
+        [
+          {
+            "node": "Log to Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log to Airtable": {
+      "main": [
+        [
+          {
+            "node": "Notify Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Slack": {
+      "main": [
+        [
+          {
+            "node": "Respond OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 1,
+  "meta": null
+}

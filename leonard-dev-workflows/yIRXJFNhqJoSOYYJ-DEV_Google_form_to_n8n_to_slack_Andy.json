@@ -1,0 +1,567 @@
+{
+  "name": "DEV - Google form to n8n to slack - Andy",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyX",
+              "value": 15,
+              "unit": "minutes"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1Xigb2vHMVVkh6uqJuo3bt4P6oFso6QMX7RSfUGebekE",
+          "mode": "list",
+          "cachedResultName": "Legal Engine product change notification (Responses)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Xigb2vHMVVkh6uqJuo3bt4P6oFso6QMX7RSfUGebekE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 740756852,
+          "mode": "list",
+          "cachedResultName": "Form responses 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Xigb2vHMVVkh6uqJuo3bt4P6oFso6QMX7RSfUGebekE/edit#gid=740756852"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        -16
+      ],
+      "id": "348fd257-81e5-4327-9a6b-d8e971d993a4",
+      "name": "Google Sheets Trigger",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "O2xKBAaVFeGxtRVH",
+          "name": "b18ats@gmail Sheets Link"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "28e78305-ceb0-4558-8ad1-34d1358f0e2d",
+              "name": "Name of submitter",
+              "value": "={{ $json[\"Name of submitter\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "6854659c-b12d-4064-b107-d7835bb3bd99",
+              "name": "Platform updated/amended",
+              "value": "={{ $json[\"Platform updated/amended\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "4cd11cc7-649d-4bd2-84c9-9f3c92cd66e5",
+              "name": "Brief Summary of Changes",
+              "value": "={{ $json[\"Brief Summary of Changes\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "c51f408e-2fda-4a2f-ac60-e5ab200c8085",
+              "name": "Longer summary of changes or dump code here (if applicable)",
+              "value": "={{ $json[\"Longer summary of changes or dump code here (if applicable)\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "c5c99176-a027-423d-82a9-c21e49953fc6",
+              "name": "Platform/Environment",
+              "value": "={{ $json[\"Platform/Environment\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "66972788-79c9-43a9-a2df-8316fd124cc5",
+              "name": "Perceived risk level",
+              "value": "={{ $json[\"Perceived risk level\"] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        -16
+      ],
+      "id": "a6708c8e-3685-441b-9b7b-8bbc3c0fb109",
+      "name": "Set Nodes to pass1"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C096JD40UMR",
+          "mode": "list",
+          "cachedResultName": "engineering"
+        },
+        "text": "={{ $json[\"Name of submitter\"] }} has just made a {{ $json[\"Perceived risk level\"] }} risk change to the {{ $json[\"Platform/Environment\"] }} environment. \n\nSummary of change: {{ $json[\"Brief Summary of Changes\"] }}\n\nThis change impacted: {{ $json[\"Platform updated/amended\"] }}",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        432,
+        -16
+      ],
+      "id": "02231380-5c3d-4509-aa22-9b8126039510",
+      "name": "Send a message",
+      "webhookId": "0c0f309a-e53c-4541-a402-51e74d129b5f",
+      "credentials": {
+        "slackApi": {
+          "id": "FH8R3JdkpQ9U5WNV",
+          "name": "LE n8n Alerts"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "keep": "lastItems"
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        -16,
+        -16
+      ],
+      "id": "33a6506c-351d-4b8b-9325-3f9d820f9b64",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "content": "## Product Change Flow\n\n",
+        "height": 336,
+        "width": 1040
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -320,
+        -128
+      ],
+      "typeVersion": 1,
+      "id": "aab95227-1ec4-4716-8530-b73f5a7df53b",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyX",
+              "value": 15,
+              "unit": "minutes"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1fRw1kCVVq9qvqwSJdL-1DObCNpnOaQadE308kNGZvfs",
+          "mode": "list",
+          "cachedResultName": "Legal Engine Customer Security Concern Form (Responses)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1fRw1kCVVq9qvqwSJdL-1DObCNpnOaQadE308kNGZvfs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1152335848,
+          "mode": "list",
+          "cachedResultName": "Form Responses 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1fRw1kCVVq9qvqwSJdL-1DObCNpnOaQadE308kNGZvfs/edit#gid=1152335848"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        400
+      ],
+      "id": "a0f82f4a-f2f3-4817-9ebe-475d7d634f25",
+      "name": "Google Sheets Trigger1",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "Dnaz8O1hlZyhzWDW",
+          "name": "h18ats@gmail Sheets Link"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "28e78305-ceb0-4558-8ad1-34d1358f0e2d",
+              "name": "Name of submitter",
+              "value": "={{ $json[\"Name of submitter\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "147a160a-6e35-4b8c-8eeb-10487ef08fce",
+              "name": "Security concern to highlight",
+              "value": "={{ $json[\"Security concern to highlight\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "ff2d8e61-e16f-43ed-b2e0-ae17e0443efb",
+              "name": "What platform is the security concern related to?",
+              "value": "={{ $json[\"What platform is the security concern related to?\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "c8f4fcfb-178b-4b28-81b6-f5285b8b9a66",
+              "name": "In your opinion how serve is the risk?",
+              "value": "={{ $json[\"In your opinion how serve is the risk?\"] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        400
+      ],
+      "id": "3345486f-832d-4d14-a882-d95526f9a0f5",
+      "name": "Set Nodes to pass"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C09474926H3",
+          "mode": "list",
+          "cachedResultName": "security"
+        },
+        "text": "={{ $json[\"Name of submitter\"] }} has just submitted a {{ $json['In your opinion how serve is the risk?'] }} risk security concern related to {{ $json['Security concern to highlight'] }}.\n\nThe risk relates to the {{ $json['What platform is the security concern related to?'] }}. ",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        432,
+        400
+      ],
+      "id": "8cacf194-424f-4cab-abc1-ec06369e1b3a",
+      "name": "Send a message1",
+      "webhookId": "0c0f309a-e53c-4541-a402-51e74d129b5f",
+      "credentials": {
+        "slackApi": {
+          "id": "FH8R3JdkpQ9U5WNV",
+          "name": "LE n8n Alerts"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "keep": "lastItems"
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        -16,
+        400
+      ],
+      "id": "c9d4414a-0a84-48a4-9b9b-664e12621961",
+      "name": "Limit1"
+    },
+    {
+      "parameters": {
+        "content": "## Security Compliance Flow\n\n",
+        "height": 336,
+        "width": 1040
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -320,
+        288
+      ],
+      "typeVersion": 1,
+      "id": "59a30d85-5c97-413a-9862-2952d55318d9",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyX",
+              "value": 15,
+              "unit": "minutes"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "12CBC1Mb3uv2YnP84clDe-CoQdXavnnOBYi5LGoA7rW4",
+          "mode": "list",
+          "cachedResultName": "Legal Engine Product Priorities",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/12CBC1Mb3uv2YnP84clDe-CoQdXavnnOBYi5LGoA7rW4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 849884990,
+          "mode": "list",
+          "cachedResultName": "Product Requests Submitted",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/12CBC1Mb3uv2YnP84clDe-CoQdXavnnOBYi5LGoA7rW4/edit#gid=849884990"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        816
+      ],
+      "id": "05cf54e8-f622-4165-8a84-6b0acc18f514",
+      "name": "Google Sheets Trigger2",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "Dnaz8O1hlZyhzWDW",
+          "name": "h18ats@gmail Sheets Link"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f29c406d-a9b5-4095-939b-9ffe597d4fde",
+              "name": "Who are you?",
+              "value": "={{ $json[\"Who are you?\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "f6be634c-0434-400e-9ecd-534685c38aea",
+              "name": "What is the product/feature requested?",
+              "value": "={{ $json[\"What is the product/feature requested?\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "f1842383-c333-436f-beb4-2cd3881fe233",
+              "name": "What is the expected impact or upside from the product feature?",
+              "value": "={{ $json[\"What is the expected impact or upside from the product feature?\"] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        816
+      ],
+      "id": "be266a30-099c-47a4-8070-5f3562d9f417",
+      "name": "Set Nodes to pass2"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0958JA617E",
+          "mode": "list",
+          "cachedResultName": "product_ideas"
+        },
+        "text": "={{ $json['Who are you?'] }} has just submitted a new proudct request/idea.\n\nThe idea is: {{ $json['What is the product/feature requested?'] }}\n\nThe expected impact of this product/feature is: {{ $json['What is the expected impact or upside from the product feature?'] }}",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        432,
+        816
+      ],
+      "id": "39fa36d7-7a0a-4ca0-978d-e9e58fb0dfa1",
+      "name": "Send a message2",
+      "webhookId": "0c0f309a-e53c-4541-a402-51e74d129b5f",
+      "credentials": {
+        "slackApi": {
+          "id": "FH8R3JdkpQ9U5WNV",
+          "name": "LE n8n Alerts"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "keep": "lastItems"
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        -16,
+        816
+      ],
+      "id": "c20591f9-c4b4-43a7-84f6-0619180823f6",
+      "name": "Limit2"
+    },
+    {
+      "parameters": {
+        "content": "## Product Idea Flow\n\n",
+        "height": 336,
+        "width": 1040
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -320,
+        704
+      ],
+      "typeVersion": 1,
+      "id": "ca123fc8-4273-4af6-ab31-6113f28aa919",
+      "name": "Sticky Note2"
+    }
+  ],
+  "connections": {
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Nodes to pass1": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        []
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Set Nodes to pass1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Limit1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Nodes to pass": {
+      "main": [
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit1": {
+      "main": [
+        [
+          {
+            "node": "Set Nodes to pass",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets Trigger2": {
+      "main": [
+        [
+          {
+            "node": "Limit2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Nodes to pass2": {
+      "main": [
+        [
+          {
+            "node": "Send a message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit2": {
+      "main": [
+        [
+          {
+            "node": "Set Nodes to pass2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:Google Sheets Trigger": {
+      "documentId": "1Xigb2vHMVVkh6uqJuo3bt4P6oFso6QMX7RSfUGebekE",
+      "sheetId": 740756852,
+      "lastRevision": 6,
+      "lastRevisionLink": "https://docs.google.com/spreadsheets/export?id=1Xigb2vHMVVkh6uqJuo3bt4P6oFso6QMX7RSfUGebekE&revision=6&exportFormat=xlsx"
+    },
+    "node:Google Sheets Trigger1": {
+      "documentId": "1fRw1kCVVq9qvqwSJdL-1DObCNpnOaQadE308kNGZvfs",
+      "sheetId": 1152335848,
+      "lastRevision": 4,
+      "lastRevisionLink": "https://docs.google.com/spreadsheets/export?id=1fRw1kCVVq9qvqwSJdL-1DObCNpnOaQadE308kNGZvfs&revision=4&exportFormat=xlsx"
+    },
+    "node:Google Sheets Trigger2": {
+      "documentId": "12CBC1Mb3uv2YnP84clDe-CoQdXavnnOBYi5LGoA7rW4",
+      "sheetId": 849884990,
+      "lastRevision": 759,
+      "lastRevisionLink": "https://docs.google.com/spreadsheets/export?id=12CBC1Mb3uv2YnP84clDe-CoQdXavnnOBYi5LGoA7rW4&revision=759&exportFormat=xlsx"
+    }
+  },
+  "pinData": {},
+  "triggerCount": 3,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

@@ -1,0 +1,454 @@
+{
+  "name": "Alfred",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=The time is now: {{ $json.currentDate }}\n{{ $('Webhook').item.json.body.question }}\n{{ $('Webhook').item.json.body.question }}",
+        "options": {
+          "systemMessage": "=You're a helpful assistant that helps the user answer questions about their calendar.\n\nToday is {{ $now.format('cccc') }} the {{ $now.setZone('Europe/London').format('yyyy-MM-dd') }} at {{ $now.setZone('Europe/London').toFormat('HH:mm') }}.\n\nIf the user asks for their next appointment please only load one at a time (load the one that starts the soonest).\n\nIf the user asks to create an event in the calendar as 'soon as possible' then please check that the user is free now and then create the calendar event straight away, if not, as soon as the present event finishes."
+        }
+      },
+      "id": "d5738b96-5548-467a-a260-00b7133a4470",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -1160,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "941f3dda-61e4-4943-a6e8-b22bac94109f",
+      "name": "OpenAI Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        -1500,
+        360
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "0tx1OdGHk9oXq20w",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "\"session-id\""
+      },
+      "id": "9240b61b-43b0-4fe4-ad27-a7e230adedf5",
+      "name": "Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -1380,
+        360
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "fcf68529-7456-45c4-9232-aeace02fe661",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1720,
+        140
+      ],
+      "id": "0c3ed572-02a8-4105-8126-410fd780a090",
+      "name": "Webhook",
+      "webhookId": "fcf68529-7456-45c4-9232-aeace02fe661"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -420,
+        -120
+      ],
+      "id": "b649aac1-8016-48b1-8637-08748caef5c0",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "sendTo": "eduardo.aguilarpelaez@gmail.com",
+        "subject": "=Calendar: {{ $('Webhook').item.json.body.question }}",
+        "message": "={{ $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -420,
+        20
+      ],
+      "id": "ffc1a6f5-e9f5-4b18-b1ff-7feebd6e95f0",
+      "name": "Gmail",
+      "webhookId": "d72135ce-50dd-477e-997e-15af676c6436",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "toRecipients": "lee@legalengine.co.uk",
+        "subject": "=Calendar: {{ $('Webhook').item.json.body.question }}",
+        "bodyContent": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        -420,
+        180
+      ],
+      "id": "524944f7-b32c-459a-9c3c-cfe84e20c40d",
+      "name": "Microsoft Outlook",
+      "webhookId": "94761820-05dc-4db6-9bf1-33c4c89661d6",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "6M8EKjo0xkpyROgs",
+          "name": "Microsoft Outlook - Lee @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "eduardo.aguilarpelaez@gmail.com",
+          "mode": "list",
+          "cachedResultName": "eduardo.aguilarpelaez@gmail.com"
+        },
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        -880,
+        540
+      ],
+      "id": "c72df5fe-f095-4462-8d5b-4148be0211ce",
+      "name": "Google Calendar1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "typeVersion": 2,
+      "position": [
+        -620,
+        560
+      ],
+      "id": "15fe191c-f83a-41ce-8abd-5c67cc8e810c",
+      "name": "Microsoft Outlook2",
+      "webhookId": "03353188-16cb-41b6-844f-530c5e37a11d",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "6M8EKjo0xkpyROgs",
+          "name": "Microsoft Outlook - Lee @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "event",
+        "fromAllCalendars": false,
+        "calendarId": {
+          "__rl": true,
+          "value": "AQMkADIzNmMzYjBkLTNhNmQtNDgxNC05Njk1LWI5MDhiMzJmOWY0OABGAAADV6cW3yvT1EOyR7luGoZbuQcAJcF-Dq54QE_w2zIYGvMZUgAAAgEGAAAAJcF-Dq54QE_w2zIYGvMZUgAAAhjkAAAA",
+          "mode": "list",
+          "cachedResultName": "Calendar"
+        },
+        "returnAll": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Return_All', ``, 'boolean') }}",
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "typeVersion": 2,
+      "position": [
+        -460,
+        560
+      ],
+      "id": "180022e2-f416-4382-93c1-706cdb5b16fa",
+      "name": "Microsoft Outlook4",
+      "webhookId": "03353188-16cb-41b6-844f-530c5e37a11d",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "6M8EKjo0xkpyROgs",
+          "name": "Microsoft Outlook - Lee @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "event",
+        "operation": "create",
+        "calendarId": {
+          "__rl": true,
+          "value": "AQMkADIzNmMzYjBkLTNhNmQtNDgxNC05Njk1LWI5MDhiMzJmOWY0OABGAAADV6cW3yvT1EOyR7luGoZbuQcAJcF-Dq54QE_w2zIYGvMZUgAAAgEGAAAAJcF-Dq54QE_w2zIYGvMZUgAAAhjkAAAA",
+          "mode": "list",
+          "cachedResultName": "Calendar"
+        },
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Title', ``, 'string') }}",
+        "startDateTime": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}",
+        "endDateTime": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', ``, 'string') }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "typeVersion": 2,
+      "position": [
+        -300,
+        560
+      ],
+      "id": "12b192b5-f396-4ebd-bda8-c94929f66d63",
+      "name": "Microsoft Outlook5",
+      "webhookId": "03353188-16cb-41b6-844f-530c5e37a11d",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "6M8EKjo0xkpyROgs",
+          "name": "Microsoft Outlook - Lee @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        -1200,
+        540
+      ],
+      "id": "4517f797-34ca-4c7a-9597-76a14994b0db",
+      "name": "Gmail1",
+      "webhookId": "1f000433-f25f-4c41-a3b9-ad40e56929b8",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "eduardo.aguilarpelaez@gmail.com",
+          "mode": "list",
+          "cachedResultName": "eduardo.aguilarpelaez@gmail.com"
+        },
+        "returnAll": true,
+        "options": {
+          "timeMin": "={{ $fromAI('after', 'The earliest datetime we want to look for events for') }}",
+          "timeMax": "={{ $fromAI('before', 'The latest datetime we want to look for events for') }}",
+          "singleEvents": true,
+          "query": "={{ $fromAI('query', 'The search query to look for in the calendar. Leave empty if no search query is needed') }}"
+        }
+      },
+      "id": "06e22e77-96f0-4d54-8e4b-3b9dfc3fd15a",
+      "name": "Google Calendar",
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.2,
+      "position": [
+        -1040,
+        540
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "# Microsoft\n",
+        "height": 280,
+        "width": 500
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -680,
+        460
+      ],
+      "id": "6e4417d7-0183-44b8-930f-941b98a2f990",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "# Google",
+        "height": 280,
+        "width": 520
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1260,
+        460
+      ],
+      "id": "18791274-2dd8-44e3-9fe7-c4177ad2a958",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        -1520,
+        140
+      ],
+      "id": "6d5f01f4-919b-4e76-ac2d-e008e5dc2472",
+      "name": "Date & Time"
+    }
+  ],
+  "connections": {
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Gmail",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Microsoft Outlook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Date & Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Calendar1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Microsoft Outlook2": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Microsoft Outlook4": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Microsoft Outlook5": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Calendar": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Time": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 1,
+  "meta": null
+}

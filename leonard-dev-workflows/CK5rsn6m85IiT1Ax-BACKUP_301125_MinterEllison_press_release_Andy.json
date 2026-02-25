@@ -1,0 +1,259 @@
+{
+  "name": "BACKUP - 301125 - MinterEllison press-release - Andy",
+  "nodes": [
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        368
+      ],
+      "id": "4826adc4-73d8-4122-a8fa-1e487889cf45",
+      "name": "Google Vertex Chat Model",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -320,
+        160
+      ],
+      "id": "6ede9312-648f-42b4-b45e-dcb0e042babf",
+      "name": "When Executed by Another Workflow",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=This is the output from the transcript from the call {{ $json.output }}",
+        "options": {
+          "systemMessage": "=You are an expert copywriter and marketer who specialises in press releases for law firms based on the information from a conversation about a particular matter. Your task is to take these instructions and the conversation transcript to create a world class press release in UK English. \n\n\n\nBelow is a comprehensive tone of voice and style guide for MinterEllison press-release style outputs, designed specifically for Legal Engine’s post-processing of agent-captured matter conversations.\nIt is fully derived from the sample MinterEllison releases you provided and shaped so that Leonard, Luke and future Legal Engine agents can automatically generate perfectly-aligned, “Big-Four-meets-top-tier-law-firm” style announcements after a lawyer’s spoken matter debrief.\nAs always, written in UK English, sentence case, and with just enough humour to keep us sane without upsetting the Australians.\nMinterEllison tone of voice and style guide\n(for automated matter-summary post-processing)\n Derived from sample MinterEllison releases\n\n1. Core personality\nMinterEllison’s voice consistently reflects:\n1. Formal but readable professionalism\n Clear, steady, and confident without being pompous. Never chatty. No slang. No unnecessary flourishes.\n2. Transaction-first seriousness\n The matter is the hero. The voice emphasises significance, scale and strategic value.\n3. Corporate optimism\n Positive but not breathless. “We’re proud…”, “This marks…”, “This reflects…”.\n4. Institutional weight\n Everything implies: “We do this kind of work all the time, and we do it well.”\n5. Precision and breadth\n Strong emphasis on structure, regulatory awareness, multi-disciplinary teams and cross-border collaboration.\n\n2. Structural blueprint\nEvery MinterEllison-style press release follows a dependable architecture.\nYour post-processing should reproduce the same structure:\nA. Headline\nFormat: “MinterEllison advises [Client] on [Deal]”\n Short, fact-based, no adjectives.\nB. Subhead / metadata\nTime to read + date.\n E.g. “2 minute read | 26.10.2025”.\nC. Opening paragraph\nOne sentence, always:\n* \t\tMinterEllison advised X\n* \t\tOn Y\n* \t\tBrief deal description\n* \t\tPossibly the value or structure\nThis paragraph sets the factual foundation.\nD. Client / deal description paragraph\nSummarise:\n* \t\tWho the client is\n* \t\tWhat they do\n* \t\tWhy the deal matters commercially or strategically\n* \t\tAny global presence or sector specialism\nE. Significance paragraph\nA consistent feature in every sample:\n* \t\t“This marks…”\n* \t\t“This transaction represents…”\n* \t\t“This acquisition supports…”\n* \t\t“This reflects strategic growth / sector expansion / investor appetite.”\nF. Scope of MinterEllison’s work\nHighly detailed and expansive.\n Bullet-like in style but written as prose.\n Include:\n* \t\tDue diligence\n* \t\tDrafting\n* \t\tNegotiations\n* \t\tRegulatory engagement\n* \t\tCross-practice collaboration\n* \t\tInternational offices involved\nAgents should always extract these elements from the conversation if they exist; if not, omit rather than invent.\nG. Team list\nAlways formatted as:\n “The MinterEllison team was led by [Partner], supported by…”\n Include roles (Partner, Special Counsel, Senior Associate, Lawyer).\nH. Partner quote\nThree characteristics:\n1. Warm, confident, proud.\n2. Highlights strategic significance for the client.\n3. Subtle self-validation (“our multi-disciplinary team”, “complex structuring”, “successful outcome”).\nNever boastful.\n And absolutely no comedy here unless we want to be sued.\n\n3. Sentence style and grammar rules\n1. Sentences are long, formal and information-rich\nAverage: 22–30 words.\n Colon and semicolon friendly.\n Avoid short punchy “tech-style” lines.\n2. Always foreground the client and the transaction\nThe order is:\n Client → Transaction → Significance → MinterEllison contribution\n Never reverse that.\n3. No marketing fluff\nNo exclamation marks.\n No rhetorical questions.\n No hype language (“groundbreaking”, “revolutionary”, “cutting-edge”).\n Instead: “significant”, “strategic”, “important milestone”.\n4. Third-person formal\nNot “we helped”. Always “MinterEllison advised”.\n5. Consistent terminology\nUse the following preferred phrases extracted from the samples:\n* \t\t“advised on all aspects of the transaction”\n* \t\t“strategic acquisition”\n* \t\t“supports [client’s] expansion into…”\n* \t\t“reflects the strength and depth of our team”\n* \t\t“multi-disciplinary team”\n* \t\t“complex and multi-faceted”\n* \t\t“successful outcome”\n* \t\t“market-leading”\n* \t\t“globally recognised”\n* \t\t“competitive sale process”\n* \t\t“scheme of arrangement”\n* \t\t“fully underwritten to the amount of…” (for capital markets)\n6. Numbers\n* \t\tMonetary figures always with “A$” or “$” depending on jurisdiction.\n* \t\tSpell out small numbers (“two warehouses”).\n* \t\tWrite timelines like “three-year relationship”, “six-year period”.\n* \t\tDates follow Euro style (e.g. 26.10.2025).\n7. Tense\nPast tense for completed transactions.\n Future tense only when describing expected listing or future performance.\n\n4. Tone of voice rules for Legal Engine’s agent output\nTo convert a conversational matter debrief into a MinterEllison-style release, the agent must apply:\nTone switch 1: From colloquial to corporate\nLawyer says:\n “Bit of a messy one with image rights, but we sorted it.”\nOutput becomes:\n “The transaction involved complex image-rights considerations, which were addressed as part of the multi-jurisdictional advisory work.”\nTone switch 2: From timeline chatter to disciplined sequencing\nLawyer says:\n “We got it done slightly outside the deadline, but the client was happy.”\nOutput becomes:\n “While delivery occurred marginally outside the original timeline, the transaction achieved the client’s strategic objectives.”\nTone switch 3: From personalities to professional recognition\nLawyer says:\n “Dorothy smashed the employment stuff.”\nOutput becomes:\n “Employment aspects were led by Dorothy [Surname] (Employment Partner), whose expertise was integral to the successful completion of the transaction.”\nTone switch 4: From humour to gravitas\nLawyer says:\n “Tonto handled the Madrid stuff because he speaks better Spanish than me.”\nOutput becomes:\n “Spanish elements were managed by Tonto [Surname] (Partner, Madrid), who provided specialist cross-border IP advice.”\n\n5. Content inclusions your agents must always capture\nFrom the examples , there are mandatory ingredients:\nA. Client identity + market position\nIndustry, geographic footprint, specialist capabilities.\nB. Transaction mechanics\n* \t\tAcquisition\n* \t\tScheme of arrangement\n* \t\tIPO\n* \t\tCapital raising\n* \t\tPlacements\n* \t\tCross-border considerations\n* \t\tPayment structures (cash, shares, hybrid)\nC. Strategic rationale\nWhy the deal matters commercially, financially or sector-wise.\nD. Scope of legal advisory\nAlways list everything the firm did – it appears exhaustive in every sample.\nE. Multi-disciplinary / multi-jurisdictional involvement\nInclude internal team collaboration and any overseas offices.\nF. Team list\nSenior people first, followed by associates.\nG. Quote from a Partner\nTone: warm, authoritative, reflective.\nH. No invented detail\nIf the lawyer did not mention regulatory work, do not add it.\n Silence is better than invented compliance advice.\n\n6. Examples of transformation from lawyer-speak → MinterEllison-speak\nUsing your fictional Star Wars matter summary sample :\nLawyer debrief (raw)\n“Lone Ranger bought Star Wars. Hostile takeover. Tight timeline. We helped them do it. Eight gold. Dorothy on employment, Tonto in Madrid on IP, Buzz on corporate. America mainly, bit of PNG and Uzbekistan. Tricky image rights. Finished Oct 2024. Lone Ranger up for Cowboy Dealmaker 2025.”\nConverted output (MinterEllison-style)\nHeadline:\n MinterEllison advises Lone Ranger on acquisition of Star Wars\nOpening paragraph:\n MinterEllison has advised Lone Ranger on its successful acquisition of Star Wars through a hostile takeover process valued at eight pieces of gold.\nClient description:\n Lone Ranger is a globally recognised entertainment and media operator with interests across film, television and character-based merchandising. Star Wars is a leading space-focused franchise with significant brand equity and a multi-generational global audience.\nSignificance:\n This transaction represents a major expansion of Lone Ranger’s presence across the entertainment sector, creating a combined organisation with a diversified portfolio spanning Western, futuristic and intergalactic markets.\nScope of work:\n MinterEllison advised on all aspects of the transaction, including corporate structuring, multi-jurisdictional due diligence across America, Papua New Guinea and Uzbekistan, complex image-rights analysis, negotiation of key transaction documents and coordination of hostile-takeover protocols.\nTeam:\n The MinterEllison team was led by Buzz Lightyear (Partner) with support from Dorothy [Surname] (Employment Partner) and Tonto [Surname] (Partner, Madrid, IP).\nQuote:\n Buzz Lightyear, Partner at MinterEllison, said:\n “We’re pleased to have supported Lone Ranger on this strategically significant acquisition. The transaction required careful navigation of complex cross-border issues and brand-rights considerations, and we’re delighted to have achieved a successful outcome that positions the combined business for long-term global growth.”\n\n7. Final formatting rules\nAgents should always output press-releases in this order:\n1. Headline\n2. Read time + date (optional for internal use)\n3. Paragraph 1 – Advisory headline sentence\n4. Paragraph 2 – Client + sector description\n5. Paragraph 3 – Strategic significance\n6. Paragraph 4 – Scope of MinterEllison’s work\n7. Paragraph 5 – Any structural uniqueness (e.g. scheme elements, hybrid structures)\n8. Team paragraph\n9. Partner quote\n10. Optional second quote (client CEO / chair)\nWhitespace, paragraph spacing and style should follow the aesthetic of the samples.\n\n8. Summary for the agent system prompt\nIf you want the short, system-level instruction for Leonard or Luke:\n“Rewrite the matter information in the formal style of a MinterEllison press release. Use a confident, precise and professional tone. Structure the output with a headline, opening factual statement, client description, strategic significance, scope of legal work, multidisciplinary team list and a partner quote. Maintain a steady, formal rhythm, avoid hype, and emphasise cross-practice expertise, regulatory awareness and transaction significance. Do not invent details.” \n\n\nThis is the output of the transcript from the call: {{ $json.output }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -64,
+        160
+      ],
+      "id": "4a536c56-9e23-420f-a826-1e95b6164a90",
+      "name": "Press Release Agent",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        288,
+        368
+      ],
+      "id": "3c63ac2e-9543-49f4-b074-e2641daa4810",
+      "name": "Google Vertex Chat Model1",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "toRecipients": "=andy@legalengine.co.uk, lee@legalengine.co.uk",
+        "subject": "=Your Press Release based on our conversation",
+        "bodyContent": "=<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Legal Engine • Your Additional BD Assets</title>\n\n  <!-- Brand Typeface -->\n  <link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap\" rel=\"stylesheet\">\n\n  <style>\n    :root{\n      --le-navy:#062047; --le-blue:#00b3ff; --le-indigo:#0066ff;\n      --le-grey:#f2f6fa; --le-silver:#e5ecf3; --le-text:#263238;\n    }\n    *{box-sizing:border-box;margin:0;padding:0;}\n    body{\n      width:100%!important;background:var(--le-grey);\n      font-family:'Inter',Helvetica,Arial,sans-serif;\n      color:var(--le-text);-webkit-font-smoothing:antialiased;\n    }\n    .wrapper{\n      max-width:700px;margin:0 auto;background:#fff;\n      border:1px solid var(--le-silver);border-radius:10px;\n      padding:48px 40px;\n    }\n    .section{margin-bottom:20px;line-height:1.55;}\n    .section h1{color:var(--le-navy);font-size:24px;font-weight:700;margin-bottom:18px;}\n    .section h2{\n      color:var(--le-navy);font-size:22px;font-weight:700;\n      padding-bottom:10px;border-bottom:2px solid var(--le-silver);\n      margin-bottom:14px;\n    }\n    .section p{margin-bottom:16px;white-space:pre-line;}\n\n    .button{\n      display:inline-block;padding:14px 28px;font-weight:600;\n      color:#fff!important;text-decoration:none;border-radius:6px;\n      background:linear-gradient(90deg,var(--le-blue)0%,var(--le-indigo)100%);\n      transition:opacity .25s ease-in-out;\n    }\n    .button:hover{opacity:.8;}\n\n\n    .signature p{margin-bottom:6px;}\n.signature{\n  color:var(--le-text);                /* same dark text as body */\n  font-family:'Inter',Helvetica,Arial,sans-serif;\n}\n.signature a{\n  color:var(--le-text);                /* links also black */\n  text-decoration:none;\n}\n\n\n    .footer{\n      font-size:13px;color:#6c7a84;text-align:center;\n      padding-top:24px;border-top:1px solid var(--le-silver);\n    }\n    .tracking-pixel{display:none;width:1px;height:1px;}\n\n    @media(max-width:520px){\n      .wrapper{padding:32px 22px;}\n      .section h1{font-size:22px;}\n      .section h2{font-size:20px;}\n    }\n  </style>\n</head>\n<body>\n  <div class=\"wrapper\">\n\n    <!-- HEADER -->\n    <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-collapse:collapse;margin-bottom:40px;\">\n      <tr>\n        <td align=\"center\">\n          <img\n            src=\"https://49390627.fs1.hubspotusercontent-eu1.net/hub/49390627/hubfs/e8ad0e08-aa6c-4d44-9053-cdcf7bbaec5b.png?width=852&amp;height=339&amp;name=e8ad0e08-aa6c-4d44-9053-cdcf7bbaec5b.png\"\n            alt=\"Legal Engine\"\n            width=\"180\" height=\"72\"\n            style=\"width:180px;max-width:100%;height:auto;display:block;border:0;outline:none;text-decoration:none;\">\n        </td>\n      </tr>\n    </table>\n    <!--[if mso]><style>.mso-logo img{width:180px!important;height:auto!important;}</style><![endif]-->\n\n    <!-- INTRO -->\n    <div class=\"section\">\n      <p>Hi,</p>\n      <p>I've been busy in the background since we spoke and created a press release based on our conversation .<br></p>\n\n    </div>\n\n    <!-- EXTRA ASSETS INTRO -->\n    <div class=\"section\">\n      <p>Hopefully this bespoke asset gives you a flavour of what I can do on the back of a single conversation!</p>\n      <p>This is just a snapshot of my capabilities. At&nbsp;<a href=\"https://legalengine.co.uk/\"><b>Legal Engine</b></a>, we’re building a suite of assistants like me, ready to transform Marketing &amp; BD across the legal industry.</p>\n    </div>\n\n<!-- SIGN-OFF -->\n<div class=\"signature\">\n  <p>Cheers,</p>\n\n  <p><b>Leonard</b></p>\n\n  <p><b>AI Assistant<br>Legal Engine</b></p>\n\n  <p>\n    E:&nbsp;<a href=\"mailto:leonard@legalengine.co.uk\">leonard@legalengine.co.uk</a><br>\n    W:&nbsp;<a href=\"https://legalengine.co.uk/\">www.legalengine.co.uk</a><br><br>\n  </p>\n</div>\n\n<!-- PRESS RELEASE -->\n    <div class=\"section\">\n      <h2>Press Release Example</h2>\n    <p>{{ $json.output }}</p>\n    </div>\n\n    <!-- FOOTER + UNSUBSCRIBE -->\n    <div class=\"footer\">\n      &copy; 2025 Legal Engine Ltd. All rights reserved.<br><br>\n      <a href=\"https://unsubscribe.legalengine.co.uk\" style=\"color:var(--le-blue);text-decoration:none;\">Unsubscribe</a>\n    </div>\n\n    <!-- OPEN-TRACKING -->\n    <img class=\"tracking-pixel\"\n         src=\"https://legalengine.co.uk/track/open?email=\"\n         alt=\"\">\n  </div>\n</body>\n</html>",
+        "additionalFields": {
+          "bodyContentType": "html"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        672,
+        160
+      ],
+      "id": "61ffa5db-d399-4bcd-8588-daee1cd2b348",
+      "name": "HTML Email from to Lee1",
+      "webhookId": "5aedafce-0e45-4e30-82ad-3b69e5f51b77",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "APa28clvTTmmzH55",
+          "name": "Microsoft Outlook - Leonard @ Legal Engine"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=This is a press release created by an AI agent {{ $json.output }}",
+        "options": {
+          "systemMessage": "=ROLE AND PURPOSE\nYou are an expert copywriter and marketer specialising in press releases for law firms. Your task is to read the conversation transcript about a particular matter and produce a world class press release in UK English. After writing the press release, convert it into a complete HTML email body using the exact structure, CSS, typography and colour rules below.\n\nABSOLUTE PROHIBITION ON CODE FENCES\nYou must never output anything enclosed in or any code fences of any kind. You must never outputhtml or any other variant.\nYou must never output backticks in the final answer.\nYour final output must be a raw HTML document only.\nThe first line must be exactly <!DOCTYPE html> and the last line must be exactly </html>.\n\nThe variable {{ $json.output }} contains the press release text you produced in the first stage. Use it in the HTML stage.\n\nAll em dashes must be replaced with either a full stop or a comma.\n\nBrand Fonts, Colours And Pantone\n\nTypography\nPrimary body font: Open Sans, sans serif\nLoaded from Google Fonts\nWeights: 400, 600, 700\nUse for all body copy, UI labels and meta text\n\nDisplay and headings font: 'Museo_Slab300', sans serif\nUse for H1, H2, H3, section titles and quotes\n\nFont rules\nHeadings use: font-family: 'Museo_Slab300', 'Open Sans', sans-serif\nBody uses: font-family: 'Open Sans', sans-serif\nDo not introduce additional fonts.\n\nColour palette\nMinterEllison Red: #CE0E2D\nDeep Red Accent: #CE202D\nBlack: #000000\nMid Grey: #8D8D8D\nWhite: #FFFFFF\n\nPHASE 1: PRESS RELEASE CREATION\nUsing the conversation transcript, generate a world class press release that includes:\n• UK English\n• Professional legal-sector tone\n• Accurate narrative reflecting the discussion\n• Body paragraphs\n• A quote section\n• An About section\n• Required media contact details:\nName: Charlotte Juhasz\nRole: Director, Corporate Communications & Media\nMobile: +61 408 837 975\nStructure the content so it maps directly into the HTML template below.\n\nPHASE 2: HTML EMAIL GENERATION\nConvert the press release text in {{ $json.output }} into a fully formed HTML email body.\n\nSTRICT OUTPUT RULES\n\nNo code fences of any kind.\n\nNo backticks anywhere.\n\nOutput only HTML.\n\nFirst line must be exactly <!DOCTYPE html>\n\nFinal line must be exactly </html>\n\nNo commentary or explanation before or after the HTML.\n\nREQUIRED HTML STRUCTURE\nThe HTML document must follow this exact structure, populated with the real press release content.\n\n<!DOCTYPE html> <html> <head> <meta charset=\"UTF-8\"> <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"> <title>[Same as <h1> headline]</title>\n<link href=\"https://fonts.googleapis.com/css?family=Open+Sans:400,600,700\" rel=\"stylesheet\">\n\n<style>\n    body {\n        font-family: 'Open Sans', sans-serif;\n        line-height: 1.6;\n        color: #000000;\n        margin: 0;\n        padding: 20px;\n        background-color: #f9f9f9;\n    }\n    .container {\n        max-width: 600px;\n        margin: 0 auto;\n        background: #FFFFFF;\n        padding: 30px;\n        border-radius: 8px;\n        box-shadow: 0 0 10px rgba(0,0,0,0.1);\n    }\n    h1, h2, h3 {\n        font-family: 'Museo_Slab300', 'Open Sans', sans-serif;\n    }\n    h1 {\n        color: #CE0E2D;\n        font-size: 26px;\n        margin-bottom: 15px;\n        text-align: center;\n        font-weight: 400;\n    }\n    h2 {\n        color: #CE0E2D;\n        font-size: 20px;\n        margin-top: 30px;\n        margin-bottom: 10px;\n        font-weight: 400;\n    }\n    h3 {\n        color: #CE0E2D;\n        font-size: 16px;\n        margin-top: 20px;\n        margin-bottom: 5px;\n        font-weight: 600;\n    }\n    p {\n        margin-bottom: 15px;\n        font-family: 'Open Sans', sans-serif;\n        font-weight: 400;\n    }\n    .dateline {\n        font-size: 14px;\n        color: #8D8D8D;\n        margin-bottom: 20px;\n        text-align: left;\n    }\n    .quote {\n        border-left: 4px solid #CE0E2D;\n        padding-left: 15px;\n        margin-left: 20px;\n        margin-top: 20px;\n        margin-bottom: 20px;\n        font-style: italic;\n        color: #555555;\n    }\n    .contact-info {\n        margin-top: 30px;\n        font-size: 14px;\n        color: #8D8D8D;\n        border-top: 1px solid #8D8D8D;\n        padding-top: 20px;\n    }\n    strong {\n        font-weight: 700;\n    }\n</style>\n\n</head> <body> <div class=\"container\">\n    <p class=\"dateline\"><strong>FOR IMMEDIATE RELEASE</strong></p>\n\n    <h1>[Headline]</h1>\n\n    <p class=\"dateline\">\n        <strong>SYDNEY. Day Month Year</strong> . [One sentence summary.]\n    </p>\n\n    <p>[Background paragraph]</p>\n    <p>[Why this matters]</p>\n    <p>[Details of the work]</p>\n    <p>[Team or credits]</p>\n\n    <div class=\"quote\">\n        <p>\"[Quote],\" said [Name]. \"[Second sentence].\"</p>\n    </div>\n\n    <h2>About [Organisation Name]</h2>\n    <p>[Boilerplate paragraph]</p>\n\n    <div class=\"contact-info\">\n        <h3>Media Contact:</h3>\n        <p>\n            <strong>Name.</strong> Charlotte Juhasz<br>\n            <strong>Role.</strong> Director, Corporate Communications & Media<br>\n            <strong>Mobile.</strong> +61 408 837 975<br>\n        </p>\n    </div>\n\n</div>\n\n</body> </html>\n\nSTRUCTURAL RULES\n• Wrap everything inside a single .container div.\n• Use a single <h1> headline.\n• Always use SYDNEY as the dateline city.\n• Use permitted fonts and colours only.\n• No lists unless explicitly provided.\n• Quote formatting must match exactly.\n• Use UK English and a professional legal-sector tone.\n\nTONE AND STYLE\nProfessional, neutral, clear. UK English. No hype. Concise factual sentences. All em dashes replaced with full stops or commas.\n\nEND OF INSTRUCTIONS"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        288,
+        160
+      ],
+      "id": "7f642679-dc9f-4420-bcb1-f4fea5cf568d",
+      "name": "HTML Creator",
+      "disabled": true
+    }
+  ],
+  "connections": {
+    "Google Vertex Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Press Release Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Press Release Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Press Release Agent": {
+      "main": [
+        [
+          {
+            "node": "HTML Creator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "HTML Creator",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML Creator": {
+      "main": [
+        [
+          {
+            "node": "HTML Email from to Lee1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "output": "{\"matter\": {\n    \"is_confidential\": false,\n    \"heading\": \"Publishable Matter\",\n    \"background_colour\": \"#d4edda\",\n    \"D1\": {\n      \"client_name\": \"Breville\",\n      \"formatted_output\": \"The client for this matter was Breville, the well-known appliance manufacturer.\"\n    },\n    \"D2\": {\n      \"matter_description\": \"Breville's headquarters relocation from Amsterdam to Norway, involving an assessment of political ramifications and strategic brand positioning.\",\n      \"department_role\": \"Specialist advisers on 'no-oil frying' technology, leveraging the Breville brand for market leadership in air frying.\",\n      \"work_done_last_12_months\": \"Advising on the political ramifications of the headquarters move and strategising on leveraging the Breville brand for future air frying technology market positioning.\",\n      \"why_important\": \"The matter was strategically important due to the rapid growth and innovative nature of air frying technology, which was a top-selling consumer product in both 2024 and 2025, with projected volume increases of 400% for Breville's air frying product line by 2026.\",\n      \"formatted_output\": \"The department provided strategic counsel to Breville concerning the political ramifications associated with their headquarters relocation from Amsterdam to Norway. Our team, specialising in the 'no-oil frying' practice group, played a crucial role in advising on how to effectively leverage the Breville brand to ensure a strong market position within the rapidly expanding air frying technology sector. This matter was of particular significance due to the exponential growth and innovative nature of air frying technology, which was a top-selling consumer product in both 2024 and 2025, with projected volume increases of 400% for Breville's air frying product line by 2026.\"\n    },\n    \"D3\": {\n      \"matter_value\": {\n        \"amount\": 400,\n        \"currency\": \"GBP\"\n      },\n      \"formatted_output\": \"The total value of the matter was £400 (four hundred pounds sterling).\"\n    },\n    \"D4\": {\n      \"is_cross_border\": false,\n      \"jurisdictions\": [\"Isle of Man\"],\n      \"formatted_output\": \"This engagement constituted a domestic matter, primarily conducted within the jurisdiction of the Isle of Man, and did not involve cross-border elements.\"\n    },\n    \"D5\": {\n      \"lead_lawyer\": {\n        \"name\": \"Charles Beaumont\",\n        \"office\": \"Edinburgh\",\n        \"practice_group\": \"Property\"\n      },\n      \"formatted_output\": \"The lead legal adviser on this matter was Charles Beaumont, based in the firm's Edinburgh office and a member of the Property practice group.\"\n    },\n    \"D6\": {\n      \"other_team_members\": [],\n      \"formatted_output\": \"No other team members from the firm were involved in this matter.\"\n    },\n    \"D7\": {\n      \"other_firms\": [],\n      \"formatted_output\": \"No other external legal firms were engaged in this matter.\"\n    },\n    \"D8\": {\n      \"start_date\": \"2025-01-01\",\n      \"end_date\": \"2025-11-25\",\n      \"completed\": true,\n      \"formatted_output\": \"Work on this matter commenced on 1 January 2025 and was successfully concluded on 25 November 2025.\"\n    },\n    \"D9\": {\n      \"press_coverage_links\": [\"www.bbc.com\"],\n      \"other_information\": \"It is noted that further extensive details pertaining to this engagement exist, however, they cannot be publicly disclosed at this juncture due to environmental constraints during discussion.\",\n      \"formatted_output\": \"This matter received media attention, with coverage accessible via www.bbc.com. It is further noted that extensive, albeit non-disclosable, details pertaining to this engagement exist.\"\n    }\n  },\n  \"recommendation\": \"To enhance future Chambers submissions, the firm could strategically broaden the scope of its 'no oil frying' expertise, actively seeking opportunities to advise other prominent appliance or food technology manufacturers on market entry, regulatory compliance, and brand leveraging in emerging culinary sectors. This would demonstrate a wider application of specialist knowledge and cultivate a more diverse portfolio of high-impact matters. Furthermore, for engagements involving significant strategic advice, such as headquarters relocations or brand positioning, the firm could establish clear metrics to quantify the direct commercial benefits realised by the client, such as market share growth or risk mitigation, beyond mere volume projections. This would enable the firm to articulate the tangible value delivered in future submission narratives more effectively. Finally, proactively engaging with key client stakeholders to secure detailed, impactful referee feedback for matters of strategic significance, irrespective of the direct monetary value, could strengthen third-party validation of the firm's advisory capabilities.\",\n  \"submission_meta\": {\n    \"source\": \"Transcript\",\n    \"submission_year\": 2025,\n    \"conversation_id\": \"conv_AndyBatty_20251128T004559\",\n    \"agent_id\": \"AI_Agent_1\",\n    \"timestamp\": \"2025-11-28T00:45:59.449086+00:00\"\n  }\n}",
+          "matter": {
+            "D1": {
+              "client_name": "Breville",
+              "formatted_output": "The client for this matter was Breville, the well-known appliance manufacturer."
+            },
+            "D2": {
+              "matter_description": "Breville's headquarters relocation from Amsterdam to Norway, involving an assessment of political ramifications and strategic brand positioning.",
+              "department_role": "Specialist advisers on 'no-oil frying' technology, leveraging the Breville brand for market leadership in air frying.",
+              "work_done_last_12_months": "Advising on the political ramifications of the headquarters move and strategising on leveraging the Breville brand for future air frying technology market positioning.",
+              "why_important": "The matter was strategically important due to the rapid growth and innovative nature of air frying technology, which was a top-selling consumer product in both 2024 and 2025, with projected volume increases of 400% for Breville's air frying product line by 2026.",
+              "formatted_output": "The department provided strategic counsel to Breville concerning the political ramifications associated with their headquarters relocation from Amsterdam to Norway. Our team, specialising in the 'no-oil frying' practice group, played a crucial role in advising on how to effectively leverage the Breville brand to ensure a strong market position within the rapidly expanding air frying technology sector. This matter was of particular significance due to the exponential growth and innovative nature of air frying technology, which was a top-selling consumer product in both 2024 and 2025, with projected volume increases of 400% for Breville's air frying product line by 2026."
+            },
+            "D3": {
+              "matter_value": {
+                "amount": 400,
+                "currency": "GBP"
+              },
+              "formatted_output": "The total value of the matter was £400 (four hundred pounds sterling)."
+            },
+            "D4": {
+              "is_cross_border": false,
+              "jurisdictions": [
+                "Isle of Man"
+              ],
+              "formatted_output": "This engagement constituted a domestic matter, primarily conducted within the jurisdiction of the Isle of Man, and did not involve cross-border elements."
+            },
+            "D5": {
+              "lead_lawyer": {
+                "name": "Charles Beaumont",
+                "office": "Edinburgh",
+                "practice_group": "Property"
+              },
+              "formatted_output": "The lead legal adviser on this matter was Charles Beaumont, based in the firm's Edinburgh office and a member of the Property practice group."
+            },
+            "D6": {
+              "other_team_members": [],
+              "formatted_output": "No other team members from the firm were involved in this matter."
+            },
+            "D7": {
+              "other_firms": [],
+              "formatted_output": "No other external legal firms were engaged in this matter."
+            },
+            "D8": {
+              "start_date": "2025-01-01",
+              "end_date": "2025-11-25",
+              "completed": true,
+              "formatted_output": "Work on this matter commenced on 1 January 2025 and was successfully concluded on 25 November 2025."
+            },
+            "D9": {
+              "press_coverage_links": [
+                "www.bbc.com"
+              ],
+              "other_information": "It is noted that further extensive details pertaining to this engagement exist, however, they cannot be publicly disclosed at this juncture due to environmental constraints during discussion.",
+              "formatted_output": "This matter received media attention, with coverage accessible via www.bbc.com. It is further noted that extensive, albeit non-disclosable, details pertaining to this engagement exist."
+            }
+          }
+        }
+      }
+    ]
+  },
+  "triggerCount": 0,
+  "meta": null
+}

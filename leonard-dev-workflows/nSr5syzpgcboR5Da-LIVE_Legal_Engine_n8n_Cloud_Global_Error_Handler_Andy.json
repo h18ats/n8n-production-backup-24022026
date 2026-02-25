@@ -1,0 +1,1103 @@
+{
+  "name": "LIVE - Legal Engine - n8n Cloud - Global Error Handler - Andy",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "a5fdffc4-9595-4f2e-b4e2-475dc57de9b5",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        -528,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "slackChannel",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "teamsWebhookUrl",
+              "value": "<__PLACEHOLDER_VALUE__Microsoft Teams webhook URL__>",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "emailRecipients",
+              "value": "leonard@legalengine.co.uk",
+              "type": "string"
+            },
+            {
+              "id": "id-4",
+              "name": "phoneNumber",
+              "value": "<__PLACEHOLDER_VALUE__Phone number for Twilio calls__>",
+              "type": "string"
+            },
+            {
+              "id": "id-5",
+              "name": "airtableBaseId",
+              "value": "appclnlBFOaFM6ZTW",
+              "type": "string"
+            },
+            {
+              "id": "id-6",
+              "name": "airtableTableId",
+              "value": "tblyXkg8DT2mUBLDU",
+              "type": "string"
+            },
+            {
+              "id": "id-7",
+              "name": "twilioAccountSid",
+              "value": "<__PLACEHOLDER_VALUE__Twilio Account SID__>",
+              "type": "string"
+            },
+            {
+              "id": "id-8",
+              "name": "twilioAuthToken",
+              "value": "sk_fb475a342401f1e2495de38b2193518f54778f4427ce83de",
+              "type": "string"
+            },
+            {
+              "id": "id-9",
+              "name": "twilioPhoneNumber",
+              "value": "+447966543220",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "a2383cf9-009c-46dc-8ec2-3c4b0d85a18b",
+      "name": "Workflow Configuration",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -304,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "errorMessage",
+              "value": "={{ $json.error.message }}",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "errorNode",
+              "value": "={{ $json.error.node.name }}",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "errorWorkflow",
+              "value": "={{ $workflow.name }}",
+              "type": "string"
+            },
+            {
+              "id": "id-4",
+              "name": "errorWorkflowId",
+              "value": "={{ $workflow.id }}",
+              "type": "string"
+            },
+            {
+              "id": "id-5",
+              "name": "errorTimestamp",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "id-6",
+              "name": "errorStack",
+              "value": "={{ $json.error.stack }}",
+              "type": "string"
+            },
+            {
+              "id": "id-7",
+              "name": "executionId",
+              "value": "={{ $execution.id }}",
+              "type": "string"
+            },
+            {
+              "id": "id-8",
+              "name": "executionMode",
+              "value": "={{ $execution.mode }}",
+              "type": "string"
+            },
+            {
+              "id": "id-9",
+              "name": "airtableRecordUrl",
+              "value": "=https://airtable.com/{{ $('Workflow Configuration').first().json.airtableBaseId }}/{{ $('Workflow Configuration').first().json.airtableTableId }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "a5b8cdf3-8dd5-4436-b14a-8e7038d9abee",
+      "name": "Format Error Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -80,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0918Q5GPJN",
+          "mode": "list",
+          "cachedResultName": "alerts"
+        },
+        "text": "=🚨 *n8n Workflow Error Alert*\n\n*n8n Workflow:* {{ $json.workflow.name }}\n*Last Node Executed:* {{ $json.execution.lastNodeExecuted }}\n*Error:* {{ $json.execution.error.context.descriptionKey }}\n*Error detail:* {{ $json.execution.error.context.causeDetailed }}\n*Time:* {{ $json.errorTimestamp }}\n*Execution ID:* {{ $json.executionId }}\n\n📊 View error log: {{ $json.airtableRecordUrl }}",
+        "otherOptions": {}
+      },
+      "id": "d326fbd9-a81a-420e-800d-b42cb1fda878",
+      "name": "Send Slack Alert",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        144,
+        -176
+      ],
+      "webhookId": "f018d7f2-326c-4479-8154-d6f69b8cc05c",
+      "credentials": {
+        "slackApi": {
+          "id": "FH8R3JdkpQ9U5WNV",
+          "name": "LE n8n Alerts"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "teamId": {
+          "__rl": true,
+          "value": "cb517b7c-d88b-4a48-a59e-575370aaacdc",
+          "mode": "list",
+          "cachedResultName": "Legal Engine Ltd"
+        },
+        "channelId": {
+          "__rl": true,
+          "value": "19:7924caab3dc84af9a6bc5785b6dada4c@thread.tacv2",
+          "mode": "list",
+          "cachedResultName": "Dev",
+          "cachedResultUrl": "https://teams.cloud.microsoft/l/channel/19%3A7924caab3dc84af9a6bc5785b6dada4c%40thread.tacv2/Dev?groupId=cb517b7c-d88b-4a48-a59e-575370aaacdc&tenantId=fad5c68f-d169-4373-bed7-55243bd99c7b&allowXTenantAccess=True&ngc=True"
+        },
+        "name": "New n8n Workflow alert",
+        "options": {}
+      },
+      "id": "48c88423-f8ac-471c-8973-e0fefa081f07",
+      "name": "Send Teams Alert",
+      "type": "n8n-nodes-base.microsoftTeams",
+      "typeVersion": 2,
+      "position": [
+        144,
+        16
+      ],
+      "webhookId": "d740514f-a06c-44f6-9ecc-a3b22b353441",
+      "credentials": {
+        "microsoftTeamsOAuth2Api": {
+          "id": "qyoIpk534c3Uq1X6",
+          "name": "Microsoft Teams account - Andy"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Workflow Configuration').first().json.emailRecipients }}",
+        "subject": "=🚨 Workflow Error: {{ $json.errorWorkflow }}",
+        "message": "=<h2>n8n Workflow Error Alert</h2>\n<p><strong>n8n Workflow:</strong> {{ $json.workflow.name }}</p>\n<p><strong>Node:</strong> {{ $json.execution.lastNodeExecuted }}</p>\n<p><strong>Error Message:</strong>{{ $json.execution.error.message }} </p>\n<p><strong>Timestamp:</strong> {{ $json.errorTimestamp }}</p>\n<p><strong>Execution ID:</strong> {{ $json.executionId }}</p>\n<p><strong>Execution Mode:</strong> {{ $json.executionMode }}</p>\n<hr>\n<p><strong>Stack Trace:</strong></p>\n<pre>{{ $json.errorStack }}</pre>\n<hr>\n<p><a href='{{ $json.airtableRecordUrl }}'>View Error Log in Airtable</a></p>",
+        "options": {}
+      },
+      "id": "400878c9-31fd-4b85-abfa-8c319dc5bd4f",
+      "name": "Send Email Alert",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        144,
+        400
+      ],
+      "webhookId": "1693fda6-c06c-4eb0-8520-8490636b4ca2",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "bGGFKDTuuG2o02nS",
+          "name": "Gmail - V88ATS- Andy Personal"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Workflow Configuration').first().json.airtableBaseId }}"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Workflow Configuration').first().json.airtableTableId }}"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Webhook Details": "={{ $('Error Trigger').item.json.execution.url }}",
+            "n8n Execution ID": "=",
+            "Error Stack Trace": "={{ $('Error Trigger').item.json.execution.error.stack }}",
+            "Date & Time of Issue": "={{ $now }}",
+            "n8n Flow Name": "={{ $json.workflow.name }}",
+            "Node Name": "={{ $json.execution.lastNodeExecuted }}",
+            "Error Reason": "={{ $json.execution.error.message }}",
+            "Suggested Fix": "={{ $json.execution.error.message }}",
+            "Long Summary ": "={{ $json.execution.error.stack }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "n8n Flow Name",
+              "displayName": "n8n Flow Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Node Name",
+              "displayName": "Node Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Error Reason",
+              "displayName": "Error Reason",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Suggested Fix",
+              "displayName": "Suggested Fix",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Date & Time of Issue",
+              "displayName": "Date & Time of Issue",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Webhook Details",
+              "displayName": "Webhook Details",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Error Category",
+              "displayName": "Error Category",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Authentication",
+                  "value": "Authentication"
+                },
+                {
+                  "name": "Data Format",
+                  "value": "Data Format"
+                },
+                {
+                  "name": "Connection",
+                  "value": "Connection"
+                },
+                {
+                  "name": "Node Not Found",
+                  "value": "Node Not Found"
+                },
+                {
+                  "name": "Missing Variable",
+                  "value": "Missing Variable"
+                },
+                {
+                  "name": "API Error",
+                  "value": "API Error"
+                },
+                {
+                  "name": "Timeout",
+                  "value": "Timeout"
+                },
+                {
+                  "name": "Rate Limit",
+                  "value": "Rate Limit"
+                },
+                {
+                  "name": "Logic Error",
+                  "value": "Logic Error"
+                },
+                {
+                  "name": "Other",
+                  "value": "Other"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Severity Level",
+              "displayName": "Severity Level",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Critical",
+                  "value": "Critical"
+                },
+                {
+                  "name": "High",
+                  "value": "High"
+                },
+                {
+                  "name": "Medium",
+                  "value": "Medium"
+                },
+                {
+                  "name": "Low",
+                  "value": "Low"
+                },
+                {
+                  "name": "warning",
+                  "value": "warning"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Is Recurring?",
+              "displayName": "Is Recurring?",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "External System Affected",
+              "displayName": "External System Affected",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "n8n Execution ID",
+              "displayName": "n8n Execution ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Error Stack Trace",
+              "displayName": "Error Stack Trace",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Related Ticket/Link",
+              "displayName": "Related Ticket/Link",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Reporting User",
+              "displayName": "Reporting User",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Long Summary ",
+              "displayName": "Long Summary ",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Auto Error Summary",
+              "displayName": "Auto Error Summary",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "ae18f3f4-c547-4137-ace5-32543f8b7c39",
+      "name": "Log Error to Airtable",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        144,
+        976
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze this workflow error and provide a diagnosis:\n\nWorkflow: {{ $json.fields['n8n Flow Name'] }}\nNode: {{ $json.fields['Node Name'] }}\nError Message: {{ $json.fields['Error Reason'] }}\nStack: {{ $json.fields['Long Summary '] }}\nError Stack Trace: {{ $json.fields['Error Stack Trace'] }}\n\nProvide:\n1. Root cause analysis\n2. Recommended fix\n3. Prevention strategies",
+        "options": {
+          "systemMessage": "You are an expert n8n workflow debugger and error analyst.\n\nYour task is to:\n1. Analyze workflow errors and identify root causes\n2. Provide clear, actionable fixes with step-by-step instructions\n3. Suggest prevention strategies to avoid similar errors\n4. Use the Airtable Tool to update the error record with your diagnosis\n5. Use the Outlook Tool to send a detailed diagnosis report to the team\n\nWhen analyzing errors:\n- Consider common n8n issues (authentication, data format, node configuration)\n- Check for missing required fields or incorrect expressions\n- Identify integration-specific problems\n- Provide code examples when relevant\n\nFormat your diagnosis clearly with sections for:\n- Root Cause\n- Recommended Fix\n- Prevention Strategy\n\nAfter analysis, update the Airtable record with your diagnosis and send an email report."
+        }
+      },
+      "id": "55c3f98e-a61e-481a-ba5d-a3902fb1504c",
+      "name": "Error Diagnosis AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        432,
+        976
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "id",
+          "value": "gpt-4o"
+        },
+        "options": {
+          "temperature": 0.3
+        }
+      },
+      "id": "fa761e18-6a6e-4e58-9eda-e38240c2f5a1",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        368,
+        1200
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "LldOhLNBReShSMkE",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "={{ $('Workflow Configuration').first().json.airtableBaseId }}",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "={{ $('Workflow Configuration').first().json.airtableTableId }}",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Is Recurring?": false,
+            "id": "={{ $('Log Error to Airtable').item.json.id }}",
+            "AI Suggested Fix": "={{ $json.output }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "n8n Flow Name",
+              "displayName": "n8n Flow Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Node Name",
+              "displayName": "Node Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Error Reason",
+              "displayName": "Error Reason",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Suggested Fix",
+              "displayName": "Suggested Fix",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Date & Time of Issue",
+              "displayName": "Date & Time of Issue",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Webhook Details",
+              "displayName": "Webhook Details",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Error Category",
+              "displayName": "Error Category",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Authentication",
+                  "value": "Authentication"
+                },
+                {
+                  "name": "Data Format",
+                  "value": "Data Format"
+                },
+                {
+                  "name": "Connection",
+                  "value": "Connection"
+                },
+                {
+                  "name": "Node Not Found",
+                  "value": "Node Not Found"
+                },
+                {
+                  "name": "Missing Variable",
+                  "value": "Missing Variable"
+                },
+                {
+                  "name": "API Error",
+                  "value": "API Error"
+                },
+                {
+                  "name": "Timeout",
+                  "value": "Timeout"
+                },
+                {
+                  "name": "Rate Limit",
+                  "value": "Rate Limit"
+                },
+                {
+                  "name": "Logic Error",
+                  "value": "Logic Error"
+                },
+                {
+                  "name": "Other",
+                  "value": "Other"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Severity Level",
+              "displayName": "Severity Level",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Critical",
+                  "value": "Critical"
+                },
+                {
+                  "name": "High",
+                  "value": "High"
+                },
+                {
+                  "name": "Medium",
+                  "value": "Medium"
+                },
+                {
+                  "name": "Low",
+                  "value": "Low"
+                },
+                {
+                  "name": "warning",
+                  "value": "warning"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Is Recurring?",
+              "displayName": "Is Recurring?",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "External System Affected",
+              "displayName": "External System Affected",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "n8n Execution ID",
+              "displayName": "n8n Execution ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Error Stack Trace",
+              "displayName": "Error Stack Trace",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Related Ticket/Link",
+              "displayName": "Related Ticket/Link",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Reporting User",
+              "displayName": "Reporting User",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Long Summary ",
+              "displayName": "Long Summary ",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Auto Error Summary",
+              "displayName": "Auto Error Summary",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "AI Suggested Fix",
+              "displayName": "AI Suggested Fix",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "c494386b-d6d0-4030-a65f-901dc1a9b174",
+      "name": "Update Airtable with AI Diagnosis",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        832,
+        880
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toRecipients": "={{ $('Workflow Configuration').first().json.emailRecipients }}",
+        "subject": "=🔍 n8n AI Error Diagnosis: {{ $('Format Error Data').first().json.errorWorkflow }}",
+        "bodyContent": "=<h2>AI Error Diagnosis Report</h2>\n<h3>Error Details</h3>\n<p><strong>Workflow:</strong> {{ $('Format Error Data').first().json.errorWorkflow }}</p>\n<p><strong>Node:</strong> {{ $('Format Error Data').first().json.errorNode }}</p>\n<p><strong>Error:</strong> {{ $('Format Error Data').first().json.errorMessage }}</p>\n<p><strong>Timestamp:</strong> {{ $('Format Error Data').first().json.errorTimestamp }}</p>\n<hr>\n<h3>AI Diagnosis</h3>\n<pre>{{ $json.output }}</pre>\n<hr>\n<p><a href='{{ $('Format Error Data').first().json.airtableRecordUrl }}'>View Full Error Log in Airtable</a></p>",
+        "additionalFields": {
+          "ccRecipients": "andy@legalengine.co.uk, edu@legalengine.co.uk",
+          "bodyContentType": "html"
+        }
+      },
+      "id": "e9d5f9c4-6d34-4423-83a1-6ba47ed5fde5",
+      "name": "Send Diagnosis via Outlook",
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        832,
+        1072
+      ],
+      "webhookId": "7488628b-8c13-44a9-86c2-f1dc85f7db3e",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "eweG9vjyeWb4mfPE",
+          "name": "Microsoft Outlook - Support @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.elevenlabs.io/v1/convai/twilio/outbound-call",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "={\n  \"xi-api-key\": \"sk_fb475a342401f1e2495de38b2193518f54778f4427ce83de\",\n  \"Content-Type\": \"application/json\"\n}\n",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n\"agent_id\": \"agent_2601k9dtv7dkfgfa50sszzamrc37\",\n  \"agent_phone_number_id\": \"phnum_01jvx1f76mfg6akt98vk9jqyqh\",\n  \"to_number\": \"+447966543220\",\n  \"conversation_initiation_client_data\": {\n    \"client_name\": \"Acme Ltd\",\n    \"matter_ref\": \"M-2025-001\"\n  }\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        144,
+        784
+      ],
+      "id": "2b61881a-9b86-473f-a0f9-a195ed1a3e01",
+      "name": "Outbound Call",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "toRecipients": "={{ $('Workflow Configuration').first().json.emailRecipients }}",
+        "subject": "=🔍 n8n Workflow Error: {{ $('Format Error Data').first().json.errorWorkflow }}",
+        "bodyContent": "=<h2>n8n Workflow Error Alert</h2>\n<p><strong>n8n Workflow:</strong> {{ $json.workflow.name }}</p>\n<p><strong>Node:</strong> {{ $json.execution.lastNodeExecuted }}</p>\n<p><strong>Error Message:</strong>{{ $json.execution.error.message }} </p>\n<p><strong>Timestamp:</strong> {{ $json.errorTimestamp }}</p>\n<p><strong>Execution ID:</strong> {{ $json.executionId }}</p>\n<p><strong>Execution Mode:</strong> {{ $json.executionMode }}</p>\n<hr>\n<p><strong>Stack Trace:</strong></p>\n<pre>{{ $json.errorStack }}</pre>\n<hr>\n<p><a href='{{ $json.airtableRecordUrl }}'>View Error Log in Airtable</a></p>",
+        "additionalFields": {
+          "ccRecipients": "andy@legalengine.co.uk, edu@legalengine.co.uk",
+          "bodyContentType": "html"
+        }
+      },
+      "id": "7df57104-807f-4ec6-b616-1c92ce855576",
+      "name": "Outlook Alert",
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        144,
+        208
+      ],
+      "webhookId": "7488628b-8c13-44a9-86c2-f1dc85f7db3e",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "eweG9vjyeWb4mfPE",
+          "name": "Microsoft Outlook - Support @ Legal Engine"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Workflow Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Workflow Configuration": {
+      "main": [
+        [
+          {
+            "node": "Format Error Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Error Data": {
+      "main": [
+        [
+          {
+            "node": "Send Slack Alert",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send Teams Alert",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send Email Alert",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Log Error to Airtable",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Outbound Call",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Outlook Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Error to Airtable": {
+      "main": [
+        [
+          {
+            "node": "Error Diagnosis AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Error Diagnosis AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Diagnosis AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Update Airtable with AI Diagnosis",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send Diagnosis via Outlook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "pinData": {
+    "Error Trigger": [
+      {
+        "json": {
+          "execution": {
+            "id": "12193",
+            "url": "https://leonard-dev.app.n8n.cloud/workflow/JldswikyYYcwHs5W/executions/12193",
+            "error": {
+              "cause": "={{ $('Get new conversation').item.json.Email }}",
+              "level": "warning",
+              "tags": {},
+              "timestamp": 1762473859711,
+              "context": {
+                "runIndex": 0,
+                "itemIndex": 0,
+                "descriptionKey": "pairedItemNoInfoCodeNode",
+                "nodeCause": "comp",
+                "causeDetailed": "Missing pairedItem data (node 'comp' probably didn't supply it)",
+                "type": "paired_item_no_info",
+                "parameter": "toRecipients"
+              },
+              "functionality": "pairedItem",
+              "name": "ExpressionError",
+              "message": "Paired item data for item from node 'comp' is unavailable. Ensure 'comp' is providing the required output.",
+              "stack": "ExpressionError: Paired item data for item from node 'comp' is unavailable. Ensure 'comp' is providing the required output.\n    at createMissingPairedItemError (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-workflow@file+packages+workflow/node_modules/n8n-workflow/src/workflow-data-proxy.ts:819:11)\n    at getPairedItem (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-workflow@file+packages+workflow/node_modules/n8n-workflow/src/workflow-data-proxy.ts:975:11)\n    at pairedItemMethod (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-workflow@file+packages+workflow/node_modules/n8n-workflow/src/workflow-data-proxy.ts:1234:17)\n    at Object.get (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-workflow@file+packages+workflow/node_modules/n8n-workflow/src/workflow-data-proxy.ts:1238:17)\n    at Proxy.eval (eval at getFunction (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/@n8n+tournament@1.0.6/node_modules/@n8n/tournament/src/FunctionEvaluator.ts:13:16), <anonymous>:6:67)\n    at FunctionEvaluator.evaluate (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/@n8n+tournament@1.0.6/node_modules/@n8n/tournament/src/FunctionEvaluator.ts:20:13)\n    at Tournament.execute (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/@n8n+tournament@1.0.6/node_modules/@n8n/tournament/src/index.ts:45:25)\n    at evaluateExpression (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-workflow@file+packages+workflow/node_modules/n8n-workflow/src/expression-evaluator-proxy.ts:20:9)\n    at Expression.renderExpression (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-workflow@file+packages+workflow/node_modules/n8n-workflow/src/expression.ts:334:29)\n    at Expression.resolveSimpleParameterValue (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-workflow@file+packages+workflow/node_modules/n8n-workflow/src/expression.ts:315:28)\n    at Expression.getParameterValue (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-workflow@file+packages+workflow/node_modules/n8n-workflow/src/expression.ts:524:16)\n    at ExecuteContext._getNodeParameter (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_@opentelemetry+api@1.9.0_@opentelemetry+sdk-trace-base@1.30_08b575bec2313d5d8a4cc75358971443/node_modules/n8n-core/src/execution-engine/node-execution-context/node-execution-context.ts:429:37)\n    at ExecuteContext.getNodeParameter (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_@opentelemetry+api@1.9.0_@opentelemetry+sdk-trace-base@1.30_08b575bec2313d5d8a4cc75358971443/node_modules/n8n-core/src/execution-engine/node-execution-context/execute-context.ts:128:9)\n    at ExecuteContext.execute (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-nodes-base@file+packages+nodes-base_@aws-sdk+credential-providers@3.808.0_asn1.js@5_afd197edb2c1f848eae21a96a97fab23/node_modules/n8n-nodes-base/nodes/Microsoft/Outlook/v2/actions/message/send.operation.ts:212:28)\n    at ExecuteContext.router (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-nodes-base@file+packages+nodes-base_@aws-sdk+credential-providers@3.808.0_asn1.js@5_afd197edb2c1f848eae21a96a97fab23/node_modules/n8n-nodes-base/nodes/Microsoft/Outlook/v2/actions/router.ts:63:71)\n    at ExecuteContext.execute (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-nodes-base@file+packages+nodes-base_@aws-sdk+credential-providers@3.808.0_asn1.js@5_afd197edb2c1f848eae21a96a97fab23/node_modules/n8n-nodes-base/nodes/Microsoft/Outlook/v2/MicrosoftOutlookV2.node.ts:28:23)\n    at WorkflowExecute.executeNode (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_@opentelemetry+api@1.9.0_@opentelemetry+sdk-trace-base@1.30_08b575bec2313d5d8a4cc75358971443/node_modules/n8n-core/src/execution-engine/workflow-execute.ts:1093:31)\n    at WorkflowExecute.runNode (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_@opentelemetry+api@1.9.0_@opentelemetry+sdk-trace-base@1.30_08b575bec2313d5d8a4cc75358971443/node_modules/n8n-core/src/execution-engine/workflow-execute.ts:1274:22)\n    at /usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_@opentelemetry+api@1.9.0_@opentelemetry+sdk-trace-base@1.30_08b575bec2313d5d8a4cc75358971443/node_modules/n8n-core/src/execution-engine/workflow-execute.ts:1708:38\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at /usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_@opentelemetry+api@1.9.0_@opentelemetry+sdk-trace-base@1.30_08b575bec2313d5d8a4cc75358971443/node_modules/n8n-core/src/execution-engine/workflow-execute.ts:2324:11"
+            },
+            "lastNodeExecuted": "Send email with att",
+            "mode": "trigger"
+          },
+          "workflow": {
+            "id": "JldswikyYYcwHs5W",
+            "name": "LIVE - Fladgate Email Attachment - owner Andy"
+          }
+        }
+      }
+    ]
+  },
+  "triggerCount": 0,
+  "meta": null
+}

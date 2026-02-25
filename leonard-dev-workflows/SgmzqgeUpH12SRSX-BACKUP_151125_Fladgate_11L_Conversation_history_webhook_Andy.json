@@ -1,0 +1,222 @@
+{
+  "name": "BACKUP - 151125 - Fladgate - 11L Conversation history webhook - Andy",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "303f6c1a-66f2-4aba-8472-04f53a770ad9",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "17b13d15-5687-4180-9eec-f114407830b4",
+      "name": "ElevenLabs Webhook1",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -64,
+        -96
+      ],
+      "webhookId": "303f6c1a-66f2-4aba-8472-04f53a770ad9",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ \"{\\n\" +\n\"  \\\"conversation_history\\\": \" + JSON.stringify($json[\"Conversation history\"]) + \",\\n\" +\n\"  \\\"clients\\\": \" + JSON.stringify($items('Search records1')[0].json.Clients) + \",\\n\" +\n\"  \\\"matters\\\": \" + JSON.stringify($items('Search records1')[0].json.Matters) + \"\\n\" +\n\"}\" }}\n",
+        "options": {}
+      },
+      "id": "33ff8923-40b1-42e3-97bb-ba7969cc13fa",
+      "name": "Return to ElevenLabs1",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        608,
+        -96
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appUvJyzSky12m4HA",
+          "mode": "list",
+          "cachedResultName": "Fladgate - Leonard Live Data",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl3ADT2yOV8EJCnZ",
+          "mode": "list",
+          "cachedResultName": "FG - Conversation History by lawyer",
+          "cachedResultUrl": "https://airtable.com/appUvJyzSky12m4HA/tbl3ADT2yOV8EJCnZ"
+        },
+        "filterByFormula": "={Email}='{{ $json.body.email }}'",
+        "options": {
+          "fields": [
+            "Email",
+            "Transcript ID",
+            "Full Name",
+            "First Name",
+            "Last Name",
+            "Last Modified",
+            "Conversation History",
+            "Clients",
+            "Matters"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        160,
+        -96
+      ],
+      "id": "4269fb5f-207c-448e-8148-e8a48083f2ed",
+      "name": "Search records1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2247ff15-b8fe-43df-bb1d-f1663de23178",
+              "name": "First Name",
+              "value": "={{ $json[\"First Name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "ae71fb34-3630-429a-bf54-fbe6c654bd24",
+              "name": "Last Name",
+              "value": "={{ $json[\"Last Name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "4caf8e85-0a23-448c-a06e-131c6886edd1",
+              "name": "Conversation history",
+              "value": "={{ $json[\"Conversation History\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "07cc8775-1b97-4d1b-a1e3-bcaa95a87028",
+              "name": "Last Modified Time",
+              "value": "={{ $json[\"Last Modified\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "98344d5b-2a07-471b-b108-40b8b7e1c0f1",
+              "name": "Clients",
+              "value": "={{ $json.Clients }}",
+              "type": "string"
+            },
+            {
+              "id": "963ac931-4ce1-486e-b408-d6b6a55e15bd",
+              "name": "Matters",
+              "value": "={{ $json.Matters }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": "={{ false }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        384,
+        -96
+      ],
+      "id": "ac8832c0-1867-49ef-b183-b3f8de0f37a1",
+      "name": "Edit Fields1",
+      "disabled": true
+    }
+  ],
+  "connections": {
+    "ElevenLabs Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Search records1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search records1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Return to ElevenLabs1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {
+    "ElevenLabs Webhook1": [
+      {
+        "json": {
+          "headers": {
+            "host": "leonard-dev.app.n8n.cloud",
+            "user-agent": "ElevenLabs/1.0",
+            "content-length": "93",
+            "accept": "*/*",
+            "accept-encoding": "gzip, br",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "34.77.234.246",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "BE",
+            "cf-ray": "99d184e4f0172f5a-CDG",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "x-forwarded-for": "34.77.234.246, 104.23.229.29",
+            "x-forwarded-host": "leonard-dev.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-52-6c4f4684d5-swjxv",
+            "x-is-trusted": "yes",
+            "x-real-ip": "34.77.234.246"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "conversation_history": "this is the first conversation",
+            "email": "andy@legalengine.co.uk"
+          },
+          "webhookUrl": "https://leonard-dev.app.n8n.cloud/webhook/conversation_history",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "triggerCount": 1,
+  "meta": null
+}

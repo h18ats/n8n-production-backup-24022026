@@ -1,0 +1,1079 @@
+{
+  "name": "DEV - A3 Luke 3 - Find and book slot - Andy",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "// Find first free slot in [windowStart, windowEnd) using scheduleItems from the getSchedule node,\n// rounding start up to the next 15-minute boundary (00/15/30/45).\n\n// CHANGE this to your getSchedule node name\nconst GET_SCHEDULE_NODE = \"Outlook find time in next 60m\";\n\nconst res = $node[GET_SCHEDULE_NODE].json.value?.[0];\nconst items = (res && res.scheduleItems) ? res.scheduleItems : [];\n\nconst zone = 'Europe/London';\nconst now = DateTime.now().setZone(zone);\n\n// Read inputs from prior node (this item). Fallbacks if missing.\nlet windowStart = $json.windowStart\n  ? DateTime.fromISO($json.windowStart, { zone })\n  : now;\nlet windowEnd = $json.windowEnd\n  ? DateTime.fromISO($json.windowEnd, { zone })\n  : windowStart.plus({ minutes: 60 });\n\nconst durationMin = Number.isFinite($json.durationMinutes) ? $json.durationMinutes : 15;\n\n// Helpers\nfunction roundUpToQuarter(dt) {\n  let t = dt.set({ second: 0, millisecond: 0 });\n  const m = t.minute % 15;\n  return m === 0 ? t : t.plus({ minutes: 15 - m });\n}\nfunction fmtLocalISOWithOffset(dt) {\n  // Local time with +00:00 / +01:00 and correct DST label for that datetime\n  return dt.toISO({ suppressMilliseconds: true, includeOffset: true });\n}\nfunction fmtUTC(dt) {\n  // UTC timestamp (Z) for systems that prefer absolute time\n  return dt.setZone('UTC').toISO({ suppressMilliseconds: true, includeOffset: true });\n}\n\n// Ensure windowStart isn't in the past and is snapped to next quarter\nif (windowStart < now) windowStart = now;\nwindowStart = roundUpToQuarter(windowStart);\n\n// Validate window\nif (windowEnd <= windowStart) {\n  return [{ error: \"Invalid window: end is before or equal to start.\" }];\n}\n\n// Normalize & sort busy items that overlap the window\nconst busy = items\n  .map(i => ({\n    start: DateTime.fromISO(i.start.dateTime, { zone }),\n    end:   DateTime.fromISO(i.end.dateTime,   { zone }),\n  }))\n  .filter(i => i.end > windowStart && i.start < windowEnd)\n  .sort((a, b) => a.start - b.start);\n\n// Scan for the first free gap >= durationMin\nlet cursor = windowStart;\n\nfor (const b of busy) {\n  if (b.start > cursor) {\n    const gapEnd = b.start < windowEnd ? b.start : windowEnd;\n    if (gapEnd.diff(cursor, 'minutes').minutes >= durationMin) {\n      const slotStart = cursor;\n      const slotEnd = slotStart.plus({ minutes: durationMin });\n      return [{\n        slotStart: fmtLocalISOWithOffset(slotStart),\n        slotEnd:   fmtLocalISOWithOffset(slotEnd),\n        timeZone:  slotStart.offsetNameShort,       // \"BST\" or \"GMT\" for the slot time\n        slotStartUTC: fmtUTC(slotStart),\n        slotEndUTC:   fmtUTC(slotEnd),\n        // Optional if you need Windows zone for Graph later:\n        // timeZoneWindows: \"GMT Standard Time\"\n      }];\n    }\n  }\n  // Move cursor to just after this busy block, snapped to next quarter\n  if (b.end > cursor) cursor = roundUpToQuarter(b.end);\n\n  if (cursor >= windowEnd) {\n    return [{ error: `No free ${durationMin}-minute slot in the requested window.` }];\n  }\n}\n\n// Tail after last busy block\nif (windowEnd.diff(cursor, 'minutes').minutes >= durationMin) {\n  const slotStart = cursor;\n  const slotEnd = slotStart.plus({ minutes: durationMin });\n  return [{\n    slotStart: fmtLocalISOWithOffset(slotStart),\n    slotEnd:   fmtLocalISOWithOffset(slotEnd),\n    timeZone:  slotStart.offsetNameShort,         // \"BST\" or \"GMT\" for the slot time\n    slotStartUTC: fmtUTC(slotStart),\n    slotEndUTC:   fmtUTC(slotEnd),\n    // timeZoneWindows: \"GMT Standard Time\"\n  }];\n}\n\n// Nothing found\nreturn [{ error: `No free ${durationMin}-minute slot in the requested window.` }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        512,
+        -176
+      ],
+      "id": "d4107674-a791-46e3-bd6e-6e285adc7b72",
+      "name": "Pick Slot on 15m",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.microsoft.com/v1.0/me/calendar/getSchedule",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "microsoftOutlookOAuth2Api",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"Content-Type\": \"application/json\",\n  \"Prefer\": \"outlook.timezone=\\\"GMT Standard Time\\\"\"\n}\n",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"schedules\": [\"{{ $json.org_email }}\"],\n  \"startTime\": {\n    \"dateTime\": \"{{$now.setZone('Europe/London').toISO({ suppressMilliseconds: true, includeOffset: true })}}\",\n    \"timeZone\": \"{{$now.setZone('Europe/London').offsetNameShort}}\"\n  },\n  \"endTime\": {\n    \"dateTime\": \"{{$now.setZone('Europe/London').plus({ minutes: 60 }).toISO({ suppressMilliseconds: true, includeOffset: true })}}\",\n    \"timeZone\": \"{{$now.setZone('Europe/London').offsetNameShort}}\"\n  },\n  \"availabilityViewInterval\": 15\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        320,
+        -176
+      ],
+      "id": "8863ab80-882f-42d9-9e94-9bb300a9f320",
+      "name": "Outlook find time in next 60m",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "6M8EKjo0xkpyROgs",
+          "name": "Microsoft Outlook - Lee @ Legal Engine"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "amount": 15
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1184,
+        -176
+      ],
+      "id": "6388683f-82a2-4d92-9def-402d8024534d",
+      "name": "Wait",
+      "webhookId": "b7d7375a-6cbb-4701-a1c7-228149807d0a",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "XaWrVz4dvkaUeYaW",
+          "mode": "list",
+          "cachedResultName": "DEV - FF Luke 4 - Outbound Call with FF"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1632,
+        -176
+      ],
+      "id": "9c8c7ac3-a881-495a-8f9b-a8c8e9b1e809",
+      "name": "Execute Workflow",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -528,
+        -176
+      ],
+      "id": "70bcad00-cc96-408e-804f-86f3f3a796bb",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a7518b23-e670-4c5b-b688-be09a1e6a1ec",
+              "name": "agent_id",
+              "value": "={{ $('When Executed by Another Workflow').item.json.agent_id }}",
+              "type": "string"
+            },
+            {
+              "id": "90b05779-010a-43f5-ac9a-eb08a93e7318",
+              "name": "org_fullname",
+              "value": "={{ $('When Executed by Another Workflow').item.json.org_fullname }}",
+              "type": "string"
+            },
+            {
+              "id": "92863351-0675-4771-b1d3-ed2a717b627c",
+              "name": "org_firstname",
+              "value": "={{ $('When Executed by Another Workflow').item.json.org_firstname }}",
+              "type": "string"
+            },
+            {
+              "id": "0d4d5601-da1a-4237-a775-11ac0477347c",
+              "name": "org_biz",
+              "value": "={{ $('When Executed by Another Workflow').item.json.org_biz }}",
+              "type": "string"
+            },
+            {
+              "id": "cb287522-ac94-49cb-aa12-ef0b51f63ec3",
+              "name": "org_email",
+              "value": "={{ $('When Executed by Another Workflow').item.json.org_email }}",
+              "type": "string"
+            },
+            {
+              "id": "72ee9857-018e-4572-ab89-fc4edc52e4f0",
+              "name": "id1",
+              "value": "={{ $('When Executed by Another Workflow').item.json.id1 }}",
+              "type": "string"
+            },
+            {
+              "id": "c0b40da0-bae4-4e32-a272-36584d9b7a7e",
+              "name": "id2",
+              "value": "={{ $('When Executed by Another Workflow').item.json.id2 }}",
+              "type": "string"
+            },
+            {
+              "id": "00435917-e76c-4faa-a867-62612f0db2c4",
+              "name": "id3",
+              "value": "={{ $('When Executed by Another Workflow').item.json.id3 }}",
+              "type": "string"
+            },
+            {
+              "id": "437d8357-b3a4-4b03-8b78-7bbde895d462",
+              "name": "data[2].data.summary.action_items",
+              "value": "={{ $('When Executed by Another Workflow').item.json.data[2].data.summary.action_items }}",
+              "type": "string"
+            },
+            {
+              "id": "2ead2d02-729a-413b-ad01-a08220846c91",
+              "name": "data[2].data.summary.shorthand_bullet",
+              "value": "={{ $('When Executed by Another Workflow').item.json.data[2].data.summary.shorthand_bullet }}",
+              "type": "string"
+            },
+            {
+              "id": "472ae2e9-d260-4205-8a9d-9e4e63d0ce96",
+              "name": "data[2].data.summary.overview",
+              "value": "={{ $('When Executed by Another Workflow').item.json.data[2].data.summary.overview }}",
+              "type": "string"
+            },
+            {
+              "id": "986aa478-6685-4251-9508-abcc5d684bf9",
+              "name": "data[2].data.summary.bullet_gist",
+              "value": "={{ $('When Executed by Another Workflow').item.json.data[2].data.summary.bullet_gist }}",
+              "type": "string"
+            },
+            {
+              "id": "738500fa-d626-4e54-9e9d-8cce93dcabd7",
+              "name": "data[2].data.summary.gist",
+              "value": "={{ $('When Executed by Another Workflow').item.json.data[2].data.summary.gist }}",
+              "type": "string"
+            },
+            {
+              "id": "5fc41fa1-cf09-4e14-9ec6-1d6245c521a0",
+              "name": "data[2].data.summary.short_summary",
+              "value": "={{ $('When Executed by Another Workflow').item.json.data[2].data.summary.short_summary }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1408,
+        -176
+      ],
+      "id": "cbabfcf5-d26f-49d6-8f69-7b192e47c35f",
+      "name": "Set Nodes to pass",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "47d819aa-b36d-408c-a4db-77a07cf91f4d",
+              "leftValue": "={{ $json.error.toString() }}",
+              "rightValue": "No free 15-minute slot in the requested window.",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        736,
+        -176
+      ],
+      "id": "f56f1336-8723-4f91-b6d3-ed617c84a6b1",
+      "name": "If",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "toRecipients": "={{ $('When Executed by Another Workflow').item.json.org_email }}",
+        "subject": "={{ $('When Executed by Another Workflow').item.json.org_firstname }}, no availability found",
+        "bodyContent": "=Hi {{ $('When Executed by Another Workflow').item.json.org_firstname }}, unfortunatley I did not find any availability in your diary during the upcoming 60mins.\n\nI have not therefore booked a slot in your diary and so please initiate the post meeting call at your earliest convenience. \n\nBest regards,\n\nLuke\nLegal Engine AI Agent",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        1008,
+        -608
+      ],
+      "id": "7e147e71-570f-4636-9421-8cad26b72a25",
+      "name": "No availability found",
+      "webhookId": "31a9a419-6944-4c19-801b-02b864bd3434",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "APa28clvTTmmzH55",
+          "name": "Microsoft Outlook - Leonard @ Legal Engine"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "resource": "event",
+        "operation": "create",
+        "calendarId": {
+          "__rl": true,
+          "value": "AQMkAGJmN2M2NGFhAC1hYzI4LTRkNjAtOThmYi1iYzFjODZjNGQwMWQARgAAA-aUj-zNalNOpFa6myt4ADMHAIfTtQvn9StGnIa6__JPK6kAAAIBBgAAAIfTtQvn9StGnIa6__JPK6kAAAJVggAAAA==",
+          "mode": "list",
+          "cachedResultName": "Calendar"
+        },
+        "subject": "={{ $('When Executed by Another Workflow').item.json.biz }} - Post Meeting Follow Up",
+        "startDateTime": "={{ $json.slotStartUTC }}",
+        "endDateTime": "={{ $json.slotEndUTC }}",
+        "additionalFields": {
+          "body": "={{ $('When Executed by Another Workflow').item.json.data[2].data.summary.gist }}\n\n{{ $('When Executed by Another Workflow').item.json.data[2].data.summary.short_summary }}\n\n{{ $('When Executed by Another Workflow').item.json.data[2].data.summary.action_items }}"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        960,
+        -176
+      ],
+      "id": "37f6c622-d4e4-4a23-9ab3-b6f676e17bf4",
+      "name": "Event Creation in Lee's diary",
+      "webhookId": "2859019b-ad35-4b92-a827-aeb7c457c382",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "6M8EKjo0xkpyROgs",
+          "name": "Microsoft Outlook - Lee @ Legal Engine"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        384,
+        192
+      ],
+      "id": "f602e356-0af8-46fc-90ad-8ef5e39f5ce9",
+      "name": "When clicking ‘Execute workflow’",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=User Task: {{ $('Task').item.json.Task }}  {{ $('Task').item.json.Date }} to start {{ $('Task').item.json.Starting }}. \n\nThe event should be sceduled between {{ $('Task').item.json.Earliest_Start }} and be finished by {{ $('Task').item.json.Latest_Finish }} latest.\n\nCreate a meeting called  {{ $('Task').item.json.Event_Name }} of {{ $('Task').item.json.Event_Length }}m in length and invite {{ $('Task').item.json.Invite }}. Mark the event as {{ $('Task').item.json['Private?'] }}. Set a reminder in my diary {{ $('Task').item.json.Alert_Mins }}m before the event.\n\nONLY if you cannot find a free space in the calendar {{ $('Task').item.json.Date }}, find the earliest {{ $('Task').item.json.Event_Length }}m slot after {{ $('Task').item.json.Earliest_Start }} the next working day (Monday - Friday) and book the event for then.\n\nToday's is: {{ $json.formattedDate }}\nTime is now: {{ $json.formattedTime }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are a world class personal assistant to an executive at a tech company. Your role is to manage their diary, looking up details, creating events, accepting or declining events, reminding them what they have coming up.\n\nWhen communicating with the user, the day format should always be in standard  UK formatting so 'DDMMYY' or '12th September 2025' and the time zone should be London. When using the tools date and time should be in ISO 8601 format.\n\nUse the 'calendar_search' tool to look up existing events in the user's calendar.\n\nUse the 'create_event' tool to add new events.\n\nUse the 'update_event' tool to update existing events.\n\nUse the 'calendar_search' tool o delete existing events if needed. You will need to find the event ID using the 'calendar_search' tool before using the 'calendar_search' tool. "
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        1936,
+        192
+      ],
+      "id": "f4662cc2-d931-40d5-8cf5-525731cadfb3",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "vertex-ai-api-setup-via-cli",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        1808,
+        416
+      ],
+      "id": "f6f26df6-96ec-47b8-a118-3f20c8ab7fdf",
+      "name": "Google Vertex Chat Model1",
+      "credentials": {
+        "googleApi": {
+          "id": "LQjM9YuYI3HxJBrE",
+          "name": "Google Service Account - Edu account Oct 8th"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        1136,
+        192
+      ],
+      "id": "d76b9dec-4142-459b-847d-6b74f822e7b9",
+      "name": "Date & Time"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Create events in user's calendar",
+        "resource": "event",
+        "operation": "create",
+        "calendarId": {
+          "__rl": true,
+          "value": "AAMkAGMxYzIyMDNiLTMwNDQtNDE5OC05OGE2LTgyYmMxZjc0N2MxYgBGAAAAAACBf1OFgphsQr9q5Dg5U1xxBwBDq17NBUT6TZpi2QJ2WTqUAAAAAAEGAABDq17NBUT6TZpi2QJ2WTqUAAAAAIZiAAA=",
+          "mode": "list",
+          "cachedResultName": "Calendar"
+        },
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Title', ``, 'string') }}",
+        "startDateTime": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}",
+        "endDateTime": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', ``, 'string') }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "typeVersion": 2,
+      "position": [
+        2064,
+        416
+      ],
+      "id": "689033c8-a45d-42ce-ad81-70f8d3d1c8d5",
+      "name": "create_event1",
+      "webhookId": "004602a7-3e05-4241-b889-bc4d02c673df",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "qd4ZgBH04UILcCMZ",
+          "name": "Outlook - Andy @ Legal Engine - Dec 2025"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- Function node code ---\n\n// Expecting an input item with a field `now`\n// e.g. \"2025-12-02T06:57:39.432+00:00\"\nconst input = $input.first();\nconst inputDate = new Date(input.json.now);\n\n// Helper to zero-pad to two digits\nconst pad = n => n.toString().padStart(2, '0');\n\n// UK date → DDMMYY\nconst dd = pad(inputDate.getDate());\nconst mm = pad(inputDate.getMonth() + 1);\nconst yy = inputDate.getFullYear().toString().slice(-2);\n\nconst formattedDate = `${dd}${mm}${yy}`;\n\n// Time → HH:mm:ss (24-hour clock)\nconst formattedTime = `${pad(inputDate.getHours())}:${pad(inputDate.getMinutes())}:${pad(inputDate.getSeconds())}`;\n\n// Local UK-style date → DD/MM/YYYY\nconst localDate = inputDate.toLocaleDateString(\"en-GB\");\n\n// Local UK-style time → HH:mm:ss (24-hour clock)\nconst localTime = inputDate.toLocaleTimeString(\"en-GB\", {\n  hour12: false\n});\n\nreturn [\n  {\n    json: {\n      now: input.json.now,   // original value from Set node\n      formattedDate,         // \"021225\"\n      formattedTime,         // \"06:57:39\"\n      localDate,             // \"02/12/2025\"\n      localTime              // \"06:57:39\"\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1584,
+        192
+      ],
+      "id": "491a1ff1-e006-4d94-bebd-c9279d1fab0c",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5f981a67-fd06-4687-abcc-29295939493b",
+              "name": "now",
+              "value": "={{ $json.currentDate }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1360,
+        192
+      ],
+      "id": "6ef6d244-0e3b-404e-9a6c-15d6a63172df",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Get many events in Microsoft Outlook",
+        "resource": "event",
+        "fromAllCalendars": false,
+        "calendarId": {
+          "__rl": true,
+          "value": "AAMkAGMxYzIyMDNiLTMwNDQtNDE5OC05OGE2LTgyYmMxZjc0N2MxYgBGAAAAAACBf1OFgphsQr9q5Dg5U1xxBwBDq17NBUT6TZpi2QJ2WTqUAAAAAAEGAABDq17NBUT6TZpi2QJ2WTqUAAAAAIZiAAA=",
+          "mode": "list",
+          "cachedResultName": "Calendar"
+        },
+        "returnAll": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Return_All', ``, 'boolean') }}",
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "typeVersion": 2,
+      "position": [
+        2192,
+        416
+      ],
+      "id": "eeea3ad3-cbdd-4d75-b545-eff3e3856b6c",
+      "name": "calendar_search1",
+      "webhookId": "11233e9c-2433-466c-85c6-1b84671a8595",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "qd4ZgBH04UILcCMZ",
+          "name": "Outlook - Andy @ Legal Engine - Dec 2025"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Date & Time').item.json.currentDate }}",
+        "contextWindowLength": 20
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1936,
+        416
+      ],
+      "id": "8b49b1cc-030d-48be-9a04-8aa86c0df8c6",
+      "name": "Simple Memory1"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Update an event in Microsoft Outlook",
+        "resource": "event",
+        "operation": "update",
+        "calendarId": {
+          "__rl": true,
+          "value": "AAMkAGMxYzIyMDNiLTMwNDQtNDE5OC05OGE2LTgyYmMxZjc0N2MxYgBGAAAAAACBf1OFgphsQr9q5Dg5U1xxBwBDq17NBUT6TZpi2QJ2WTqUAAAAAAEGAABDq17NBUT6TZpi2QJ2WTqUAAAAAIZiAAA=",
+          "mode": "list",
+          "cachedResultName": "Calendar"
+        },
+        "eventId": {
+          "__rl": true,
+          "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Event', ``, 'string') }}",
+          "mode": "id"
+        },
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "typeVersion": 2,
+      "position": [
+        2336,
+        416
+      ],
+      "id": "c8d304ce-bdbb-4522-895a-45ebfdeb2068",
+      "name": "update_event1",
+      "webhookId": "08d46387-c212-46b9-bdf0-fc2e6cb74c3f",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "qd4ZgBH04UILcCMZ",
+          "name": "Outlook - Andy @ Legal Engine - Dec 2025"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Delete an event in Microsoft Outlook",
+        "resource": "event",
+        "operation": "delete",
+        "calendarId": {
+          "__rl": true,
+          "value": "AAMkAGMxYzIyMDNiLTMwNDQtNDE5OC05OGE2LTgyYmMxZjc0N2MxYgBGAAAAAACBf1OFgphsQr9q5Dg5U1xxBwBDq17NBUT6TZpi2QJ2WTqUAAAAAAEGAABDq17NBUT6TZpi2QJ2WTqUAAAAAIZiAAA=",
+          "mode": "list",
+          "cachedResultName": "Calendar"
+        },
+        "eventId": {
+          "__rl": true,
+          "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Event', ``, 'string') }}",
+          "mode": "id"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "typeVersion": 2,
+      "position": [
+        2480,
+        416
+      ],
+      "id": "a386f6cc-f309-4a11-b10e-c80df9a15b38",
+      "name": "delete_event1",
+      "webhookId": "a3deaeb6-991f-42e1-9618-b0b3ac52739e",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "qd4ZgBH04UILcCMZ",
+          "name": "Outlook - Andy @ Legal Engine - Dec 2025"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5f981a67-fd06-4687-abcc-29295939493b",
+              "name": "Task",
+              "value": "=Find me the next available free space in the calendar",
+              "type": "string"
+            },
+            {
+              "id": "e1c34d3d-8e39-402f-a425-29cde0597d15",
+              "name": "Event_Name",
+              "value": "Lee<>Luke Post Meeting Check in",
+              "type": "string"
+            },
+            {
+              "id": "20392a74-7c3d-4e25-9334-7d905ad8ecb4",
+              "name": "Event_Length",
+              "value": "10",
+              "type": "string"
+            },
+            {
+              "id": "2c15d529-20de-4162-89ae-e154d0ee71ea",
+              "name": "Invite",
+              "value": "Nobody",
+              "type": "string"
+            },
+            {
+              "id": "050af3be-9bd0-4f36-95be-52fed5988834",
+              "name": "Private?",
+              "value": "Not Private",
+              "type": "string"
+            },
+            {
+              "id": "12577a6e-5429-4d93-a3fb-5112006411e2",
+              "name": "Starting",
+              "value": "on an exact hour, 15mins past, 30m past or at 45mins past",
+              "type": "string"
+            },
+            {
+              "id": "45abb33b-41be-48ca-a457-7ca6915625aa",
+              "name": "Date",
+              "value": "Today",
+              "type": "string"
+            },
+            {
+              "id": "3f12ef22-b095-4a74-847f-fa7a03ff9244",
+              "name": "Earliest_Start",
+              "value": "0745hrs",
+              "type": "string"
+            },
+            {
+              "id": "d837939f-2d8a-4b83-a3d9-be286ab25ba3",
+              "name": "Latest_Finish",
+              "value": "1900hrs",
+              "type": "string"
+            },
+            {
+              "id": "938f4aa6-3b76-45ed-afc0-af516712ea8d",
+              "name": "Alert_Mins",
+              "value": "15",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        896,
+        192
+      ],
+      "id": "aa281440-cb7f-4408-acba-0025417d4055",
+      "name": "Task"
+    },
+    {
+      "parameters": {
+        "resume": "specificTime",
+        "dateTime": "={{ $json.output.start_iso }}"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2272,
+        192
+      ],
+      "id": "65609179-8e16-4539-8c78-df326968eaf3",
+      "name": "Wait1",
+      "webhookId": "b7d7375a-6cbb-4701-a1c7-228149807d0a"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "R2RuAE3RJZOFGn0Y",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/R2RuAE3RJZOFGn0Y",
+          "cachedResultName": "DEV - A4 Taxi Luke - Outbound Call with Agent ID set"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        2720,
+        192
+      ],
+      "id": "0b31e283-2d92-494a-b770-4a930c4b450b",
+      "name": "Execute Workflow1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a7518b23-e670-4c5b-b688-be09a1e6a1ec",
+              "name": "agent_id",
+              "value": "={{ $('When Executed by Another Workflow').item.json.agent_id }}",
+              "type": "string"
+            },
+            {
+              "id": "90b05779-010a-43f5-ac9a-eb08a93e7318",
+              "name": "org_fullname",
+              "value": "={{ $('When Executed by Another Workflow').item.json.org_fullname }}",
+              "type": "string"
+            },
+            {
+              "id": "92863351-0675-4771-b1d3-ed2a717b627c",
+              "name": "org_firstname",
+              "value": "={{ $('When Executed by Another Workflow').item.json.org_firstname }}",
+              "type": "string"
+            },
+            {
+              "id": "0d4d5601-da1a-4237-a775-11ac0477347c",
+              "name": "org_biz",
+              "value": "={{ $('When Executed by Another Workflow').item.json.org_biz }}",
+              "type": "string"
+            },
+            {
+              "id": "cb287522-ac94-49cb-aa12-ef0b51f63ec3",
+              "name": "org_email",
+              "value": "={{ $('When Executed by Another Workflow').item.json.org_email }}",
+              "type": "string"
+            },
+            {
+              "id": "72ee9857-018e-4572-ab89-fc4edc52e4f0",
+              "name": "id1",
+              "value": "={{ $('When Executed by Another Workflow').item.json.id1 }}",
+              "type": "string"
+            },
+            {
+              "id": "c0b40da0-bae4-4e32-a272-36584d9b7a7e",
+              "name": "id2",
+              "value": "={{ $('When Executed by Another Workflow').item.json.id2 }}",
+              "type": "string"
+            },
+            {
+              "id": "00435917-e76c-4faa-a867-62612f0db2c4",
+              "name": "id3",
+              "value": "={{ $('When Executed by Another Workflow').item.json.id3 }}",
+              "type": "string"
+            },
+            {
+              "id": "437d8357-b3a4-4b03-8b78-7bbde895d462",
+              "name": "data[2].data.summary.action_items",
+              "value": "={{ $('When Executed by Another Workflow').item.json.data[2].data.summary.action_items }}",
+              "type": "string"
+            },
+            {
+              "id": "2ead2d02-729a-413b-ad01-a08220846c91",
+              "name": "data[2].data.summary.shorthand_bullet",
+              "value": "={{ $('When Executed by Another Workflow').item.json.data[2].data.summary.shorthand_bullet }}",
+              "type": "string"
+            },
+            {
+              "id": "472ae2e9-d260-4205-8a9d-9e4e63d0ce96",
+              "name": "data[2].data.summary.overview",
+              "value": "={{ $('When Executed by Another Workflow').item.json.data[2].data.summary.overview }}",
+              "type": "string"
+            },
+            {
+              "id": "986aa478-6685-4251-9508-abcc5d684bf9",
+              "name": "data[2].data.summary.bullet_gist",
+              "value": "={{ $('When Executed by Another Workflow').item.json.data[2].data.summary.bullet_gist }}",
+              "type": "string"
+            },
+            {
+              "id": "738500fa-d626-4e54-9e9d-8cce93dcabd7",
+              "name": "data[2].data.summary.gist",
+              "value": "={{ $('When Executed by Another Workflow').item.json.data[2].data.summary.gist }}",
+              "type": "string"
+            },
+            {
+              "id": "5fc41fa1-cf09-4e14-9ec6-1d6245c521a0",
+              "name": "data[2].data.summary.short_summary",
+              "value": "={{ $('When Executed by Another Workflow').item.json.data[2].data.summary.short_summary }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2496,
+        192
+      ],
+      "id": "25e9d994-a7e5-4bbb-89f1-79e4ccbf96aa",
+      "name": "Set Nodes to pass1"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"summary\": \"string. the agent must provide a clear description of the meeting or action it created\",\n  \"start_iso\": \"string. must be a valid ISO 8601 datetime such as 2025-12-02T09:30:00Z\",\n  \"end_iso\": \"string. must be a valid ISO 8601 datetime such as 2025-12-02T10:00:00Z\",\n  \"timezone\": \"string. example. UTC\",\n  \"generated_at\": \"string. ISO 8601 timestamp of when the agent generated this output\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        2256,
+        544
+      ],
+      "id": "4f30a439-a242-4483-849a-117f25541825",
+      "name": "Structured Output Parser"
+    }
+  ],
+  "connections": {
+    "Pick Slot on 15m": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Outlook find time in next 60m": {
+      "main": [
+        [
+          {
+            "node": "Pick Slot on 15m",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Set Nodes to pass",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Outlook find time in next 60m",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Nodes to pass": {
+      "main": [
+        [
+          {
+            "node": "Execute Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "No availability found",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Event Creation in Lee's diary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Event Creation in Lee's diary": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Time": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "create_event1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "calendar_search1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "update_event1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "delete_event1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Task": {
+      "main": [
+        [
+          {
+            "node": "Date & Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "Set Nodes to pass1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Nodes to pass1": {
+      "main": [
+        [
+          {
+            "node": "Execute Workflow1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "biz": "HFW",
+          "org_fullname": "Lee Curtis",
+          "org_firstname": "Lee",
+          "org_biz": "Legalengine",
+          "org_email": "lee@legalengine.co.uk",
+          "data": [
+            null,
+            null,
+            {
+              "data": {
+                "summary": {
+                  "action_items": "\n**Andy Batty**\nComplete building Ghost Core Luke agent with prior meeting context integration (09:07)\nStrip back diary call flow and pass meeting organizer information to 11Labs agent for contextual greetings (10:32)\nShare S2-S5 parent/child workflows with Eduardo for N8N access (14:01)\nCoordinate with Lee on final demo requirements for Monday presentation (12:23)\nContinue ChatGPT voice API evaluation when time permits (18:33)\n\n**Eduardo Aguilar Pelaez**\nResearch and implement Single Sign-On solution using Microsoft credentials (15:37)\nFollow up on AirTable integration status with Heather (18:03)\nContinue monitoring OpenAI voice API developments for competitive analysis (19:51)\n\n**Unassigned**\nFinalize MVP requirements definition for Simmons demo (11:40)\nPlan agent migration to EU infrastructure (17:29)\n",
+                  "shorthand_bullet": "🔧 **Technical Progress & Workflow Development** (01:52 - 05:40)\nSuccessfully implemented Luke to outbound call Lee workflow with on-demand triggering.\nResolved Outlook calendar credential issue where calendar selection resets when changing email credentials, requiring manual reselection from dropdown.\nCompleted all sub-workflow integrations using multiple set nodes as variable reset mechanisms to pass data between parent and child workflows.\nDeveloped sequential workflow structure (S1, S2, S3) with bottom-up configuration where parent workflows know which child workflows to trigger.\nCreated knowledge base transmission system between multiple workflows using set nodes to capture and pass variables forward.\n🛠️ **Workflow Cloning & Architecture Challenges** (06:35 - 09:07)\nIdentified cloning limitations where parent workflows maintain connections to original child workflows, requiring child workflows to be cloned and renamed first.\nDiscovered hidden webhook connections in cloned 11Labs agents that weren't visible in the interface but continued calling Luke's webhooks.\nResolved issue by creating clean agent clone using Postman to extract exact JSON code and copying knowledge base configurations.\n🤖 **AI Agent Development & Context Integration** (09:07 - 11:20)\nStarted building Ghost Core Luke agent with prior meeting context using diary call functionality.\nImplemented calendar integration that filters external meeting invites and identifies most recent meetings for contextual greetings.\nPlanned enhancement to include meeting organizer information and external domain lookup for personalized agent interactions.\n📊 **Product Development Strategy** (11:20 - 12:23)\nClarified MVP requirements for Simmons demo with three tiers: MVP, MVP Plus, and higher levels requiring resource and time assessment.\nEmphasized need for reusable component development and prioritization based on biggest impact potential.\n🔒 **Technical Challenges & Access Issues** (13:24 - 16:20)\nSingle Sign-On (SSO) integration remains unsolved for using Microsoft credentials throughout entire workflow.\nN8N access permissions need resolution - Eduardo missing S2-S5 parent/child workflows despite having S1 and other Luke-related workflows.\nCurrent workaround involves hard-coding credentials or creating individual agents per person.\n🌍 **11Labs Implementation & Infrastructure** (16:36 - 17:45)\nAchieved rapid internal adoption with 5-minute agent deployment impressing internal teams.\nConfirmed EU domain compliance with delivery instance showing EU flag and domain structure.\nIdentified need for agent migration to EU infrastructure as discussed previously.\n🔗 **Integration Status & Future Considerations** (17:46 - 20:02)\nAirTable integration pending with no response from Heather yet.\nChatGPT Voice API evaluation shows usability challenges requiring more coding but provides business risk mitigation against 11Labs pricing changes.\nOpenAI voice model offers multi-agent handoff capabilities and competitive de-risking with 50% probability of widespread voice integration across major websites within six months.\nIdentified competitive threat where direct diary API integration could replicate current functionality.\n",
+                  "overview": "- Successfully implemented the outbound call workflow from Luke to Lee, enabling on-demand triggering for enhanced functionality.\n- Resolved the Outlook calendar credential issue, which previously required manual reselection due to credential changes.\n- Completed all sub-workflow integrations, establishing variable reset mechanisms to efficiently pass data between parent and child workflows.\n- Developed a sequential workflow structure with parent-child functionality for streamlined execution of multiple workflows.\n- Identified cloning limitations where parent workflows retain original connections, necessitating cloning and renaming of child workflows first.\n- Resolved hidden webhook connections in cloned 11Labs agents by extracting JSON via Postman to ensure clean migrations.\n- Initiated the development of the Ghost Core Luke agent, incorporating prior meeting context for enhanced personalization.\n- Clarified MVP requirements for Simmons demo, establishing tiered levels while emphasizing reusable component development for maximum impact.\n- Encountered ongoing challenges with Single Sign-On integration for Microsoft credentials and N8N access permissions for certain workflows.\n- Achieved rapid internal adoption of agent deployment in 5 minutes and confirmed EU compliance with delivery instances.",
+                  "bullet_gist": "📞 Outbound Call Workflow: Successfully implemented a new outbound call workflow to enhance functionality.\n🔑 Credential Issues Resolved: Fixed Outlook calendar credential problems, eliminating manual reselection.\n🔄 Sub-Workflow Integrations: Completed integrations with mechanisms for efficient data transfer.\n⚙️ Sequential Workflow Structure: Developed a new structure for streamlined execution of workflows.\n✅ Rapid Deployment: Achieved internal adoption of agent deployment in just 5 minutes.",
+                  "gist": "The meeting focused on workflow improvements, integration issues, and agent development for enhanced functionality and compliance.",
+                  "short_summary": "Significant progress was made in implementing an outbound call workflow from Luke to Lee, which allows for on-demand triggering to enhance functionality. The team resolved the Outlook calendar credential issue that required manual reselection, and completed all sub-workflow integrations, establishing efficient variable reset mechanisms for data transfer between workflows. A sequential workflow structure with parent-child functionality was developed for streamlined execution. Challenges with cloning limitations were identified, requiring the renaming of child workflows to retain connections. Hidden webhook connections in cloned 11Labs agents were resolved, and the development of the Ghost Core Luke agent was initiated for improved personalization. MVP requirements for the Simmons demo were clarified to emphasize reusable components, while ongoing challenges with Single Sign-On integration and access permissions were noted. Notably, the internal agent deployment achieved rapid adoption within 5 minutes and confirmed compliance with EU regulations."
+                }
+              }
+            }
+          ],
+          "id1": "Rd5PkbJKAqwpoAFmLV2p",
+          "id2": "7qgIYseEzbMOR03F4mac",
+          "id3": "qXMwqGa1OpO3J7EaxtbF",
+          "agent_id": "agent_1701k4t11h54f50r7bt1sgd3eqkh"
+        }
+      }
+    ]
+  },
+  "triggerCount": 0,
+  "meta": null
+}

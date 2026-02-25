@@ -1,0 +1,760 @@
+{
+  "name": "HSFK UC 1.5 - Market News Monitor",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## HSFK UC 1.5 - Market News Monitor\n\n**Purpose:** Daily automated news digest. Runs every weekday at 07:00 UTC. Loads the client watchlist from Airtable, searches Perplexity for each client, scores relevance via Vertex AI, stores filtered articles in the News Archive, and posts a daily digest to Slack.\n\n**Trigger:** Schedule - `0 7 * * 1-5` (07:00 UTC, Mon-Fri)\n\n**Steps:**\n1. Schedule Trigger fires at 07:00 UTC weekdays\n2. Record execution start time\n3. Load active clients from HSFK - Client Watchlist (Airtable)\n4. For each client: call shared-02 (Perplexity News Search)\n5. Aggregate all articles, deduplicate by URL\n6. Call shared-04 (Vertex AI LLM) to score relevance 1-5 and write 2-line summary per article\n7. Filter: keep only articles with relevance_score >= 3\n8. Store filtered articles in HSFK - News Archive (Airtable)\n9. Format Slack blocks digest\n10. Post digest to #customer-hsfk Slack channel\n11. Log execution via shared-05 (Airtable Audit Log)\n\n**Sub-workflows called:**\n- shared-02 (Perplexity News Search): `qT0uycTDyAM7zQJ5`\n- shared-04 (Vertex AI LLM Call): `AI3InmjY6gmJwdXg`\n- shared-05 (Airtable Audit Log): `zjwCkfCuH3GnW2qT`\n\n**Airtable:**\n- Base: `app0QZAuhY8Zx4I54` (HSFK - Workflow Data)\n- Client Watchlist: `tblpDq8Ulb6e9GjUh`\n- News Archive: `tbl5UHN4q7SjGgrTd`\n\n**Slack channel:** #customer-hsfk\n\n**n8n instance:** leonard-dev.app.n8n.cloud\n\n**Build priority:** Phase 1 - lowest integration overhead, no external APIs beyond Perplexity + Airtable",
+        "height": 620,
+        "width": 560,
+        "color": 5
+      },
+      "id": "sticky-note-docs",
+      "name": "Documentation",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -580,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Node Map\n\n```\n[Schedule Trigger]\n    ↓\n[Record Start Time]\n    ↓\n[Load Client Watchlist]  ← Airtable read\n    ↓\n[Split Into Batches]  ← one client per iteration\n    ↓\n[Call Perplexity]  ← Execute Workflow: shared-02\n    ↓\n[Collect All Articles]  ← merge loop results\n    ↓\n[Deduplicate by URL]\n    ↓\n[Score with LLM]  ← Execute Workflow: shared-04\n    ↓\n[Filter Relevance >= 3]\n    ↓\n[Store in News Archive]  ← Airtable create\n    ↓\n[Build Slack Digest]\n    ↓\n[Post to Slack]\n    ↓\n[Log Execution]  ← Execute Workflow: shared-05\n```",
+        "height": 480,
+        "width": 340,
+        "color": 4
+      },
+      "id": "sticky-note-map",
+      "name": "Node Map",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -580,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 7 * * 1-5"
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -80,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Record execution start time and generate a unique execution ID\n// This ID is threaded through all downstream nodes for audit trail coherence\n\nconst executionId = `uc-1.5-${new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19)}`;\nconst startTime = Date.now();\nconst today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD\n\nreturn {\n  json: {\n    execution_id: executionId,\n    start_time: startTime,\n    started_at: new Date().toISOString(),\n    today: today,\n    workflow_name: 'HSFK UC 1.5 - Market News Monitor',\n    use_case_id: '1.5'\n  }\n};"
+      },
+      "id": "record-start-time",
+      "name": "Record Start Time",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "app0QZAuhY8Zx4I54"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tblpDq8Ulb6e9GjUh"
+        },
+        "filterByFormula": "={Active}=1",
+        "options": {
+          "fields": [
+            "Client Name",
+            "Industry",
+            "Search Keywords",
+            "Exclude Keywords",
+            "Minimum Relevance Score",
+            "Digest Recipients"
+          ]
+        }
+      },
+      "id": "load-client-watchlist",
+      "name": "Load Client Watchlist",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        400,
+        240
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "AIRTABLE_TOKEN_CRED",
+          "name": "Airtable - Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Attach execution metadata to every client record so it flows through\n// the SplitInBatches loop and is accessible in all downstream nodes\n\nconst execMeta = $('Record Start Time').first().json;\nconst clients = $input.all();\n\nif (!clients || clients.length === 0) {\n  // No active clients - return a sentinel item so downstream can handle gracefully\n  return [{\n    json: {\n      _no_clients: true,\n      execution_id: execMeta.execution_id,\n      start_time: execMeta.start_time,\n      started_at: execMeta.started_at,\n      today: execMeta.today,\n      workflow_name: execMeta.workflow_name,\n      use_case_id: execMeta.use_case_id\n    }\n  }];\n}\n\n// Attach execution metadata to each client record\nreturn clients.map(item => ({\n  json: {\n    ...item.json,\n    execution_id: execMeta.execution_id,\n    start_time: execMeta.start_time,\n    started_at: execMeta.started_at,\n    today: execMeta.today,\n    workflow_name: execMeta.workflow_name,\n    use_case_id: execMeta.use_case_id\n  }\n}));"
+      },
+      "id": "attach-exec-metadata",
+      "name": "Attach Exec Metadata",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        640,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "id": "split-into-batches",
+      "name": "Split Into Batches",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        880,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build the input payload for shared-02 (Perplexity News Search)\n// Constructs a targeted query from client name, industry, and keywords\n\nconst client = $json;\nconst clientName = client['Client Name'] || client.fields?.['Client Name'] || 'Unknown Client';\nconst industry = client['Industry'] || client.fields?.['Industry'] || '';\nconst keywords = client['Search Keywords'] || client.fields?.['Search Keywords'] || '';\n\n// Compose the entity name with industry context for better search quality\nlet entityName = clientName;\nif (industry && industry.trim()) {\n  entityName = `${clientName} (${industry.trim()})`;\n}\n\n// Pass through keywords as additional context in entity_name if present\n// The Perplexity sub-workflow uses entity_name as the core search subject\nif (keywords && keywords.trim()) {\n  entityName = `${clientName} ${keywords.trim()}`;\n}\n\nreturn {\n  json: {\n    // Inputs for shared-02\n    entity_name: clientName,\n    entity_type: 'client',\n    date_range: 'last_7_days',\n    max_results: 8,\n    \n    // Carry forward client metadata for aggregation later\n    _client_name: clientName,\n    _client_industry: industry,\n    _client_keywords: keywords,\n    _client_record_id: client.id || client.fields?.id || '',\n    _execution_id: client.execution_id,\n    _start_time: client.start_time,\n    _today: client.today\n  }\n};"
+      },
+      "id": "build-perplexity-input",
+      "name": "Build Perplexity Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "qT0uycTDyAM7zQJ5"
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "id": "call-perplexity",
+      "name": "Call Perplexity (shared-02)",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        1360,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Merge Perplexity results with client metadata carried through the batch loop.\n// The Execute Workflow node returns the sub-workflow output directly;\n// we re-attach client identifiers so the aggregation step can group by client.\n\nconst perplexityOutput = $json;\nconst clientInput = $('Build Perplexity Input').first().json;\n\nconst articles = (perplexityOutput.articles || []).map(article => ({\n  ...article,\n  // Attach client context to every article\n  client_name: clientInput._client_name,\n  client_industry: clientInput._client_industry,\n  client_record_id: clientInput._client_record_id,\n  execution_id: clientInput._execution_id,\n  today: clientInput._today\n}));\n\nreturn {\n  json: {\n    client_name: clientInput._client_name,\n    articles: articles,\n    total_found: perplexityOutput.total_found || 0,\n    searched_at: perplexityOutput.searched_at || new Date().toISOString(),\n    status: perplexityOutput.status || 'unknown',\n    execution_id: clientInput._execution_id,\n    start_time: clientInput._start_time,\n    today: clientInput._today\n  }\n};"
+      },
+      "id": "merge-perplexity-results",
+      "name": "Merge Perplexity Results",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1600,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// After the SplitInBatches loop finishes all clients, aggregate all article arrays\n// into a single flat list and deduplicate by URL.\n// This node receives one item per client from the loop.\n\nconst allItems = $input.all();\n\n// Extract execution metadata from the first item\nconst execMeta = {\n  execution_id: allItems[0]?.json?.execution_id || 'unknown',\n  start_time: allItems[0]?.json?.start_time || Date.now(),\n  today: allItems[0]?.json?.today || new Date().toISOString().split('T')[0]\n};\n\n// Flatten all article arrays from every client batch\nconst allArticles = allItems.flatMap(item => item.json.articles || []);\n\n// Deduplicate by URL (case-insensitive, strip trailing slashes)\nconst seenUrls = new Set();\nconst deduplicated = allArticles.filter(article => {\n  if (!article.url || article.url.trim() === '') return false;\n  const normalisedUrl = article.url.toLowerCase().replace(/\\/$/, '').trim();\n  if (seenUrls.has(normalisedUrl)) return false;\n  seenUrls.add(normalisedUrl);\n  return true;\n});\n\n// Sort by relevance_score descending so LLM sees highest-signal articles first\ndeduplicated.sort((a, b) => (b.relevance_score || 0) - (a.relevance_score || 0));\n\nreturn {\n  json: {\n    articles: deduplicated,\n    total_before_dedup: allArticles.length,\n    total_after_dedup: deduplicated.length,\n    client_count: allItems.length,\n    execution_id: execMeta.execution_id,\n    start_time: execMeta.start_time,\n    today: execMeta.today\n  }\n};"
+      },
+      "id": "aggregate-and-deduplicate",
+      "name": "Aggregate & Deduplicate",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1840,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build the input payload for shared-04 (Vertex AI LLM Call)\n// Ask the LLM to score each article 1-5 for relevance and produce a 2-line summary.\n// We batch all articles in a single LLM call to keep token usage efficient.\n\nconst data = $json;\nconst articles = data.articles || [];\n\nif (articles.length === 0) {\n  // No articles to score - pass through empty result\n  return {\n    json: {\n      _skip_llm: true,\n      scored_articles: [],\n      execution_id: data.execution_id,\n      start_time: data.start_time,\n      today: data.today\n    }\n  };\n}\n\n// Compact representation for the LLM prompt to minimise token usage\nconst articlesForPrompt = articles.map((a, i) => ({\n  idx: i,\n  headline: a.headline || '',\n  source: a.source || '',\n  date: a.date || '',\n  client: a.client_name || '',\n  summary: a.summary || ''\n}));\n\nconst systemPrompt = `You are a legal industry intelligence analyst for Herbert Smith Freehills Kramer (HSFK), a leading international law firm.\n\nYour task is to score news articles for their relevance to HSFK's business development and client relationship management, then produce a concise 2-sentence summary of each.\n\nRelevance scoring criteria (1-5):\n5 - Critical: major client news (M&A, IPO, litigation, regulatory action, leadership change) directly impacting HSFK relationship or requiring immediate partner attention\n4 - Important: significant business development signal (expansion, new deal, market move) worth discussing in client meetings\n3 - Noteworthy: useful background intelligence (industry trend, competitive move, general company news) worth monitoring\n2 - Low signal: tangentially related or minor news unlikely to affect HSFK's work\n1 - Irrelevant: no connection to the client or HSFK's practice areas\n\nFor the 2-sentence summary: first sentence states what happened; second sentence explains the implication for HSFK's relationship with this client.\n\nReturn ONLY valid JSON in this exact format:\n{\n  \"scored_articles\": [\n    {\n      \"idx\": 0,\n      \"relevance_score\": 4,\n      \"ai_summary\": \"[Client] announced X. This signals Y for HSFK's relationship.\"\n    }\n  ]\n}`;\n\nconst userPrompt = `Score and summarise these ${articles.length} news articles for HSFK client intelligence:\n\n${JSON.stringify(articlesForPrompt, null, 2)}`;\n\nreturn {\n  json: {\n    // Inputs for shared-04\n    system_prompt: systemPrompt,\n    user_prompt: userPrompt,\n    model: 'gemini-2.5-flash',\n    temperature: 0.2,\n    response_format: 'json',\n    max_tokens: 8192,\n    \n    // Pass through for downstream nodes\n    _articles: articles,\n    _execution_id: data.execution_id,\n    _start_time: data.start_time,\n    _today: data.today\n  }\n};"
+      },
+      "id": "build-llm-scoring-input",
+      "name": "Build LLM Scoring Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2080,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "AI3InmjY6gmJwdXg"
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "id": "call-llm-scoring",
+      "name": "Call LLM Scoring (shared-04)",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        2320,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Merge LLM scoring results back onto the original article objects.\n// shared-04 returns parsed_json.scored_articles with {idx, relevance_score, ai_summary}.\n// We join on idx to enrich each article with the LLM's output.\n\nconst llmOutput = $json;\nconst buildInput = $('Build LLM Scoring Input').first().json;\n\nconst originalArticles = buildInput._articles || [];\nconst executionId = buildInput._execution_id;\nconst startTime = buildInput._start_time;\nconst today = buildInput._today;\n\n// If LLM was skipped (no articles), return empty\nif (buildInput._skip_llm || !llmOutput.json_valid) {\n  return {\n    json: {\n      scored_articles: [],\n      execution_id: executionId,\n      start_time: startTime,\n      today: today,\n      llm_tokens_used: 0,\n      llm_duration_ms: llmOutput.duration_ms || 0\n    }\n  };\n}\n\n// Extract the scored array from LLM response\nlet scoredMap = {};\ntry {\n  const parsedResult = llmOutput.parsed_json || {};\n  const scoredArticles = parsedResult.scored_articles || [];\n  scoredArticles.forEach(s => {\n    scoredMap[s.idx] = {\n      relevance_score: parseInt(s.relevance_score) || 1,\n      ai_summary: String(s.ai_summary || '').trim()\n    };\n  });\n} catch (err) {\n  console.warn('Failed to parse LLM scoring output:', err.message);\n}\n\n// Merge scores onto original articles\nconst scoredArticles = originalArticles.map((article, idx) => {\n  const score = scoredMap[idx] || { relevance_score: 1, ai_summary: '' };\n  return {\n    ...article,\n    relevance_score: score.relevance_score,\n    ai_summary: score.ai_summary || article.summary || ''\n  };\n});\n\n// Sort by relevance_score descending for digest ordering\nscoredArticles.sort((a, b) => b.relevance_score - a.relevance_score);\n\nreturn {\n  json: {\n    scored_articles: scoredArticles,\n    total_scored: scoredArticles.length,\n    execution_id: executionId,\n    start_time: startTime,\n    today: today,\n    llm_tokens_used: (llmOutput.input_tokens || 0) + (llmOutput.output_tokens || 0),\n    llm_duration_ms: llmOutput.duration_ms || 0\n  }\n};"
+      },
+      "id": "merge-llm-scores",
+      "name": "Merge LLM Scores",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2560,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Filter articles to keep only those with relevance_score >= 3.\n// The minimum threshold can be overridden per-client via the watchlist field\n// 'Minimum Relevance Score'; here we apply a global floor of 3.\n// Articles below the threshold are discarded (not stored in News Archive).\n\nconst data = $json;\nconst allArticles = data.scored_articles || [];\nconst MIN_RELEVANCE = 3;\n\nconst filtered = allArticles.filter(a => (a.relevance_score || 0) >= MIN_RELEVANCE);\nconst rejected = allArticles.length - filtered.length;\n\nreturn {\n  json: {\n    filtered_articles: filtered,\n    total_filtered: filtered.length,\n    total_rejected: rejected,\n    min_relevance_applied: MIN_RELEVANCE,\n    execution_id: data.execution_id,\n    start_time: data.start_time,\n    today: data.today,\n    llm_tokens_used: data.llm_tokens_used,\n    llm_duration_ms: data.llm_duration_ms\n  }\n};"
+      },
+      "id": "filter-by-relevance",
+      "name": "Filter Relevance >= 3",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2800,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Prepare one Airtable record per filtered article.\n// Output is an array of items - one per article - so the Airtable node\n// (which operates on one item at a time) can be looped by n8n automatically.\n\nconst data = $json;\nconst articles = data.filtered_articles || [];\n\nif (articles.length === 0) {\n  // Nothing to write - return a single item flagging empty result\n  return [{\n    json: {\n      _no_articles: true,\n      execution_id: data.execution_id,\n      start_time: data.start_time,\n      today: data.today,\n      total_filtered: 0,\n      total_rejected: data.total_rejected || 0,\n      llm_tokens_used: data.llm_tokens_used || 0\n    }\n  }];\n}\n\n// Map each article to an Airtable-ready record\nreturn articles.map(article => ({\n  json: {\n    // Fields for HSFK - News Archive (tbl5UHN4q7SjGgrTd)\n    _airtable_fields: {\n      'Headline': String(article.headline || '').substring(0, 500),\n      'URL': String(article.url || ''),\n      'Source': String(article.source || ''),\n      'Published Date': String(article.date || new Date().toISOString()).split('T')[0],\n      'Retrieved Date': data.today,\n      'Relevance Score': article.relevance_score,\n      'AI Summary': String(article.ai_summary || '').substring(0, 2000),\n      'Included in Digest': true,\n      'Digest Date': data.today,\n      'Workflow Execution ID': data.execution_id,\n      'Client': String(article.client_name || '')\n    },\n    // Carry forward metadata\n    _article: article,\n    execution_id: data.execution_id,\n    start_time: data.start_time,\n    today: data.today,\n    total_filtered: data.total_filtered,\n    total_rejected: data.total_rejected,\n    llm_tokens_used: data.llm_tokens_used\n  }\n}));"
+      },
+      "id": "prepare-airtable-records",
+      "name": "Prepare Airtable Records",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3040,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "app0QZAuhY8Zx4I54"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tbl5UHN4q7SjGgrTd"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Headline": "={{ $json._airtable_fields['Headline'] }}",
+            "URL": "={{ $json._airtable_fields['URL'] }}",
+            "Source": "={{ $json._airtable_fields['Source'] }}",
+            "Published Date": "={{ $json._airtable_fields['Published Date'] }}",
+            "Retrieved Date": "={{ $json._airtable_fields['Retrieved Date'] }}",
+            "Relevance Score": "={{ $json._airtable_fields['Relevance Score'] }}",
+            "AI Summary": "={{ $json._airtable_fields['AI Summary'] }}",
+            "Included in Digest": "={{ $json._airtable_fields['Included in Digest'] }}",
+            "Digest Date": "={{ $json._airtable_fields['Digest Date'] }}",
+            "Workflow Execution ID": "={{ $json._airtable_fields['Workflow Execution ID'] }}",
+            "Client": "={{ $json._airtable_fields['Client'] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Headline",
+              "displayName": "Headline",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "URL",
+              "displayName": "URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Source",
+              "displayName": "Source",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Published Date",
+              "displayName": "Published Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Retrieved Date",
+              "displayName": "Retrieved Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Relevance Score",
+              "displayName": "Relevance Score",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "AI Summary",
+              "displayName": "AI Summary",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Included in Digest",
+              "displayName": "Included in Digest",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Digest Date",
+              "displayName": "Digest Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Workflow Execution ID",
+              "displayName": "Workflow Execution ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Client",
+              "displayName": "Client",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "store-news-archive",
+      "name": "Store in News Archive",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        3280,
+        240
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "AIRTABLE_TOKEN_CRED",
+          "name": "Airtable - Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Collect all stored article records from the Airtable create loop\n// and aggregate them into a single item for digest formatting.\n// This node runs once after all Airtable writes complete.\n\nconst storedItems = $input.all();\n\n// Handle case where no articles were stored (all filtered out)\nif (!storedItems || storedItems.length === 0 || storedItems[0]?.json?._no_articles) {\n  const meta = storedItems[0]?.json || {};\n  return {\n    json: {\n      stored_articles: [],\n      total_stored: 0,\n      execution_id: meta.execution_id || 'unknown',\n      start_time: meta.start_time || Date.now(),\n      today: meta.today || new Date().toISOString().split('T')[0],\n      total_rejected: meta.total_rejected || 0,\n      llm_tokens_used: meta.llm_tokens_used || 0\n    }\n  };\n}\n\n// Reconstruct articles from the stored records\n// Each item has _article (the enriched article) and the Airtable response\nconst stored = storedItems.map(item => ({\n  airtable_record_id: item.json.id || 'unknown',\n  ...(item.json._article || {})\n}));\n\nconst firstItem = storedItems[0].json;\n\nreturn {\n  json: {\n    stored_articles: stored,\n    total_stored: stored.length,\n    execution_id: firstItem.execution_id || 'unknown',\n    start_time: firstItem.start_time || Date.now(),\n    today: firstItem.today || new Date().toISOString().split('T')[0],\n    total_rejected: firstItem.total_rejected || 0,\n    llm_tokens_used: firstItem.llm_tokens_used || 0\n  }\n};"
+      },
+      "id": "collect-stored-articles",
+      "name": "Collect Stored Articles",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3520,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build the Slack digest as Block Kit blocks.\n// Groups articles by client, shows relevance score as emoji rating,\n// and formats as a scannable morning digest.\n\nconst data = $json;\nconst articles = data.stored_articles || [];\nconst today = data.today || new Date().toISOString().split('T')[0];\nconst totalStored = data.total_stored || 0;\nconst totalRejected = data.total_rejected || 0;\n\n// Relevance score to emoji mapping\nconst scoreEmoji = {\n  5: ':red_circle:',   // Critical\n  4: ':large_orange_circle:', // Important\n  3: ':large_yellow_circle:'  // Noteworthy\n};\n\n// Group articles by client\nconst byClient = {};\narticles.forEach(a => {\n  const client = a.client_name || 'Unknown';\n  if (!byClient[client]) byClient[client] = [];\n  byClient[client].push(a);\n});\n\n// Sort clients alphabetically\nconst sortedClients = Object.keys(byClient).sort();\n\nconst blocks = [];\n\n// Header block\nblocks.push({\n  type: 'header',\n  text: {\n    type: 'plain_text',\n    text: `HSFK Market News Digest - ${today}`,\n    emoji: true\n  }\n});\n\n// Summary stats\nblocks.push({\n  type: 'section',\n  text: {\n    type: 'mrkdwn',\n    text: totalStored > 0\n      ? `*${totalStored} articles* found across *${sortedClients.length} clients* | ${totalRejected} below relevance threshold`\n      : `*No high-relevance articles today* | ${totalRejected} articles checked, all below threshold`\n  }\n});\n\nblocks.push({ type: 'divider' });\n\nif (totalStored === 0) {\n  blocks.push({\n    type: 'section',\n    text: {\n      type: 'mrkdwn',\n      text: '_Nothing notable in the news today. Next digest tomorrow at 07:00 UTC._'\n    }\n  });\n} else {\n  // One section per client\n  sortedClients.forEach(client => {\n    const clientArticles = byClient[client];\n    \n    // Client header\n    blocks.push({\n      type: 'section',\n      text: {\n        type: 'mrkdwn',\n        text: `*${client}* (${clientArticles.length} article${clientArticles.length > 1 ? 's' : ''})`\n      }\n    });\n    \n    // Articles under this client\n    clientArticles.forEach(article => {\n      const emoji = scoreEmoji[article.relevance_score] || ':white_circle:';\n      const headline = article.headline || 'No headline';\n      const url = article.url || '';\n      const source = article.source || '';\n      const summary = article.ai_summary || article.summary || '';\n      const published = article.date ? article.date.split('T')[0] : '';\n      \n      let articleText = `${emoji} `;\n      if (url) {\n        articleText += `<${url}|${headline}>`;\n      } else {\n        articleText += `*${headline}*`;\n      }\n      if (source) articleText += ` _via ${source}_`;\n      if (published) articleText += ` (${published})`;\n      if (summary) articleText += `\\n>${summary}`;\n      \n      blocks.push({\n        type: 'section',\n        text: {\n          type: 'mrkdwn',\n          text: articleText\n        }\n      });\n    });\n    \n    blocks.push({ type: 'divider' });\n  });\n}\n\n// Footer\nblocks.push({\n  type: 'context',\n  elements: [\n    {\n      type: 'mrkdwn',\n      text: `UC 1.5 Market News Monitor | Execution: ${data.execution_id} | Powered by Perplexity + Vertex AI | Next run: tomorrow 07:00 UTC`\n    }\n  ]\n});\n\nreturn {\n  json: {\n    slack_blocks: blocks,\n    article_count: totalStored,\n    client_count: sortedClients.length,\n    execution_id: data.execution_id,\n    start_time: data.start_time,\n    today: today,\n    llm_tokens_used: data.llm_tokens_used\n  }\n};"
+      },
+      "id": "build-slack-digest",
+      "name": "Build Slack Digest",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3760,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "#customer-hsfk"
+        },
+        "blocksUi": "={{ JSON.stringify($json.slack_blocks) }}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "id": "post-to-slack",
+      "name": "Post to Slack",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        4000,
+        240
+      ],
+      "credentials": {
+        "slackApi": {
+          "id": "SLACK_API_CRED",
+          "name": "Slack - Legal Engine Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build the input payload for shared-05 (Airtable Audit Log)\n// Summarises what the workflow did for the audit trail.\n\nconst digestData = $('Build Slack Digest').first().json;\nconst startTime = digestData.start_time || Date.now();\nconst durationMs = Date.now() - startTime;\n\nconst articleCount = digestData.article_count || 0;\nconst clientCount = digestData.client_count || 0;\nconst tokensUsed = digestData.llm_tokens_used || 0;\n\nreturn {\n  json: {\n    // Inputs for shared-05\n    workflow_name: 'HSFK UC 1.5 - Market News Monitor',\n    use_case_id: '1.5',\n    trigger_type: 'schedule',\n    input_summary: `Loaded watchlist, searched news for ${clientCount} active clients`,\n    output_summary: `${articleCount} articles stored in News Archive, digest posted to #customer-hsfk. LLM tokens: ${tokensUsed}`,\n    status: 'success',\n    duration_ms: durationMs,\n    error_message: ''\n  }\n};"
+      },
+      "id": "build-audit-input",
+      "name": "Build Audit Log Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4240,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "zjwCkfCuH3GnW2qT"
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "id": "call-audit-log",
+      "name": "Log Execution (shared-05)",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        4480,
+        240
+      ]
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Record Start Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record Start Time": {
+      "main": [
+        [
+          {
+            "node": "Load Client Watchlist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Client Watchlist": {
+      "main": [
+        [
+          {
+            "node": "Attach Exec Metadata",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Attach Exec Metadata": {
+      "main": [
+        [
+          {
+            "node": "Split Into Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Into Batches": {
+      "main": [
+        [
+          {
+            "node": "Build Perplexity Input",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Aggregate & Deduplicate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Perplexity Input": {
+      "main": [
+        [
+          {
+            "node": "Call Perplexity (shared-02)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Perplexity (shared-02)": {
+      "main": [
+        [
+          {
+            "node": "Merge Perplexity Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Perplexity Results": {
+      "main": [
+        [
+          {
+            "node": "Split Into Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate & Deduplicate": {
+      "main": [
+        [
+          {
+            "node": "Build LLM Scoring Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build LLM Scoring Input": {
+      "main": [
+        [
+          {
+            "node": "Call LLM Scoring (shared-04)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call LLM Scoring (shared-04)": {
+      "main": [
+        [
+          {
+            "node": "Merge LLM Scores",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge LLM Scores": {
+      "main": [
+        [
+          {
+            "node": "Filter Relevance >= 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Relevance >= 3": {
+      "main": [
+        [
+          {
+            "node": "Prepare Airtable Records",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Airtable Records": {
+      "main": [
+        [
+          {
+            "node": "Store in News Archive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store in News Archive": {
+      "main": [
+        [
+          {
+            "node": "Collect Stored Articles",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collect Stored Articles": {
+      "main": [
+        [
+          {
+            "node": "Build Slack Digest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Slack Digest": {
+      "main": [
+        [
+          {
+            "node": "Post to Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post to Slack": {
+      "main": [
+        [
+          {
+            "node": "Build Audit Log Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Audit Log Input": {
+      "main": [
+        [
+          {
+            "node": "Log Execution (shared-05)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:Schedule Trigger": {
+      "recurrenceRules": []
+    }
+  },
+  "pinData": {},
+  "triggerCount": 1,
+  "meta": null
+}

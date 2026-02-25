@@ -1,0 +1,636 @@
+{
+  "name": "HSFK UC 2.2 - Bio Variant Generator",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## HSFK UC 2.2 - Bio Variant Generator\n\n**Purpose:** On-demand generation of professional bio variants for HSFK lawyers and partners. Loads the person's master profile from Airtable, calls Claude Opus (via shared-04) with a context-specific writing prompt, stores the generated variant, and returns it in the webhook response.\n\n**Trigger:** Webhook POST /webhook/hsfk-bio-request\n\n**Flow:**\n1. Webhook receives: person_name + context type\n2. Load master profile from HSFK - Master Profiles Airtable table\n3. Validate: profile found? Sufficient data?\n4. Build context-specific LLM prompt (Claude Opus for quality writing)\n5. Call shared-04 (LLM) to generate bio variant\n6. Store variant in HSFK - Bio Variants Airtable table\n7. Return generated bio in webhook response (synchronous)\n8. Audit log via shared-05\n\n**Context types:**\n- `event_bio` - 150 words, third person, focus on speaking expertise\n- `ja_submission` - Formal, emphasise rankings and notable matters\n- `directory_listing` - Structured format per directory requirements\n- `internal_profile` - First person, approachable, include personal interests\n\n**Sub-workflow IDs:**\n- shared-04 (Vertex AI LLM): AI3InmjY6gmJwdXg  (Claude Opus model for writing quality)\n- shared-05 (Airtable Audit): zjwCkfCuH3GnW2qT\n\n**Airtable base:** app0QZAuhY8Zx4I54\n- Master Profiles: tbl5KE2DIdaKJPPiN\n- Bio Variants: tbl3LTJS7DR4aI8jr\n\n**n8n instance:** leonard-dev.app.n8n.cloud\n\n**Model note:** Uses claude-opus-4-5 (via Vertex AI) rather than Gemini Flash. Bio writing requires nuanced prose quality that justifies the higher cost.",
+        "height": 540,
+        "width": 500,
+        "color": 4
+      },
+      "id": "sticky-note-docs",
+      "name": "Documentation",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -600,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "hsfk-bio-request",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook - Bio Request",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -80,
+        240
+      ],
+      "webhookId": "hsfk-bio-request-webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Validate and normalise the incoming bio request\n// Expected payload: { person_name, context, requested_by (optional), word_count_override (optional) }\n\nconst body = $input.first().json.body || $input.first().json || {};\nconst executionId = `hsfk-bio-${Date.now()}`;\nconst startTime = Date.now();\n\nconst personName = (body.person_name || '').trim();\nconst context = (body.context || '').trim().toLowerCase();\nconst requestedBy = (body.requested_by || 'unknown').trim();\nconst wordCountOverride = parseInt(body.word_count_override) || null;\n\n// Validate required fields\nconst errors = [];\nif (!personName) errors.push('person_name is required');\n\nconst validContexts = ['event_bio', 'ja_submission', 'directory_listing', 'internal_profile'];\nif (!context) {\n  errors.push('context is required');\n} else if (!validContexts.includes(context)) {\n  errors.push(`context must be one of: ${validContexts.join(', ')}`);\n}\n\nif (errors.length > 0) {\n  return {\n    json: {\n      validation_status: 'error',\n      errors,\n      person_name: personName,\n      context,\n      execution_id: executionId\n    }\n  };\n}\n\n// Context-specific defaults\nconst contextConfig = {\n  event_bio: {\n    word_count: wordCountOverride || 150,\n    perspective: 'third_person',\n    tone: 'professional, speaker-focused',\n    instructions: 'Emphasise speaking expertise, areas of legal specialism, and notable industry contributions. Suitable for conference programmes and event websites. Avoid internal firm detail.'\n  },\n  ja_submission: {\n    word_count: wordCountOverride || 300,\n    perspective: 'third_person',\n    tone: 'formal, authoritative',\n    instructions: 'Lead with rankings and awards. Emphasise notable matters, client seniority, and specific areas of legal expertise. Follow Chambers and Legal 500 submission guidelines. Include quantifiable outcomes where available. Use active, impact-focused language.'\n  },\n  directory_listing: {\n    word_count: wordCountOverride || 120,\n    perspective: 'third_person',\n    tone: 'concise, structured',\n    instructions: 'Structured format: one opening sentence for seniority and practice area, then key expertise bullet points, then notable matters. Suitable for law firm directory pages. British English throughout.'\n  },\n  internal_profile: {\n    word_count: wordCountOverride || 200,\n    perspective: 'first_person',\n    tone: 'warm, approachable, authentic',\n    instructions: 'Write in the first person as if the lawyer is introducing themselves to colleagues. Include professional background, areas of work, and two or three personal interests or hobbies. Avoid overly formal legal language. Suitable for firm intranet profiles.'\n  }\n};\n\nreturn {\n  json: {\n    validation_status: 'ok',\n    person_name: personName,\n    context,\n    requested_by: requestedBy,\n    context_config: contextConfig[context],\n    execution_id: executionId,\n    start_time: startTime\n  }\n};"
+      },
+      "id": "validate-request",
+      "name": "Validate & Normalise Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "validation-check",
+              "leftValue": "={{ $json.validation_status }}",
+              "rightValue": "ok",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "check-validation",
+      "name": "Request Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        400,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ error: 'Bad Request', errors: $('Validate & Normalise Request').first().json.errors }) }}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "id": "respond-400",
+      "name": "Respond 400 Bad Request",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        640,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "app0QZAuhY8Zx4I54"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tbl5KE2DIdaKJPPiN"
+        },
+        "filterByFormula": "={{ \"SEARCH(LOWER('\" + $json.person_name.replace(/'/g, \"\\\\'\") + \"'), LOWER({Full Name})) > 0\" }}",
+        "returnAll": false,
+        "limit": 1,
+        "options": {}
+      },
+      "id": "load-master-profile",
+      "name": "Load Master Profile from Airtable",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        640,
+        240
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "AIRTABLE_TOKEN_CRED",
+          "name": "Airtable - Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Merge the Airtable profile result with the validated request\n// Check if a profile was found and whether it has sufficient data\n\nconst requestData = $('Validate & Normalise Request').first().json;\nconst airtableItems = $input.all();\n\nconst profileFound = airtableItems.length > 0 && airtableItems[0].json?.id;\nconst profile = profileFound ? airtableItems[0].json?.fields || {} : {};\nconst profileRecordId = profileFound ? airtableItems[0].json?.id : null;\n\n// Assess profile completeness for the requested context\nconst hasName = !!profile['Full Name'];\nconst hasTitle = !!profile['Job Title'];\nconst hasPracticeAreas = !!profile['Practice Areas'];\nconst hasQualifications = !!profile['Qualifications'];\nconst hasNotableMatters = !!profile['Notable Matters'];\nconst hasRankings = !!profile['Rankings and Awards'];\nconst hasPersonalInterests = !!profile['Personal Interests'];\n\n// Minimum data check\nconst minimumDataPresent = hasName && hasPracticeAreas;\n\n// Context-specific completeness warnings\nconst warnings = [];\nif (!hasTitle) warnings.push('Job title missing from master profile');\nif (!hasQualifications) warnings.push('Qualifications missing from master profile');\nif (requestData.context === 'ja_submission' && !hasRankings) {\n  warnings.push('Rankings and Awards missing - JA submission may lack key details');\n}\nif (requestData.context === 'ja_submission' && !hasNotableMatters) {\n  warnings.push('Notable Matters missing - JA submission quality will be reduced');\n}\nif (requestData.context === 'internal_profile' && !hasPersonalInterests) {\n  warnings.push('Personal Interests missing - internal profile will be professional-only');\n}\n\nreturn {\n  json: {\n    profile_found: profileFound,\n    profile_record_id: profileRecordId,\n    minimum_data_present: minimumDataPresent,\n    profile: {\n      full_name: profile['Full Name'] || requestData.person_name,\n      job_title: profile['Job Title'] || null,\n      department: profile['Department'] || null,\n      qualifications: profile['Qualifications'] || null,\n      practice_areas: profile['Practice Areas'] || null,\n      notable_matters: profile['Notable Matters'] || null,\n      rankings_and_awards: profile['Rankings and Awards'] || null,\n      publications_and_speaking: profile['Publications and Speaking'] || null,\n      personal_interests: profile['Personal Interests'] || null,\n      linkedin_url: profile['LinkedIn URL'] || null,\n      email: profile['Email'] || null\n    },\n    warnings,\n    request: requestData,\n    context_config: requestData.context_config,\n    execution_id: requestData.execution_id,\n    start_time: requestData.start_time\n  }\n};"
+      },
+      "id": "merge-profile-data",
+      "name": "Merge Profile Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "profile-found-check",
+              "leftValue": "={{ $json.minimum_data_present }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equal"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "check-profile-data",
+      "name": "Sufficient Profile Data?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1120,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ error: 'Profile Not Found', message: 'No master profile found for: ' + $('Validate & Normalise Request').first().json.person_name + '. Please add the person to the HSFK - Master Profiles Airtable table first.', person_name: $('Validate & Normalise Request').first().json.person_name }) }}",
+        "options": {
+          "responseCode": 404
+        }
+      },
+      "id": "respond-404",
+      "name": "Respond 404 Profile Not Found",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1360,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build the context-specific LLM prompt for bio generation\n// Model: claude-opus-4-5 via Vertex AI for high-quality legal writing\n\nconst data = $json;\nconst profile = data.profile;\nconst config = data.context_config;\nconst context = data.request.context;\nconst personName = profile.full_name;\n\n// Serialise profile data for the prompt (omit null fields)\nconst profileLines = [];\nif (profile.job_title) profileLines.push(`Job title: ${profile.job_title}`);\nif (profile.department) profileLines.push(`Department: ${profile.department}`);\nif (profile.qualifications) profileLines.push(`Qualifications: ${profile.qualifications}`);\nif (profile.practice_areas) profileLines.push(`Practice areas: ${profile.practice_areas}`);\nif (profile.notable_matters) profileLines.push(`Notable matters: ${profile.notable_matters}`);\nif (profile.rankings_and_awards) profileLines.push(`Rankings and awards: ${profile.rankings_and_awards}`);\nif (profile.publications_and_speaking) profileLines.push(`Publications and speaking: ${profile.publications_and_speaking}`);\nif (profile.personal_interests) profileLines.push(`Personal interests: ${profile.personal_interests}`);\n\nconst profileText = profileLines.length > 0\n  ? profileLines.join('\\n')\n  : `Name: ${personName} (limited profile data available - generate best effort bio)`;\n\nconst systemPrompt = `You are an expert legal marketing writer specialising in professional biographies for law firms. You write with precision, authority, and warmth. You are deeply familiar with legal rankings (Chambers and Partners, Legal 500) and understand what makes a compelling professional biography in a legal context.\n\nYou always write in British English. You never use em dashes. You use professional but human language. You write exactly to the specified word count (allow +/- 15 words tolerance).\n\nYour output is ONLY the bio text itself. No titles, no labels, no commentary. Just the bio. Do not wrap in JSON or markdown.`;\n\nconst userPrompt = `Write a ${config.word_count}-word ${context.replace(/_/g, ' ')} for the following person.\n\n**Perspective:** ${config.perspective === 'first_person' ? 'First person (\"I advise...\", \"My practice...\")' : 'Third person (\"[Name] advises...\", \"[Name]\\'s practice...\")'}\n\n**Tone:** ${config.tone}\n\n**Specific instructions:** ${config.instructions}\n\n**Person's profile:**\n${profileText}\n\nWrite exactly ${config.word_count} words (allow +/- 15 words). Output only the bio text.`;\n\nreturn {\n  json: {\n    system_prompt: systemPrompt,\n    user_prompt: userPrompt,\n    model: 'claude-opus-4-5',\n    temperature: 0.6,\n    response_format: 'text',\n    max_tokens: 2048,\n    profile_data: data,\n    context,\n    person_name: personName,\n    word_count_target: config.word_count,\n    execution_id: data.execution_id,\n    start_time: data.start_time\n  }\n};"
+      },
+      "id": "build-bio-prompt",
+      "name": "Build Context-Specific Bio Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1360,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "AI3InmjY6gmJwdXg"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "system_prompt": "={{ $json.system_prompt }}",
+            "user_prompt": "={{ $json.user_prompt }}",
+            "model": "={{ $json.model }}",
+            "temperature": "={{ $json.temperature }}",
+            "response_format": "={{ $json.response_format }}",
+            "max_tokens": "={{ $json.max_tokens }}"
+          },
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "call-llm-shared-04",
+      "name": "Call shared-04 (Claude Opus - Bio Generation)",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        1600,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Process the generated bio and compute metadata\n\nconst llmResult = $json;\nconst promptData = $('Build Context-Specific Bio Prompt').first().json;\nconst profileData = promptData.profile_data;\n\nconst bioText = (llmResult.text || '').trim();\nconst wordCount = bioText.split(/\\s+/).filter(w => w.length > 0).length;\nconst personName = promptData.person_name;\nconst context = promptData.context;\nconst executionId = promptData.execution_id;\nconst startTime = promptData.start_time;\nconst durationMs = Date.now() - startTime;\n\nconst today = new Date().toISOString().split('T')[0];\nconst versionTag = `${personName.replace(/\\s+/g, '-').toLowerCase()}-${context}-${today}`;\n\n// Check if the bio looks complete\nconst bioValid = bioText.length > 50;\n\n// Check for profile warnings to pass through\nconst profileWarnings = profileData.warnings || [];\n\nreturn {\n  json: {\n    bio_text: bioText,\n    bio_valid: bioValid,\n    word_count: wordCount,\n    word_count_target: promptData.word_count_target,\n    person_name: personName,\n    context,\n    version_tag: versionTag,\n    generated_at: new Date().toISOString(),\n    profile_record_id: profileData.profile_record_id,\n    execution_id: executionId,\n    duration_ms: durationMs,\n    llm_tokens_used: (llmResult.input_tokens || 0) + (llmResult.output_tokens || 0),\n    model_used: llmResult.model_used || 'claude-opus-4-5',\n    profile_warnings: profileWarnings,\n    requested_by: profileData.request?.requested_by || 'unknown'\n  }\n};"
+      },
+      "id": "process-bio-output",
+      "name": "Process Bio Output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1840,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "app0QZAuhY8Zx4I54"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tbl3LTJS7DR4aI8jr"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Context": "={{ $json.context }}",
+            "Word Count": "={{ $json.word_count }}",
+            "Bio Text": "={{ $json.bio_text }}",
+            "Requested By": "={{ $json.requested_by }}",
+            "Generated At": "={{ $json.generated_at }}",
+            "Version": "={{ $json.version_tag }}",
+            "Approved": false,
+            "Workflow Execution ID": "={{ $json.execution_id }}",
+            "HSFK - Master Profiles": "={{ $json.profile_record_id ? [$json.profile_record_id] : [] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Context",
+              "displayName": "Context",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "event_bio",
+                  "value": "event_bio"
+                },
+                {
+                  "name": "ja_submission",
+                  "value": "ja_submission"
+                },
+                {
+                  "name": "directory_listing",
+                  "value": "directory_listing"
+                },
+                {
+                  "name": "internal_profile",
+                  "value": "internal_profile"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Word Count",
+              "displayName": "Word Count",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Bio Text",
+              "displayName": "Bio Text",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Requested By",
+              "displayName": "Requested By",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Generated At",
+              "displayName": "Generated At",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Version",
+              "displayName": "Version",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Approved",
+              "displayName": "Approved",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Workflow Execution ID",
+              "displayName": "Workflow Execution ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "HSFK - Master Profiles",
+              "displayName": "HSFK - Master Profiles",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "store-bio-variant",
+      "name": "Store Bio Variant in Airtable",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        2080,
+        240
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "AIRTABLE_TOKEN_CRED",
+          "name": "Airtable - Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build the success webhook response\n// Return the bio text plus metadata so the caller (voice agent or manual) has everything needed\n\nconst bioData = $('Process Bio Output').first().json;\nconst airtableResponse = $json;\nconst variantRecordId = airtableResponse.id || airtableResponse.fields?.id || null;\n\nconst response = {\n  status: 'success',\n  person_name: bioData.person_name,\n  context: bioData.context,\n  bio: bioData.bio_text,\n  word_count: bioData.word_count,\n  word_count_target: bioData.word_count_target,\n  version: bioData.version_tag,\n  airtable_record_id: variantRecordId,\n  generated_at: bioData.generated_at,\n  execution_id: bioData.execution_id,\n  model_used: bioData.model_used\n};\n\n// Surface any profile warnings so the caller knows data was incomplete\nif (bioData.profile_warnings && bioData.profile_warnings.length > 0) {\n  response.warnings = bioData.profile_warnings;\n}\n\nreturn { json: { response, bio_data: bioData, variant_record_id: variantRecordId } };"
+      },
+      "id": "build-response",
+      "name": "Build Webhook Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2320,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json.response) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "respond-200",
+      "name": "Respond 200 with Bio",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2560,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "zjwCkfCuH3GnW2qT"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "workflow_name": "HSFK UC 2.2 - Bio Variant Generator",
+            "use_case_id": "2.2",
+            "trigger_type": "webhook",
+            "input_summary": "={{ 'Person: ' + $('Process Bio Output').first().json.person_name + ' | Context: ' + $('Process Bio Output').first().json.context + ' | Requested by: ' + $('Process Bio Output').first().json.requested_by }}",
+            "output_summary": "={{ 'Bio generated: ' + $('Process Bio Output').first().json.word_count + ' words | Version: ' + $('Process Bio Output').first().json.version_tag + ' | Record ID: ' + ($('Build Webhook Response').first().json.variant_record_id || 'unknown') }}",
+            "status": "success",
+            "duration_ms": "={{ $('Process Bio Output').first().json.duration_ms || 0 }}"
+          },
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "call-audit-shared-05",
+      "name": "Call shared-05 (Audit Log)",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        2560,
+        400
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook - Bio Request": {
+      "main": [
+        [
+          {
+            "node": "Validate & Normalise Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate & Normalise Request": {
+      "main": [
+        [
+          {
+            "node": "Request Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Request Valid?": {
+      "main": [
+        [
+          {
+            "node": "Load Master Profile from Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond 400 Bad Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Master Profile from Airtable": {
+      "main": [
+        [
+          {
+            "node": "Merge Profile Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Profile Data": {
+      "main": [
+        [
+          {
+            "node": "Sufficient Profile Data?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sufficient Profile Data?": {
+      "main": [
+        [
+          {
+            "node": "Build Context-Specific Bio Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond 404 Profile Not Found",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Context-Specific Bio Prompt": {
+      "main": [
+        [
+          {
+            "node": "Call shared-04 (Claude Opus - Bio Generation)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call shared-04 (Claude Opus - Bio Generation)": {
+      "main": [
+        [
+          {
+            "node": "Process Bio Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Bio Output": {
+      "main": [
+        [
+          {
+            "node": "Store Bio Variant in Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Bio Variant in Airtable": {
+      "main": [
+        [
+          {
+            "node": "Build Webhook Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Webhook Response": {
+      "main": [
+        [
+          {
+            "node": "Respond 200 with Bio",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Call shared-05 (Audit Log)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 1,
+  "meta": null
+}

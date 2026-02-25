@@ -1,0 +1,108 @@
+{
+  "name": "LIVE - AMY - Legal Engine CMO Dinner Outreach Emails",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "735a07bc-9568-4ca2-9ef3-73f87cfe8328",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -192,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1rHLewuHUdZL70IqpetDc_4iMEn5VBe4IIUnuRy2mFJA",
+          "mode": "list",
+          "cachedResultName": "Legal Engine CMO Dinner",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1rHLewuHUdZL70IqpetDc_4iMEn5VBe4IIUnuRy2mFJA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 760654675,
+          "mode": "list",
+          "cachedResultName": "USE ME",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1rHLewuHUdZL70IqpetDc_4iMEn5VBe4IIUnuRy2mFJA/edit#gid=760654675"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -16,
+        -80
+      ],
+      "id": "7d7970af-afc6-4d33-9b7d-df75ad7de1b2",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ideYdPgaT4pRzHvx",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toRecipients": "={{ $json[\"Email Address\"] }}",
+        "subject": "=Hi {{ $json[\"First Name\"] }}, some more info on the Legal Engine BD Ops Dinner",
+        "bodyContent": "=<!-- Legal Engine • Dinner Invite (Simplified, single CTA) -->\n<!-- Variables used: $json[\"First Name\"], $json[\"Full Name\"], $json[\"Email Address\"], $json[\"Company\"], $json[\"Role\"] -->\n\n<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Dinner • Final Details</title>\n  <link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap\" rel=\"stylesheet\">\n  <style>\n    :root{ --le-navy:#062047; --le-blue:#00b3ff; --le-indigo:#0066ff; --le-grey:#f2f6fa; --le-silver:#e5ecf3; --le-text:#263238; }\n    body{background:#f2f6fa;margin:0;color:var(--le-text);font-family:'Inter',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}\n    .wrapper{max-width:700px;margin:0 auto;background:#fff;border:1px solid var(--le-silver);border-radius:10px;padding:40px}\n    .section{margin-bottom:20px;line-height:1.6}\n    h1{font-size:22px;color:var(--le-navy);margin:0 0 8px;font-weight:700}\n    h2{font-size:18px;color:var(--le-navy);margin:16px 0 8px;font-weight:700;border-bottom:2px solid var(--le-silver);padding-bottom:8px}\n    p{margin:0 0 12px}\n    ul{margin:0 0 12px 18px}\n    .footer{font-size:13px;color:#6c7a84;text-align:center;padding-top:20px;border-top:1px solid var(--le-silver)}\n    @media (max-width:520px){ .wrapper{padding:28px} }\n  </style>\n</head>\n<body>\n  <div class=\"wrapper\">\n    <!-- Brand Header -->\n    <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-collapse:collapse;margin-bottom:24px;\">\n      <tr>\n        <td align=\"center\">\n          <a href=\"https://legalengine.co.uk/\" target=\"_blank\" rel=\"noopener\" style=\"text-decoration:none;\">\n            <img src=\"https://legalengine.co.uk/hs-fs/hubfs/e8ad0e08-aa6c-4d44-9053-cdcf7bbaec5b.png?width=852&height=339&name=e8ad0e08-aa6c-4d44-9053-cdcf7bbaec5b.png\" alt=\"Legal Engine\" width=\"180\" height=\"72\" style=\"width:180px;max-width:100%;height:auto;display:block;border:0;outline:none;text-decoration:none;\">\n          </a>\n        </td>\n      </tr>\n    </table>\n    <div class=\"section\">\n      <p>Good morning {{ $json['First Name'] }},</p>\n      <p>Hope you’re having a great week. We’re looking forward to seeing you next Wednesday. <br>Logistics and timings are below:</p>\n      <p>Two quick pre‑dinner asks:</p>\n      <ul>\n        <li><strong>Menu choices</strong>: confirm what you’d like to eat.</li>\n        <li><strong>Amy</strong>: a friendly 4–5 minute chat with our AI assistant to share your thoughts on AI in BD and where the operating model is heading. All conversations are confidential.</li>\n      </ul>\n    </div>\n\n    <!-- Single CTA: single Outlook-safe button -->\n    <div class=\"section\" style=\"text-align:center;\">\n      <table role=\"presentation\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" style=\"margin:auto;\">\n        <tr>\n          <td align=\"center\" bgcolor=\"#0066ff\" style=\"border-radius:8px;\">\n            <a href=\"https://legal-engine.github.io/cmo_dinner_oct/?utm_source=psmg&amp;utm_medium=email&amp;utm_campaign=dinner-prep&amp;first_name={{ encodeURIComponent($json['First Name'] || '') }}&amp;last_name={{ encodeURIComponent($json['Last Name'] || '') }}&amp;full_name={{ encodeURIComponent($json['Full Name'] || '') }}&amp;email={{ encodeURIComponent($json['Email Address'] || '') }}&amp;company={{ encodeURIComponent($json['Company'] || $json.Company || '') }}\"\n               target=\"_blank\" rel=\"noopener noreferrer\" role=\"button\"\n               style=\"font-size:16px;line-height:48px;display:block;padding:0 24px;color:#ffffff;text-decoration:none;font-weight:700;border-radius:8px;mso-padding-alt:0 24px 0 24px;\">\n              Submit details &amp; speak to Amy\n            </a>\n          </td>\n        </tr>\n      </table>\n    </div>\n\n<div class=\"section\">\n<h2>Event details</h2>\n<p><strong>Venue:</strong> <a href=\"https://www.cantocorvino.co.uk/\" target=\"_blank\" rel=\"noopener\">Canto Corvino</a> (near <a href=\"https://maps.app.goo.gl/sjzifBnpxen9TdJG9\" target=\"_blank\" rel=\"noopener\">Liverpool St station</a>)</p>\n<p><strong>Date:</strong> Wednesday 1 October</p>\n<p><strong>Time:</strong> 18:30 arrival · seated 19:15</p>\n</div>\n\n    <div class=\"section\">\n      <p>Any questions, just reply to this email.</p>\n      <p>Kind regards,<br><br>\n         <strong>Lee Curtis</strong><br>\n         Co‑founder, Legal Engine<br>\n         M: 07889 758119<br>\n         E: <a href=\"mailto:lee@legalengine.co.uk\">lee@legalengine.co.uk</a><br>\n         W: <a href=\"https://www.legalengine.co.uk/\" target=\"_blank\" rel=\"noopener\">www.legalengine.co.uk</a>\n      </p>\n    </div>\n\n    <div class=\"footer\">Making EVERY conversation count.</div>\n  </div>\n</body>\n</html>\n",
+        "additionalFields": {
+          "from": "Lottie at PSMG",
+          "bodyContentType": "html"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        224,
+        -80
+      ],
+      "id": "149f296c-7bd8-4334-9149-fb9581acce8f",
+      "name": "Send a message",
+      "webhookId": "fe815264-8116-4caf-92ed-d17ca657d4a9",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "6M8EKjo0xkpyROgs",
+          "name": "Microsoft Outlook - Lee @ Legal Engine"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 0,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

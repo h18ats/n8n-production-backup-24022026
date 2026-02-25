@@ -1,0 +1,400 @@
+{
+  "name": "HSFK UC 7.5 - Access Request Orchestrator",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "hsfk-uc-7.5",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "95c8576c-293b-4200-8fc8-16a8b3ab1cf5",
+      "name": "ElevenLabs Post-Call",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "b4a37bbe-ae63-42bc-817f-0436f11cc8cf"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5b0f6bb9-7969-4131-8a07-af495d78d7a9",
+              "name": "coverPE",
+              "value": "={{ $json.body.extracted_data.coverPE }}",
+              "type": "string"
+            },
+            {
+              "id": "d360b5cd-c9bb-45ca-ac96-1ebbedda7c22",
+              "name": "diaryOwner",
+              "value": "={{ $json.body.extracted_data.diaryOwner }}",
+              "type": "string"
+            },
+            {
+              "id": "7ddc3b9a-3086-47fa-9c0a-dd4ad033f2fc",
+              "name": "coverPeriod",
+              "value": "={{ $json.body.extracted_data.coverPeriod }}",
+              "type": "string"
+            },
+            {
+              "id": "16bd34be-b46d-4e39-8971-c19f40119d0d",
+              "name": "approvalRequired",
+              "value": "={{ $json.body.extracted_data.approvalRequired }}",
+              "type": "boolean"
+            },
+            {
+              "id": "d5ccb660-9ad4-44bb-a8ee-cb5b2cffc8c7",
+              "name": "approvalOwner",
+              "value": "={{ $json.body.extracted_data.approvalOwner }}",
+              "type": "string"
+            },
+            {
+              "id": "d28bde71-2f73-43d3-8548-27a7991a9fd1",
+              "name": "urgency",
+              "value": "={{ $json.body.extracted_data.urgency }}",
+              "type": "string"
+            },
+            {
+              "id": "962959f8-29bb-4294-b21a-21bdf4575b44",
+              "name": "accessType",
+              "value": "={{ $json.body.extracted_data.accessType }}",
+              "type": "string"
+            },
+            {
+              "id": "70f37231-e88d-4990-b5c7-5f3c0f180b50",
+              "name": "conversation_id",
+              "value": "={{ $json.body.conversation_id }}",
+              "type": "string"
+            },
+            {
+              "id": "49eedb33-1938-4497-9c30-5329d81eb0fb",
+              "name": "agent_id",
+              "value": "={{ $json.body.agent_id }}",
+              "type": "string"
+            },
+            {
+              "id": "f055e9ac-ea7d-4128-a393-6912d8e96143",
+              "name": "duration_seconds",
+              "value": "={{ $json.body.duration_seconds }}",
+              "type": "string"
+            },
+            {
+              "id": "ece93b69-3c37-4296-979b-c6509cbdf2e5",
+              "name": "caller_name",
+              "value": "={{ $json.body.metadata?.first_name || 'Unknown' }}",
+              "type": "string"
+            },
+            {
+              "id": "bb9b52df-e4a1-44e4-98d1-59a70f0ff23c",
+              "name": "caller_email",
+              "value": "={{ $json.body.metadata?.email || '' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      },
+      "id": "7ba12753-adb3-47cb-9326-d31fe53cc256",
+      "name": "Extract Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        240,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "combinator": "and"
+          },
+          "conditions": [
+            {
+              "id": "6f732dab-06cc-4805-8897-8cac0bf3303f",
+              "leftValue": "={{ $json.coverPE }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            },
+            {
+              "id": "cda2b883-f1be-4ac4-beda-b4e892ea8c76",
+              "leftValue": "={{ $json.diaryOwner }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            },
+            {
+              "id": "77cb800e-ab91-4605-bc2a-6a7319af9387",
+              "leftValue": "={{ $json.approvalOwner }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "2802d948-5b14-4cd7-b355-97d972d6f66d",
+      "name": "Data Complete?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        480,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1752c535-cc8c-4e1f-89bb-4804ca256f42",
+              "name": "summary",
+              "value": "={{ \"## HSFK UC 7.5 - Access Request Orchestrator\\n\\n**Caller:** \" + ($json.caller_name || \"Unknown\") + \" (\" + ($json.caller_email || \"no email\") + \")\\n**Duration:** \" + ($json.duration_seconds || \"?\") + \"s\\n**Conversation ID:** \" + ($json.conversation_id || \"?\") + \"\\n\\n### Captured Data\\n\\n- **coverPE**: \" + ($json.coverPE || \"N/A\") + \"\\n- **diaryOwner**: \" + ($json.diaryOwner || \"N/A\") + \"\\n- **coverPeriod**: \" + ($json.coverPeriod || \"N/A\") + \"\\n- **approvalRequired**: \" + ($json.approvalRequired || \"N/A\") + \"\\n- **approvalOwner**: \" + ($json.approvalOwner || \"N/A\") + \"\\n- **urgency**: \" + ($json.urgency || \"N/A\") + \"\\n- **accessType**: \" + ($json.accessType || \"N/A\") + \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "fbe25bc3-5522-4d1c-8f0b-a6d0dcd4eaf0",
+              "name": "ucId",
+              "value": "7.5",
+              "type": "string"
+            },
+            {
+              "id": "6e333bcd-8d33-496c-a424-6fa62ce9f546",
+              "name": "agentName",
+              "value": "Access Request Orchestrator",
+              "type": "string"
+            },
+            {
+              "id": "bb92843b-cb0f-49a1-ae86-6ff6cd08869e",
+              "name": "timestamp",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "61b1f1c8-919b-4a89-9f9f-a3a0105e9e64",
+      "name": "Format Summary",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        720,
+        -60
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "app0QZAuhY8Zx4I54",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl8hV2nYEoRS8Gif",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "UC ID": "={{ $json.ucId }}",
+            "Agent Name": "={{ $json.agentName }}",
+            "Caller": "={{ $json.caller_name }}",
+            "Email": "={{ $json.caller_email }}",
+            "Summary": "={{ $json.summary }}",
+            "Conversation ID": "={{ $json.conversation_id }}",
+            "Duration": "={{ parseInt($json.duration_seconds) || 0 }}",
+            "Timestamp": "={{ $json.timestamp }}",
+            "Data Complete": true,
+            "Raw Extracted Data": "={{ JSON.stringify($json) }}"
+          },
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "994787fa-58a6-49f7-bca9-a1268f09121c",
+      "name": "Log to Airtable",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        960,
+        -60
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "57nd5p5f6kuW4Xs0",
+          "name": "HSFK Airtable"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://slack.com/api/chat.postMessage",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ channel: \"C098F8Z4P1U\", text: \"New voice conversation for UC 7.5 (Access Request Orchestrator):\\nCaller: \" + ($(\"Format Summary\").item.json.caller_name || \"Unknown\") + \" (\" + ($(\"Format Summary\").item.json.caller_email || \"no email\") + \")\\nDuration: \" + ($(\"Format Summary\").item.json.duration_seconds || \"?\") + \"s\\nConversation: \" + ($(\"Format Summary\").item.json.conversation_id || \"?\") }) }}",
+        "options": {}
+      },
+      "id": "e2befd5f-beb4-40ff-ad37-29e8bfb1b99c",
+      "name": "Notify Slack",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1200,
+        -60
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "rYd0mT6IhOLBmosk",
+          "name": "HSFK Slack Bot (Header Auth)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ status: \"ok\", message: \"Data captured and logged\" }) }}",
+        "options": {}
+      },
+      "id": "f9c21d94-043f-4e13-b99a-b3d70c3dd974",
+      "name": "Respond OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1440,
+        -60
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ status: \"incomplete\", message: \"Some required fields missing, logged for review\" }) }}",
+        "options": {
+          "responseCode": 202
+        }
+      },
+      "id": "c9b27028-71c2-4efe-bb83-55ceff00b70e",
+      "name": "Respond Incomplete",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        720,
+        120
+      ]
+    }
+  ],
+  "connections": {
+    "ElevenLabs Post-Call": {
+      "main": [
+        [
+          {
+            "node": "Extract Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Data": {
+      "main": [
+        [
+          {
+            "node": "Data Complete?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Complete?": {
+      "main": [
+        [
+          {
+            "node": "Format Summary",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Incomplete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Summary": {
+      "main": [
+        [
+          {
+            "node": "Log to Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log to Airtable": {
+      "main": [
+        [
+          {
+            "node": "Notify Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Slack": {
+      "main": [
+        [
+          {
+            "node": "Respond OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 1,
+  "meta": null
+}

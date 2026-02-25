@@ -1,0 +1,412 @@
+{
+  "name": "HSFK UC 9.2 - Option Negotiation Copilot",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "hsfk-uc-9.2",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "6b9643ed-43b8-410f-856e-18b4ba439d06",
+      "name": "ElevenLabs Post-Call",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "6e6fbfd6-873b-4d9b-b6e3-b5a41c1538c1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d9ac3b51-5fff-4807-a6d1-f0e6ed604b85",
+              "name": "travelRequestRef",
+              "value": "={{ $json.body.extracted_data.travelRequestRef }}",
+              "type": "string"
+            },
+            {
+              "id": "e728f213-fc70-444c-8fd9-f5197bd7cb07",
+              "name": "flightOptions",
+              "value": "={{ $json.body.extracted_data.flightOptions }}",
+              "type": "string"
+            },
+            {
+              "id": "cd614983-390e-4264-ba36-e583f39ccf50",
+              "name": "hotelOptions",
+              "value": "={{ $json.body.extracted_data.hotelOptions }}",
+              "type": "string"
+            },
+            {
+              "id": "8da2471c-65be-4aaf-9c58-f1be4a5f76f9",
+              "name": "selectedFlight",
+              "value": "={{ $json.body.extracted_data.selectedFlight }}",
+              "type": "string"
+            },
+            {
+              "id": "4416c2e1-1839-47c9-92b7-47a6538707d9",
+              "name": "selectedHotel",
+              "value": "={{ $json.body.extracted_data.selectedHotel }}",
+              "type": "string"
+            },
+            {
+              "id": "fb137947-0d32-49cf-b665-ec776e82b2c3",
+              "name": "approvalStatus",
+              "value": "={{ $json.body.extracted_data.approvalStatus }}",
+              "type": "string"
+            },
+            {
+              "id": "ce45ce4b-87fe-4cf1-abbb-4211fc1f46b1",
+              "name": "approvalOwner",
+              "value": "={{ $json.body.extracted_data.approvalOwner }}",
+              "type": "string"
+            },
+            {
+              "id": "1a9508ef-0725-4b6a-870b-e82aeb8fdca5",
+              "name": "outOfPolicyJustification",
+              "value": "={{ $json.body.extracted_data.outOfPolicyJustification }}",
+              "type": "string"
+            },
+            {
+              "id": "99c4ed26-c901-4120-9872-9e9875ee13cd",
+              "name": "groundTransport",
+              "value": "={{ $json.body.extracted_data.groundTransport }}",
+              "type": "string"
+            },
+            {
+              "id": "db5b1ed2-ec09-4180-95f5-0b9f3241fa7e",
+              "name": "conversation_id",
+              "value": "={{ $json.body.conversation_id }}",
+              "type": "string"
+            },
+            {
+              "id": "e5894364-ad3f-4830-bb7a-5b2dc54d9e81",
+              "name": "agent_id",
+              "value": "={{ $json.body.agent_id }}",
+              "type": "string"
+            },
+            {
+              "id": "29307687-52f7-4d16-aaf2-16eaf898069e",
+              "name": "duration_seconds",
+              "value": "={{ $json.body.duration_seconds }}",
+              "type": "string"
+            },
+            {
+              "id": "9fc182a0-65dc-4ae3-91b4-0a67f8ab61d2",
+              "name": "caller_name",
+              "value": "={{ $json.body.metadata?.first_name || 'Unknown' }}",
+              "type": "string"
+            },
+            {
+              "id": "bb55eed1-32c3-43cc-9d74-4b78e24154f6",
+              "name": "caller_email",
+              "value": "={{ $json.body.metadata?.email || '' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      },
+      "id": "ff5f6008-a1e2-4ffa-aef6-c77d89d6e9d5",
+      "name": "Extract Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        240,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "combinator": "and"
+          },
+          "conditions": [
+            {
+              "id": "d22b9410-600b-4650-9602-bd34ea41e4c6",
+              "leftValue": "={{ $json.travelRequestRef }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            },
+            {
+              "id": "03d8a960-dabb-4f2d-a424-38cebefac5d4",
+              "leftValue": "={{ $json.selectedFlight }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            },
+            {
+              "id": "a133349e-383f-4e91-bfc5-7a8970df7b50",
+              "leftValue": "={{ $json.selectedHotel }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "dd77dd9b-cbe8-456b-acb6-d5dc239cdc55",
+      "name": "Data Complete?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        480,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fe65c7a7-9311-495a-84c3-223ae1208238",
+              "name": "summary",
+              "value": "={{ \"## HSFK UC 9.2 - Option Negotiation Copilot\\n\\n**Caller:** \" + ($json.caller_name || \"Unknown\") + \" (\" + ($json.caller_email || \"no email\") + \")\\n**Duration:** \" + ($json.duration_seconds || \"?\") + \"s\\n**Conversation ID:** \" + ($json.conversation_id || \"?\") + \"\\n\\n### Captured Data\\n\\n- **travelRequestRef**: \" + ($json.travelRequestRef || \"N/A\") + \"\\n- **flightOptions**: \" + ($json.flightOptions || \"N/A\") + \"\\n- **hotelOptions**: \" + ($json.hotelOptions || \"N/A\") + \"\\n- **selectedFlight**: \" + ($json.selectedFlight || \"N/A\") + \"\\n- **selectedHotel**: \" + ($json.selectedHotel || \"N/A\") + \"\\n- **approvalStatus**: \" + ($json.approvalStatus || \"N/A\") + \"\\n- **approvalOwner**: \" + ($json.approvalOwner || \"N/A\") + \"\\n- **outOfPolicyJustification**: \" + ($json.outOfPolicyJustification || \"N/A\") + \"\\n- **groundTransport**: \" + ($json.groundTransport || \"N/A\") + \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "7ad94635-ced9-4a65-8b96-57420d01de65",
+              "name": "ucId",
+              "value": "9.2",
+              "type": "string"
+            },
+            {
+              "id": "1af3646c-7819-43ca-955d-98c08e30a73a",
+              "name": "agentName",
+              "value": "Option Negotiation Copilot",
+              "type": "string"
+            },
+            {
+              "id": "fb1f2d68-ef29-484a-8c01-a8ab7ce43ec2",
+              "name": "timestamp",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "20320476-b7ea-493b-92cb-e097bcafaa70",
+      "name": "Format Summary",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        720,
+        -60
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "app0QZAuhY8Zx4I54",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl8hV2nYEoRS8Gif",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "UC ID": "={{ $json.ucId }}",
+            "Agent Name": "={{ $json.agentName }}",
+            "Caller": "={{ $json.caller_name }}",
+            "Email": "={{ $json.caller_email }}",
+            "Summary": "={{ $json.summary }}",
+            "Conversation ID": "={{ $json.conversation_id }}",
+            "Duration": "={{ parseInt($json.duration_seconds) || 0 }}",
+            "Timestamp": "={{ $json.timestamp }}",
+            "Data Complete": true,
+            "Raw Extracted Data": "={{ JSON.stringify($json) }}"
+          },
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "7216f0d3-422a-4ec8-a1a1-cce7929d04a9",
+      "name": "Log to Airtable",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        960,
+        -60
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "57nd5p5f6kuW4Xs0",
+          "name": "HSFK Airtable"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://slack.com/api/chat.postMessage",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ channel: \"C098F8Z4P1U\", text: \"New voice conversation for UC 9.2 (Option Negotiation Copilot):\\nCaller: \" + ($(\"Format Summary\").item.json.caller_name || \"Unknown\") + \" (\" + ($(\"Format Summary\").item.json.caller_email || \"no email\") + \")\\nDuration: \" + ($(\"Format Summary\").item.json.duration_seconds || \"?\") + \"s\\nConversation: \" + ($(\"Format Summary\").item.json.conversation_id || \"?\") }) }}",
+        "options": {}
+      },
+      "id": "9143fddd-5bf2-40dc-950a-f0e4970b588a",
+      "name": "Notify Slack",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1200,
+        -60
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "rYd0mT6IhOLBmosk",
+          "name": "HSFK Slack Bot (Header Auth)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ status: \"ok\", message: \"Data captured and logged\" }) }}",
+        "options": {}
+      },
+      "id": "ea5bf265-720a-4b56-9618-ea237b122944",
+      "name": "Respond OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1440,
+        -60
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ status: \"incomplete\", message: \"Some required fields missing, logged for review\" }) }}",
+        "options": {
+          "responseCode": 202
+        }
+      },
+      "id": "04d6e477-2a93-4d73-bc66-bc4bb66d83d0",
+      "name": "Respond Incomplete",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        720,
+        120
+      ]
+    }
+  ],
+  "connections": {
+    "ElevenLabs Post-Call": {
+      "main": [
+        [
+          {
+            "node": "Extract Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Data": {
+      "main": [
+        [
+          {
+            "node": "Data Complete?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Complete?": {
+      "main": [
+        [
+          {
+            "node": "Format Summary",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Incomplete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Summary": {
+      "main": [
+        [
+          {
+            "node": "Log to Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log to Airtable": {
+      "main": [
+        [
+          {
+            "node": "Notify Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Slack": {
+      "main": [
+        [
+          {
+            "node": "Respond OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 1,
+  "meta": null
+}

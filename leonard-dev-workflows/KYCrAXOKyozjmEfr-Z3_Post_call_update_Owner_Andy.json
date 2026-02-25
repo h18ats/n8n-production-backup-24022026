@@ -1,0 +1,1893 @@
+{
+  "name": "Z3 - Post call update - Owner Andy",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Transcript Summary: {{ $('AB KB Webhook').item.json.body.data.analysis.transcript_summary }}\nFull Transcript: {{ $json.markdown }}",
+        "options": {
+          "systemMessage": "You are an expert in conversation summaries and creating a very thorough version that will act as the knowledge base for a future conversation with an AI voice agent. When producing the output, just provide the summary, no introduction, in long prose and containing all pertinent details. Make sure to log any facts stated. "
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        112,
+        32
+      ],
+      "id": "82cb6ec2-7e83-4aae-84a5-8ea946b5eb0b",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini-2025-08-07",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini-2025-08-07"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        184,
+        256
+      ],
+      "id": "f077be99-2acf-4739-824a-1d9f2a154b40",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "LldOhLNBReShSMkE",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "numberOfItems": -1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserItemList",
+      "typeVersion": 1,
+      "position": [
+        -1456,
+        656
+      ],
+      "id": "ff4e0a6c-dea1-4f5e-9fcf-e0eef425dadb",
+      "name": "Item List Output Parser"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini-2025-08-07",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini-2025-08-07"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -1456,
+        864
+      ],
+      "id": "5cb1d8ff-3652-458b-8ebc-1995b0de3497",
+      "name": "OpenAI Chat Model2",
+      "credentials": {
+        "openAiApi": {
+          "id": "LldOhLNBReShSMkE",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -1232,
+        284
+      ],
+      "id": "29537c11-56d0-4b6b-b7e3-d2db3e3887ae",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        -1008,
+        284
+      ],
+      "id": "38de6e54-c105-4f67-b152-3272cd78cc28",
+      "name": "Date & Time21"
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- Function node code ---\n// Get the first item (same pattern you used)\nconst inputDate = new Date($input.first().json.currentDate);   // \"2025-05-26T10:22:34.868+01:00\"\n\n// Helper to zero-pad to two digits\nconst pad = n => n.toString().padStart(2, '0');\n\n// Date  →  MM/DD/YYYY\nconst formattedDate = `${pad(inputDate.getMonth() + 1)}/${pad(inputDate.getDate())}/${inputDate.getFullYear()}`;\n\n// Time  →  HH:mm:ss   (24-hour clock)\nconst formattedTime = `${pad(inputDate.getHours())}:${pad(inputDate.getMinutes())}:${pad(inputDate.getSeconds())}`;\n\nreturn [\n  {\n    json: {\n      formattedDate,   // e.g. \"05/26/2025\"\n      formattedTime    // e.g. \"09:22:34\"\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -784,
+        284
+      ],
+      "id": "a70cba97-32b7-46c9-a42f-4fcca04c0ca7",
+      "name": "Date Format21"
+    },
+    {
+      "parameters": {
+        "toRecipients": "={{ $('AB KB Webhook').item.json.body.data.conversation_initiation_client_data.dynamic_variables.email }}",
+        "subject": "=Our call was too short",
+        "bodyContent": "=Hi, unfortunately our call was too short. \n\nThanks \n\nLenny",
+        "additionalFields": {
+          "bodyContentType": "Text"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        -112,
+        432
+      ],
+      "id": "b5d4d1c2-f9bd-4df7-95ff-be15a556f551",
+      "name": "Call too short",
+      "webhookId": "7d07aab8-ccc1-41dc-8dc6-b6c4e6abfa40",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "APa28clvTTmmzH55",
+          "name": "Microsoft Outlook - Leonard @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8ddda4b2-54c4-4caf-b73b-4ca3505d11eb",
+              "leftValue": "={{ $('AB KB Webhook').item.json.body.data.conversation_initiation_client_data.dynamic_variables.system__call_duration_secs }}",
+              "rightValue": 11,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -560,
+        284
+      ],
+      "id": "d90c17a9-5bfa-48ee-81c7-1c9691d357f1",
+      "name": "If less than 10s do nothing"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appqXY4NTowyUys7a",
+          "mode": "list",
+          "cachedResultName": "Lottie Live Data",
+          "cachedResultUrl": "https://airtable.com/appqXY4NTowyUys7a"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblCBGNtJURsFPEVF",
+          "mode": "list",
+          "cachedResultName": "Lottie Post Event Conversation Log",
+          "cachedResultUrl": "https://airtable.com/appqXY4NTowyUys7a/tblCBGNtJURsFPEVF"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Call Length (s)": "={{ $('AB KB Webhook').item.json.body.data.conversation_initiation_client_data.dynamic_variables.system__call_duration_secs }}",
+            "Call Cost": "={{ $('AB KB Webhook').item.json.body.data.metadata.charging.llm_price }}",
+            "LLM Charge": "={{ $('AB KB Webhook').item.json.body.data.metadata.charging.llm_charge }}",
+            "Call Charge": "={{ $('AB KB Webhook').item.json.body.data.metadata.charging.call_charge }}",
+            "Agent ID": "={{ $('AB KB Webhook').item.json.body.data.transcript[6].agent_metadata.agent_id }}",
+            "Transcript ID": "={{ $('AB KB Webhook').item.json.body.data.conversation_initiation_client_data.dynamic_variables.system__conversation_id }}",
+            "Email": "={{ $('AB KB Webhook').item.json.body.data.conversation_initiation_client_data.dynamic_variables.email }}",
+            "Full Name": "={{ $('AB KB Webhook').item.json.body.data.conversation_initiation_client_data.dynamic_variables.full_name }}",
+            "First Name": "={{ $('AB KB Webhook').item.json.body.data.conversation_initiation_client_data.dynamic_variables.first_name }}",
+            "Call Summary": "={{ $('AB KB Webhook').item.json.body.data.analysis.transcript_summary }}",
+            "Termination Reason": "={{ $('AB KB Webhook').item.json.body.data.metadata.termination_reason }}",
+            "Last Name": "={{ $('AB KB Webhook').item.json.body.data.conversation_initiation_client_data.dynamic_variables.last_name }}",
+            "Call Statsu 11L": "={{ $('AB KB Webhook').item.json.body.data.analysis.call_successful }}",
+            "Email recipient": "={{ $('AB KB Webhook').item.json.body.data.conversation_initiation_client_data.dynamic_variables.email }}",
+            "Date Last Updated": "={{ $('Date & Time21').item.json.currentDate }}",
+            "Call Successful 11L?": "={{ $('AB KB Webhook').item.json.body.data.analysis.call_successful }}",
+            "Summit Rating": 0
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Too Short?",
+              "displayName": "Too Short?",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Call Length (s)",
+              "displayName": "Call Length (s)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Date Last Updated",
+              "displayName": "Date Last Updated",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Call Summary",
+              "displayName": "Call Summary",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Call Cost",
+              "displayName": "Call Cost",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "LLM Charge",
+              "displayName": "LLM Charge",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Call Charge",
+              "displayName": "Call Charge",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Agent ID",
+              "displayName": "Agent ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Transcript ID",
+              "displayName": "Transcript ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Call Statsu 11L",
+              "displayName": "Call Statsu 11L",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Termination Reason",
+              "displayName": "Termination Reason",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Error Reason",
+              "displayName": "Error Reason",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Call Successful 11L?",
+              "displayName": "Call Successful 11L?",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email recipient",
+              "displayName": "Email recipient",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email Copy",
+              "displayName": "Email Copy",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Conversation Date",
+              "displayName": "Conversation Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Call Transcript",
+              "displayName": "Call Transcript",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Summit Rating",
+              "displayName": "Summit Rating",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Fave Session",
+              "displayName": "Fave Session",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        176,
+        432
+      ],
+      "id": "fca23a11-bcb4-44fe-a492-368e55b14e8d",
+      "name": "Create a record",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "https://airtable.com/appZVIzjrI2yMRYTT/tbli6Lbg7SwnxcmNj/viwBAYtcOMFkmZzhc?blocks=hide",
+          "mode": "url"
+        },
+        "table": {
+          "__rl": true,
+          "value": "https://airtable.com/appZVIzjrI2yMRYTT/tbli6Lbg7SwnxcmNj/viwBAYtcOMFkmZzhc?blocks=hide",
+          "mode": "url"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Call Length (s)": "={{ $('AB KB Webhook').item.json.body.data.conversation_initiation_client_data.dynamic_variables.system__call_duration_secs }}",
+            "Call Cost": "={{ $('AB KB Webhook').item.json.body.data.metadata.charging.llm_price }}",
+            "LLM Charge": "={{ $('AB KB Webhook').item.json.body.data.metadata.charging.llm_charge }}",
+            "Call Charge": "={{ $('AB KB Webhook').item.json.body.data.metadata.charging.call_charge }}",
+            "Agent ID": "={{ $('AB KB Webhook').item.json.body.data.transcript[6].agent_metadata.agent_id }}",
+            "Transcript ID": "={{ $('AB KB Webhook').item.json.body.data.conversation_initiation_client_data.dynamic_variables.system__conversation_id }}",
+            "Email": "={{ $('AB KB Webhook').item.json.body.data.conversation_initiation_client_data.dynamic_variables.email }}",
+            "First Name": "={{ $('AB KB Webhook').item.json.body.data.conversation_initiation_client_data.dynamic_variables.first_name }}",
+            "Call Summary": "={{ $('AB KB Webhook').item.json.body.data.analysis.transcript_summary }}",
+            "Termination Reason": "={{ $('AB KB Webhook').item.json.body.data.metadata.termination_reason }}",
+            "Last Name": "={{ $('AB KB Webhook').item.json.body.data.conversation_initiation_client_data.dynamic_variables.last_name }}",
+            "Email recipient": "={{ $('AB KB Webhook').item.json.body.data.conversation_initiation_client_data.dynamic_variables.email }}",
+            "Call Successful 11L?": "={{ $('AB KB Webhook').item.json.body.data.analysis.call_successful }}",
+            "Call Length (m)": 0,
+            "Call Transcript": "={{ $json.output }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Transcript ID",
+              "displayName": "Transcript ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Created",
+              "displayName": "Created",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Date Last Updated",
+              "displayName": "Date Last Updated",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Too Short?",
+              "displayName": "Too Short?",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Call Length (s)",
+              "displayName": "Call Length (s)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Call Length (m)",
+              "displayName": "Call Length (m)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Last Modified",
+              "displayName": "Last Modified",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Created By",
+              "displayName": "Created By",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Last Modified By",
+              "displayName": "Last Modified By",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Call Summary",
+              "displayName": "Call Summary",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Call Cost",
+              "displayName": "Call Cost",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "LLM Charge",
+              "displayName": "LLM Charge",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Call Charge",
+              "displayName": "Call Charge",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Agent ID",
+              "displayName": "Agent ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Call Status 11L",
+              "displayName": "Call Status 11L",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Termination Reason",
+              "displayName": "Termination Reason",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Error Reason",
+              "displayName": "Error Reason",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Call Successful 11L?",
+              "displayName": "Call Successful 11L?",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email recipient",
+              "displayName": "Email recipient",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email Copy",
+              "displayName": "Email Copy",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Conversation Date",
+              "displayName": "Conversation Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Call Transcript",
+              "displayName": "Call Transcript",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Recommended Session 1",
+              "displayName": "Recommended Session 1",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Recommended Session 2",
+              "displayName": "Recommended Session 2",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Recommended Session 3",
+              "displayName": "Recommended Session 3",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Goal 1",
+              "displayName": "Goal 1",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Goal 2",
+              "displayName": "Goal 2",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Goal 3",
+              "displayName": "Goal 3",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Recco Speaker 1",
+              "displayName": "Recco Speaker 1",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Recco Speaker 2",
+              "displayName": "Recco Speaker 2",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Recco Speaker 3",
+              "displayName": "Recco Speaker 3",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        464,
+        136
+      ],
+      "id": "e67b8b72-f6f2-4919-bac4-bd4f4379d806",
+      "name": "Create a record1",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8ddda4b2-54c4-4caf-b73b-4ca3505d11eb",
+              "leftValue": "={{ $('AB KB Webhook').item.json.body.data.conversation_initiation_client_data.dynamic_variables.system__call_duration_secs }}",
+              "rightValue": 45,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -336,
+        284
+      ],
+      "id": "a12be53e-7839-4c47-8687-01c909bdbfc0",
+      "name": "If call is over 75s"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ab_test_kb",
+        "responseMode": "responseNode",
+        "options": {
+          "rawBody": false
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1456,
+        284
+      ],
+      "id": "b8f923ec-3656-4d3a-889b-8f57ae247dc0",
+      "name": "AB KB Webhook",
+      "webhookId": "e3657fc6-b611-45ee-9a74-6f1409ddaf76"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f8136830-6adb-456c-879d-63722ad90a05",
+              "name": "body.data.conversation_initiation_client_data.dynamic_variables.email",
+              "value": "={{ $('AB KB Webhook').item.json.body.data.conversation_initiation_client_data.dynamic_variables.email }}",
+              "type": "string"
+            },
+            {
+              "id": "eca30dae-68bc-4660-ae06-5bfc39f2c244",
+              "name": "body.data.conversation_initiation_client_data.dynamic_variables.first_name",
+              "value": "={{ $('AB KB Webhook').item.json.body.data.conversation_initiation_client_data.dynamic_variables.first_name }}",
+              "type": "string"
+            },
+            {
+              "id": "5d4dc16a-8841-4cb8-b8dc-984d61d3cda4",
+              "name": "body.data.conversation_initiation_client_data.dynamic_variables.last_name",
+              "value": "={{ $('AB KB Webhook').item.json.body.data.conversation_initiation_client_data.dynamic_variables.last_name }}",
+              "type": "string"
+            },
+            {
+              "id": "dac7215b-9dea-4b3f-a60a-d407a4d0019f",
+              "name": "body.data.conversation_initiation_client_data.dynamic_variables.system__called_number",
+              "value": "={{ $('AB KB Webhook').item.json.body.data.conversation_initiation_client_data.dynamic_variables.system__called_number }}",
+              "type": "string"
+            },
+            {
+              "id": "179ed51b-ea70-40cb-a2f7-9c94c3c620ed",
+              "name": "body.data.transcript",
+              "value": "={{ $('AB KB Webhook').item.json.body.data.transcript }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -176,
+        144
+      ],
+      "id": "bf1e4858-ad39-412f-9776-2d6c3478a3c0",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code node: formats ElevenLabs transcript array into Markdown\n// Input: $json.body.data.transcript (array of conversation turns)\n\nconst transcript = $json?.body?.data?.transcript || [];\nconst ttfb = $json?.body?.data?.convai_tts_service_ttfb?.elapsed_time;\nconst llmUsage = $json?.body?.data?.llm_usage || null;\nconst ragInfo = $json?.body?.data?.rag_retrieval_info || null;\n\n// -------- Helpers --------\nconst toFixedOr = (n, d = 3) => (typeof n === \"number\" && isFinite(n) ? n.toFixed(d) : \"n/a\");\nconst roleIcon = (role) => {\n  const r = (role || \"\").toLowerCase();\n  if (r === \"user\") return \"👤\";\n  if (r === \"agent\" || r === \"assistant\") return \"🤖\";\n  if (r === \"system\") return \"🛠️\";\n  return \"💬\";\n};\nconst extractMessageText = (turn) => {\n  if (typeof turn.message === \"string\") return turn.message;\n  if (typeof turn.content === \"string\") return turn.content;\n  if (Array.isArray(turn.content)) {\n    const firstText = turn.content.find((c) => typeof c?.text === \"string\")?.text;\n    if (firstText) return firstText;\n  }\n  if (turn.tool_calls?.length) return `[tool calls: ${turn.tool_calls.length}]`;\n  if (turn.tool_results?.length) return `[tool results: ${turn.tool_results.length}]`;\n  return \"\";\n};\n\n// -------- Build Markdown Transcript --------\nlet md = `# 🗣️ Conversation Transcript\\n\\n`;\nmd += `**Total Turns:** ${transcript.length}\\n`;\nif (ttfb !== undefined) md += `**TTS TTFB:** ${toFixedOr(ttfb, 3)}s\\n\\n`;\n\n// Add LLM usage if available\nif (llmUsage?.model_usage) {\n  const model = Object.keys(llmUsage.model_usage)[0];\n  const usage = llmUsage.model_usage[model];\n  md += `### 📊 LLM Usage (${model})\\n`;\n  if (usage.input) md += `- Input tokens: ${usage.input.tokens} ($${usage.input.price.toFixed(8)})\\n`;\n  if (usage.output_total)\n    md += `- Output tokens: ${usage.output_total.tokens} ($${usage.output_total.price.toFixed(8)})\\n`;\n  md += `\\n`;\n}\n\n// Add RAG retrieval info if present\nif (ragInfo) {\n  md += `### 📚 RAG Retrieval Info\\n`;\n  md += \"```json\\n\" + JSON.stringify(ragInfo, null, 2) + \"\\n```\\n\\n\";\n}\n\n// Process turns\ntranscript.forEach((turn, idx) => {\n  const role = turn.role || (turn.agent_metadata ? \"agent\" : \"message\");\n  const icon = roleIcon(role);\n  const text = extractMessageText(turn);\n  const secs = turn.time_in_call_secs;\n  const metrics = turn.conversation_turn_metrics?.metrics || null;\n\n  md += `**${idx + 1}. ${icon} ${role.toUpperCase()}**`;\n  if (typeof secs === \"number\") md += ` · t=${secs}s`;\n  md += \"\\n\";\n\n  if (text) {\n    md += text.trim() + \"\\n\";\n  } else {\n    const stripped = {\n      tool_calls: turn.tool_calls,\n      tool_results: turn.tool_results,\n      feedback: turn.feedback,\n      interrupted: turn.interrupted,\n      source_medium: turn.source_medium,\n    };\n    md += \"```json\\n\" + JSON.stringify(stripped, null, 2) + \"\\n```\\n\";\n  }\n\n  // Optional per-turn metrics\n  if (metrics?.convai_asr_trailing_service_latency?.elapsed_time) {\n    md += `_ASR trailing latency: ${toFixedOr(metrics.convai_asr_trailing_service_latency.elapsed_time)}s_\\n`;\n  }\n\n  md += \"\\n\"; // spacing between turns\n});\n\n// -------- Output Markdown --------\nreturn [{ markdown: md }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -32,
+        80
+      ],
+      "id": "c5286e2e-0fce-413e-914d-35b24a6f519b",
+      "name": "Code in JavaScript"
+    }
+  ],
+  "connections": {
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Create a record1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Item List Output Parser": {
+      "ai_outputParser": [
+        []
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        []
+      ]
+    },
+    "Respond to Webhook": {
+      "main": [
+        [
+          {
+            "node": "Date & Time21",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Time21": {
+      "main": [
+        [
+          {
+            "node": "Date Format21",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date Format21": {
+      "main": [
+        [
+          {
+            "node": "If less than 10s do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call too short": {
+      "main": [
+        [
+          {
+            "node": "Create a record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If less than 10s do nothing": {
+      "main": [
+        [
+          {
+            "node": "If call is over 75s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If call is over 75s": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Call too short",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AB KB Webhook": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a record1": {
+      "main": [
+        []
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {
+    "AB KB Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "leonard-dev.app.n8n.cloud",
+            "user-agent": "ElevenLabs/1.0",
+            "content-length": "14528",
+            "accept": "*/*",
+            "accept-encoding": "gzip, br",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "34.59.11.47",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "US",
+            "cf-ray": "995ecc3ec6a6ca09-ORD",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "elevenlabs-signature": "t=1761700274,v0=56b3019661da7699c4ada1e438b3f9be3bbc97c03a0df9744f0e4156fbe7b633",
+            "x-forwarded-for": "34.59.11.47, 172.69.6.174",
+            "x-forwarded-host": "leonard-dev.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-52-6c4f4684d5-sbjk8",
+            "x-is-trusted": "yes",
+            "x-real-ip": "34.59.11.47"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "type": "post_call_transcription",
+            "event_timestamp": 1761700274,
+            "data": {
+              "agent_id": "agent_5501k8pr340gez6bj40y05m28ah4",
+              "conversation_id": "conv_3201k8pr6zrveed85846ybgmvgdp",
+              "status": "done",
+              "user_id": null,
+              "transcript": [
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_5501k8pr340gez6bj40y05m28ah4",
+                    "workflow_node_id": null
+                  },
+                  "message": "Hey Andy, how are you today? I'm Lenny, your AI personal assistant. What can I help you with today or waht do I need to know?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 0,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.17674081299992395
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "So Lenny, I am still up. It's 1.10am. So just want to check that you are still with me. If it's 1.10am, how long have I been up now?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 9,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.11996615400039445
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_5501k8pr340gez6bj40y05m28ah4",
+                    "workflow_node_id": null
+                  },
+                  "message": "Yes, I am still here with you, Andy. You have been up for three hours and ten minutes. Is there anything specific you would like to go over before you head to bed?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 35,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.4187215069996455
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.35487892699984513
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.49672011700022267
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.1367962449994593
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 1546,
+                          "price": 0.00015460000000000002
+                        },
+                        "input_cache_read": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 38,
+                          "price": 0.000015200000000000002
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "No but haven't have I? I haven't been...I have not been only up for that long have I?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 43,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.6449211509998349
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_5501k8pr340gez6bj40y05m28ah4",
+                    "workflow_node_id": null
+                  },
+                  "message": "My...",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 50,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.4231649510002171
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.33732004100056656
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.5018421190006848
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.15046624000024167
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": true,
+                  "original_message": "My apologies, Andy. It appears I made a mistake in my previous calculation. You have been up for one hour and ten minutes. Thank you for the correction. ",
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "What time did...what time did i get up this morning?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 43,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.1760673090002456
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_5501k8pr340gez6bj40y05m28ah4",
+                    "workflow_node_id": null
+                  },
+                  "message": "I apologize, Andy. I do not have access to that information. I can only...",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 54,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.3149203859993577
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.23416257699955167
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.3435040629992727
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.15708929500033264
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 115,
+                          "price": 0.0000115
+                        },
+                        "input_cache_read": {
+                          "tokens": 1510,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 24,
+                          "price": 0.000009600000000000001
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": true,
+                  "original_message": "I apologize, Andy. I do not have access to that information. I can only access information from our current conversation.",
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "You do? What's in your knowledge base?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 57,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.20442101800017554
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_5501k8pr340gez6bj40y05m28ah4",
+                    "workflow_node_id": null
+                  },
+                  "message": "I have a record of our previous conversation where you mentioned you would be going to bed soon. I also have a note that I should be mindful of the spelling of my name, as you corrected me last time. Is there anything else I can help you with, Andy?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 61,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttf_sentence": {
+                        "elapsed_time": 0.40875138199953653
+                      },
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.336472240999683
+                      },
+                      "convai_llm_service_tt_last_sentence": {
+                        "elapsed_time": 0.5244100619993333
+                      },
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.16390369100008684
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 144,
+                          "price": 0.000014400000000000001
+                        },
+                        "input_cache_read": {
+                          "tokens": 1510,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 55,
+                          "price": 0.000022
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "user",
+                  "agent_metadata": null,
+                  "message": "Yes i've got to it, i got up at 6am yesterday and it's now now 11 minutes past 1am the next day so how long have i been up?",
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 71,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_asr_trailing_service_latency": {
+                        "elapsed_time": 0.17864327400002367
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": "audio"
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_5501k8pr340gez6bj40y05m28ah4",
+                    "workflow_node_id": null
+                  },
+                  "message": null,
+                  "multivoice_message": null,
+                  "tool_calls": [
+                    {
+                      "type": "system",
+                      "request_id": "end_call_28d7d972844c458e94522baf61a3e983",
+                      "tool_name": "end_call",
+                      "params_as_json": "{\"reason\": \"User is asking for a calculation that is not related to the assistant's capabilities.\", \"system_message_to_speak\": \"I apologize, Andy. I cannot perform that calculation for you. I am here to help with your to-do list, meetings, and travel. Is there anything else I can assist you with today?\"}",
+                      "tool_has_been_called": true,
+                      "tool_details": null
+                    }
+                  ],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 81,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_llm_service_ttfb": {
+                        "elapsed_time": 0.7592522599998119
+                      },
+                      "convai_llm_tool_request_generation_latency": {
+                        "elapsed_time": 0.7599245299998074
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                },
+                {
+                  "role": "agent",
+                  "agent_metadata": {
+                    "agent_id": "agent_5501k8pr340gez6bj40y05m28ah4",
+                    "workflow_node_id": null
+                  },
+                  "message": null,
+                  "multivoice_message": null,
+                  "tool_calls": [],
+                  "tool_results": [
+                    {
+                      "request_id": "end_call_28d7d972844c458e94522baf61a3e983",
+                      "tool_name": "end_call",
+                      "result_value": "{\"result_type\":\"end_call_success\",\"status\":\"success\",\"reason\":\"User is asking for a calculation that is not related to the assistant's capabilities.\",\"message\":null}",
+                      "is_error": false,
+                      "tool_has_been_called": true,
+                      "tool_latency_secs": 0.5044884500002809,
+                      "dynamic_variable_updates": [],
+                      "type": "system",
+                      "result": {
+                        "result_type": "end_call_success",
+                        "status": "success",
+                        "reason": "User is asking for a calculation that is not related to the assistant's capabilities.",
+                        "message": null
+                      }
+                    }
+                  ],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 81,
+                  "conversation_turn_metrics": null,
+                  "rag_retrieval_info": null,
+                  "llm_usage": {
+                    "model_usage": {
+                      "gemini-2.5-flash-lite": {
+                        "input": {
+                          "tokens": 224,
+                          "price": 0.000022400000000000002
+                        },
+                        "input_cache_read": {
+                          "tokens": 1526,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 69,
+                          "price": 0.0000276
+                        }
+                      }
+                    }
+                  },
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                }
+              ],
+              "metadata": {
+                "start_time_unix_secs": 1761700186,
+                "accepted_time_unix_secs": 1761700187,
+                "call_duration_secs": 84,
+                "cost": 984,
+                "deletion_settings": {
+                  "deletion_time_unix_secs": null,
+                  "deleted_logs_at_time_unix_secs": null,
+                  "deleted_audio_at_time_unix_secs": null,
+                  "deleted_transcript_at_time_unix_secs": null,
+                  "delete_transcript_and_pii": false,
+                  "delete_audio": false
+                },
+                "feedback": {
+                  "overall_score": null,
+                  "likes": 0,
+                  "dislikes": 0
+                },
+                "authorization_method": "signed_url",
+                "charging": {
+                  "dev_discount": false,
+                  "is_burst": false,
+                  "tier": "enterprise",
+                  "llm_usage": {
+                    "irreversible_generation": {
+                      "model_usage": {
+                        "gemini-2.5-flash-lite": {
+                          "input": {
+                            "tokens": 2029,
+                            "price": 0.00020290000000000003
+                          },
+                          "input_cache_read": {
+                            "tokens": 4546,
+                            "price": 0
+                          },
+                          "input_cache_write": {
+                            "tokens": 0,
+                            "price": 0
+                          },
+                          "output_total": {
+                            "tokens": 186,
+                            "price": 0.00007439999999999999
+                          }
+                        }
+                      }
+                    },
+                    "initiated_generation": {
+                      "model_usage": {
+                        "gemini-2.5-flash-lite": {
+                          "input": {
+                            "tokens": 2209,
+                            "price": 0.00022090000000000003
+                          },
+                          "input_cache_read": {
+                            "tokens": 7568,
+                            "price": 0
+                          },
+                          "input_cache_write": {
+                            "tokens": 0,
+                            "price": 0
+                          },
+                          "output_total": {
+                            "tokens": 249,
+                            "price": 0.00009960000000000001
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "llm_price": 0.00032050000000000004,
+                  "llm_charge": 3,
+                  "call_charge": 981,
+                  "free_minutes_consumed": 0,
+                  "free_llm_dollars_consumed": 0
+                },
+                "phone_call": {
+                  "direction": "outbound",
+                  "phone_number_id": "phnum_01jvx1f76mfg6akt98vk9jqyqh",
+                  "agent_number": "+447426903220",
+                  "external_number": "+447966543220",
+                  "type": "twilio",
+                  "stream_sid": "MZd20beb07c36b49ff18c26da1e56dd551",
+                  "call_sid": "CAbe1c9a01a25229e4071ea83a89384665"
+                },
+                "batch_call": null,
+                "termination_reason": "end_call tool was called.",
+                "error": null,
+                "main_language": "en",
+                "rag_usage": {
+                  "usage_count": 0,
+                  "embedding_model": "e5_mistral_7b_instruct"
+                },
+                "text_only": false,
+                "features_usage": {
+                  "language_detection": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "transfer_to_agent": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "transfer_to_number": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "multivoice": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "dtmf_tones": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "external_mcp_servers": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "pii_zrm_workspace": false,
+                  "pii_zrm_agent": false,
+                  "tool_dynamic_variable_updates": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "is_livekit": false,
+                  "voicemail_detection": {
+                    "enabled": true,
+                    "used": false
+                  },
+                  "workflow": {
+                    "enabled": false,
+                    "tool_node": {
+                      "enabled": false,
+                      "used": false
+                    },
+                    "standalone_agent_node": {
+                      "enabled": false,
+                      "used": false
+                    },
+                    "phone_number_node": {
+                      "enabled": false,
+                      "used": false
+                    },
+                    "end_node": {
+                      "enabled": false,
+                      "used": false
+                    }
+                  },
+                  "agent_testing": {
+                    "enabled": false,
+                    "tests_ran_after_last_modification": false,
+                    "tests_ran_in_last_7_days": false
+                  }
+                },
+                "eleven_assistant": {
+                  "is_eleven_assistant": false
+                },
+                "initiator_id": null,
+                "conversation_initiation_source": "twilio",
+                "conversation_initiation_source_version": null,
+                "timezone": null,
+                "initiation_trigger": {
+                  "trigger_type": "default"
+                },
+                "async_metadata": null,
+                "whatsapp": null,
+                "agent_created_from": "api",
+                "agent_last_updated_from": "api"
+              },
+              "analysis": {
+                "evaluation_criteria_results": {},
+                "data_collection_results": {},
+                "call_successful": "success",
+                "transcript_summary": "Andy contacted Lenny, an AI assistant, late at night. Andy wanted to confirm Lenny was still available and asked how long he had been awake. Lenny initially gave an incorrect duration. Andy corrected Lenny, stating he woke up at 6 AM the previous day and asked for the total time he'd been awake. Lenny then ended the conversation, stating it couldn't perform that calculation.\n",
+                "call_summary_title": "Time Calculation Request"
+              },
+              "conversation_initiation_client_data": {
+                "conversation_config_override": {
+                  "tts": null,
+                  "conversation": null,
+                  "agent": null
+                },
+                "custom_llm_extra_body": {},
+                "user_id": null,
+                "source_info": {
+                  "source": null,
+                  "version": null
+                },
+                "dynamic_variables": {
+                  "email": "iamandybatty@gmail.com",
+                  "first_name": "Andy",
+                  "last_name": "Batty",
+                  "system__agent_id": "agent_5501k8pr340gez6bj40y05m28ah4",
+                  "system__current_agent_id": "agent_5501k8pr340gez6bj40y05m28ah4",
+                  "system__conversation_id": "conv_3201k8pr6zrveed85846ybgmvgdp",
+                  "system__caller_id": "+447426903220",
+                  "system__called_number": "+447966543220",
+                  "system__call_duration_secs": 84,
+                  "system__time_utc": "2025-10-29T01:11:10.978322+00:00",
+                  "system__time": "Wednesday, 01:11 29 October 2025",
+                  "system__timezone": null,
+                  "system__call_sid": "CAbe1c9a01a25229e4071ea83a89384665"
+                }
+              }
+            }
+          },
+          "webhookUrl": "https://leonard-dev.app.n8n.cloud/webhook/ab_test_kb",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "triggerCount": 1,
+  "meta": null
+}

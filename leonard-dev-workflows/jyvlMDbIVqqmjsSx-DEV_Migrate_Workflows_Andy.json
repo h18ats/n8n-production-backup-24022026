@@ -1,0 +1,449 @@
+{
+  "name": "DEV - Migrate Workflows - Andy",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -272,
+        96
+      ],
+      "id": "226d14ab-9224-41ad-952c-8f6842601ec0",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "returnAll": false,
+        "limit": 2,
+        "filters": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.n8n",
+      "typeVersion": 1,
+      "position": [
+        0,
+        96
+      ],
+      "id": "99d4226a-83c0-4736-a1d7-64e5b637a9e9",
+      "name": "Get many workflows"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        96,
+        448
+      ],
+      "id": "f6c15c37-bb62-4219-9407-472bd27738d6",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "workflowObject": "={ \n  \"name\": \"{{ $json.name }}\",\n  \"nodes\": {{ JSON.stringify($json.nodes) }},\n  \"connections\": {{ JSON.stringify($json.connections) }},\n  \"settings\": {{ JSON.stringify($json.settings) }}\n}",
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.n8n",
+      "typeVersion": 1,
+      "position": [
+        368,
+        448
+      ],
+      "id": "c1d6d586-a4c4-4e98-83d5-30969359030f",
+      "name": "Create a workflow"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1ulmI4hmkmPrmPGlBCl4KOfeYpkm6DrqDtQzYZ2KGblU",
+          "mode": "list",
+          "cachedResultName": "n8n Workflow Migration",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ulmI4hmkmPrmPGlBCl4KOfeYpkm6DrqDtQzYZ2KGblU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ulmI4hmkmPrmPGlBCl4KOfeYpkm6DrqDtQzYZ2KGblU/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID": "={{ $json.id }}",
+            "Name": "={{ $json.name }}",
+            "Status": "To Process"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        448,
+        96
+      ],
+      "id": "e5bd5157-c8f6-4eda-92b5-643f54f11a84",
+      "name": "Append row in sheet"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "workflowId": {
+          "__rl": true,
+          "value": "={{ $json.ID }}",
+          "mode": "id"
+        },
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.n8n",
+      "typeVersion": 1,
+      "position": [
+        -112,
+        448
+      ],
+      "id": "43bee647-ef9f-4344-b808-9b66efd1edde",
+      "name": "Get a workflow"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1ulmI4hmkmPrmPGlBCl4KOfeYpkm6DrqDtQzYZ2KGblU",
+          "mode": "list",
+          "cachedResultName": "n8n Workflow Migration",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ulmI4hmkmPrmPGlBCl4KOfeYpkm6DrqDtQzYZ2KGblU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ulmI4hmkmPrmPGlBCl4KOfeYpkm6DrqDtQzYZ2KGblU/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID": "={{ $('Loop Over Items').item.json.id }}",
+            "Status": "Processed"
+          },
+          "matchingColumns": [
+            "ID"
+          ],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        576,
+        448
+      ],
+      "id": "4cf83e7d-415d-486e-bcf0-63107f50d116",
+      "name": "Update row in sheet"
+    },
+    {
+      "parameters": {
+        "content": "## OLD INSTANCE\n",
+        "height": 288,
+        "width": 214
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -176,
+        336
+      ],
+      "id": "9f58a111-df14-4ba0-8e1b-0832a6e495ec",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## OLD INSTANCE\n",
+        "height": 288,
+        "width": 214
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        0
+      ],
+      "id": "7919ac03-8521-47cb-9412-7d9f56cfcbca",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## NEW INSTANCE\n",
+        "height": 288,
+        "width": 214,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        304,
+        336
+      ],
+      "id": "06b4807d-40a8-44e2-9f3b-2889afe6839a",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## [Hostinger VPS](hostinger.com/nateherk)\n\n10% Off annual plans with code: NATEHERK\n\n[AIS+ Members](https://www.skool.com/ai-automation-society-plus/about) -> Bigger discount\n",
+        "height": 144,
+        "width": 336,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -752,
+        208
+      ],
+      "id": "12a9d1d2-0783-4be2-8bab-3b190a77a0c0",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        208,
+        96
+      ],
+      "id": "fa9d72ef-2383-4e36-8418-c065c73f2f6b",
+      "name": "Loop"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1ulmI4hmkmPrmPGlBCl4KOfeYpkm6DrqDtQzYZ2KGblU",
+          "mode": "list",
+          "cachedResultName": "n8n Workflow Migration",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ulmI4hmkmPrmPGlBCl4KOfeYpkm6DrqDtQzYZ2KGblU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ulmI4hmkmPrmPGlBCl4KOfeYpkm6DrqDtQzYZ2KGblU/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Status",
+              "lookupValue": "To Process"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -320,
+        448
+      ],
+      "id": "43dd3303-56ae-497d-b36a-5d7f3224d0e9",
+      "name": "Get Workflow IDs"
+    }
+  ],
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get many workflows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many workflows": {
+      "main": [
+        [
+          {
+            "node": "Loop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Create a workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Loop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a workflow": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a workflow": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Workflow IDs": {
+      "main": [
+        [
+          {
+            "node": "Get a workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 0,
+  "meta": null
+}

@@ -1,0 +1,311 @@
+{
+  "name": "LIVE & TEST Flows - Demo - post user name & email to hubspot and teams",
+  "nodes": [
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "email": "={{ $('LIVE - Webhook').item.json.body.user_email }}",
+        "additionalFields": {
+          "firstName": "={{ $('LIVE - Webhook').item.json.body.user_name }}",
+          "leadStatus": "NEW"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.hubspot",
+      "typeVersion": 2.1,
+      "position": [
+        -1220,
+        540
+      ],
+      "id": "cb0a4b39-05e8-4209-83e0-7a4a9492dfa1",
+      "name": "HubSpot1",
+      "credentials": {
+        "hubspotOAuth2Api": {
+          "id": "4ZWRbZ2jFaCFRgGS",
+          "name": "HubSpot account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        -1440,
+        640
+      ],
+      "id": "e73091e8-308a-41d7-b56b-1f33276442c2",
+      "name": "Date & Time"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "email": "={{ $('Sandbox - TEST - Webhook').item.json.body.user_email }}",
+        "additionalFields": {
+          "firstName": "=TEST - {{ $('Sandbox - TEST - Webhook').item.json.body.user_name }}",
+          "leadStatus": "NEW"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.hubspot",
+      "typeVersion": 2.1,
+      "position": [
+        -1220,
+        1000
+      ],
+      "id": "f0dd084f-f546-4d7f-9dae-12805b74d4b8",
+      "name": "HubSpot",
+      "credentials": {
+        "hubspotOAuth2Api": {
+          "id": "4ZWRbZ2jFaCFRgGS",
+          "name": "HubSpot account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        -1440,
+        1100
+      ],
+      "id": "6ec31715-5c45-42a4-bd10-cc8d75d58721",
+      "name": "Date & Time1"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "livecrm",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1660,
+        640
+      ],
+      "id": "6d2943f7-f7ee-430e-b160-79fa680f11c9",
+      "name": "LIVE - Webhook",
+      "webhookId": "6adf5123-4a01-46cb-9906-e34074c0bc35"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "testcrm",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1660,
+        1100
+      ],
+      "id": "0763d6fe-66f6-4ecb-b3fd-94d68bb4a341",
+      "name": "Sandbox - TEST - Webhook",
+      "webhookId": "6adf5123-4a01-46cb-9906-e34074c0bc35"
+    },
+    {
+      "parameters": {
+        "resource": "chatMessage",
+        "chatId": {
+          "__rl": true,
+          "value": "19:3b774197e8f540238b983f2e1cfa5f0f@thread.v2",
+          "mode": "list",
+          "cachedResultName": "sandbox-demo.legalengine.co.uk (group)",
+          "cachedResultUrl": "https://teams.microsoft.com/l/chat/19%3A3b774197e8f540238b983f2e1cfa5f0f%40thread.v2/0?tenantId=fad5c68f-d169-4373-bed7-55243bd99c7b"
+        },
+        "message": "=New SHORT demo session started by {{ $('Sandbox - TEST - Webhook').item.json.body.user_name }} - {{ $('Sandbox - TEST - Webhook').item.json.body.user_email }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftTeams",
+      "typeVersion": 2,
+      "position": [
+        -1220,
+        1200
+      ],
+      "id": "38f56181-9192-43e2-bf9f-2813946a685b",
+      "name": "TEST - Microsoft Teams",
+      "webhookId": "40092067-035b-433c-9dc2-a52650bb1cec",
+      "credentials": {
+        "microsoftTeamsOAuth2Api": {
+          "id": "qyoIpk534c3Uq1X6",
+          "name": "Microsoft Teams account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "chatMessage",
+        "chatId": {
+          "__rl": true,
+          "value": "19:3b774197e8f540238b983f2e1cfa5f0f@thread.v2",
+          "mode": "list",
+          "cachedResultName": "sandbox-demo.legalengine.co.uk (group)",
+          "cachedResultUrl": "https://teams.microsoft.com/l/chat/19%3A3b774197e8f540238b983f2e1cfa5f0f%40thread.v2/0?tenantId=fad5c68f-d169-4373-bed7-55243bd99c7b"
+        },
+        "message": "=New REAL demo session started by {{ $('LIVE - Webhook').item.json.body.user_name }} - {{ $('LIVE - Webhook').item.json.body.user_email }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftTeams",
+      "typeVersion": 2,
+      "position": [
+        -1220,
+        740
+      ],
+      "id": "6075686f-16b5-4a5a-b3ef-ffa635d25d85",
+      "name": "LIVE - Microsoft Teams",
+      "webhookId": "40092067-035b-433c-9dc2-a52650bb1cec",
+      "credentials": {
+        "microsoftTeamsOAuth2Api": {
+          "id": "qyoIpk534c3Uq1X6",
+          "name": "Microsoft Teams account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Date & Time": {
+      "main": [
+        [
+          {
+            "node": "LIVE - Microsoft Teams",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HubSpot1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Time1": {
+      "main": [
+        [
+          {
+            "node": "TEST - Microsoft Teams",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HubSpot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LIVE - Webhook": {
+      "main": [
+        [
+          {
+            "node": "Date & Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sandbox - TEST - Webhook": {
+      "main": [
+        [
+          {
+            "node": "Date & Time1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {
+    "LIVE - Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "leonard-dev.app.n8n.cloud",
+            "user-agent": "Python/3.12 aiohttp/3.11.16",
+            "content-length": "7462",
+            "accept": "*/*",
+            "accept-encoding": "gzip, br",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "34.67.146.145",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "US",
+            "cf-ray": "9315393647a6d646-CDG",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "x-forwarded-for": "34.67.146.145, 172.71.130.233",
+            "x-forwarded-host": "leonard-dev.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-52-6c4f4684d5-xjzqs",
+            "x-is-trusted": "yes",
+            "x-real-ip": "34.67.146.145"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "user_email": "leonard@legalengine.co.uk",
+            "summary": "The matter was between Sheffield Wednesday and Nottingham Forest, dating back to a seven-one game in the early nineties. The main challenge was addressing mental scarring from childhood bullying due to supporting Sheffield Wednesday. The client sought recompense for this bullying and came to you because of your connection to both parties, leading to a fantastic outcome for the litigator. The advice cost five pounds fifty, with an estimated saving of twenty-five pounds in heartache. Simon Martin, a childhood friend and fellow victim, was a key team member. The case was based in the UK, with social considerations highlighting Nottingham High School as a difficult place for Sheffield Wednesday fans, and the novelty involved using childhood friendship for torturing other pupils. The matter is ongoing, with the client still facing ridicule for their team allegiance. There was local coverage in the Nottingham Evening Post at the time.",
+            "user_name": "Leonard",
+            "transcript": "Hi there Leonard, it's great to meet you, I'm Leonard, here to show you how I can make your Directories submission seamless and easy using the power of voice and AI. Once we've completed our conversation I'll send you a summary to leonard@legalengine.co.uk. Tell me about a matter you worked on to get a sense for what I'm capable of?||Yeah, so a matter between Shepard Winslow and Nottingham Forest.||Okay, I understand. To get started, could you tell me what the matter involved, including the main challenge or objective?||Yes, it was going back to the early 90s when Nottingham Forest beat Sheffield Wednesday 7-1 and I was starting to have mental scarring as a result.||Thank you for sharing that. Why did the client come to you for this matter, and what specific problem were they trying to solve?||They were trying to solve for mental torture and scarring as a result of childhood bullying for supporting a rubbish team.||I see. What was the outcome for the client, and what specific positive impact did your team provide to the client to achieve this outcome? Please also mention how this matter aligned with the client's strategic objectives.||Yes, so the client's strategic objectives were to seek recompense for childhood bullying. They came to me because I'm known to both parties and produced a fantastic outcome for the litigator.||And what was the deal size or transaction value for this matter? Were there any notable cost savings or revenue implications for the client?||It was $5,050 for the advice and I think I saved £25 in heartache.||Okay, thank you. And who were the key team members who worked with you on this matter, and what were their roles?||The main one was Simon Martin and he was there as a childhood friend and fellow victim of said bullying.||Understood. How many jurisdictions were involved in this matter, and which were the primary ones?||This was just the UK case.||Were there any innovative legal approaches or novel issues you addressed in this matter, including any precedent-setting aspects? Are there any regulatory impact or sustainability or social considerations worth highlighting?||Yeah, just social considerations were Nottingham High School was a horrible place to attend as a Sheffield Wednesday fan. And so, you know, the novelty was really around using childhood friendship as a way of torturing other pupils.||And what is the current status of this matter? If completed, when did it finish?||No, it's still open. I still get regularly shown up for my allegiance to the Owls.||Understood. Was there any press coverage or awards related to this matter that we should mention?||Not really. The Nottingham Evening Post covered it at the time, based on their own gleefulness at the victory.||Thank you for sharing those details. Let me summarise my understanding of this matter to ensure I've captured everything correctly:\n\nThe matter involves Shepard Winslow and Nottingham Forest, dating back to a seven-one game in the early nineties. The main challenge was addressing mental scarring from childhood bullying due to supporting Sheffield Wednesday. The client sought recompense for this bullying and came to you because of your connection to both parties, leading to a fantastic outcome for the litigator. The advice cost five thousand and fifty dollars, with an estimated saving of twenty-five pounds in heartache. Simon Martin, a childhood friend and fellow victim, was a key team member. The case was based in the UK, with social considerations highlighting Nottingham High School as a difficult place for Sheffield Wednesday fans, and the novelty involved using childhood friendship for torturing other pupils. The matter is ongoing, with the client still facing ridicule for their team allegiance. There was local coverage in the Nottingham Evening Post at the time.\n\nIs this summary accurate, or would you like to make any corrections before we move on?||Two corrections, so right at the start you got it wrong, it should be Sheffield Wednesday right at the start of the summary and the matter value was £5.50.||Thank you for the corrections. Let me update the summary:\n\nThe matter involves Shepard Winslow and Nottingham Forest, dating back to a seven-one game in the early nineties. The main challenge was addressing mental scarring from childhood bullying due to supporting Sheffield Wednesday. The client sought recompense for this bullying and came to you because of your connection to both parties, leading to a fantastic outcome for the litigator. The advice cost five pounds fifty, with an estimated saving of twenty-five pounds in heartache. Simon Martin, a childhood friend and fellow victim, was a key team member. The case was based in the UK, with social considerations highlighting Nottingham High School as a difficult place for Sheffield Wednesday fans, and the novelty involved using childhood friendship for torturing other pupils. The matter is ongoing, with the client still facing ridicule for their team allegiance. There was local coverage in the Nottingham Evening Post at the time.\n\nIs this summary accurate now?||No, so right at the start Leonard it should read the matter was between or related to Sheffield Wednesday and Nottingham Forest.||Okay, I understand. Let me revise the summary once more:\n\nThe matter was between Sheffield Wednesday and Nottingham Forest, dating back to a seven-one game in the early nineties. The main challenge was addressing mental scarring from childhood bullying due to supporting Sheffield Wednesday. The client sought recompense for this bullying and came to you because of your connection to both parties, leading to a fantastic outcome for the litigator. The advice cost five pounds fifty, with an estimated saving of twenty-five pounds in heartache. Simon Martin, a childhood friend and fellow victim, was a key team member. The case was based in the UK, with social considerations highlighting Nottingham High School as a difficult place for Sheffield Wednesday fans, and the novelty involved using childhood friendship for torturing other pupils. The matter is ongoing, with the client still facing ridicule for their team allegiance. There was local coverage in the Nottingham Evening Post at the time.\n\nIs this summary accurate now, or are there any further corrections?||No, all accurate thank you Leonard.All accurate now, Leonard. That's great.You still there, Leonard?"
+          },
+          "webhookUrl": "https://leonard-dev.app.n8n.cloud/webhook/649c7e8a-fa63-4d63-8b2b-e3bee21e3c02",
+          "executionMode": "production"
+        }
+      }
+    ],
+    "Sandbox - TEST - Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "leonard-dev.app.n8n.cloud",
+            "user-agent": "Python/3.12 aiohttp/3.11.16",
+            "content-length": "7462",
+            "accept": "*/*",
+            "accept-encoding": "gzip, br",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "34.67.146.145",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "US",
+            "cf-ray": "9315393647a6d646-CDG",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "x-forwarded-for": "34.67.146.145, 172.71.130.233",
+            "x-forwarded-host": "leonard-dev.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-52-6c4f4684d5-xjzqs",
+            "x-is-trusted": "yes",
+            "x-real-ip": "34.67.146.145"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "user_email": "leonard@legalengine.co.uk",
+            "summary": "The matter was between Sheffield Wednesday and Nottingham Forest, dating back to a seven-one game in the early nineties. The main challenge was addressing mental scarring from childhood bullying due to supporting Sheffield Wednesday. The client sought recompense for this bullying and came to you because of your connection to both parties, leading to a fantastic outcome for the litigator. The advice cost five pounds fifty, with an estimated saving of twenty-five pounds in heartache. Simon Martin, a childhood friend and fellow victim, was a key team member. The case was based in the UK, with social considerations highlighting Nottingham High School as a difficult place for Sheffield Wednesday fans, and the novelty involved using childhood friendship for torturing other pupils. The matter is ongoing, with the client still facing ridicule for their team allegiance. There was local coverage in the Nottingham Evening Post at the time.",
+            "user_name": "Leonard",
+            "transcript": "Hi there Leonard, it's great to meet you, I'm Leonard, here to show you how I can make your Directories submission seamless and easy using the power of voice and AI. Once we've completed our conversation I'll send you a summary to leonard@legalengine.co.uk. Tell me about a matter you worked on to get a sense for what I'm capable of?||Yeah, so a matter between Shepard Winslow and Nottingham Forest.||Okay, I understand. To get started, could you tell me what the matter involved, including the main challenge or objective?||Yes, it was going back to the early 90s when Nottingham Forest beat Sheffield Wednesday 7-1 and I was starting to have mental scarring as a result.||Thank you for sharing that. Why did the client come to you for this matter, and what specific problem were they trying to solve?||They were trying to solve for mental torture and scarring as a result of childhood bullying for supporting a rubbish team.||I see. What was the outcome for the client, and what specific positive impact did your team provide to the client to achieve this outcome? Please also mention how this matter aligned with the client's strategic objectives.||Yes, so the client's strategic objectives were to seek recompense for childhood bullying. They came to me because I'm known to both parties and produced a fantastic outcome for the litigator.||And what was the deal size or transaction value for this matter? Were there any notable cost savings or revenue implications for the client?||It was $5,050 for the advice and I think I saved £25 in heartache.||Okay, thank you. And who were the key team members who worked with you on this matter, and what were their roles?||The main one was Simon Martin and he was there as a childhood friend and fellow victim of said bullying.||Understood. How many jurisdictions were involved in this matter, and which were the primary ones?||This was just the UK case.||Were there any innovative legal approaches or novel issues you addressed in this matter, including any precedent-setting aspects? Are there any regulatory impact or sustainability or social considerations worth highlighting?||Yeah, just social considerations were Nottingham High School was a horrible place to attend as a Sheffield Wednesday fan. And so, you know, the novelty was really around using childhood friendship as a way of torturing other pupils.||And what is the current status of this matter? If completed, when did it finish?||No, it's still open. I still get regularly shown up for my allegiance to the Owls.||Understood. Was there any press coverage or awards related to this matter that we should mention?||Not really. The Nottingham Evening Post covered it at the time, based on their own gleefulness at the victory.||Thank you for sharing those details. Let me summarise my understanding of this matter to ensure I've captured everything correctly:\n\nThe matter involves Shepard Winslow and Nottingham Forest, dating back to a seven-one game in the early nineties. The main challenge was addressing mental scarring from childhood bullying due to supporting Sheffield Wednesday. The client sought recompense for this bullying and came to you because of your connection to both parties, leading to a fantastic outcome for the litigator. The advice cost five thousand and fifty dollars, with an estimated saving of twenty-five pounds in heartache. Simon Martin, a childhood friend and fellow victim, was a key team member. The case was based in the UK, with social considerations highlighting Nottingham High School as a difficult place for Sheffield Wednesday fans, and the novelty involved using childhood friendship for torturing other pupils. The matter is ongoing, with the client still facing ridicule for their team allegiance. There was local coverage in the Nottingham Evening Post at the time.\n\nIs this summary accurate, or would you like to make any corrections before we move on?||Two corrections, so right at the start you got it wrong, it should be Sheffield Wednesday right at the start of the summary and the matter value was £5.50.||Thank you for the corrections. Let me update the summary:\n\nThe matter involves Shepard Winslow and Nottingham Forest, dating back to a seven-one game in the early nineties. The main challenge was addressing mental scarring from childhood bullying due to supporting Sheffield Wednesday. The client sought recompense for this bullying and came to you because of your connection to both parties, leading to a fantastic outcome for the litigator. The advice cost five pounds fifty, with an estimated saving of twenty-five pounds in heartache. Simon Martin, a childhood friend and fellow victim, was a key team member. The case was based in the UK, with social considerations highlighting Nottingham High School as a difficult place for Sheffield Wednesday fans, and the novelty involved using childhood friendship for torturing other pupils. The matter is ongoing, with the client still facing ridicule for their team allegiance. There was local coverage in the Nottingham Evening Post at the time.\n\nIs this summary accurate now?||No, so right at the start Leonard it should read the matter was between or related to Sheffield Wednesday and Nottingham Forest.||Okay, I understand. Let me revise the summary once more:\n\nThe matter was between Sheffield Wednesday and Nottingham Forest, dating back to a seven-one game in the early nineties. The main challenge was addressing mental scarring from childhood bullying due to supporting Sheffield Wednesday. The client sought recompense for this bullying and came to you because of your connection to both parties, leading to a fantastic outcome for the litigator. The advice cost five pounds fifty, with an estimated saving of twenty-five pounds in heartache. Simon Martin, a childhood friend and fellow victim, was a key team member. The case was based in the UK, with social considerations highlighting Nottingham High School as a difficult place for Sheffield Wednesday fans, and the novelty involved using childhood friendship for torturing other pupils. The matter is ongoing, with the client still facing ridicule for their team allegiance. There was local coverage in the Nottingham Evening Post at the time.\n\nIs this summary accurate now, or are there any further corrections?||No, all accurate thank you Leonard.All accurate now, Leonard. That's great.You still there, Leonard?"
+          },
+          "webhookUrl": "https://leonard-dev.app.n8n.cloud/webhook/649c7e8a-fa63-4d63-8b2b-e3bee21e3c02",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "triggerCount": 2,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

@@ -1,0 +1,312 @@
+{
+  "name": "Simmons History Webhook - Edu (Structured Response)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "simmons-history-structured",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "ElevenLabs Webhook1",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -240,
+        -96
+      ],
+      "id": "6b15ea13-473a-46f9-af59-e954194dcc96",
+      "webhookId": "41ab024d-27e0-4145-918b-daabc91e0879"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appQYt45MjRLNkvEf",
+          "mode": "list",
+          "cachedResultName": "Fladgate - Leonard Live Data",
+          "cachedResultUrl": "https://airtable.com/appQYt45MjRLNkvEf"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblHgvbVSqcemMjqr",
+          "mode": "list",
+          "cachedResultName": "FG - Conversation History by lawyer",
+          "cachedResultUrl": "https://airtable.com/appQYt45MjRLNkvEf/tblHgvbVSqcemMjqr"
+        },
+        "filterByFormula": "={Email}='{{ $json.body.email }}'",
+        "options": {
+          "fields": [
+            "Email",
+            "Transcript ID",
+            "Full Name",
+            "First Name",
+            "Last Name",
+            "Last Modified",
+            "Conversation History",
+            "Clients",
+            "Matters",
+            "Previous Matters",
+            "Previous Clients",
+            "Previous Submissions"
+          ]
+        }
+      },
+      "name": "Search records1",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        208,
+        -96
+      ],
+      "id": "6773bdb7-9695-4503-85ab-e8ab3f854b66"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2247ff15-b8fe-43df-bb1d-f1663de23178",
+              "name": "First Name",
+              "value": "={{ $json[\"First Name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "ae71fb34-3630-429a-bf54-fbe6c654bd24",
+              "name": "Last Name",
+              "value": "={{ $json[\"Last Name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "4caf8e85-0a23-448c-a06e-131c6886edd1",
+              "name": "Conversation history",
+              "value": "={{ $json[\"Conversation History\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "07cc8775-1b97-4d1b-a1e3-bcaa95a87028",
+              "name": "Last Modified Time",
+              "value": "={{ $json[\"Last Modified\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "98344d5b-2a07-471b-b108-40b8b7e1c0f1",
+              "name": "Clients",
+              "value": "={{ $json.Clients }}",
+              "type": "string"
+            },
+            {
+              "id": "963ac931-4ce1-486e-b408-d6b6a55e15bd",
+              "name": "Matters",
+              "value": "={{ $json.Matters }}",
+              "type": "string"
+            },
+            {
+              "id": "e31bceac-2729-4c9a-830d-984ee0e7bd62",
+              "name": "previous_matters",
+              "value": "={{ $json[\"Previous Matters\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "e01a2442-28be-4b90-af28-563c3e71be29",
+              "name": "previous_clients",
+              "value": "={{ $json[\"Previous Clients\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "f3291926-e8c4-4b4e-af26-7b66b1889ee3",
+              "name": "previous_submissions",
+              "value": "={{ $json[\"Previous Submissions\"] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": "={{ false }}",
+        "options": {}
+      },
+      "name": "Edit Fields1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        432,
+        -96
+      ],
+      "id": "97d72757-b4a4-4413-a9e0-c4942a11f9f8"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7b023aea-7579-45d0-acdd-e3ac147f550b",
+              "leftValue": "={{ $json.Clients }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "name": "If",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        624,
+        -96
+      ],
+      "id": "378be153-b14b-4eaa-9dd1-a8d15c4810b2"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{\n  \"{\\n\" +\n  \"  \\\"conversation_history\\\": \" + JSON.stringify($json[\"Conversation history\"]) + \",\\n\" +\n  \"  \\\"clients\\\": \" + JSON.stringify($items('Search records1')[0]?.json?.Clients ?? \"no details found\") + \",\\n\" +\n  \"  \\\"matters\\\": \" + JSON.stringify($items('Search records1')[0]?.json?.Matters ?? \"no details found\") + \"\\n\" +\n  \"}\"\n}}\n",
+        "options": {}
+      },
+      "name": "Return 'no details' ElevenLabs",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        864,
+        -64
+      ],
+      "id": "ab0a6e9f-2801-42c2-8161-32b450f14167"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse conversation_history into structured array\n// Handles Airtable's JSON wrapper format: {\"state\":\"generated\",\"value\":\"...\",\"isStale\":false}\n// The value contains markdown-formatted matter entries separated by \", **NEW MATTER**,\"\n\nfunction extractMarkdownField(text, fieldName) {\n  // Match markdown list format: \"- Field: value\" or \"- Field: value (additional)\"\n  const regex = new RegExp(`- ${fieldName}:\\\\s*(.+?)(?:\\\\n|$)`, \"i\");\n  const match = text.match(regex);\n  return match ? match[1].trim() : null;\n}\n\nfunction extractMatterTitle(text) {\n  // Match markdown header: \"### Matter Title\" or \"### Confidential Matter X\"\n  const regex = /###\\s+(.+?)(?:\\n|$)/;\n  const match = text.match(regex);\n  return match ? match[1].trim() : null;\n}\n\n// Get raw data - might be string or object\nlet rawHistory = $json[\"Conversation history\"] || \"\";\nlet historyContent = \"\";\n\n// Handle JSON wrapper format\nif (typeof rawHistory === \"string\") {\n  try {\n    const parsed = JSON.parse(rawHistory);\n    if (parsed && parsed.value) {\n      historyContent = parsed.value;\n    } else {\n      historyContent = rawHistory;\n    }\n  } catch (e) {\n    // Not JSON, use as-is\n    historyContent = rawHistory;\n  }\n} else if (typeof rawHistory === \"object\" && rawHistory.value) {\n  historyContent = rawHistory.value;\n}\n\nconst matters = [];\n\n// Split by the **NEW MATTER** delimiter (with optional commas/whitespace)\nconst parts = historyContent.split(/,?\\s*\\*\\*NEW MATTER\\*\\*,?\\s*/);\n\nfor (const part of parts) {\n  if (!part.trim()) continue;\n\n  const matter = {\n    matter_name: extractMatterTitle(part),\n    matter_value: extractMarkdownField(part, \"Matter value\"),\n    client: extractMarkdownField(part, \"Client\"),\n    status: extractMarkdownField(part, \"Status\") || extractMarkdownField(part, \"Completion\"),\n    lead_lawyer: extractMarkdownField(part, \"Lead lawyer(?:s)?\"),\n    team: extractMarkdownField(part, \"Team\"),\n    other_firms: extractMarkdownField(part, \"Other firms/advisers\") || extractMarkdownField(part, \"Other firms and roles\"),\n    sector: extractMarkdownField(part, \"Sector(?:s)?\"),\n    project: extractMarkdownField(part, \"Project(?:s)?\"),\n    jurisdiction: extractMarkdownField(part, \"Jurisdiction\"),\n    cross_border: extractMarkdownField(part, \"Cross-border\")\n  };\n\n  // Only include if we found at least a matter name\n  if (matter.matter_name) {\n    matters.push(matter);\n  }\n}\n\n// Handle Clients field - also might have JSON wrapper\nlet clientsRaw = $json.Clients || \"\";\nlet clientsList = \"\";\nif (typeof clientsRaw === \"string\") {\n  try {\n    const parsed = JSON.parse(clientsRaw);\n    if (parsed && parsed.value) {\n      clientsList = parsed.value;\n    } else {\n      clientsList = clientsRaw;\n    }\n  } catch (e) {\n    clientsList = clientsRaw;\n  }\n} else if (typeof clientsRaw === \"object\" && clientsRaw.value) {\n  clientsList = clientsRaw.value;\n}\n\n// Return structured data\nreturn [{\n  json: {\n    matters: matters,\n    matter_count: matters.length,\n    clients: clientsList,\n    raw_history: historyContent\n  }\n}];"
+      },
+      "name": "Parse Matters to JSON",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        750,
+        -240
+      ],
+      "id": "a41573ad-f230-407c-8954-f2deb84e4ca8"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "name": "Return Conv History to ElevenLabs",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        950,
+        -240
+      ],
+      "id": "9cef2da3-f4bf-4731-bdef-23f4e928284e"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Helper to walk any object/array and lowercase all \"email\" fields\nfunction lowercaseEmails(obj) {\n  if (obj == null || typeof obj !== 'object') {\n    return;\n  }\n\n  if (Array.isArray(obj)) {\n    for (const el of obj) {\n      lowercaseEmails(el);\n    }\n    return;\n  }\n\n  for (const key of Object.keys(obj)) {\n    const value = obj[key];\n\n    // If the property name is \"email\" and it is a string. lowercase it\n    if (key === 'email' && typeof value === 'string') {\n      obj[key] = value.toLowerCase();\n    }\n\n    // Recurse into nested objects or arrays\n    if (value && typeof value === 'object') {\n      lowercaseEmails(value);\n    }\n  }\n}\n\nreturn items.map(item => {\n  // Clone json so we do not accidentally break references\n  const out = {\n    ...item,\n    json: { ...item.json },\n  };\n\n  // This will hit body.email in your sample payload. plus any other email fields anywhere\n  lowercaseEmails(out.json);\n\n  return out;\n});\n"
+      },
+      "name": "lowercase email",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -16,
+        -96
+      ],
+      "id": "c6ca8c69-ca9a-46cf-8b0a-5cd32b0af71e"
+    }
+  ],
+  "connections": {
+    "ElevenLabs Webhook1": {
+      "main": [
+        [
+          {
+            "node": "lowercase email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search records1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Parse Matters to JSON",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return 'no details' ElevenLabs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Matters to JSON": {
+      "main": [
+        [
+          {
+            "node": "Return Conv History to ElevenLabs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "lowercase email": {
+      "main": [
+        [
+          {
+            "node": "Search records1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 1,
+  "meta": null
+}

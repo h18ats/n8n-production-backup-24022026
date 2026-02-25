@@ -1,0 +1,775 @@
+{
+  "name": "HSFK UC 5.1 - PPR Review Pack Builder",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## HSFK UC 5.1 - PPR Review Pack Builder\n\n**Purpose:** On-demand generation of Partner Performance Review (PPR) packs. Loads the partner's master profile from Airtable, searches for their external profile via Perplexity (rankings, awards, publications, speaking), then calls Claude Opus to synthesise a structured narrative review pack. Stores the result in Airtable and posts a Slack notification.\n\n**Trigger:** Webhook POST `/webhook/hsfk-ppr-request`\n\n**Flow:**\n1. Webhook receives: partner name + review period\n2. Load master profile from `HSFK - Master Profiles` (Airtable)\n3. Call shared-02 (Perplexity) for external profile: rankings, awards, publications, speaking\n4. Cache Perplexity data in `HSFK - PPR Data Cache` (Airtable)\n5. Call shared-04 (LLM - Claude Opus) to synthesise narrative review pack:\n   - Executive summary (3 paragraphs)\n   - Client relationship section (from Airtable profile)\n   - External profile section (rankings, visibility from Perplexity)\n   - Financial section: PLACEHOLDER - awaiting finance API access\n   - HR/Development section: PLACEHOLDER - awaiting HR/PDC system access\n   - Recommended focus areas\n6. Store review pack in `HSFK - PPR Review Packs` (Airtable)\n7. Post to Slack: PPR pack ready notification\n8. Return review pack in webhook response\n9. Audit log via shared-05\n\n**Blocked integrations (stubbed):**\n- Finance API: HSFK IT access pending\n- HR/PDC system: HSFK IT access pending\n- InterAction CRM: optional, add shared-01 call when available\n\n**Expected webhook payload:**\n```json\n{\n  \"partner_name\": \"Jane Smith\",\n  \"review_period\": \"H1 2026\",\n  \"requested_by\": \"hr@hsfk.com\"\n}\n```\n\n**Sub-workflow IDs:**\n- shared-02 (Perplexity): `qT0uycTDyAM7zQJ5`\n- shared-04 (Vertex AI LLM): `AI3InmjY6gmJwdXg`\n- shared-05 (Airtable Audit): `zjwCkfCuH3GnW2qT`\n\n**Airtable base:** `app0QZAuhY8Zx4I54`\n- Master Profiles: `tbl5KE2DIdaKJPPiN`\n- PPR Review Packs: `tblmo7FBa2z1dM6xN`\n- PPR Data Cache: `tbl81Kkmrld55YhWu`\n\n**Model note:** Uses `claude-opus-4-5` via shared-04. PPR packs require nuanced, high-quality synthesis that justifies the higher cost.\n\n**n8n instance:** leonard-dev.app.n8n.cloud",
+        "height": 720,
+        "width": 560,
+        "color": 4
+      },
+      "id": "sticky-note-docs",
+      "name": "Documentation",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -620,
+        -260
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Blocked Integrations\n\nThe following sections are **STUBBED** pending HSFK IT access:\n\n- **Finance API:** Billing data, revenue, hours, utilisation, realisation rate, write-offs. Stub text: `[PLACEHOLDER - awaiting finance API access from HSFK IT]`\n\n- **HR/PDC System:** Current objectives, prior review outcomes, development notes. Stub text: `[PLACEHOLDER - awaiting HR/PDC system access from HSFK IT]`\n\n- **InterAction CRM (shared-01):** Client interaction history, meetings, cross-sells. Can be added as a step between profile load and Perplexity call once shared-01 is available.\n\nWhen access is granted, insert the relevant API call after step 2 (Load Master Profile) and pass the retrieved data into the LLM synthesis prompt.",
+        "height": 340,
+        "width": 480,
+        "color": 7
+      },
+      "id": "sticky-note-stubs",
+      "name": "Stub Notes",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -620,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "hsfk-ppr-request",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook: POST /hsfk-ppr-request",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -80,
+        240
+      ],
+      "webhookId": "hsfk-ppr-request"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract and validate the PPR request payload\nconst startTime = Date.now();\nconst body = $json.body || $json;\n\nconst partnerName = String(body.partner_name || '').trim();\nconst reviewPeriod = String(body.review_period || '').trim();\nconst requestedBy = String(body.requested_by || 'unknown').trim();\n\n// Validate required fields\nconst errors = [];\nif (!partnerName) errors.push('partner_name is required');\nif (!reviewPeriod) errors.push('review_period is required (e.g. H1 2026, Q1 2026, FY 2025)');\n\nif (errors.length > 0) {\n  throw new Error(`Validation failed: ${errors.join(', ')}`);\n}\n\nconst executionId = `hsfk-ppr-${Date.now()}`;\nconst requestedAt = new Date().toISOString();\n\nreturn {\n  json: {\n    execution_id: executionId,\n    start_time: startTime,\n    requested_at: requestedAt,\n    partner_name: partnerName,\n    review_period: reviewPeriod,\n    requested_by: requestedBy\n  }\n};"
+      },
+      "id": "extract-validate-request",
+      "name": "Extract & Validate PPR Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "app0QZAuhY8Zx4I54"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tbl5KE2DIdaKJPPiN"
+        },
+        "filterByFormula": "={{ \"SEARCH(LOWER('\" + $json.partner_name.replace(/'/g, \"\\\\'\") + \"'), LOWER({Full Name})) > 0\" }}",
+        "returnAll": false,
+        "limit": 1,
+        "options": {}
+      },
+      "id": "load-master-profile",
+      "name": "Load Master Profile from Airtable",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        400,
+        240
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "AIRTABLE_TOKEN_CRED",
+          "name": "Airtable - Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Merge Airtable master profile with the original request context\n// Gracefully handle missing profile - PPR can still be generated with Perplexity data\n\nconst requestData = $('Extract & Validate PPR Request').first().json;\nconst airtableItems = $input.all();\n\nconst profileFound = airtableItems.length > 0 && airtableItems[0].json?.id;\nconst profile = profileFound ? (airtableItems[0].json?.fields || {}) : {};\nconst profileRecordId = profileFound ? airtableItems[0].json?.id : null;\n\nconst profileWarnings = [];\nif (!profileFound) {\n  profileWarnings.push(`No master profile found for '${requestData.partner_name}' in Airtable. Review pack will rely on Perplexity data.`);\n}\n\nreturn {\n  json: {\n    execution_id: requestData.execution_id,\n    start_time: requestData.start_time,\n    requested_at: requestData.requested_at,\n    partner_name: requestData.partner_name,\n    review_period: requestData.review_period,\n    requested_by: requestData.requested_by,\n    profile_found: profileFound,\n    profile_record_id: profileRecordId,\n    profile: {\n      full_name: profile['Full Name'] || requestData.partner_name,\n      job_title: profile['Job Title'] || null,\n      department: profile['Department'] || null,\n      qualifications: profile['Qualifications'] || null,\n      practice_areas: profile['Practice Areas'] || null,\n      notable_matters: profile['Notable Matters'] || null,\n      rankings_and_awards: profile['Rankings and Awards'] || null,\n      publications_and_speaking: profile['Publications and Speaking'] || null,\n      personal_interests: profile['Personal Interests'] || null,\n      linkedin_url: profile['LinkedIn URL'] || null,\n      email: profile['Email'] || null\n    },\n    profile_warnings: profileWarnings\n  }\n};"
+      },
+      "id": "merge-profile-data",
+      "name": "Merge Profile Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        640,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "qT0uycTDyAM7zQJ5"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "entity_name": "={{ $json.partner_name }}",
+            "entity_type": "person",
+            "date_range": "last_90_days",
+            "max_results": 15
+          },
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "call-perplexity-shared-02",
+      "name": "Call shared-02 (Perplexity - External Profile)",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        880,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Merge Perplexity results with profile data\n// Then cache Perplexity data to PPR Data Cache (Airtable)\n\nconst perplexityResult = $json;\nconst profileData = $('Merge Profile Data').first().json;\n\n// Extract articles from Perplexity response\nconst articles = perplexityResult.articles || [];\nconst totalFound = perplexityResult.total_found || articles.length;\nconst queryUsed = perplexityResult.query_used || `\"${profileData.partner_name}\" legal`;\nconst searchedAt = perplexityResult.searched_at || new Date().toISOString();\n\n// Build a structured external profile summary from Perplexity articles\nconst externalProfileItems = articles.slice(0, 10).map((a, i) => {\n  return `${i + 1}. ${a.headline || 'Untitled'} (${a.source || 'Unknown source'}, ${a.date ? a.date.split('T')[0] : 'n/d'})${a.summary ? ': ' + a.summary : ''}`;\n}).join('\\n');\n\nconst externalProfileSummary = articles.length > 0\n  ? externalProfileItems\n  : `No recent external coverage found for ${profileData.partner_name} in the past 90 days.`;\n\n// Data snapshot for caching\nconst dataSnapshot = {\n  source: 'perplexity',\n  query_used: queryUsed,\n  searched_at: searchedAt,\n  total_found: totalFound,\n  articles: articles.slice(0, 15)\n};\n\nreturn {\n  json: {\n    execution_id: profileData.execution_id,\n    start_time: profileData.start_time,\n    requested_at: profileData.requested_at,\n    partner_name: profileData.partner_name,\n    review_period: profileData.review_period,\n    requested_by: profileData.requested_by,\n    profile_found: profileData.profile_found,\n    profile_record_id: profileData.profile_record_id,\n    profile: profileData.profile,\n    profile_warnings: profileData.profile_warnings,\n    perplexity: {\n      articles,\n      total_found: totalFound,\n      query_used: queryUsed,\n      searched_at: searchedAt,\n      external_profile_summary: externalProfileSummary\n    },\n    cache_snapshot_json: JSON.stringify(dataSnapshot)\n  }\n};"
+      },
+      "id": "merge-perplexity-data",
+      "name": "Merge Perplexity Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "app0QZAuhY8Zx4I54"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tbl81Kkmrld55YhWu"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Partner Name": "={{ $json.partner_name }}",
+            "Review Period": "={{ $json.review_period }}",
+            "Data Source": "perplexity",
+            "Pulled At": "={{ $json.perplexity.searched_at }}",
+            "Data Snapshot JSON": "={{ $json.cache_snapshot_json }}",
+            "Fetch Status": "success",
+            "Workflow Execution ID": "={{ $json.execution_id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Partner Name",
+              "displayName": "Partner Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Review Period",
+              "displayName": "Review Period",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Data Source",
+              "displayName": "Data Source",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Pulled At",
+              "displayName": "Pulled At",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Data Snapshot JSON",
+              "displayName": "Data Snapshot JSON",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Fetch Status",
+              "displayName": "Fetch Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Workflow Execution ID",
+              "displayName": "Workflow Execution ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "cache-perplexity-data",
+      "name": "Cache Perplexity Data (PPR Data Cache)",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1360,
+        240
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "AIRTABLE_TOKEN_CRED",
+          "name": "Airtable - Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build the Claude Opus synthesis prompt for the PPR review pack\n// Model: claude-opus-4-5 via shared-04 for high-quality narrative writing\n\nconst mergedData = $('Merge Perplexity Data').first().json;\nconst cacheRecordId = $json.id;\nconst profile = mergedData.profile;\nconst perplexity = mergedData.perplexity;\n\n// Serialise profile data for prompt (omit null fields)\nconst profileLines = [];\nif (profile.job_title) profileLines.push(`Job title: ${profile.job_title}`);\nif (profile.department) profileLines.push(`Department: ${profile.department}`);\nif (profile.qualifications) profileLines.push(`Qualifications: ${profile.qualifications}`);\nif (profile.practice_areas) profileLines.push(`Practice areas: ${profile.practice_areas}`);\nif (profile.notable_matters) profileLines.push(`Notable matters and transactions: ${profile.notable_matters}`);\nif (profile.rankings_and_awards) profileLines.push(`Rankings and awards: ${profile.rankings_and_awards}`);\nif (profile.publications_and_speaking) profileLines.push(`Publications and speaking: ${profile.publications_and_speaking}`);\n\nconst profileText = profileLines.length > 0\n  ? profileLines.join('\\n')\n  : `Name: ${profile.full_name} (limited internal profile data available)`;\n\nconst systemPrompt = `You are a senior legal management consultant preparing a comprehensive Partner Performance Review (PPR) pack for a Magic Circle or top-tier UK law firm. You write with authority, nuance, and structured clarity.\n\nYour PPR packs are used by the senior management team and partnership board for annual and biannual performance reviews. They must be:\n- Factual and evidence-based (never fabricate or assume facts not provided)\n- Well-structured with clearly labelled sections\n- Written in professional British English\n- Free of em dashes (use commas or full stops instead)\n- Balanced in tone: recognise strengths while identifying development areas honestly\n\nWhere data is absent (finance, HR), include the placeholder text exactly as instructed. Do not attempt to fill in missing data.\n\nYour output MUST be valid JSON in this exact format:\n{\n  \"executive_summary\": \"Three paragraphs. Para 1: overall performance narrative. Para 2: key achievements and external profile. Para 3: development priorities and forward look.\",\n  \"client_relationships\": \"Narrative section on client relationship quality, key client matters, cross-selling activity, and relationship depth. Base on notable matters and practice area data provided.\",\n  \"external_profile\": \"Narrative section on external visibility: rankings, awards, speaking engagements, publications, and media presence. Base on the Perplexity search results provided.\",\n  \"financial_performance\": \"[PLACEHOLDER - awaiting finance API access from HSFK IT. This section will include: revenue generated, hours billed, utilisation rate, realisation rate, write-offs, and year-on-year comparison.]\",\n  \"hr_development\": \"[PLACEHOLDER - awaiting HR/PDC system access from HSFK IT. This section will include: current objectives, progress against prior review targets, CPD completion, and development notes from the PDC.]\",\n  \"recommended_focus_areas\": [\"Focus area 1\", \"Focus area 2\", \"Focus area 3\"],\n  \"data_sources_used\": [\"airtable_master_profile\", \"perplexity_news_search\"],\n  \"pack_quality_notes\": \"Any caveats about data completeness or quality\"\n}`;\n\nconst userPrompt = `Generate a Partner Performance Review (PPR) pack for the following partner.\n\n**Partner name:** ${profile.full_name}\n**Review period:** ${mergedData.review_period}\n**Requested by:** ${mergedData.requested_by}\n\n**Internal profile data (from Airtable Master Profiles):**\n${profileText}\n\n**External profile data (from Perplexity news search, last 90 days):**\n${perplexity.external_profile_summary}\n\n**Finance data:** [PLACEHOLDER - awaiting finance API access from HSFK IT]\n**HR/PDC data:** [PLACEHOLDER - awaiting HR/PDC system access from HSFK IT]\n\nGenerate the PPR pack as specified. Where data is missing, use the placeholder text provided. Do not fabricate financial figures, specific client names, or HR objectives that have not been provided. Return only valid JSON.`;\n\nreturn {\n  json: {\n    system_prompt: systemPrompt,\n    user_prompt: userPrompt,\n    model: 'claude-opus-4-5',\n    temperature: 0.4,\n    response_format: 'json',\n    max_tokens: 8192,\n    merged_data: mergedData,\n    cache_record_id: cacheRecordId\n  }\n};"
+      },
+      "id": "build-ppr-prompt",
+      "name": "Build PPR Synthesis Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1600,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "AI3InmjY6gmJwdXg"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "system_prompt": "={{ $json.system_prompt }}",
+            "user_prompt": "={{ $json.user_prompt }}",
+            "model": "={{ $json.model }}",
+            "temperature": "={{ $json.temperature }}",
+            "response_format": "={{ $json.response_format }}",
+            "max_tokens": "={{ $json.max_tokens }}"
+          },
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "call-llm-shared-04",
+      "name": "Call shared-04 (Claude Opus - PPR Synthesis)",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        1840,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Process the LLM response: extract the structured review pack sections\n\nconst llmResult = $json;\nconst promptData = $('Build PPR Synthesis Prompt').first().json;\nconst mergedData = promptData.merged_data;\n\nlet packSections = null;\nlet packQualityNotes = '';\nlet dataSources = ['airtable_master_profile', 'perplexity_news_search'];\n\nif (llmResult.json_valid && llmResult.parsed_json) {\n  packSections = llmResult.parsed_json;\n  packQualityNotes = packSections.pack_quality_notes || '';\n  if (packSections.data_sources_used) {\n    dataSources = packSections.data_sources_used;\n  }\n} else {\n  // Fallback: wrap raw text in a minimal structure\n  packSections = {\n    executive_summary: llmResult.text || 'Review pack generation failed. Please retry.',\n    client_relationships: '[Parsing error - see raw text]',\n    external_profile: '[Parsing error - see raw text]',\n    financial_performance: '[PLACEHOLDER - awaiting finance API access from HSFK IT]',\n    hr_development: '[PLACEHOLDER - awaiting HR/PDC system access from HSFK IT]',\n    recommended_focus_areas: [],\n    data_sources_used: dataSources,\n    pack_quality_notes: 'LLM JSON parsing failed; review pack may be incomplete.'\n  };\n  packQualityNotes = packSections.pack_quality_notes;\n}\n\n// Serialise the full pack as JSON for storage in Airtable long text field\nconst packJson = JSON.stringify(packSections, null, 2);\n\n// Build a text summary of the executive summary for the Airtable main field\nconst executiveSummary = packSections.executive_summary || '';\n\nconst recommendedFocusAreas = Array.isArray(packSections.recommended_focus_areas)\n  ? packSections.recommended_focus_areas.join(' | ')\n  : '';\n\nreturn {\n  json: {\n    execution_id: mergedData.execution_id,\n    start_time: mergedData.start_time,\n    requested_at: mergedData.requested_at,\n    partner_name: mergedData.partner_name,\n    review_period: mergedData.review_period,\n    requested_by: mergedData.requested_by,\n    profile_record_id: mergedData.profile_record_id,\n    cache_record_id: promptData.cache_record_id,\n    pack_sections: packSections,\n    pack_json: packJson,\n    executive_summary: executiveSummary,\n    recommended_focus_areas: recommendedFocusAreas,\n    data_sources_used: dataSources.join(', '),\n    pack_quality_notes: packQualityNotes,\n    llm_tokens_used: (llmResult.input_tokens || 0) + (llmResult.output_tokens || 0),\n    model_used: llmResult.model_used || 'claude-opus-4-5',\n    generated_at: new Date().toISOString()\n  }\n};"
+      },
+      "id": "process-ppr-output",
+      "name": "Process PPR Output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2080,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "app0QZAuhY8Zx4I54"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tblmo7FBa2z1dM6xN"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Partner Name": "={{ $json.partner_name }}",
+            "Review Period": "={{ $json.review_period }}",
+            "Generated At": "={{ $json.generated_at }}",
+            "Trigger Type": "webhook",
+            "Status": "draft",
+            "Data Sources Used": "={{ $json.data_sources_used }}",
+            "Workflow Execution ID": "={{ $json.execution_id }}",
+            "HSFK - PPR Data Cache": "={{ $json.cache_record_id ? [$json.cache_record_id] : [] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Partner Name",
+              "displayName": "Partner Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Review Period",
+              "displayName": "Review Period",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Generated At",
+              "displayName": "Generated At",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Trigger Type",
+              "displayName": "Trigger Type",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "draft",
+                  "value": "draft"
+                },
+                {
+                  "name": "under_review",
+                  "value": "under_review"
+                },
+                {
+                  "name": "approved",
+                  "value": "approved"
+                },
+                {
+                  "name": "distributed",
+                  "value": "distributed"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Data Sources Used",
+              "displayName": "Data Sources Used",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Workflow Execution ID",
+              "displayName": "Workflow Execution ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "HSFK - PPR Data Cache",
+              "displayName": "HSFK - PPR Data Cache",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "store-ppr-review-pack",
+      "name": "Store PPR Review Pack (Airtable)",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        2320,
+        240
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "AIRTABLE_TOKEN_CRED",
+          "name": "Airtable - Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Capture the PPR review pack record ID and build the Slack notification\n\nconst airtableResponse = $json;\nconst pprData = $('Process PPR Output').first().json;\n\nconst packRecordId = airtableResponse.id;\n\n// Build focus areas summary for Slack\nconst focusAreas = pprData.recommended_focus_areas\n  ? pprData.recommended_focus_areas.split(' | ').map(a => `  - ${a}`).join('\\n')\n  : '  - See full pack in Airtable';\n\n// Note any quality caveats\nconst qualityNote = pprData.pack_quality_notes\n  ? `\\n:information_source: *Quality note:* ${pprData.pack_quality_notes}`\n  : '';\n\nconst stubNote = '\\n:construction: *Finance and HR sections are placeholders pending HSFK IT access.*';\n\nconst slackMessage = `:bar_chart: *PPR Review Pack Generated*\\n\\n*Partner:* ${pprData.partner_name}\\n*Review period:* ${pprData.review_period}\\n*Requested by:* ${pprData.requested_by}\\n*Data sources:* ${pprData.data_sources_used}\\n*LLM tokens used:* ${pprData.llm_tokens_used}\\n\\n*Recommended focus areas:*\\n${focusAreas}${qualityNote}${stubNote}\\n\\n*Airtable record:* ${packRecordId}\\nFull pack available in HSFK - PPR Review Packs.`;\n\nreturn {\n  json: {\n    pack_record_id: packRecordId,\n    execution_id: pprData.execution_id,\n    start_time: pprData.start_time,\n    partner_name: pprData.partner_name,\n    review_period: pprData.review_period,\n    requested_by: pprData.requested_by,\n    pack_sections: pprData.pack_sections,\n    pack_json: pprData.pack_json,\n    executive_summary: pprData.executive_summary,\n    recommended_focus_areas: pprData.recommended_focus_areas,\n    data_sources_used: pprData.data_sources_used,\n    pack_quality_notes: pprData.pack_quality_notes,\n    llm_tokens_used: pprData.llm_tokens_used,\n    model_used: pprData.model_used,\n    generated_at: pprData.generated_at,\n    slack_message: slackMessage\n  }\n};"
+      },
+      "id": "build-slack-notification",
+      "name": "Build Slack Notification",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2560,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://slack.com/api/chat.postMessage",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({ channel: 'hsfk-ppr', text: $json.slack_message, unfurl_links: false }) }}",
+        "options": {
+          "timeout": 10000,
+          "response": {
+            "response": {
+              "fullResponse": false,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "slack-notify-ppr",
+      "name": "Slack: Notify PPR Pack Ready",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2800,
+        240
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "SLACK_BOT_CRED",
+          "name": "Slack Bot - Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build the final webhook response\n\nconst notifyData = $('Build Slack Notification').first().json;\nconst durationMs = Date.now() - notifyData.start_time;\n\nconst response = {\n  status: 'success',\n  execution_id: notifyData.execution_id,\n  partner_name: notifyData.partner_name,\n  review_period: notifyData.review_period,\n  generated_at: notifyData.generated_at,\n  airtable_record_id: notifyData.pack_record_id,\n  data_sources_used: notifyData.data_sources_used,\n  review_pack: {\n    executive_summary: notifyData.pack_sections?.executive_summary || '',\n    client_relationships: notifyData.pack_sections?.client_relationships || '',\n    external_profile: notifyData.pack_sections?.external_profile || '',\n    financial_performance: notifyData.pack_sections?.financial_performance || '[PLACEHOLDER - awaiting finance API access from HSFK IT]',\n    hr_development: notifyData.pack_sections?.hr_development || '[PLACEHOLDER - awaiting HR/PDC system access from HSFK IT]',\n    recommended_focus_areas: notifyData.pack_sections?.recommended_focus_areas || []\n  },\n  model_used: notifyData.model_used,\n  llm_tokens_used: notifyData.llm_tokens_used,\n  duration_ms: durationMs\n};\n\nif (notifyData.pack_quality_notes) {\n  response.quality_notes = notifyData.pack_quality_notes;\n}\n\nreturn {\n  json: {\n    response,\n    duration_ms: durationMs,\n    partner_name: notifyData.partner_name,\n    review_period: notifyData.review_period,\n    pack_record_id: notifyData.pack_record_id,\n    llm_tokens_used: notifyData.llm_tokens_used,\n    data_sources_used: notifyData.data_sources_used\n  }\n};"
+      },
+      "id": "build-webhook-response",
+      "name": "Build Webhook Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3040,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json.response) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "respond-200",
+      "name": "Respond 200 with PPR Pack",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        3280,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "zjwCkfCuH3GnW2qT"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "workflow_name": "HSFK UC 5.1 - PPR Review Pack Builder",
+            "use_case_id": "5.1",
+            "trigger_type": "webhook",
+            "input_summary": "={{ 'Partner: ' + $('Build Webhook Response').first().json.partner_name + ' | Period: ' + $('Build Webhook Response').first().json.review_period }}",
+            "output_summary": "={{ 'PPR pack generated | Record: ' + $('Build Webhook Response').first().json.pack_record_id + ' | Sources: ' + $('Build Webhook Response').first().json.data_sources_used + ' | Tokens: ' + $('Build Webhook Response').first().json.llm_tokens_used }}",
+            "status": "success",
+            "duration_ms": "={{ $('Build Webhook Response').first().json.duration_ms || 0 }}"
+          },
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "call-audit-shared-05",
+      "name": "Call shared-05 (Audit Log)",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        3280,
+        400
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook: POST /hsfk-ppr-request": {
+      "main": [
+        [
+          {
+            "node": "Extract & Validate PPR Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract & Validate PPR Request": {
+      "main": [
+        [
+          {
+            "node": "Load Master Profile from Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Master Profile from Airtable": {
+      "main": [
+        [
+          {
+            "node": "Merge Profile Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Profile Data": {
+      "main": [
+        [
+          {
+            "node": "Call shared-02 (Perplexity - External Profile)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call shared-02 (Perplexity - External Profile)": {
+      "main": [
+        [
+          {
+            "node": "Merge Perplexity Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Perplexity Data": {
+      "main": [
+        [
+          {
+            "node": "Cache Perplexity Data (PPR Data Cache)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cache Perplexity Data (PPR Data Cache)": {
+      "main": [
+        [
+          {
+            "node": "Build PPR Synthesis Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build PPR Synthesis Prompt": {
+      "main": [
+        [
+          {
+            "node": "Call shared-04 (Claude Opus - PPR Synthesis)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call shared-04 (Claude Opus - PPR Synthesis)": {
+      "main": [
+        [
+          {
+            "node": "Process PPR Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process PPR Output": {
+      "main": [
+        [
+          {
+            "node": "Store PPR Review Pack (Airtable)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store PPR Review Pack (Airtable)": {
+      "main": [
+        [
+          {
+            "node": "Build Slack Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Slack Notification": {
+      "main": [
+        [
+          {
+            "node": "Slack: Notify PPR Pack Ready",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack: Notify PPR Pack Ready": {
+      "main": [
+        [
+          {
+            "node": "Build Webhook Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Webhook Response": {
+      "main": [
+        [
+          {
+            "node": "Respond 200 with PPR Pack",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Call shared-05 (Audit Log)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 1,
+  "meta": null
+}

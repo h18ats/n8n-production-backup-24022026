@@ -1,0 +1,176 @@
+{
+  "name": "LIVE - Simmons - 11L Conversation history webhook - Andy",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "simmons-conversation-history",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "ElevenLabs Webhook1",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -64,
+        -96
+      ],
+      "id": "c42311cc-6b75-4f37-9341-47b33eb62e85",
+      "webhookId": "fce37069-3124-45a6-823c-5359e34f1d7e"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ \"{\\n\" +\n\"  \\\"conversation_history\\\": \" + JSON.stringify($json[\"Conversation history\"]) + \",\\n\" +\n\"  \\\"clients\\\": \" + JSON.stringify($items('Search records1')[0].json.Clients) + \",\\n\" +\n\"  \\\"matters\\\": \" + JSON.stringify($items('Search records1')[0].json.Matters) + \"\\n\" +\n\"}\" }}\n",
+        "options": {}
+      },
+      "name": "Return to ElevenLabs1",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        608,
+        -96
+      ],
+      "id": "e2dab1eb-6d5a-4340-9daf-212a5f309737"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appQYt45MjRLNkvEf",
+          "mode": "list",
+          "cachedResultName": "Fladgate - Leonard Live Data",
+          "cachedResultUrl": "https://airtable.com/appQYt45MjRLNkvEf"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblHgvbVSqcemMjqr",
+          "mode": "list",
+          "cachedResultName": "FG - Conversation History by lawyer",
+          "cachedResultUrl": "https://airtable.com/appQYt45MjRLNkvEf/tblHgvbVSqcemMjqr"
+        },
+        "filterByFormula": "={Email}='{{ $json.body.email }}'",
+        "options": {
+          "fields": [
+            "Email",
+            "Transcript ID",
+            "Full Name",
+            "First Name",
+            "Last Name",
+            "Last Modified",
+            "Conversation History",
+            "Clients",
+            "Matters"
+          ]
+        }
+      },
+      "name": "Search records1",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        160,
+        -96
+      ],
+      "id": "cdbfd1fc-21d5-4f77-bf65-9c4801c41148"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2247ff15-b8fe-43df-bb1d-f1663de23178",
+              "name": "First Name",
+              "value": "={{ $json[\"First Name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "ae71fb34-3630-429a-bf54-fbe6c654bd24",
+              "name": "Last Name",
+              "value": "={{ $json[\"Last Name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "4caf8e85-0a23-448c-a06e-131c6886edd1",
+              "name": "Conversation history",
+              "value": "={{ $json[\"Conversation History\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "07cc8775-1b97-4d1b-a1e3-bcaa95a87028",
+              "name": "Last Modified Time",
+              "value": "={{ $json[\"Last Modified\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "98344d5b-2a07-471b-b108-40b8b7e1c0f1",
+              "name": "Clients",
+              "value": "={{ $json.Clients }}",
+              "type": "string"
+            },
+            {
+              "id": "963ac931-4ce1-486e-b408-d6b6a55e15bd",
+              "name": "Matters",
+              "value": "={{ $json.Matters }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": "={{ false }}",
+        "options": {}
+      },
+      "name": "Edit Fields1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        384,
+        -96
+      ],
+      "id": "cc5de23e-1ad5-4d33-9764-757e52656c96"
+    }
+  ],
+  "connections": {
+    "ElevenLabs Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Search records1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search records1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Return to ElevenLabs1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 1,
+  "meta": null
+}

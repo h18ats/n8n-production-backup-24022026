@@ -1,0 +1,154 @@
+{
+  "name": "Create KB and Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.elevenlabs.io/v1/convai/knowledge-base/text",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "xi-api-key",
+              "value": "sk_3eca705a3c2780af4cb1116beb64d3e1d3bfc187a8d565f8"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"parameters\": {\n    \"authentication\": \"none\",\n    \"method\": \"POST\",\n    \"url\": \"https://api.elevenlabs.io/v1/convai/agents/create\",\n    \"responseFormat\": \"json\",\n    \"sendHeaders\": true,\n    \"headerParametersUi\": {\n      \"parameter\": [\n        { \"name\": \"Content-Type\", \"value\": \"application/json\" }\n      ]\n    },\n    \"sendBody\": true,\n    \"specifyBody\": \"json\",\n    \"jsonBody\": {{ { \"output\": $json.output } }},\n    \"options\": { \"timeout\": 60000 }\n  },\n  \"id\": \"agent-create\",\n  \"name\": \"Agent — Create\",\n  \"type\": \"n8n-nodes-base.httpRequest\",\n  \"typeVersion\": 4,\n  \"position\": [2640, 320]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -384,
+        -128
+      ],
+      "id": "d3ecdd81-1c2e-415f-908c-35d343e4dc32",
+      "name": "Create KB"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.elevenlabs.io/v1/convai/knowledge-base/text",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "xi-api-key",
+              "value": "sk_3eca705a3c2780af4cb1116beb64d3e1d3bfc187a8d565f8"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"parameters\": {\n    \"authentication\": \"none\",\n    \"method\": \"POST\",\n    \"url\": \"https://api.elevenlabs.io/v1/convai/knowledge-base/text\",\n    \"responseFormat\": \"json\",\n    \"sendHeaders\": true,\n    \"headerParametersUi\": {\n      \"parameter\": [\n        { \"name\": \"xi-api-key\", \"value\": \"sk_3eca705a3c2780af4cb1116beb64d3e1d3bfc187a8d565f8\" },\n        { \"name\": \"Content-Type\", \"value\": \"application/json\" }\n      ]\n    },\n    \"sendBody\": true,\n    \"specifyBody\": \"json\",\n    \"jsonBody\": \"={\\n  \\\"text\\\": ($json[\\\"html\\\"] || $node[\\\"Generate HTML Briefing\\\"].json[\\\"html\\\"] || \\\"example text\\\"),\\n  \\\"name\\\": ($json[\\\"subject\\\"] || $node[\\\"Generate HTML Briefing\\\"].json[\\\"subject\\\"] || (\\\"Start-of-day Briefing - \\\" + new Date().toLocaleDateString(\\\"en-GB\\\", { weekday: \\\"long\\\", day: \\\"2-digit\\\", month: \\\"short\\\", year: \\\"numeric\\\", timeZone: \\\"Europe/London\\\" })))\\n}\",\n    \"options\": {\n      \"timeout\": 60000\n    }\n  },\n  \"id\": \"e11-kb-create-text-vA\",\n  \"name\": \"KB — Create From Text (sendBody/jsonBody)\",\n  \"type\": \"n8n-nodes-base.httpRequest\",\n  \"typeVersion\": 4,\n  \"position\": [2200, 320]\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -176,
+        -128
+      ],
+      "id": "5c9f8250-ce8b-4155-9acc-a4ede342449b",
+      "name": "Create 11L agent with KB"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.elevenlabs.io/v1/convai/twilio/outbound-call",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "={\n  \"xi-api-key\": \"sk_fb475a342401f1e2495de38b2193518f54778f4427ce83de\",\n  \"Content-Type\": \"application/json\"\n}\n",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"agent_id\": \"agent_2501k3v11788e6w908yswfp1w66z\",\n  \"agent_phone_number_id\": \"phnum_01jvx1f76mfg6akt98vk9jqyqh\",\n  \"to_number\": \"+447966543220\",\n  \"conversation_initiation_client_data\": {\n    \"client_name\": \"Acme Ltd\",\n    \"matter_ref\": \"M-2025-001\"\n  }\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        48,
+        -128
+      ],
+      "id": "5887dc9e-f033-4d12-bd92-ea854a4ccd66",
+      "name": "Outbound call"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -688,
+        -128
+      ],
+      "id": "f942efee-8840-4286-a7d9-4e521fa9b2a8",
+      "name": "When clicking ‘Execute workflow’"
+    }
+  ],
+  "connections": {
+    "Create KB": {
+      "main": [
+        [
+          {
+            "node": "Create 11L agent with KB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create 11L agent with KB": {
+      "main": [
+        [
+          {
+            "node": "Outbound call",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Create KB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {
+    "When clicking ‘Execute workflow’": [
+      {
+        "json": {
+          "output": "Event summary — Lunch: Graham <> Lee\n- Date: Monday, 1 September 2025 (today)\n- Start time: 11:30\n- End time (assumed): 12:30\n- Meeting length: 1 hour (please confirm if different)\n- Location: not specified — please confirm venue/restaurant and map link\n- Attendees:\n  - Lee Curtis (internal) — no external bio provided\n  - Graham Seldon (external) — see full bio below\n  - No other attendees listed\n\nExternal attendee — full bio (for prep)\n- Name: Graham Seldon\n- Role: Founder & Director, Seldon Rosser\n- Firm: Seldon Rosser — executive search firm specialising in business development and marketing appointments for professional services across the Asia‑Pacific\n- Background highlights:\n  - Early career at Chambers Directory (UK)\n  - Moved to Australia in 1999 and founded Seldon Rosser — the first recruitment firm in Australia focused on BD and marketing for professional services\n  - Regular commentator on career development and leadership\n  - Co‑host of the Seldon Rosser Podcast\n- Recent items of note:\n  - Blog: \"Are you making an impact in your new role?\" — Seldon Rosser blog, 4 August 2025\n  - Podcast guest appearance: \"Get Out of Your Own Way\" (Acast) — 3 March 2023\n- Links:\n  - About Seldon Rosser: https://seldonrosser.com/about-us/\n  - Blog post: https://seldonrosser.com/makingimpact/\n  - Podcast episode: https://shows.acast.com/get-out-of-your-own-way/episodes/graham-seldon\n\nPrep / suggested meeting objectives\n- Confirm purpose: networking, hiring/search advice, partnership opportunities, or general industry catch‑up\n- Key outcomes to aim for: agree next steps (follow‑up call/introduction to colleagues), identify mutual opportunities, gather market insights on BD/marketing hires in APAC\n\nSuggested questions & topics to raise with Graham\n1. Given the market now, what skill sets are most in demand for BD/marketing leaders in professional services across APAC?\n2. How have candidate expectations and retention drivers shifted since 2023–2024?\n3. What strategies have worked for attracting senior BD/marketing talent to firms in competitive markets?\n4. Can you share trends on compensation structures or incentives for BD/marketing hires you’re seeing this year?\n5. Where do you see the biggest gaps firms are overlooking when hiring for client-facing growth roles?\n6. Would Seldon Rosser consider a retained search/partnership for upcoming hires — and what is your typical timeline?\n7. Any recent success stories or case studies you can briefly outline that are relevant to our needs?\n8. Recommended resources or people in your network we should speak with next?\n\nPractical items before you go\n- Confirm meeting length and venue; book table if not already done\n- Check dietary preferences / allergies\n- Bring business card / company one‑pager and any relevant role briefs\n- If you want CVs or job specs reviewed, email them to Graham in advance\n- Agree a 2–3 point agenda to keep lunch focused (e.g., introductions -> market trends -> next steps)\n\nSuggested follow‑ups after the meeting\n- Send a short thank‑you note with summary of agreed actions and timeline\n- If relevant, request a capability deck or recent case studies from Graham\n- Schedule a follow-up call or intro meeting with internal stakeholders within one week\n\nIf you’d like, I can:\n- Confirm or add the exact end time if you have a planned duration other than 1 hour\n- Draft an agenda or an introductory email to Graham to set expectations in advance\n- Find and reserve nearby restaurants for the lunch (please confirm location radius)"
+        }
+      },
+      {
+        "json": {
+          "output": "Event summary — Lunch: Graham <> Lee\n\n- Date: Monday, 1 September 2025\n- Start time: 11:30 (your calendar timezone — please confirm)\n- Suggested length: 60 minutes (11:30–12:30). Original event does not specify duration — confirm if you want a different length.\n- Attendees: Lee Curtis; Graham Seldon\n- Location: not specified on the event — please confirm restaurant/room and whether a reservation is needed\n\nExternal bios\n- No external bios were provided in the event details. If either Lee Curtis or Graham Seldon is external to your organization and you want prep bios, I can:\n  - Pull short public bios (current role, company, past experience, education, and one notable recent item) from LinkedIn/Company pages and deliver them in 5–10 minutes, or\n  - Draft concise placeholder bios if you prefer to avoid web lookups (you would need to confirm or correct).\n- Please tell me whether I have permission to search the web for public bios, and which attendees are external.\n\nSuggested quick agenda (for a lunch meeting)\n- 11:30–11:40 — quick catch-up / personal rapport\n- 11:40–12:00 — main topics (list 1–2 priorities you want to cover)\n- 12:00–12:20 — next steps / potential actions or follow-ups\n- 12:20–12:30 — wrap-up / confirm timeline for deliverables\n\nPreparation checklist for you\n- Confirm meeting length and location (make reservation if needed)\n- Decide 1–2 objectives you want to accomplish (e.g., partnership, deal terms, hiring, introductions)\n- Bring any one-page briefs or slides (if relevant) — keep to 1–2 pages for lunch\n- Key questions to ask (I can draft tailored questions if you tell me the meeting goal)\n- Dietary needs / payment plan (who’s paying) — confirm beforehand\n\nNext actions I can take now\n- Confirm or set the meeting duration and location on your calendar\n- Fetch public bios for Lee and/or Graham (with your permission) and produce 150–200 word prep bios each\n- Draft a focused agenda and tailor suggested questions based on the meeting objective you provide\n\nWhich next step would you like me to take?"
+        }
+      }
+    ]
+  },
+  "triggerCount": 0,
+  "meta": null
+}

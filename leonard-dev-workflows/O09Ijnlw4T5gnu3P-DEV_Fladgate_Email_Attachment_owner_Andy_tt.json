@@ -1,0 +1,230 @@
+{
+  "name": "DEV - Fladgate Email Attachment - owner Andy tt",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "={{ $json.fields.Word[0].url }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -528,
+        -592
+      ],
+      "id": "09732eff-e0f9-421f-abaa-fbb059532618",
+      "name": "HTTP Request1",
+      "executeOnce": false,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "toRecipients": "=andy@legalengine.co.uk, {{ $json.fields.Email }}",
+        "subject": "=Your Matter Summary for {{ $json.fields['D1 - Client Name Value'] }}",
+        "bodyContent": "=Hey {{ $json.fields['First Name'] }}, attached is your matter summary from your call on {{ $json.dayOfWeek }} at {{ $json.time12London }} relating to {{ $json.fields['D1 - Client Name Value'] }}.\n\nCheers \n\nLegal Engine",
+        "additionalFields": {
+          "attachments": {
+            "attachments": [
+              {
+                "binaryPropertyName": "=data"
+              }
+            ]
+          }
+        },
+        "path": "4b5d9fc1-ad93-4a47-a07e-2746c5ded195"
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        144,
+        -592
+      ],
+      "id": "0a743cca-50f2-4ee7-9ed8-7b4a2216f4e2",
+      "name": "Send a message with att1",
+      "webhookId": "4b5d9fc1-ad93-4a47-a07e-2746c5ded195",
+      "alwaysOutputData": false,
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "APa28clvTTmmzH55",
+          "name": "Microsoft Outlook - Leonard @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ONE Code node: read from 'data-producer', merge binaries, count data*, build Outlook attachments,\n// and (optionally) merge JSON from existing 'Airtable' node — no new nodes added.\n\nconst SOURCE_NODE = 'data-producer';\nconst AIRTABLE_NODE = 'Airtable';\n\n// --- 1) Load source items (from named node; fallback to current input) ---\nlet srcItems;\ntry {\n  srcItems = $items(SOURCE_NODE);\n  if (!Array.isArray(srcItems) || srcItems.length === 0) srcItems = items;\n} catch (_) {\n  srcItems = items;\n}\n\n// --- 2) Merge binaries into a single item; prefer json.fieldName or data{index} ---\nconst merged = { json: {}, binary: {} };\n\nfor (const item of srcItems) {\n  const impliedKey = item.json?.fieldName || (item.json?.index ? `data${item.json.index}` : undefined);\n\n  if (impliedKey && item.binary?.[impliedKey]) {\n    merged.binary[impliedKey] = item.binary[impliedKey];\n    if (item.json?.filename) merged.binary[impliedKey].fileName = item.json.filename;\n    continue;\n  }\n\n  if (item.binary) {\n    for (const [bKey, bVal] of Object.entries(item.binary)) {\n      merged.binary[bKey] = bVal; // last one wins if duplicate keys\n      if (item.json?.filename && impliedKey === bKey) {\n        merged.binary[bKey].fileName = item.json.filename;\n      }\n    }\n  }\n}\n\n// --- 3) Count data* binaries (total + unique) and per-item breakdown ---\nconst dataKeyRegex = /^data\\d*$/i;\n\nlet totalDataKeys = 0;\nconst uniqueDataKeys = new Set();\nconst perItem = [];\n\nfor (let i = 0; i < srcItems.length; i++) {\n  const bin = srcItems[i].binary || {};\n  const keys = Object.keys(bin).filter(k => dataKeyRegex.test(k));\n  perItem.push({ itemIndex: i + 1, dataKeys: keys, count: keys.length });\n  totalDataKeys += keys.length;\n  keys.forEach(k => uniqueDataKeys.add(k));\n}\n\n// --- 4) Build Outlook-friendly attachments array (JSON Parameters = ON) ---\nconst allKeys = Object.keys(merged.binary || {});\nmerged.json.attachments = allKeys.map(k => ({\n  binaryPropertyName: k,\n  fileName: merged.binary[k]?.fileName,\n  mimeType: merged.binary[k]?.mimeType,\n}));\n\n// --- 5) (Optional) Merge JSON from existing 'Airtable' node (no new nodes created) ---\ntry {\n  const airtableItems = $items(AIRTABLE_NODE); // will throw if node doesn't exist\n  if (Array.isArray(airtableItems) && airtableItems.length > 0) {\n    const airtableJson = airtableItems[0]?.json ?? {};\n\n    // (a) Shallow-merge ALL top-level Airtable fields into merged.json (last write wins)\n    for (const [k, v] of Object.entries(airtableJson)) {\n      merged.json[k] = v;\n    }\n\n    // (b) Keep a namespaced copy to avoid key collisions / for debugging\n    merged.json.airtable = airtableJson;\n\n    // (c) If there's an Airtable \"Attachments\" array, add a flattened read-friendly view\n    if (Array.isArray(airtableJson.Attachments)) {\n      merged.json.airtableAttachments = airtableJson.Attachments.map(att => ({\n        id: att?.id,\n        url: att?.url,\n        filename: att?.filename,\n        size: att?.size,\n        type: att?.type,\n      }));\n    }\n  }\n} catch (_) {\n  // If 'Airtable' node isn't present, do nothing.\n}\n\n// --- 6) Summary meta (explicit totals) ---\nmerged.json.sourceNode = SOURCE_NODE;\nmerged.json.totalItems = srcItems.length;\nmerged.json.totalItemsFromSource = srcItems.length;\nmerged.json.totalBinaryKeys = allKeys.length;\nmerged.json.totalDataOutputs = totalDataKeys;\nmerged.json.uniqueDataOutputs = uniqueDataKeys.size;\nmerged.json.uniqueDataKeys = Array.from(uniqueDataKeys);\nmerged.json.perItem = perItem;\n\n// --- 7) Return ONE merged item ---\nreturn [merged];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -304,
+        -592
+      ],
+      "id": "b3833855-47ca-4073-96ac-67fe3ff051cc",
+      "name": "comp"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "airtableTokenApi",
+        "baseId": {
+          "__rl": true,
+          "value": "appUvJyzSky12m4HA",
+          "mode": "id"
+        },
+        "tableId": {
+          "__rl": true,
+          "value": "tblwdQFcCl09DOjUx",
+          "mode": "id"
+        },
+        "triggerField": "Last Modified",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.airtableTrigger",
+      "typeVersion": 1,
+      "position": [
+        -752,
+        -592
+      ],
+      "id": "6e7478dd-ad48-4045-8430-81ea71fcf75e",
+      "name": "Airtable",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LVF892xkQD72QD7v",
+          "name": "Airtable - Leonard @ Legal Engine"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "table": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        368,
+        -592
+      ],
+      "id": "e1ab1750-2370-429f-8408-3d48e766938d",
+      "name": "Update record",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "vYxuU00U3OJfSxuQ",
+          "name": "Airtable Personal Access Token account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code node (JavaScript)\n// Source: item.json.fields[\"Conversation Date\"] .\n// Also falls back to item.json.input / .timestamp / .date .\n// Produces separate JSON variables for each output.\n\nfunction toDate(val) {\n  if (val == null) return null;\n\n  if (typeof val === 'number') {\n    const ms = val < 1e11 ? val * 1000 : val;\n    const d = new Date(ms);\n    return isNaN(d.getTime()) ? null : d;\n  }\n\n  if (val instanceof Date) {\n    return isNaN(val.getTime()) ? null : val;\n  }\n\n  if (typeof val === 'string') {\n    const s = val.trim();\n    let d = new Date(s);\n    if (!isNaN(d.getTime())) return d;\n\n    d = new Date(s.replace(' ', 'T'));\n    if (!isNaN(d.getTime())) return d;\n\n    if (!/[zZ]|[+\\-]\\d{2}:\\d{2}$/.test(s)) {\n      d = new Date(s + 'Z');\n      if (!isNaN(d.getTime())) return d;\n    }\n  }\n\n  return null;\n}\n\nfunction ordinal(n) {\n  const v = Math.abs(n);\n  const m100 = v % 100;\n  if (m100 >= 11 && m100 <= 13) return 'th';\n  switch (v % 10) {\n    case 1: return 'st';\n    case 2: return 'nd';\n    case 3: return 'rd';\n    default: return 'th';\n  }\n}\n\nfunction londonParts(date) {\n  const zone = 'Europe/London';\n\n  const base = new Intl.DateTimeFormat('en-GB', {\n    timeZone: zone,\n    year: 'numeric',\n    month: 'long',\n    day: 'numeric',\n    weekday: 'long',\n  }).formatToParts(date);\n\n  const get = (t) => base.find(p => p.type === t)?.value;\n\n  const dayNum = Number(get('day'));\n  const monthName = get('month');\n  const year = get('year');\n  const weekday = get('weekday');\n\n  const time12London = new Intl.DateTimeFormat('en-GB', {\n    timeZone: zone,\n    hour: '2-digit',\n    minute: '2-digit',\n    hour12: true,\n  }).format(date);\n\n  const time24London = new Intl.DateTimeFormat('en-GB', {\n    timeZone: zone,\n    hour: '2-digit',\n    minute: '2-digit',\n    hour12: false,\n  }).format(date);\n\n  return { dayNum, monthName, year, weekday, time12London, time24London };\n}\n\nreturn items.map(item => {\n  const fromFields = item?.json?.fields?.['Conversation Date'];\n  const fallback =\n    item?.json?.input ?? item?.json?.timestamp ?? item?.json?.date ?? null;\n\n  const raw = fromFields ?? fallback;\n  const d = toDate(raw);\n\n  if (!d) {\n    return {\n      json: {\n        ...item.json,\n        conversationDateRaw: raw,\n        error: 'Invalid or missing Conversation Date . Provide ISO string or epoch seconds or milliseconds in fields[\"Conversation Date\"]',\n      },\n    };\n  }\n\n  const { dayNum, monthName, year, weekday, time12London, time24London } = londonParts(d);\n\n  const dayWithOrdinal = `${dayNum}${ordinal(dayNum)}`;\n  const dateUK = `${dayWithOrdinal} ${monthName} ${year}`;\n\n  return {\n    json: {\n      ...item.json,\n\n      // Inputs\n      conversationDateRaw: raw,\n\n      // Outputs as separate variables\n      dayOfWeek: weekday,          // e.g., Monday\n      dateUK,                      // e.g., 22nd September 2025\n      dayWithOrdinal,              // e.g., 22nd\n      month: monthName,            // e.g., September\n      time12London,                // e.g., 03:37 pm\n      time24London,                // e.g., 15:37\n      timeZone: 'Europe/London',\n    },\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -80,
+        -592
+      ],
+      "id": "f251ae15-7cc5-41fa-b2f8-767d30680ae3",
+      "name": "Date formatting"
+    }
+  ],
+  "connections": {
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "comp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "comp": {
+      "main": [
+        [
+          {
+            "node": "Date formatting",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Airtable": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message with att1": {
+      "main": [
+        [
+          {
+            "node": "Update record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date formatting": {
+      "main": [
+        [
+          {
+            "node": "Send a message with att1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": {
+    "node:Airtable Trigger": {
+      "lastTimeChecked": "2025-10-16T23:52:44Z"
+    },
+    "node:Airtable": {
+      "lastTimeChecked": "2025-11-02T18:51:44Z"
+    }
+  },
+  "pinData": {},
+  "triggerCount": 1,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

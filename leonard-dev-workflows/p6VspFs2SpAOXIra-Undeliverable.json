@@ -1,0 +1,104 @@
+{
+  "name": "Undeliverable",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "2d621a56-935a-4d6c-8889-3da72767d2d5",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        480,
+        0
+      ],
+      "id": "cee6878e-860e-4c99-9083-8e12d13437c1",
+      "name": "Get many messages",
+      "webhookId": "a366e43f-146b-4873-9a81-a4268cd9741c",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "bLvU6joGotzynHwT",
+          "name": "Microsoft Outlook - Lee Jan 2026"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "folder",
+        "operation": "get",
+        "folderId": {
+          "__rl": true,
+          "value": "AAMkAGJmN2M2NGFhLWFjMjgtNGQ2MC05OGZiLWJjMWM4NmM0ZDAxZAAuAAAAAAD2lI-8zWpTTqRWupsreAAzAQCH07UL5-UrRpyGuvviTyupAAAiia1PAAA=",
+          "mode": "list",
+          "cachedResultName": "Undeliverable",
+          "cachedResultUrl": "https://outlook.office365.com/mail/AAMkAGJmN2M2NGFhLWFjMjgtNGQ2MC05OGZiLWJjMWM4NmM0ZDAxZAAuAAAAAAD2lI%2F8zWpTTqRWupsreAAzAQCH07UL5%2FUrRpyGuvviTyupAAAiia1PAAA%3D"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        256,
+        0
+      ],
+      "id": "8a94a868-fe14-4817-b210-e520399a48ba",
+      "name": "Get a folder",
+      "webhookId": "ada99aea-9922-4b0c-a0b6-a089e0041d12",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "bLvU6joGotzynHwT",
+          "name": "Microsoft Outlook - Lee Jan 2026"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get a folder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many messages": {
+      "main": [
+        []
+      ]
+    },
+    "Get a folder": {
+      "main": [
+        [
+          {
+            "node": "Get many messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 0,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}
